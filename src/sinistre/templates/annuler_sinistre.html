@@ -1,0 +1,509 @@
+{% extends "admin/base_site.html" %}
+{% load my_filters %}
+{% load static %}
+{% block extrastyle %}
+
+<style>
+    div.dataTables_processing>div:last-child>div {
+        background: rgb(187 65 38) !important;
+    }
+</style>
+  <link href="https://cdn.jsdelivr.net/gh/gitbrent/bootstrap4-toggle@3.6.1/css/bootstrap4-toggle.min.css" rel="stylesheet">
+
+{% endblock %}
+{% block content %}
+
+ <!--div class="col-12 col-md-12 order-2 order-md-1">
+
+      <div class="card">
+          <div class="card-header">
+              <h3 class="card-title"><b>
+                  SAISIE DE DOSSIERS SINISTRES PHYSIQUES
+              </b></h3>
+              <div class="card-tools">
+              </div>
+          </div>
+
+          <div class="card-body" style="background-color:var(--colorJauneOlea)">
+            <div id="example_wrapper_" class="dataTables_wrapper dt-bootstrap4">
+              <div class="row ">
+
+                <div class="col-xl-4 col-sm-6">
+                  <a style="cursor: pointer;display: block;" data-toggle="modal" data-target="#modal-sinistre_consultation_gestionnaire" data-modal_title="DEMANDE DE PRISE EN CHARGE - CONSULTATION">
+                  <div class="card card-stats mb-4 mb-xl-0">
+                    <div class="card-body" style="min-height: 120px;">
+                      <div class="row">
+                        <div class="col">
+                          <h5 class="card-title text-muted mb-0"></h5> <br>
+                          <span class="h3 font-weight-bold mb-0" style="color: dblack">CONSULTATION</span>
+                        </div>
+                        <div class="col-auto">
+                          <div class="icon icon-shape text-white rounded-circle shadow" style="background: linear-gradient(45deg, #C11B0E, #BB4127);">
+                            <i class="fas fa-plus" style=""></i>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  </a>
+                </div>
+
+                <div class="col-xl-4 col-sm-6">
+                  <a style="cursor: pointer;display: block;" data-toggle="modal" data-target="#modal-sinistre-soins_ambulatoires_gestionnaire" data-modal_title="DEMANDE DE PRISE EN CHARGE - SOINS AMBULATOIRES">
+                  <div class="card card-stats mb-4 mb-xl-0">
+                    <div class="card-body" style="min-height: 120px;">
+                      <div class="row">
+                        <div class="col">
+                          <h5 class="card-title text-muted mb-0"></h5>
+                          <span class="h3 font-weight-bold mb-0" style="color: dblack">SOINS AMBULATOIRES</span>
+                        </div>
+                        <div class="col-auto">
+                          <div class="icon icon-shape text-white rounded-circle shadow" style="background: linear-gradient(45deg, #C11B0E, #BB4127);">
+                            <i class="fa fa-clock" style=""></i>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                      </a>
+                </div>
+
+                <div class="col-xl-4 col-sm-6">
+                  <a style="cursor: pointer;display: block;" data-toggle="modal" data-target="#modal-sinistre_hospitalisation_gestionnaire" data-modal_title="DEMANDE DE PRISE EN CHARGE - HOSPITALISATION">
+                  <div class="card card-stats mb-4 mb-xl-0">
+                    <div class="card-body" style="min-height: 120px;">
+                      <div class="row">
+                        <div class="col">
+                          <h5 class="card-title text-muted mb-0"></h5> <br>
+                          <span class="h3 font-weight-bold mb-0" style="color: dblack">HOSPITALISATION</span>
+                        </div>
+                        <div class="col-auto">
+                          <div class="icon icon-shape text-white rounded-circle shadow" style="background: linear-gradient(45deg, #C11B0E, #BB4127);">
+                            <i class="fa fa-bed" style=""></i>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  </a>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+      </div>
+
+ </div-->
+
+ <div class="col-12 col-md-12 order-2 order-md-1">
+
+      <div class="card">
+        <div class="card-header">
+            <h3 class="card-title"><b>
+                {{_('ANNULER_UN_SINISTRE')}}
+            </b></h3>
+            <div class="card-tools">
+            </div>
+        </div>
+
+      <div class="card-body">
+        <div id="example_wrapper" class="dataTables_wrapper dt-bootstrap4">
+            
+            <form autocomplete="off" id="form_recherche" name="form_recherche" method="POST" enctype="multipart/form-data">
+              {% csrf_token %}
+              <div class="row justify-content-center">
+                  <div class="col offset-md-3 form-group row">
+                      <span class="col col-form-label text-right">{{_('Numero_feuille_de_soins')}} <span
+                              class="required">*</span>: </span>
+                      <div class="col-sm-6">
+                          <input type="text" class="form-control" name="code_dossier_sinistre" id="code_dossier_sinistre" value="{{ code_dossier_sinistre }}" required>
+                      </div>
+                  </div>
+                  <div class="col">
+                      <button id="recherche" name="recherche" value="rechercher" type="submit" class="btn btn-complement-rouge">{{_('Rechercher')}}
+                      </button>
+                      <img id="loader" src="{% static 'admin_custom/img/loader.gif' %}"
+                          style="width: 40px;display: none;"/>
+                  </div>
+              </div>
+            </form>
+          {% if dossier_sinistre %}
+           
+          <div class="row dossier_detail">
+            <div class="col-12 col-md-12 col-sm-12 ">
+
+              <div class="card">
+                <div class="card-header">
+                  <div class="card-title">
+                    <h6>{{_('DOSSIER')}}</h6>
+                  </div>
+                  <div class="card-tools">
+                    <span class=""><input type="checkbox" id="input-status-dossier-closing" {% if dossier_sinistre.is_closed is False %} checked {% endif %} data-toggle="toggle" data-on="DÉVERROUILLÉ" data-off="VERROUILLÉ" data-onstyle="success" data-offstyle="warning" data-size="sm"></span>
+                    <div class="spinner-border d-none" id="loading-status-dossier-closing" role="status">
+                        <span class="sr-only">{{_('Chargement')}}...</span>
+                    </div>
+                    {% comment %} <a onclick="annuleSelectedItems()" class="btn btn-sm btn-warning" id="btn_annulation_selection" data-toggle="modal" data-target="#modal-document" style="display:none"><i class="fas fa-times"></i> Annuler la sélection</a> {% endcomment %}
+                  </div>
+                </div>
+                <div class="card-body">
+
+                  <div class="row">
+                    <div class="col-sm-6">
+                      <div class="form-groupn mb-2 row col-sm-12">
+                        <div class="col-sm-5">{{_('Numero_feuille_de_soins')}} : </div>
+                        <div class="col-sm-7">
+                          <span class=" col-sm-12 text-bold">{{ dossier_sinistre.numero }}</span>
+                        </div>
+                      </div>
+                      <div class="form-groupn mb-2 row col-sm-12">
+                        <div class="col-sm-5">{{_('Centre_prescripteur')}} :</div>
+                        <div class="col-sm-7">
+                          <span class="col-sm-12 text-bold">{% if dossier_sinistre.centre_prescripteur %}{{ dossier_sinistre.centre_prescripteur.name }} {% endif %}</span>
+                        </div>
+                      </div>
+                      <div class="form-groupn mb-2 row col-sm-12">
+                        <div class="col-sm-5">{{_('Centre_executant')}} :<span class="required"></span></div>
+                        <div class="col-sm-7">
+                          <span class="text-bold col-sm-12">{% if dossier_sinistre.prestataire %}{{ dossier_sinistre.prestataire.name }} {% elif dossier_sinistre.pharmacie %} {{ dossier_sinistre.pharmacie.name }}{% endif %}</span>
+                        </div>
+                      </div>
+                      <div class="form-groupn mb-2 row col-sm-12">
+                        <div class="col-sm-5">{{_('Numero_Carte')}} :</div>
+                        <div class="col-sm-7">
+                          <span class="text-bold col-sm-12" readonly="">{{ numero_carte }}</span>
+                        </div>
+                      </div>
+                      <div class="form-groupn mb-2 row col-sm-12">
+                        <div class="col-sm-5">{{_('Nom')}} :</div>
+                        <div class="col-sm-7">
+                          <span class="text-bold col-sm-12" readonly="">{{ dossier_sinistre.aliment.nom }}</span>
+                        </div>
+                      </div>     
+                      <div class="form-groupn mb-2 row col-sm-12">
+                        <div class="col-sm-5">{{_('Prenom')}}(s) :</div>
+                        <div class="col-sm-7">
+                          <span class="text-bold col-sm-12" readonly="">{{ dossier_sinistre.aliment.prenoms }}</span>
+                        </div>
+                      </div>         
+                    </div>
+                    
+                    <div class="col-sm-6">
+
+                    <div class="form-groupn mb-2 row col-sm-12">
+                        <div class="col-sm-5">{{_('Type')}} : <span></span></div>
+                        <div class="col-sm-7">
+                          <span class="text-bold col-sm-12" readonly="">{% if dossier_sinistre.type_priseencharge %}{{ dossier_sinistre.type_priseencharge.libelle }}{% endif %}</span>
+                        </div>
+                      </div>
+                      <div class="form-groupn mb-2 row col-sm-12">
+                        <div class="col-sm-5">{{_('Date_prestation')}} :</div>
+                        <div class="col-sm-7">
+                          <span class="col-sm-12 text-bold" readonly=""> {% if dossier_sinistre.date_survenance %}{{ dossier_sinistre.date_survenance|date:"d/m/Y H:m" }}{% endif %} </span>
+                        </div>
+                      </div>
+                      
+                      <div class="form-groupn mb-2 row col-sm-12">
+                        <div class="col-sm-5">{{_('Frais_reel')}} : </div>
+                        <div class="col-sm-7">
+                          <span class="text-bold col-sm-12" readonly="">{{ total_frais_reel|money_field|default_if_none:"0" }} </span>
+                        </div>
+                      </div>
+                      
+                      
+                      <div class="form-groupn mb-2 row col-sm-12">
+                        <div class="col-sm-5">{{_('Part_assureur')}} : </div>
+                        <div class="col-sm-7">
+                          <span class="text-bold col-sm-12" readonly="">{{ total_part_compagnie|money_field|default_if_none:"0" }}</span>
+                        </div>
+                      </div>
+
+                      <div class="form-groupn mb-2 row col-sm-12">
+                        <div class="col-sm-5">{{_('Part_assure')}} :</div>
+                        <div class="col-sm-7">
+                          <span class="col-sm-12 text-bold">{{ total_part_assure|money_field|default_if_none:"0" }}</span>
+                        </div>
+                      </div>
+                      <div class="form-groupn mb-2 row col-sm-12">
+                        <div class="col-sm-5">{{_('Statut')}} : </div>
+                        <div class="col-sm-7">
+                            <span class="text-bold col-sm-12" readonly=""><span class="badge badge-{{dossier_sinistre.statut|default_if_none:""|lower|slugify}}">{{dossier_sinistre.statut|default_if_none:""}}</span></span>
+                        </div>
+                      </div>
+
+                    </div>
+                  </div>
+                  {% if has_sinistre_on_facture is False %}
+                  <div class="text-center"><a class="btn-lg" href="#" onclick="annuleItem('dossier', {{ dossier_sinistre.id }}, '{{ dossier_sinistre.numero }}')"><button class="btn btn-danger"><i class="fa fa-times"></i> {{_('Annuler_le_dossier')}}</button></a></div>
+                  {% else %}
+                  <div class="dossier_detail text-danger text-center h4 text-bold">{{_('Annulation_impossible')}}.</div>
+                  {% endif %}
+
+                </div>
+              </div>
+            </div>
+
+            <div class=" col-md-12">
+              <div class="card">
+                <div class="card-header">
+                  <div class="card-title">
+                    <h6>{{_('LISTE_DES_SINISTRES')}}</h6>
+                  </div>
+                  <div class="card-tools">
+                  {% if has_sinistre_on_facture is False %}
+                    <a onclick="annuleSelectedItems()" class="btn btn-sm btn-warning disabled" id="btn_annulation_selection" data-toggle="modal" data-target="#modal-document" style="disabled:none"><i class="fas fa-times"></i> {{_('Annuler_la_selection')}}</a>
+                  {% endif %}
+                  </div>
+                </div>
+                <div class="card-body">
+
+                  <div class="table-responsive">
+                    <table class="table table-bordered table-striped dataTable__ customDataTable__ dtr-inline" id="table_dossiers_sinistres_physiques_gestionnaires" style="width: 100%;" data-orderby="0">
+
+                      <thead>
+                        <tr>
+                          <th>
+                            <input class="" type="checkbox" id="select_all_checkbox">
+                          </th>
+                          <th scope="col">{{_('Numero_sinistre')}}</th>
+                          <th scope="col">{{_('Libelle')}}</th>
+                          <th scope="col">{{_('Type')}}</th>
+                          <th scope="col">{{_('Frais_reel')}}</th>
+                          <th scope="col">{{_('Part_assureur')}}</th>
+                          <th scope="col">{{_('TM')}}</th>
+                          <th scope="col">{{_('Valeur_du_TM')}}</th>
+                          <th scope="col">{{_('Depas')}}.</th>
+                          <th scope="col">{{_('Part_assure')}}</th>
+                          <th scope="col">{{_('Statut')}}</th>
+                          <th scope="col">{{_('Actions')}}</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                      {% for sinistre in sinistres %}
+                        <tr>
+                            <td>
+                            {% if sinistre.facture_prestataire is None %}
+                                <input class="" type="checkbox" id="inlineCheckbox1" name="sinsitre_id" value="{{ sinistre.id }}">
+                                <input class="" type="hidden" id="inlineCheckbox1" name="sinistre_libelle" value="{{sinistre.acte.libelle|default_if_none:""}} ({{ sinistre.numero|default_if_none:"" }})">
+                            {% endif %}
+                            </td>
+                            <td>{{sinistre.numero|default_if_none:""}}</td>
+                            <td>{{sinistre.acte.libelle|default_if_none:""}}</td>
+                            <td> {% if sinistre.type_sinistre == 'medicament'%} {{_('Medicament')}} {% else %} {{_('Acte')}} {% endif %} </td>
+                            <td style="text-align:right">{{ sinistre.frais_reel|money_field|default_if_none:"0" }}</td>
+                            <td style="text-align:right">{% if sinistre.tm_prefinanced and request.user.is_prestataire %} {{ sinistre.frais_reel|money_field|default_if_none:"0" }} {% else %} {{ sinistre.part_compagnie|money_field|default_if_none:"0" }} {% endif %}</td>
+                            <td style="text-align:right">{% if sinistre.tm_prefinanced and request.user.is_prestataire %} 0 {% else %} {{ sinistre.taux_tm|money_field|default_if_none:"0" }} {% endif %}%</td>
+                            <td style="text-align:right">{% if sinistre.tm_prefinanced and request.user.is_prestataire %} 0 {% else %} {{ sinistre.ticket_moderateur|money_field|default_if_none:"0" }} {% endif %}</td>
+                            <td style="text-align:right">{% if sinistre.tm_prefinanced and request.user.is_prestataire %} 0 {% else %} {{ sinistre.depassement|money_field|default_if_none:"0" }} {% endif %}</td>
+                            <td style="text-align:right">{% if sinistre.tm_prefinanced and request.user.is_prestataire %} 0 {% else %} {{ sinistre.part_assure|money_field|default_if_none:"0" }} {% endif %}</td>
+                            <td><span class="badge badge-{{ sinistre.statut|default_if_none:''|slugify }}">{{ sinistre.statut|default_if_none:""}}</span></td>
+                            <td>
+                            {% if sinistre.facture_prestataire is None %}
+                                <a href="#" onclick="annuleItem('sinistre', {{ sinistre.id }}, '{{sinistre.acte.libelle|default_if_none:""}} ({{ sinistre.numero|default_if_none:"" }})')"><span class="badge btn-sm btn-danger rounded-pill"><i class="fa fa-times"></i> {{_('Annuler')}}</span></a>
+                            {% endif %}
+                            </td>
+                        </tr>
+                      {% endfor %}
+                      </tbody>
+
+                    </table>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          {% else %}
+          
+            {% if code_dossier_sinistre %}
+            <div class="dossier_detail text-danger text-center text-bold h4">{{_('Aucune_correspondance')}}</div>
+            {% endif %}
+
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+{% endblock %}
+
+
+{% block extrajs %}
+<script>
+
+        function annuleItem(type, id, text){
+          $("#type_item").val(type);
+          $("#id_item").val(id);
+          if(type=="dossier"){
+            $("#modal_head").html("ÊTES-VOUS SÛR(E) DE VOULOIR SUPPRIMER CE DOSSIER ?");
+          }
+          else{
+            $("#modal_head").html("ÊTES-VOUS SÛR(E) DE VOULOIR SUPPRIMER CE SINISTRE ?");
+          }
+          $("#modal_text").html(text);
+          $('#modal_annuler_sinistre').modal();
+        }
+
+        function annuleSelectedItems(){
+          $("#type_item").val("selection_sinistre");
+          $("#modal_head").html("ÊTES-VOUS SÛR(E) DE VOULOIR SUPPRIMER CETTE SÉLECTION ?");
+          var table = $('#table_dossiers_sinistres_physiques_gestionnaires');
+          var id =  ""
+          var text = ""
+          table.find('tr').each(function() {
+              //console.log($(this)[0].classList.value.indexOf("selected"));
+              if($(this)[0].classList.value.indexOf("selected") != -1){
+                if($(this)[0].children[0].children[0].value!=""){
+                  if(id!=""){
+                    id = id + "," + $(this)[0].children[0].children[0].value;
+                  }
+                  else{
+                    id = $(this)[0].children[0].children[0].value;
+                  }
+                }
+                if($(this)[0].children[0].children[1].value!=""){
+                  if(text!=""){
+                    text = text + ", " + $(this)[0].children[0].children[1].value;
+                  }
+                  else{
+                    text = $(this)[0].children[0].children[1].value;
+                  }
+                }
+                //console.log($(this)[0].children[0].children[0].value);
+                //console.log($(this)[0].children[0].children[1].value);
+              } 
+              //$(this).click(); // Déclenche un clic sur chaque ligne (tr)
+          });
+          $("#id_item").val(id);
+          $("#modal_text").html(text);
+          $('#modal_annuler_sinistre').modal();
+        }
+
+        function reset(){
+          $("#type_item").val("");
+          $("#id_item").val("");
+          $("#modal_head").html("");
+          $("#modal_head").html("");
+        }
+
+
+    $(document).ready(function() {
+
+        dataTable = $('#table_dossiers_sinistres_physiques_gestionnaires').DataTable({
+            "language": {
+                "url": "https://cdn.datatables.net/plug-ins/9dcbecd42ad/i18n/French.json"
+            },
+            "paging": false,
+            // "pageLength": 400,
+            "processing": true,  // Show the loading indicator
+            "searching": false,   // Enable the search feature
+        });
+
+
+        var lastEvent = null;
+        var table = $('#table_dossiers_sinistres_physiques_gestionnaires')
+        $('#select_all_checkbox').on('click', function (e) {
+            // $('#select_all_checkbox').fadeOut("slow");
+            lastEvent = e;  // Stocke l'événement avant de déclencher le deuxième
+            console.log(table);
+            table.find('tr').each(function() {
+                $(this).click(); // Déclenche un clic sur chaque ligne (tr)
+            });
+            // table.$("tr").click();
+            lastEvent = null;
+            // $('#select_all_checkbox').fadeIn("slow");
+        });
+        table.on('click', 'tbody tr', function (e) {
+            //console.log($('#select_all_checkbox')[0].checked);
+            if(e.currentTarget.children[0].children[0]){
+              e.currentTarget.classList.toggle('selected');
+              if(lastEvent && $('#select_all_checkbox')[0].checked == true && e.currentTarget.classList.value.indexOf("selected") == -1){
+                e.currentTarget.classList.toggle('selected');
+              }
+              if(lastEvent && $('#select_all_checkbox')[0].checked == false && e.currentTarget.classList.value.indexOf("selected") != -1){
+                e.currentTarget.classList.toggle('selected');
+              }
+              if(e.currentTarget.classList.value.indexOf("selected") == -1){
+                e.currentTarget.children[0].children[0].checked=false;
+              }
+              else{
+                e.currentTarget.children[0].children[0].checked=true;
+              }            
+              
+              if (dataTable.rows('.selected').data().length > 0){
+                $("#btn_annulation_selection").removeClass("disabled");
+                $("#btn_annulation_selection").html("<i class='fas fa-times'></i> Annuler la sélection ("+dataTable.rows('.selected').data().length+")")
+              }
+              else{
+                $("#btn_annulation_selection").addClass("disabled");
+                $("#btn_annulation_selection").html("<i class='fas fa-times'></i> Annuler la sélection");
+              }
+            }
+            //console.log(e.currentTarget.classList.value)
+            //table.rows('.important').select();
+            //console.log(table.rows('.selected').data());
+        });
+
+        var $form = $('#form_recherche'); 
+        origForm = $form.serialize();
+        $('#form_recherche :input').on('change input', function() {
+          // une modification a eu lieu dans le formulaire il faut allors reforme les calculs 
+          if($form.serialize() !== origForm){
+             $('.dossier_detail').fadeOut("slow");
+          }
+          else{
+             $('.dossier_detail').fadeIn("slow");
+          }
+        });
+
+        $('#garantie').removeClass('o-bg-primary');
+        $('#garantie').addClass('o-active');
+
+
+        {% if dossier_sinistre %}
+        // change dossier closing status
+        $('#input-status-dossier-closing').on('change', function(e) {
+            $('#loading-status-dossier-closing').toggleClass('d-none d-block');
+
+                $.ajax({
+                    type: 'POST',
+                    url: "{% url 'change_dossier_closing_status' dossier_sinistre.id %}",
+                    data: {
+                        // here getdata should be a string so that
+                        // in your views.py you can fetch the value using get('getdata')
+                        // 'getdata': var
+                    },
+                    // dataType: 'json',
+                    success: function(response) {
+                        if(response.statut == 1){
+                            $('#loading-status-dossier-closing').toggleClass('d-block d-none');
+                        }
+                    },
+                    error: function(response) {
+                        // console.log(response);
+                    }
+                });
+                // console.log(e.currentTarget.checked);
+                /* if(e.checked == true && e.currentTarget.classList.value.indexOf("selected") == -1){
+                    e.currentTarget.classList.toggle('selected');
+                } */
+                // $('#loading-status-prest').fadeOut('slow');
+        });
+        {% endif %}
+
+
+    });
+
+
+
+
+
+</script>
+
+<script src="https://cdn.jsdelivr.net/gh/gitbrent/bootstrap4-toggle@3.6.1/js/bootstrap4-toggle.min.js"></script>
+
+{% include 'modal_annuler_sinistre.html' %}
+
+{% endblock %}

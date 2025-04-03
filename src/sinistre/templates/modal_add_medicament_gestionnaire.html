@@ -1,0 +1,168 @@
+{% load my_filters %}
+<!-- Modal -->
+<div class="modal fade" id="modal_add_medicament_gestionnaire" tabindex="-1" role="dialog" data-backdrop="static" aria-labelledby="modal_add_medicamentLabel" aria-hidden="true">
+  <div class="modal-dialog modal-xl" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title"><strong>{{_('SAISIE_DES_MEDICAMENTS')}}</strong></h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <form action="{% url 'add_medicament_gestionnaire_todossiersinistre' dossier_sinistre.id %}" method="post" id="form_add_medicament_gestionnaire" validate>
+            {% csrf_token %}
+            <input type="hidden" name="prestataire_id" id="prestataire_id" value="{{ dossier_sinistre.prestataire_id }}">
+            <input type="hidden" name="prescripteur_id" id="prescripteur_id" value="{{ dossier_sinistre.prescripteur_id }}">
+            <input type="hidden" name="aliment_id" id="aliment_id" value="{{ dossier_sinistre.aliment_id }}">
+            <input type="hidden" name="acte_consultation_id" id="acte_consultation_id" value="{{ acte_id }}">
+
+          <div class="row col-sm-12">
+            <div class="col-sm-3">
+              <div class="form-group">
+                <span>{{_('Numero_feuille_de_soins')}}: </span>
+                  <span><b>{{ dossier_sinistre.numero }}</b></span>
+              </div>
+            </div>
+            <div class="col-sm-3">
+              <div class="form-group">
+                <span>{{_('Beneficiaire')}}: </span>
+                  <span><b>{{ dossier_sinistre.aliment }}</b></span>
+              </div>
+            </div>
+            <div class="col-sm-3">
+              <div class="form-group">
+                <span>{{_('Numero_carte')}}: </span>
+                  <span><b>{{ dossier_sinistre.aliment.carte_active }}</b></span>
+              </div>
+            </div>
+              <div class="col-sm-3 text-right">
+              <div class="form-group">
+                <label>{{_('Date_survenance')}}:</label>
+                <input class="form-control0" type="date" name="date_survenance" id="date_survenance" value="{{ dossier_sinistre.date_survenance|date:'Y-m-d' }}" max="{{ today|date:'Y-m-d' }}" required>
+              </div>
+            </div>
+          </div>
+
+          <hr>
+
+          <div class="row col-sm-12">
+            <div class="col-sm-4">
+              <div class="form-group">
+                <label>{{_('Pharmacie')}}:</label><br/>
+                  <select class="form-control" name="pharmacie" id="pharmacie" required style="width:100%;">
+                    <option value="">{{_('Choisir')}}</option>
+                    {% for pharmacie in pharmacies %}
+                    <option value="{{pharmacie.id}}">{{pharmacie.name}}</option>
+                    {% endfor %}
+                  </select>
+              </div>
+            </div>
+            <div class="col-sm-4">
+              <div class="form-group">
+                <label>{{_('Medicament')}}:</label><br/>
+                  <select class="form-control col-sm-12" name="medicament_id" id="medicament_id" required style="width:100%;">
+                    <option value="">{{_('Choisir')}}</option>
+                    {% for medicament in medicaments %}
+                    <option value="{{medicament.id}}">{{medicament.libelle}}</option>
+                    {% endfor %}
+                  </select>
+              </div>
+            </div>
+            <div class="col-sm-1">
+              <div class="form-group">
+                <label>{{_('Quantite')}}:</label><br/>
+                <input min="1" name="quantite" id="quantite" class="form-control money_field_gestionnaire" value="1" required>
+              </div>
+            </div>
+            <div class="col-sm-2">
+              <div class="form-group">
+                <label>{{_('Prix_unitaire')}}:</label><br/>
+                <input name="prix_unitaire" id="prix_unitaire" class="form-control money_field_gestionnaire" required>
+              </div>
+            </div>
+            <div class="col-sm-1">
+              <div class="form-group">
+                  <label>&nbsp;</label><br/>
+                  <button type="button" class="btn o-bg-primary" id="btn_save_medicament_gestionnaire">{{_('Ajouter')}}</button>
+              </div>
+            </div>
+          </div>
+        </form>
+
+          <div class="row">
+              <div class="card-body">
+                <div id="example_wrapper" class="dataTables_wrapper dt-bootstrap4">
+                  <div class="row">
+                    <div class="col-12 col-md-12 col-sm-12 ">
+                        <div class="table-responsive">
+                          <table class="table table-bordered table-striped dataTable_ dtr-inline" id="table_medicaments_gestionnaire" style="width: 100%;" data-orderby="0">
+                            <thead>
+                              <tr>
+                                <th scope="col">{{_('Medicament')}}</th>
+                                <th scope="col">{{_('Taux_couverture')}}</th>
+                                <th scope="col">{{_('Qte')}}</th>
+                                <th scope="col">{{_('Prix_unitaire')}}</th>
+                                <th scope="col">{{_('Prix_total')}}</th>
+                                <th scope="col">{{_('Part_assureur')}}</th>
+                                <th scope="col">{{_('Depassement')}}</th>
+                                <th scope="col">{{_('Part_assure')}}</th>
+                                <th scope="col">{{_('Action')}}</th>
+                              </tr>
+                            </thead>
+                            <tbody>
+                                {% for medicament in liste_medicaments_in_session %}
+                                <tr>
+                                    <td>{{medicament.libelle}}</td>
+                                    <th scope="col" style="text-align:right;">{{medicament.taux_couverture|money_field}}%</th>
+                                    <th scope="col" style="text-align:right;">{{medicament.qte_servie|money_field}}</th>
+                                    <th scope="col" style="text-align:right;">{{medicament.prix_unitaire|money_field}}</th>
+                                    <th scope="col" style="text-align:right;">{{medicament.prix_total|money_field}}</th>
+                                    <th scope="col" style="text-align:right;">{{medicament.part_assureur|money_field}}</th>
+                                    <th scope="col" style="text-align:right;">{{medicament.depassement|money_field}}</th>
+                                    <th scope="col" style="text-align:right;">{{medicament.part_assure|money_field}}</th>
+                                    <th scope="col"><span style="cursor:pointer;color:red;" class="btn btn-sm btn-default btnSupprimerLigneMedicamentGestionnaire" data-href="{% url 'remove_medicament_gestionnaire' medicament.medicament_id %}"><i class="fa fa-times" style="font-size:12px;"></i> {{_('Supprimer')}}</span></th>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+          </div>
+
+        </div>
+        <div class="modal-footer  d-flex justify-content-between">
+          <button type="button" class="btn btn-default closeModal" data-dismiss="modal">{{_('Retour')}}</button>
+          <button type="button" class="btn o-bg-primary" id="btn_save_sinistre_medicament_gestionnaire" data-href="{% url 'add_sinistre_medicament_gestionnaire' dossier_sinistre.id %}">{{_('Valider')}}</button>
+        </div>
+    </div>
+  </div>
+</div>
+<script>
+$(document).ready(function() {
+    if (typeof $.fn.select2 === 'function') {
+        $('#medicament_id').select2();
+        $('#pharmacie').select2();
+
+        Inputmask("currency", {
+            prefix: "",
+            groupSeparator: " ",//désactiver pour
+            alias: "numeric",
+            digits: 0,// nombre de caractère après la virgule
+            onKeyDown: function(event) {
+                var key = event.keyCode || event.charCode;
+
+                // Empêcher la saisie du signe négatif
+                if (key === 189 || key === 109) { // Les codes 189 et 109 correspondent au signe moins (-)
+                    event.preventDefault();
+                    return false;
+                }
+            }	
+        }).mask('.money_field_gestionnaire');
+
+    }
+});
+</script>

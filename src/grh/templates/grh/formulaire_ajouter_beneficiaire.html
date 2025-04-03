@@ -1,0 +1,245 @@
+{% extends "grh/layouts/base.html" %}
+{% load static %}
+{% block title %}CRÉER NOUVEAU BÉNÉFICIAIRE{% endblock %}
+
+{% block content %}
+
+    <style>
+        #title {
+            color: #B7482B;
+        }
+        #link {
+            color: #0000FF;
+        }
+        #status {
+            padding: 5px;
+            border-radius: 5px;
+        }
+        #photo{
+            width:100%;
+            padding:7px;
+            border:0.5px lightgrey solid;
+            border-radius:10px;
+        }
+    </style>
+
+    <div class="intro-y flex items-start pt-5">
+        <div class="w-full flex flex-col lg:flex-row items-center">
+            <a href="{% url 'grh.beneficiaire_overview' police.id beneficiaire.id %}">
+                <button class="btn btn-primary-soft flex items-center w-30 pd-5">
+                    <i data-feather="corner-up-left" class="report-box__icon text-primary mr-2"></i>
+                    RETOUR
+                </button>
+            </a>
+        </div>
+    </div>
+
+    <div class="intro-y col-span-12 md:col-span-12 lg:col-span-12 mt-8">
+        <div class="box">
+            <div class="flex items-start px-5 pt-5">
+                <div class="w-full flex flex-col lg:flex-row items-center">
+                    <h1 class="text-xl lg:text-lg font-medium mb-3 mr-5" id="title">
+                        ADHÉRENT DE LA FAMILLE
+                    </h1>
+                </div>
+            </div>
+            <div class="text-center p-5 border-t border-slate-200/60 dark:border-darkmode-400">
+                <div class="intro-y col-span-12 overflow-auto lg:overflow-visible">
+                    <table class="table table-report -mt-2">
+                        <thead>
+                            <tr>
+                                <th class="whitespace-nowrap">N° Carte</th>
+                                <th class="whitespace-nowrap">Prénom</th>
+                                <th class="whitespace-nowrap">Nom</th>
+                                <th class="whitespace-nowrap">N° police</th>
+                                <th class="whitespace-nowrap">Client</th>
+                                <th class="whitespace-nowrap">Statut</th>
+                                <th class="whitespace-nowrap">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="intro-x">
+                                <td class="w-auto">{{ beneficiaire.carte_active.numero|default_if_none:"" }}</td>
+                                <td class="w-auto">{{ beneficiaire.prenoms|default_if_none:"" }}</td>
+                                <td class="w-auto">{{ beneficiaire.nom|default_if_none:"" }}</td>
+                                <td class="w-auto"><a href="{% url 'grh.police_overview' police.id %}" id="link">{{ police.numero|default_if_none:"" }}</a></td>
+                                <td class="w-auto">{{ police.client.nom|default_if_none:"" }}</td>
+                                <td class="w-auto">
+                                    <div class="flex items justify-center" id="status" 
+                                    style="background-color: {% if beneficiaire.statut == 'ACTIF' %}#007500;color:#FFFFFF;font-weight: bold;
+                                    {% elif beneficiaire.statut == 'INACTIF' %}#DC3545;color:#FFFFFF;font-weight: bold;
+                                    {% endif %}">
+                                        {{ beneficiaire.statut|default_if_none:"" }}
+                                    </div>
+                                </td>
+                                <td class="table-report__action w-auto">
+                                    <div class="flex justify-center items-center">
+                                        <a href="{% url 'grh.beneficiaire_overview' police.id beneficiaire.id %}"><i data-feather="eye" id="title"></i></a>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="flex justify-center items-center">
+        <div class="w-full md:w-3/4 lg:w-2/3 mt-5 p-10">
+            <div class="box p-3">
+                <div class="w-full flex flex-col lg:flex-row items-center justify-center">
+                    <h1 class="text-xl lg:text-lg font-medium p-5" id="title">
+                        AJOUTER UN MEMBRE À LA FAMILLE
+                    </h1>
+                </div>
+                <form method="post" enctype="multipart/form-data" action="{% url 'grh.formulaire_ajouter_beneficiaire' police.id beneficiaire.id %}" class="preview">
+                    {% csrf_token %}
+                    <div class="mt-1">
+                        <div class="w-full flex flex-col lg:flex-row border-b border-gray-500">
+                            <h1 class="text-lg lg:text-base font-normal p-5" id="title">
+                                IDENTITÉ
+                            </h1>
+                        </div>
+                        <div class="flex">
+                            <div class="w-1/2 p-2 mt-2 border-r border-gray-500">
+                                <div class="mt-0">
+                                    <label for="nom" class="form-label font-bold" placeholder="Max 40 caractéres">Nom <small class="ml-2" id="title">*</small></label>
+                                    <input id="nom" name="nom" type="text" class="form-control w-full" required>
+                                </div>
+                                <div class="mt-6">
+                                    <label for="date_naissance" class="form-label font-bold">Date de naissance <small class="ml-2" id="title">*</small></label>
+                                    <input class="form-control mt-2 w-full" type="date" id="date_naissance" name="date_naissance" required>
+                                </div>
+                                <div class="mt-8">
+                                    <label for="pays_naissance" class="form-label font-bold pr-10">Pays de naissance <small class="ml-2" id="title">*</small></label>
+                                    <select class="form-control" name="pays_naissance" required>
+                                        <option value="">Choisir</option>
+                                        {% for pays in pays %}
+                                            <option value="{{ pays.id }}">{{ pays.nom }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="mt-8">
+                                    <label class="font-bold" for="photo">Photo</label>
+                                    <br>
+                                    <input class="mt-2" type="file" id="photo" name="photo" />
+                                </div>
+                            </div>
+                            <div class="w-1/2 p-2 mt-2 border-r border-gray-500">
+                                <div class="mt-0">
+                                    <label for="prenoms" class="form-label font-bold" placeholder="Max 40 caractéres">Prénoms <small class="ml-2" id="title">*</small></label>
+                                    <input id="prenoms" name="prenoms" type="text" class="form-control w-full" required>
+                                </div>
+                                <div class="mt-8">
+                                    <label for="civilite" class="form-label font-bold pr-10 flex">Civilité <small class="ml-2" id="title">*</small></label>
+                                    <select class="form-control" required name="civilite">
+                                        <option value="">Choisir</option>
+                                        {% for civilite in civilites %}
+                                            <option value="{{ civilite.code }}">{{ civilite.name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="mt-8">
+                                    <label for="genre" class="form-label font-bold pr-10">Sexe <small class="ml-2" id="title">*</small></label>
+                                    <select class="form-control" name="genre" id="genre" required>
+                                        <option value="">Choisir</option>
+                                        <option value="{{ M }}">Masculin ({{ M }})</option>
+                                        <option value="{{ F }}">Féminin ({{ F }})</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="w-full flex flex-col lg:flex-row border-b border-gray-500">
+                            <h1 class="text-lg lg:text-base font-normal p-5" id="title">
+                                FORMULE
+                            </h1>
+                        </div>
+                        <div class="flex">
+                            <div class="w-1/2 p-2 mt-2 border-r border-gray-500">
+                                <div class="mt-0">
+                                    <label for="formule" class="form-label font-bold pr-10">Formule <small class="ml-2" id="title">*</small></label>
+                                    <select class="form-control" name="formule" required>
+                                        <option value="">Choisir</option>
+                                        {% for formule in formules %}
+                                            <option value="{{ formule.id }}">{{ formule.libelle }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="w-1/2 p-2 mt-2 border-r border-gray-500"></div>
+                        </div>
+
+                        <div class="w-full flex flex-col lg:flex-row border-b border-gray-500">
+                            <h1 class="text-lg lg:text-base font-normal p-5" id="title">
+                                ADHÉRANT PRINCIPAL
+                            </h1>
+                        </div>
+                        <div class="flex">
+                            <div class="w-1/2 p-2 mt-2 border-r border-gray-500">
+                                <div class="mt-0">
+                                    <label for="qualite_beneficiaire" class="form-label font-bold pr-10">Qualité bénéficiaire <small class="ml-2" id="title">*</small></label>
+                                    <select class="form-control" name="qualite_beneficiaire" required>
+                                        <option value="">Choisir</option>
+                                        {% for q in qualites %}
+                                            <option value="{{ q }}">{{ q }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="w-1/2 p-2 mt-2 border-r border-gray-500">
+                                <div class="mt-0">
+                                    <label for="adherent" class="form-label font-bold" placeholder="Max 40 caractéres">Adhérent principal <small class="ml-2" id="title">*</small></label>
+                                    <input id="adherent" name="adherent" type="text" class="form-control w-full" value="{{ beneficiaire }}" readonly required>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="w-full flex flex-col lg:flex-row border-b border-gray-500">
+                            <h1 class="text-lg lg:text-base font-normal p-5" id="title">
+                                COORDONNÉES
+                            </h1>
+                        </div>
+                        <div class="flex">
+                            <div class="w-1/2 p-2 mt-2 border-r border-gray-500">
+                                <div class="mt-0">
+                                    <label for="email" class="form-label font-bold">Email</label>
+                                    <input id="email" name="email" type="email" class="form-control" placeholder="example@gmail.com">
+                                </div>
+                                <div class="mt-8">
+                                    <label for="ville" class="form-label font-bold">Ville</label>
+                                    <input id="ville" name="ville" type="text" class="form-control w-full">
+                                </div>
+                            </div>
+                            <div class="w-1/2 p-2 mt-2 border-r border-gray-500">
+                                <div class="mt-0">
+                                    <label for="adresse" class="form-label font-bold">Adresse</label>
+                                    <input id="adresse" name="adresse" type="text" class="form-control w-full">
+                                </div>
+                                <div class="mt-8">
+                                    <label for="code_postal" class="form-label font-bold">Code postal</label>
+                                    <input id="code_postal" name="code_postal" type="text" class="form-control w-full">
+                                </div>
+                            </div>
+                        </div>
+                        {% comment %}
+                        <div class="flex">
+                            <div class="mt-8 w-full">
+                                <label for="commentaire" class="form-label font-bold">Commentaire</label>
+                                <textarea id="commentaire" class="form-control" name="commentaire" placeholder="Votre commentaire ici.." minlength="10"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                     {% endcomment %}
+                    <div class="mt-10 text-center">
+                        <button type="submit" class="btn btn-primary w-48 mr-8">
+                            AJOUTER
+                            <i data-feather="user-plus" class="ml-3 mb-3"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

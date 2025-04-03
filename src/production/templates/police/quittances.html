@@ -1,0 +1,351 @@
+{% extends 'police/menu_police.html' %}
+{% load i18n %}
+{% load my_filters %}
+{% block extrastyle %} {% endblock %}
+<style>
+    .fnt-10{
+        font-size: 10px !important;
+    }
+    .fnt-15{
+        font-size: 15px !important;
+    }
+    .fnt-20{
+        font-size: 20px !important;
+    }
+    .fnt-30{
+        font-size: 30px !important;
+    }
+</style>
+{% block content_title %}
+    <div class="row mb-2">
+          <div class="col-sm-6">
+                <h4 class="m-0 f-bold">POLICE : N° {{ police.numero|default_if_none:"" }}</h4>
+          </div>
+          <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a href="{% url 'admin:index' %}">{% trans 'Home' %}</a></li>
+                    <li class="breadcrumb-item">Production</li>
+                    <li class="breadcrumb-item"><a href="{% url 'clients' %}">Clients</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'police.details' police.id %}">Police</a></li>
+                    <li class="breadcrumb-item active">Quittances</li>
+                </ol>
+          </div>
+    </div>
+{% endblock %}
+{% block content %}
+<div class="col-md-12">
+    <div class="card">
+      <div class="button-link mb-2">
+          {% if assureur_police.compagnie.has_taux_com %}
+              <span id="btnOpenDialogExporterQuittance" class="btn btn-sm btn-primary pull-right ml-2 mb-2" data-toggle="modal" data-href="{% url 'exporter_quittance' police.client.id police.id %}"><i class="fa fa-cloud-upload"></i> {{_("Exporter quittance")}}</span>
+              {% if request.user.is_production %}
+                  <span id="btnOpenDialogAddLettrage" class="btn btn-sm btn-primary pull-right ml-2 mb-2" data-toggle="modal" data-href="{% url 'add_lettrage' police.id %}"><i class="fas fa-money-bill"></i> {{_("Lettrage du compte")}}</span>
+                  <span id="btnOpenDialogAddReglement" class="btn btn-sm btn-primary pull-right ml-2 mb-2" data-toggle="modal" data-href="{% url 'add_reglement' police.id %}"><i class="fas fa-money-bill"></i> {{_("Faire un Règlement")}}</span>
+                  <span id="btnOpenDialogAddQuittance" class="btn btn-sm btn-primary pull-right ml-2 mb-2" data-toggle="modal" data-href="{% url 'add_quittance' police.id %}"><i class="fas fa-plus-circle"></i> {{_("Créer une quittance")}}</span>
+              {% endif %}
+          {% else %}
+              <span class="btn btn-info pull-right"><a style="color:white;" target="_blank" href="../../../configurations/compagnie/">{{_("Veuillez parametrer les taux de com sur la compagnie")}}</a></span>
+          {% endif %}
+      </div>
+  </div>
+</div>
+<div class="col-md-12 mt-30">
+    <div class="card">
+      <ul class="nav nav-tabs" id="myTab" role="tablist">
+          <li class="nav-item"><a class="nav-link active" id="toutes_les_quittances-tab" data-toggle="tab" href="#toutes_les_quittances" role="tab" aria-controls="toutes_les_quittances" aria-selected="true">{{_("TOUTES LES QUITTANCES")}}</a></li>
+          <li class="nav-item"><a class="nav-link" id="quittance_payee-tab" data-toggle="tab" href="#quittance_payee" role="tab" aria-controls="quittance_payee" aria-selected="false">{{_("PAYEES")}}</a></li>
+          <li class="nav-item"><a class="nav-link" id="quittance_impayee-tab" data-toggle="tab" href="#quittance_impayee" role="tab" aria-controls="quittance_impayee" aria-selected="false">{{_("IMPAYEES")}}</a></li>
+          <li class="nav-item"><a class="nav-link" id="quittances_honoraires-tab" data-toggle="tab" href="#quittances_honoraires" role="tab" aria-controls="quittances_honoraires" aria-selected="false">{{_("HONORAIRES")}}</a></li>
+          <li class="nav-item"><a class="nav-link" id="quittances_emissions-tab" data-toggle="tab" href="#quittances_emissions" role="tab" aria-controls="quittances_emissions" aria-selected="false">{{_("PRIMES")}}</a></li>
+          <li class="nav-item"><a class="nav-link" id="quittances_annulees-tab" data-toggle="tab" href="#quittances_annulees" role="tab" aria-controls="quittances_annulees" aria-selected="false">{{_("ANNULEES")}}</a></li>
+      </ul>
+      <div class="card-body">
+        <div class="tab-content" id="myTabContent">
+            <div class="tab-pane fade mt-3 show active" id="toutes_les_quittances" role="tabpanel" aria-labelledby="toutes_les_quittances-tab">
+                <div class="row">
+                  <div class="col-12 col-md-12 col-sm-12 table-responsive">
+                      <table class="table table-bordered table-striped dataTable dtr-inline" id="table_quittances">
+                        <thead>
+                          <tr>
+                            <th>#</th>
+                            <th scope="col">{{_("N° Quittance")}}</th>
+                            <th scope="col">{{_('Nature')}}</th>
+                            <th scope="col">{{_('Type')}}</th>
+                            <th scope="col">{{_("Date d'émission")}}</th>
+                            <th scope="col">{{_("Début période")}}</th>
+                            <th scope="col">{{_("Montant HT")}}</th>
+                            <th scope="col">{{_("Montant TTC")}}</th>
+                            <!--th scope="col">Mt cie</th-->
+                            <th scope="col">{{_("Com Courtage")}}</th>
+                            <th scope="col">{{_("Retro Apporteur")}}</th>
+                            <th scope="col">{{_('Solde')}}</th>
+                            <th scope="col">{{_('Devise')}}</th>
+                            <th scope="col">{{_('Situation')}}</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {% for quittance in quittances %}
+                            <tr>
+                              <td><a class="badge badge-info btnOpenDialogDetailQuittance" data-href="{% url 'details_quittance' quittance.id %}"><i class="fa fa-eye"></i></a></td>
+                              <td>{{ quittance.numero|default_if_none:"" }}</td>
+                              <td>{{ quittance.nature_quittance|default_if_none:"" }}</td>
+                              <td>{{ quittance.type_quittance|default_if_none:"" }}</td>
+                              <td>{{ quittance.date_emission|date:'d/m/Y'|default_if_none:"" }}</td>
+                              <td>{{ quittance.date_debut|date:'d/m/Y'|default_if_none:"" }}</td>
+                              <td class="text-right">{{ quittance.prime_ht|money_field }}</td>
+                              <td class="text-right">{{ quittance.prime_ttc|money_field }}</td>
+                              <!--td class="text-right">{{ quittance.montant_cie|money_field }}</td-->
+                              <td class="text-right">{{ quittance.commission_courtage|money_field }}</td>
+                              <td class="text-right">{{ quittance.commission_intermediaires|money_field }}</td>
+                              <td class="text-right">{{ quittance.solde|money_field }}</td>
+                              <td>{{ quittance.police.client.pays.devise.code|default_if_none:"" }}</td>
+                              <td>{% if quittance.statut == 'PAYE' %} {{_('SOLDEE')}} {% else %}{{ quittance.statut|default_if_none:"" }}{% endif %}</td>
+                            </tr>
+                          {% endfor %}
+                        </tbody>
+                      </table>
+                  </div>
+                </div>
+            </div>
+
+            <div class="tab-pane fade mt-3" id="quittance_payee" role="tabpanel" aria-labelledby="quittance_payee-tab">
+                <div class="row">
+                    <div class="col-12 col-md-12 col-sm-12 table-responsive">
+                        <table class="table table-bordered table-striped dataTable dtr-inline" id="table_quittance_payee">
+                          <thead>
+                            <tr>
+                              <th>#</th>
+                              <th scope="col">{{_("N° Quittance")}}</th>
+                              <th scope="col">{{_('Nature')}}</th>
+                              <th scope="col">{{_('Type')}}</th>
+                              <th scope="col">{{_("Date d'émission")}}</th>
+                              <th scope="col">{{_("Début période")}}</th>
+                              <th scope="col">{{_("Montant HT")}}</th>
+                              <th scope="col">{{_("Montant TTC")}}</th>
+                              <!--th scope="col">Mt cie</th-->
+                              <th scope="col">{{_("Com Courtage")}}</th>
+                              <th scope="col">{{_("Retro Apporteur")}}</th>
+                              <th scope="col">{{_('Solde')}}</th>
+                              <th scope="col">{{_('Devise')}}</th>
+                              <th scope="col">{{_('Situation')}}</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {% for quittance_paie in quittances_payees %}
+                              <tr>
+                                <td><a class="badge badge-info btnOpenDialogDetailQuittance" data-href="{% url 'details_quittance' quittance_paie.id %}"><i class="fa fa-eye"></i></a></td>
+                                <td>{{ quittance_paie.numero|default_if_none:"" }}</td>
+                                <td>{{ quittance_paie.nature_quittance|default_if_none:"" }}</td>
+                                <td>{{ quittance_paie.type_quittance|default_if_none:"" }}</td>
+                                <td>{{ quittance_paie.date_emission|date:'d/m/Y'|default_if_none:"" }}</td>
+                                <td>{{ quittance_paie.date_debut|date:'d/m/Y'|default_if_none:"" }}</td>
+                                <td class="text-right">{{ quittance_paie.prime_ht|money_field }}</td>
+                                <td class="text-right">{{ quittance_paie.prime_ttc|money_field }}</td>
+                                <!--td class="text-right">{{ quittance_paie.montant_cie|money_field }}</td-->
+                                <td class="text-right">{{ quittance_paie.commission_courtage|money_field }}</td>
+                                <td class="text-right">{{ quittance_paie.commission_intermediaires|money_field }}</td>
+                                <td class="text-right">{{ quittance_paie.solde|money_field }}</td>
+                                <td>{{ quittance_paie.police.client.pays.devise.code|default_if_none:"" }}</td>
+                                <td>{% if quittance_paie.statut == 'PAYE' %} {{_('SOLDEE')}} {% else %}{{ quittance_paie.statut|default_if_none:"" }}{% endif %}</td>
+                              </tr>
+                            {% endfor %}
+                          </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-pane fade mt-3" id="quittance_impayee" role="tabpanel" aria-labelledby="quittance_impayee-tab">
+                <div class="row">
+                    <div class="col-12 col-md-12 col-sm-12 table-responsive">
+                        <table class="table table-bordered table-striped dataTable dtr-inline" id="table_quittances_impayees">
+                          <thead>
+                            <tr>
+                              <th>#</th>
+                              <th scope="col">{{_("N° Quittance")}}</th>
+                              <th scope="col">{{_('Nature')}}</th>
+                              <th scope="col">{{_('Type')}}</th>
+                              <th scope="col">{{_("Date d'émission")}}</th>
+                              <th scope="col">{{_("Début période")}}</th>
+                              <th scope="col">{{_("Montant HT")}}</th>
+                              <th scope="col">{{_("Montant TTC")}}</th>
+                              <!--th scope="col">Mt cie</th-->
+                              <th scope="col">{{_("Com Courtage")}}</th>
+                              <th scope="col">{{_("Retro Apporteur")}}</th>
+                              <th scope="col">{{_('Solde')}}</th>
+                              <th scope="col">{{_('Devise')}}</th>
+                              <th scope="col">{{_('Situation')}}</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {% for quittance_imp in quittances_impayees %}
+                              <tr>
+                                <td><a class="badge badge-info btnOpenDialogDetailQuittance" data-href="{% url 'details_quittance' quittance_imp.id %}"><i class="fa fa-eye"></i></a></td>
+                                <td>{{ quittance_imp.numero|default_if_none:"" }}</td>
+                                <td>{{ quittance_imp.nature_quittance|default_if_none:"" }}</td>
+                                <td>{{ quittance_imp.type_quittance|default_if_none:"" }}</td>
+                                <td>{{ quittance_imp.date_emission|date:'d/m/Y'|default_if_none:"" }}</td>
+                                <td>{{ quittance_imp.date_debut|date:'d/m/Y'|default_if_none:"" }}</td>
+                                <td class="text-right">{{ quittance_imp.prime_ht|money_field }}</td>
+                                <td class="text-right">{{ quittance_imp.prime_ttc|money_field }}</td>
+                                <!--td class="text-right">{{ quittance_imp.montant_cie|money_field }}</td-->
+                                <td class="text-right">{{ quittance_imp.commission_courtage|money_field }}</td>
+                                <td class="text-right">{{ quittance_imp.commission_intermediaires|money_field }}</td>
+                                <td class="text-right">{{ quittance_imp.solde|money_field }}</td>
+                                <td>{{ quittance_imp.police.client.pays.devise.code|default_if_none:"" }}</td>
+                                <td>{% if quittance_imp.statut == 'PAYE' %} {{_('SOLDEE')}} {% else %}{{ quittance_imp.statut|default_if_none:"" }}{% endif %}</td>
+                              </tr>
+                            {% endfor %}
+                          </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="tab-pane fade mt-3" id="quittances_honoraires" role="tabpanel" aria-labelledby="quittances_honoraires-tab">
+                <div class="row">
+                  <div class="col-12 col-md-12 col-sm-12 table-responsive">
+                      <table class="table table-bordered table-striped dataTable dtr-inline" id="table_honoraires">
+                          <thead>
+                            <tr>
+                              <th>#</th>
+                              <th scope="col">{{_("N° Quittance")}}</th>
+                              <th scope="col">{{_('Nature')}}</th>
+                              <th scope="col">{{_('Type')}}</th>
+                              <th scope="col">{{_("Date d'émission")}}</th>
+                              <th scope="col">{{_("Début période")}}</th>
+                              <th scope="col">{{_("Montant HT")}}</th>
+                              <th scope="col">{{_("Montant TTC")}}</th>
+                              <th scope="col">{{_("Com Courtage")}}</th>
+                              <th scope="col">{{_('Solde')}}</th>
+                              <th scope="col">{{_('Devise')}}</th>
+                              <th scope="col">{{_('Situation')}}</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {% for honoraire in quittances_honoraires %}
+                              <tr>
+                                <td><a class="badge badge-info btnOpenDialogDetailQuittance" data-href="{% url 'details_quittance' honoraire.id %}"><i class="fa fa-eye"></i></a></td>
+                                <td>{{ honoraire.numero|default_if_none:"" }}</td>
+                                <td>{{ honoraire.nature_quittance|default_if_none:"" }}</td>
+                                <td>{{ honoraire.type_quittance|default_if_none:"" }}</td>
+                                <td>{{ honoraire.date_emission|date:'d/m/Y'|default_if_none:"" }}</td>
+                                <td>{{ honoraire.date_debut|date:'d/m/Y'|default_if_none:"" }}</td>
+                                <td class="text-right">{{ honoraire.prime_ht|money_field }}</td>
+                                <td class="text-right">{{ honoraire.prime_ttc|money_field }}</td>
+                                <td class="text-right">{{ honoraire.commission_courtage|money_field }}</td>
+                                <td class="text-right">{{ honoraire.solde|money_field }}</td>
+                                <td>{{ honoraire.police.client.pays.devise.code|default_if_none:"" }}</td>
+                                <td>{% if honoraire.statut == 'PAYE' %} {{_('SOLDEE')}} {% else %}{{ honoraire.statut|default_if_none:"" }}{% endif %}</td>
+                              </tr>
+                            {% endfor %}
+                          </tbody>
+                      </table>
+                  </div>
+                </div>
+            </div>
+
+            <div class="tab-pane fade mt-3" id="quittances_emissions" role="tabpanel" aria-labelledby="quittances_emissions-tab">
+                <div class="row">
+                  <div class="col-12 col-md-12 col-sm-12 table-responsive">
+                      <table class="table table-bordered table-striped dataTable dtr-inline" id="table_emissions">
+                          <thead>
+                            <tr>
+                              <th>#</th>
+                              <th scope="col">{{_("N° Quittance")}}</th>
+                              <th scope="col">{{_('Nature')}}</th>
+                              <th scope="col">{{_('Type')}}</th>
+                              <th scope="col">{{_("Date d'émission")}}</th>
+                              <th scope="col">{{_("Début période")}}</th>
+                              <th scope="col">{{_("Montant HT")}}</th>
+                              <th scope="col">{{_("Montant TTC")}}</th>
+                              <th scope="col">{{_("Com Courtage")}}</th>
+                              <th scope="col">{{_('Solde')}}</th>
+                              <th scope="col">{{_('Devise')}}</th>
+                              <th scope="col">{{_('Situation')}}</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {% for emission in quittances_emissions %}
+                              <tr>
+                                <td><a class="badge badge-info btnOpenDialogDetailQuittance" data-href="{% url 'details_quittance' emission.id %}"><i class="fa fa-eye"></i></a></td>
+                                <td>{{ emission.numero|default_if_none:"" }}</td>
+                                <td>{{ emission.nature_quittance|default_if_none:"" }}</td>
+                                <td>{{ emission.type_quittance|default_if_none:"" }}</td>
+                                <td>{{ emission.date_emission|date:'d/m/Y'|default_if_none:"" }}</td>
+                                <td>{{ emission.date_debut|date:'d/m/Y'|default_if_none:"" }}</td>
+                                <td class="text-right">{{ emission.prime_ht|money_field }}</td>
+                                <td class="text-right">{{ emission.prime_ttc|money_field }}</td>
+                                <td class="text-right">{{ emission.commission_courtage|money_field }}</td>
+                                <td class="text-right">{{ emission.solde|money_field }}</td>
+                                <td>{{ emission.police.client.pays.devise.code|default_if_none:"" }}</td>
+                                <td>{% if emission.statut == 'PAYE' %} {{_('SOLDEE')}} {% else %}{{ emission.statut|default_if_none:"" }}{% endif %}</td>
+                              </tr>
+                            {% endfor %}
+                          </tbody>
+                      </table>
+                  </div>
+                </div>
+            </div>
+
+            <div class="tab-pane fade mt-3" id="quittances_annulees" role="tabpanel" aria-labelledby="quittances_annulees-tab">
+                <div class="row">
+                  <div class="col-12 col-md-12 col-sm-12 table-responsive">
+                      <table class="table table-bordered table-striped dataTable dtr-inline" id="table_quittances_annulees">
+                        <thead>
+                          <tr>
+                            <th>#</th>
+                            <th scope="col">{{_("N° Quittance")}}</th>
+                            <th scope="col">{{_("Nature")}}</th>
+                            <th scope="col">{{_("Type")}}</th>
+                            <th scope="col">{{_("Date d'émission")}}</th>
+                            <th scope="col">{{_("Début période")}}</th>
+                            <th scope="col">{{_("Montant HT")}}</th>
+                            <th scope="col">{{_("Montant TTC")}}</th>
+                            <th scope="col">{{_("Com Courtage")}}</th>
+                            <th scope="col">{{_("Retro Apporteur")}}</th>
+                            <th scope="col">{{_('Solde')}}</th>
+                            <th scope="col">{{_('Devise')}}</th>
+                            <th scope="col">{{_('Situation')}}</th>
+                            <th scope="col">{{_('Statut')}}</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {% for qa in quittances_annulees %}
+                            <tr>
+                              <td><a class="badge badge-info btnOpenDialogDetailQuittance" data-href="{% url 'details_quittance' qa.id %}"><i class="fa fa-eye"></i></a></td>
+                              <td>{{ qa.numero|default_if_none:"" }}</td>
+                              <td>{{ qa.nature_quittance|default_if_none:"" }}</td>
+                              <td>{{ qa.type_quittance|default_if_none:"" }}</td>
+                              <td>{{ qa.date_emission|date:'d/m/Y'|default_if_none:"" }}</td>
+                              <td>{{ qa.date_debut|date:'d/m/Y'|default_if_none:"" }}</td>
+                              <td class="text-right">{{ qa.prime_ht|money_field }}</td>
+                              <td class="text-right">{{ qa.prime_ttc|money_field }}</td>
+                              <td class="text-right">{{ qa.commission_courtage|money_field }}</td>
+                              <td class="text-right">{{ qa.commission_intermediaires|money_field }}</td>
+                              <td class="text-right">{{ qa.solde|money_field }}</td>
+                              <td>{{ qa.police.client.pays.devise.code|default_if_none:"" }}</td>
+                              <td>{% if qa.statut == 'PAYE' %} {{_('SOLDEE')}} {% else %}{{ qa.statut|default_if_none:"" }}{% endif %}</td>
+                              <td><span class="badge badge-danger">{{ qa.statut_validite|default_if_none:"" }}</span></td>
+                            </tr>
+                          {% endfor %}
+                        </tbody>
+                      </table>
+                  </div>
+                </div>
+            </div>
+        </div>
+      </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extrajs %}
+<script>
+    $(document).ready(function() {
+        $('#quittance').removeClass('o-bg-primary');
+        $('#quittance').addClass('o-active');
+    } );
+</script>
+{% endblock %}

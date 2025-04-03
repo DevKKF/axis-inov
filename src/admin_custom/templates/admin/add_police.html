@@ -1,0 +1,37 @@
+PLUGIN URL: Inputmask by RobinHerbots
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.inputmask/3.3.4/jquery.inputmask.bundle.min.js"></script>
+<script>
+	$(document).ready(function () {
+		
+		//appliquer le mask de saisie sur les champs montant
+		Inputmask("currency", {
+			prefix: "",
+			groupSeparator: " ",
+			alias: "numeric",
+			digits: 0, //2 nombre de caractère après la virgule
+			onKeyDown: function(event) {
+				var key = event.keyCode || event.charCode;
+
+				// Empêcher la saisie du signe négatif
+				if (key === 189 || key === 109) { // Les codes 189 et 109 correspondent au signe moins (-)
+					event.preventDefault();
+					return false;
+				}
+			}
+		}).mask('.money_field');
+		
+		
+		/*
+		Inputmask.extendAliases({
+			'WARY': {
+				alias: "currency",
+			}
+		});
+		
+		jQuery('.money_field').inputmask("WARY")
+		*/
+	});
+</script>
+<input type="text" class="money_field"/>

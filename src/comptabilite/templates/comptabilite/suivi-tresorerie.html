@@ -1,0 +1,314 @@
+{% extends "admin/base_site.html" %}
+{% load my_filters %}
+{% block extrastyle %}
+<style>
+    div.dataTables_processing>div:last-child>div {
+        background: rgb(187 65 38) !important;
+    }
+</style>
+{% endblock %}
+{% block content %}
+
+<div class="col-12 col-md-12 order-2 order-md-1">
+
+    <div class="row">
+        <div class="col-sm-4">
+            <div class="card">
+                <div class="card-header o-bg-primary">
+                    <h3 class="card-title"><b>SINISTRES RÉGLÉS ET RÉCLAMÉS <br> PAR RAPPORT A LA TRÉSORERIE</b></h3>
+                    <div class="card-tools">
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-ld-9">
+                            <canvas id="camembertcanvas"></canvas>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <div id="camembertcanvasLegend"></div>
+                    <div class="d-flex justify-content-between">
+                        <div class="">
+                            <span class="badge" style="background:{{data_camembert.couleur_global_fdr}}"> &nbsp; </span>
+                            <span>{{data_camembert.label_global_fdr}}</span>
+                        </div>
+                        <div class="">
+                            <span class="badge" style="background:{{data_camembert.couleur_global_sinistre_reclame}}"> &nbsp; </span>
+                            <span>{{data_camembert.label_global_sinistre_reclame}}</span>
+                        </div>
+                        <div class="">
+                            <span class="badge" style="background:{{data_camembert.couleur_global_sinistre_regle}}"> &nbsp; </span>
+                            <span>{{data_camembert.label_global_sinistre_regle}}</span>
+                        </div>
+                    </div>
+                    <!-- Légende du graphique de ligne -->
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-4">
+            <div class="card">
+                <div class="card-header o-bg-primary">
+                    <h3 class="card-title"><b>SUIVI <br> TRÉSORERIE</b></h3>
+                    <div class="card-tools">
+                    </div>
+                </div>
+                <div class="card-body">
+                    <canvas id="income"></canvas>
+                </div>
+                <div class="card-footer">
+                    <div id="incomeLegend"></div>
+                    <div class="d-flex justify-content-between">
+
+                        <div class="">
+                            <span class="badge" style="background:{{data_chart_bar.sum_fdr_color}}"> &nbsp; </span>
+                            <span>{{data_chart_bar.sum_fdr_label}}</span>
+                        </div>
+                        <div class="">
+                            <span class="badge" style="background:{{data_chart_bar.sum_consumption_color}}"> &nbsp; </span>
+                            <span>{{data_chart_bar.sum_consumption_label}}</span>
+                        </div>
+                        <div class="">
+                            <span class="badge" style="background:{{data_chart_bar.sum_tresorerie_color}}"> &nbsp; </span>
+                            <span>{{data_chart_bar.sum_tresorerie_label}}</span>
+                        </div>
+                    </div>
+                    <!-- Légende du graphique de ligne -->
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-4">
+            <div class="card">
+                <div class="card-header o-bg-primary">
+                    <h3 class="card-title"><b>EVOLUTION DES SINISTRES <br> RÉGLÉS AU FIL DU TEMPS</b></h3>
+                    <div class="card-tools">
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- line chart canvas element -->
+                    <canvas id="buyers"></canvas>
+                </div>
+
+                {% comment %} <div class="card-footer">
+                    <div id="buyerLegend"></div>
+                    <div class="card-tools">
+                        &nbsp; <br> &nbsp;
+
+                    </div>
+                    <!-- Légende du graphique de ligne -->
+                </div> {% endcomment %}
+            </div>
+        </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header o-bg-primary">
+          <h3 class="card-title"><b>SUIVI DE LA TRÉSORERIE</b></h3>
+          <div class="card-tools">
+          </div>
+      </div>
+
+      <div class="card-body">
+        <div id="example1_wrapper" class="dataTables_wrapper dt-bootstrap4">
+          <div class="row">
+            <div class="col-12 col-md-12 col-sm-12">
+                <table class="table table-bordered table-striped dtr-inline table_v_middle" id="suivi_tresorerie_datatable">
+                    <thead>
+                      <tr>
+                        {% comment %} <th>Nº</th> {% endcomment %}
+                        {% comment %} <th scope="col">Code du garant</th> {% endcomment %}
+                        <th scope="col" style="width: 15%;">Garant</th>
+                        <th scope="col">Fonds de roulement</th>
+                        <th scope="col">Montants ordonnancés</th>
+                        <th scope="col">Sinistres réglés par <br>OLEA non encore réclamés.</th>
+                        <th scope="col">Sinistres réclamés <br> non encore réglés par le garant.</th>
+                        <th scope="col">Trésorerie</th>
+                        <th scope="col">Niveau de dispo</th>
+                        <th scope="col">Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                        {% comment %} {% for garant in treso %}
+                        <tr>
+                            <td>{{garant.code}}</td>
+                            <td>{{garant}}</td>
+                            <td>{{garant.montant_caution|money_field}} {{ request.user.bureau.pays.devise.code }}</td>
+                            <td>{{garant.total_a_refacturer|money_field}} {{ request.user.bureau.pays.devise.code }}</td>
+                            <td>{{garant.total_refacture|money_field}} {{ request.user.bureau.pays.devise.code }}</td>
+                            <td>{{garant.tresorerie|money_field}} {{ request.user.bureau.pays.devise.code }}</td>
+                            <td>
+                                {% if garant.dispo > 75 %}
+                                <div class="progress rounded">
+                                    <div class="progress-bar progress-bar-striped progress-bar-animated bg-success" role="progressbar" style="width: {{garant.dispo}}%;" aria-valuenow="{{garant.dispo}}" aria-valuemin="0" aria-valuemax="100"><span class="p-2">{{garant.dispo}}%</span></div>
+                                </div>
+                                {% elif garant.dispo > 25 %}
+                                <div class="progress rounded">
+                                    <div class="progress-bar progress-bar-striped progress-bar-animated bg-warning" role="progressbar" style="width: {{garant.dispo}}%;" aria-valuenow="{{garant.dispo}}" aria-valuemin="0" aria-valuemax="100"><span class="p-2">{{garant.dispo}}%</span></div>
+                                </div>
+                                {% elif garant.dispo < 25 %}
+                                <div class="progress rounded">
+                                    <div class="progress-bar progress-bar-striped progress-bar-animated bg-danger" role="progressbar" style="width: {{garant.dispo}}%;" aria-valuenow="{{garant.dispo}}" aria-valuemin="0" aria-valuemax="100"><span class="p-2">{{garant.dispo}}%</span></div>
+                                </div>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <a class="badge o-bg-primary text-white" href="{% url 'detail_suivi_treso' garant.id %}" ><i class="fa fa-eye"></i> Détails</a>
+                            </td>
+                        </tr>
+                        {% endfor %} {% endcomment %}
+                    </tbody>
+                </table>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="card-footer">
+          <ul style="list-style-type: none;">
+            <li class="mb-2"><b style="color: #cf584a;">Sinistres réglés par OLEA non encore réclamés : </b> Le total des sinistres payés aux prestataires et pas encore facturés aux garants.</li>
+            <li class="mb-2"><b style="color: #cf584a;">Sinistres réclamés non encore réglés par le garant: </b> Total des factures non soldées à l'endroit des garants (qui eux doivent nous restituer rapidement ces fonds)</li>
+            <li class="mb-2"><b style="color: #cf584a;">Trésorerie : </b> Trésorerie = FDR - (Sinistre réglé par OLEA non encore réclamé + Sinistre réclamé non encore réglé par le garant)</li>
+          </ul>
+
+          NB: <i>Il peut rester 500 000 {{request.user.bureau.pays.devise.code}} à payer sur une facture de 1 000 000 {{request.user.bureau.pays.devise.code}} et c'est le restant qui est utilisé dans le calcul du << En attente de reglement >> </i>
+      </div>
+    </div>
+</div>
+
+
+{% endblock %}
+
+
+{% block extrajs %}
+<script src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/1.0.2/Chart.js'></script>
+
+<script>
+    // line chart data
+    var buyerData = {
+        labels : {{data_chart_line.months|safe}},
+        datasets : [
+        {
+            fillColor : "{{data_chart_line.couleur_remplissage_sin_regles}}",
+            strokeColor : "{{data_chart_line.stroke_color_sin_regles}}",
+            pointColor : "#fff",
+            pointStrokeColor : "{{data_chart_line.point_stroke_color_sin_regles}}",
+            data : {{data_chart_line.sin_regles_data|safe}}
+        }
+    ]
+    }
+    // get line chart canvas
+    var buyers = document.getElementById('buyers').getContext('2d');
+    // draw line chart
+    new Chart(buyers).Line(buyerData);
+
+    // pie chart data
+    var pieData = [
+        {
+            label: "{{data_camembert.label_global_fdr}}",
+            value: "{{data_camembert.valeur_global_fdr}}",
+            color: "{{data_camembert.couleur_global_fdr}}"
+        },
+        {
+            label: "{{data_camembert.label_global_sinistre_regle}}",
+            value: "{{data_camembert.valeur_global_sinistre_regle}}",
+            color: "{{data_camembert.couleur_global_sinistre_regle}}"
+        },
+        {
+            label: "{{data_camembert.label_global_sinistre_reclame}}",
+            value: "{{data_camembert.valeur_global_sinistre_reclame}}",
+            color: "{{data_camembert.couleur_global_sinistre_reclame}}" // Utilisez une fonction pour obtenir une couleur
+        },
+    ];
+    // pie chart options
+    var pieOptions = {
+        segmentShowStroke : true,
+        animateScale : true
+    }
+    // get pie chart canvas
+    var camembertcanvas= document.getElementById("camembertcanvas").getContext("2d");
+    // draw pie chart
+    new Chart(camembertcanvas).Pie(pieData, pieOptions);
+    // bar chart data
+    var barData = {
+        // labels : ["January","February","March","April","May","June"],
+        labels : {{data_chart_bar.months|safe}},
+        datasets : [
+            {
+                fillColor : "{{data_chart_bar.sum_fdr_color}}",
+                strokeColor : "{{data_chart_bar.sum_fdr_stroke_color}}",
+                data : {{data_chart_bar.sum_fdr_data|safe}},
+                //data : [456,479,324,569,702,600],
+            },
+            {
+                fillColor : "{{data_chart_bar.sum_consumption_color}}",
+                strokeColor : "{{data_chart_bar.sum_consumption_stroke_color}}",
+                data : {{data_chart_bar.sum_consumption_data|safe}},
+                //data : [456,479,324,569,702,600],
+            },
+            {
+                fillColor : "{{data_chart_bar.sum_tresorerie_color}}",
+                strokeColor : "{{data_chart_bar.sum_tresorerie_stroke_color}}",
+                data : {{data_chart_bar.sum_tresorerie_data|safe}},
+                //data : [456,479,324,569,702,600],
+            }
+        ],
+    }
+    // get bar chart canvas
+    var income = document.getElementById("income").getContext("2d");
+    // draw bar chart
+    new Chart(income).Bar(barData);
+
+
+    $(document).ready(function() {
+        if (!$.fn.dataTable.isDataTable('#suivi_treso_datatable')) {
+
+            $('#suivi_tresorerie_datatable').DataTable({
+                "language": {
+                    "url": "https://cdn.datatables.net/plug-ins/9dcbecd42ad/i18n/French.json"
+                },
+                "serverSide": false,
+                "ajax": {
+                    "url": "{% url 'suivi_treso_datatable' %}",
+                    "dataSrc": function (json) {
+                        return json.data;
+                    }
+                },
+                "columns": [
+                    /*{ "data": null, "orderable": false, "render": function(data, type, row, meta) {
+                        return meta.row + 1; // Affiche le numéro de ligne
+                    }},*/
+                    //{ "data": "code_du_garant" },
+                    { "data": "nom_garant" },
+                    { "data": "fonds_de_roulement" },
+                    { "data": "montant_ordonnances" },
+                    { "data": "sinistre_regle_non_reclame" },
+                    { "data": "sinistre_reclame_non_regle" },
+                    { "data": "tresorerie" },
+                    { "data": "niveau_de_dispo" },
+                    { "data": "actions_html", "orderable": false, "searchable": false }
+                ],
+                //"order": [[1, 'asc']], // Tri par nom_garant (colonne 1)
+                "paging": true,
+                "pageLength": 100,
+                "processing": true,
+                "searching": true
+            });
+
+            dataTable.on('xhr.dt', function (e, settings, json, xhr) {
+                // Hide the spinner when the data is loaded
+                $('.spinner-border').show();
+            });
+
+            // Show the spinner when the table is processing
+            dataTable.on('processing.dt', function (e, settings, processing) {
+                if (processing) {
+                    $('.spinner-border').show();
+                }
+            });
+        }
+
+    });
+</script>
+
+{% endblock %}

@@ -1,0 +1,181 @@
+{% load my_filters %}
+<div  class="modal fade"  id="modal-reglement"  aria-hidden="true"  style="display: none">
+	<div class="modal-dialog modal-xl">
+		<div class="modal-content">
+			<form enctype="multipart/form-data" id="form_add_reglement" action="{% url 'add_reglement' police.id %}" method="post">
+			{% csrf_token %}
+			<input type="hidden" name="uuid_reglement" value="{{ uuid_reglement }}"/>
+			<div class="modal-header">
+				<h4 class="modal-title">{{_("FORMULAIRE DE REGLEMENT")}}</b></h4>
+				<button type="button"class="close"data-dismiss="modal"aria-label="Close">
+					<span aria-hidden="true">×</span>
+				</button>
+			</div>
+			<div class="modal-body">
+				<div class="alert  alert-dismissible fade show hidden" role="alert">
+				  <span class="message"> {{_("TRAITEMENT EN COURS")}}</span>
+				</div>
+				<div class="col-md-12 offset-0">
+					<div class="row">
+						<div class="col-md-6">
+
+							<div class="form-group row" style="display:none;">
+								<label class="col-sm-6 col-form-label">{{_("Nature de l'operation")}}<span class="required">*</span></label>
+								<div class="col-sm-6">
+									<select class="form-control" name="nature_operation" id="nature_operation" >
+										<option value="">{{_('Choisir')}}</option>
+										{% for nature_operation in natures_operations %}
+											<option selected value="{{ nature_operation.id }}">{{ nature_operation.libelle }}</option>
+										{% endfor %}
+									</select>
+								</div>
+							</div>
+							<div class="form-group row">
+								<label class="col-sm-6 col-form-label">{{_("Mode règlement")}} <span class="required">*</span></label>
+								<div class="col-sm-6">
+									<select class="form-control" name="mode_reglement" id="mode_reglement" required>
+										<option value="">{{_('Choisir')}}</option>
+										{% for mode_reglement in modes_reglements %}
+											<option value="{{ mode_reglement.id }}">{{ mode_reglement.libelle }}</option>
+										{% endfor %}
+									</select>
+								</div>
+							</div>
+
+							<div class="form-group row">
+								<label class="col-sm-6 col-form-label">{{_("Numéro de piece")}} <span class="required" id="libelle_numero_piece_required"></span></label>
+								<div class="col-sm-6">
+									<input type="text" class="form-control alpha_num_input" name="numero_piece" id="numero_piece" value=""/>
+								</div>
+							</div>
+
+							{% comment %}
+							<div class="form-group row">
+								<label class="col-sm-6 col-form-label">{{_("Banque emettrice")}}<span class="required" id="libelle_banque_required">*</span></label>
+								<div class="col-sm-6">
+									<select class="form-control" name="banque" id="banque" required>
+										<option value="">{{_('Choisir')}}</option>
+										{% for banque in banques %}
+											<option value="{{ banque.id }}">{{ banque.libelle }}</option>
+										{% endfor %}
+									</select>
+								</div>
+							</div>
+                            {% endcomment %}
+							<div class="form-group row">
+								<label class="col-sm-6 col-form-label">{{ _('Banque émettrice') }}</label>
+								<div class="col-sm-6">
+									<input type="text" class="form-control alpha_num_n_space_input" name="banque" id="banque"/>
+								</div>
+							</div>
+
+						</div>
+						<div class="vl"></div>
+						<div class="col-md-6" style="border-left:0px;margin-left:-10px;padding-left:20px;">
+
+							<div class="form-group row">
+								<label class="col-sm-6 col-form-label">{{_("Date règlement")}}<span class="required">*</span></label>
+								<div class="col-sm-6">
+									<input type="date" class="form-control" name="date_paiement" value="{{ today|date:'Y-m-d' }}" required/>
+								</div>
+							</div>
+
+							<div class="form-group row">
+								<label class="col-sm-6 col-form-label">{{_("Compte Trésorerie")}} <span class="required">*</span></label>
+								<div class="col-sm-6">
+									<select class="form-control" name="compte_tresorerie" id="compte_tresorerie" required>
+										<option value="">{{_('Choisir')}}</option>
+										{% for compte_tresorerie in comptes_tresoreries %}
+											<option value="{{ compte_tresorerie.id }}">{{ compte_tresorerie.libelle }}</option>
+										{% endfor %}
+									</select>
+								</div>
+							</div>
+
+							<div class="form-group row">
+								<label class="col-sm-6 col-form-label">{{_('Devise')}} <span class="required">*</span></label>
+								<div class="col-sm-6">
+									<select class="form-control" name="devise" id="devise" required>
+										<option value="">{{_('Choisir')}}</option>
+										{% for devise in devises %}
+											<option {% if devise.code == police.client.pays.devise.code %} selected {% endif %} value="{{ devise.id }}">{{ devise.libelle }} ({{ devise.code }})</option>
+										{% endfor %}
+									</select>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="row table-responsive"><span>{{_("Liste des quittances impayées")}}</span>
+						<!-- LISTE DES QUITTANCES IMPAYEES  -->
+						<table class="table table-bordered table-striped dataTable0 dtr-inline" id="table_quittances_impayees">
+						  <thead>
+							<tr>
+								<th scope="col">##</th>
+								<th scope="col" style="width:200px;">{{_("Montant à régler")}}</th>
+								<th scope="col">{{_("Numéro Quittance")}}</th>
+								<th scope="col">{{_("Début période")}}</th>
+								<th scope="col">{{_('Type')}}</th>
+								<th scope="col">{{_("Prime TTC")}}</th>
+								<th scope="col">{{_("Solde actuel")}}</th>
+								<th scope="col" style="width:150px;">{{_("Solde après")}}</th>
+							</tr>
+						  </thead>
+						  <tbody>
+						  {% for quittance_imp in quittances_impayees %}
+							<tr>
+							  <td><input type="checkbox" class="checkbox_quittance_a_regler"/><input type="hidden" name="quittance_regle" value="{{quittance_imp.id}}"/></td>
+							  <td><input type="text" class="form-control money_field_negative montant_a_regler handle_calculer_montant_total_a_regler" name="montant_regle" value="0" readonly/></td>
+							  <td>{{ quittance_imp.numero|default_if_none:"" }}</td>
+							  <td>{{ quittance_imp.date_debut|default_if_none:"" }}</td>
+							  <td>{{ quittance_imp.type_quittance.libelle|default_if_none:"" }}</td>
+							  <td class="text-right">{{ quittance_imp.prime_ttc|money_field }}<input type="hidden" class="form-control montant_quittance" value="{{quittance_imp.prime_ttc}}"/></td>
+							  <td class="text-right">{{ quittance_imp.solde|money_field }}<input type="hidden" class="form-control solde_quittance" value="{{quittance_imp.solde}}"/></td>
+							  <td class="text-right"><input type="text" class="form-control money_field_negative solde_apres" value="{{quittance_imp.solde}}" readonly/></td>
+							</tr>
+						  {% endfor %}
+						  </tbody>
+						</table>
+						<!-- FIN LISTE DES QUITTANCES IMPAYEE -->
+					</div>
+
+				</div>
+				<div class="modal-footer justify-content-between">
+					<button type="button" class="btn btn-danger" data-dismiss="modal"><i class="fa fa-remove"></i> {{_('Retour')}}</button>
+					<div>{{_("Montant Total")}} : <input type="text" class="money_field_negative montant_total_a_regler" readonly style="background:none;border:none;font-size:18px;"/> {{police.client.pays.devise.code}}</div>
+					<button disabled type="button" id="btn_save_reglement" class="btn btn-info"><i class="fa fa-check-circle"></i> {{_('Valider')}}</button>
+				</div>
+			</div>
+			</form>
+		</div>
+	</div>
+
+</div>
+
+<script>
+
+	function addInputAlphaNumWithSpaceValidation(inputSelector, errorId) {
+		var previousValue = ""; // Déclarer previousValue en dehors de la fonction
+		$(inputSelector).on("input", function () {
+			var inputValue = $(this).val();
+			// Modifier la regex pour inclure les espaces
+			var alphanumericRegex = /^[a-zA-Z0-9\/\-_ ]*$/; 
+			var errorMessage = $("#" + errorId);
+
+			if (!alphanumericRegex.test(inputValue)) {
+				errorMessage.css("display", "block");
+				$(this).val(previousValue); // Restaurer la valeur précédente
+				setTimeout(function () {
+					errorMessage.css("display", "none");
+				}, 5000); // Masquer le message d'erreur après 5 secondes
+			} else {
+				previousValue = inputValue; // Mettre à jour la valeur précédente
+				errorMessage.css("display", "none");
+			}
+		});
+	}
+
+	$(document).ready(function () {
+		addInputAlphaNumWithSpaceValidation(".alpha_num_n_space_input", "error-message");
+	});
+
+</script>

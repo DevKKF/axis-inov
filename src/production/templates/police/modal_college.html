@@ -1,0 +1,72 @@
+<div  class="modal fade"  id="modal-college" data-backdrop="static" data-keyboard="false" aria-hidden="true"  style="display: none">
+	<div class="modal-dialog modal-lg">
+		<div class="modal-content">
+			<form id="form_add_college" action="{% url 'add_college' police.id %}" method="post">
+				{% csrf_token %}
+                <div class="modal-header">
+                    <h4 class="modal-title">{{_('CREATION_D_UN_COLLEGE')}}</h4>
+                    <button type="button"class="close"data-dismiss="modal"aria-label="Close">
+                        <span aria-hidden="true">×</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert  alert-dismissible fade show hidden" role="alert">
+                        <span class="message"> {{_('TRAITEMENT EN COURS')}}</span>
+                    </div>
+                    <div class="col-md-12 offset-0">
+                        <div class="row">
+                            <!-- -->
+                            <div class="col-md-12">
+
+                                <div class="form-group row">
+                                    <label class="col-sm-5 col-form-label">{{_('Libelle')}} <span class="required">*</span></label>
+                                    <div class="col-sm-7">
+                                        <input type="text" class="form-control" name="libelle">
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label class="col-sm-5 col-form-label">{{_('Type_de_tarif')}} <span class="required">*</span></label>
+                                    <div class="col-sm-7">
+                                        <select class="form-control tags-multiple" name="type_tarif" required>
+                                            <option value="">{{_('Choisir')}}</option>
+                                            {% for type_tarif in types_tarifs %}
+                                            <option value="{{ type_tarif.id }}">{{ type_tarif.libelle }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label class="col-sm-5 col-form-label">{{_('Reseau_de_soins')}} <span class="required">*</span></label>
+                                    <div class="col-sm-7">
+                                        <select class="form-control tags-multiple" name="reseau_soins" required>
+                                            <option value="">{{_('Choisir')}}</option>
+                                            {% for reseau_soin in reseaux_soins %}
+                                            <option value="{{ reseau_soin.id }}">{{ reseau_soin.nom }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label class="col-sm-5 col-form-label">{{_('Bareme')}} <span class="required">*</span></label>
+                                    <div class="col-sm-7">
+                                        <select class="form-control tags-multiple" name="bareme" required>
+                                            <option value="">{{_('Choisir')}}</option>
+                                            {% for bareme in baremes %}
+                                            <option value="{{ bareme.id }}">{{ bareme.libelle }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- -->
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer justify-content-between">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">{{_('Retour')}}</button>
+                    <button type="button" id="btn_save_college" class="btn o-bg-primary">{{_('Valider')}}</button>
+                </div>
+            </form>
+		</div>
+	</div>
+</div>

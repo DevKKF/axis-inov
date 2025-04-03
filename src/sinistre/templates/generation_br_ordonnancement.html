@@ -1,0 +1,640 @@
+{% extends "admin/base_site.html" %}
+{% load my_filters %}
+{% load static %}
+{% block extrastyle %}
+<link type="text/css" href="//gyrocode.github.io/jquery-datatables-checkboxes/1.2.12/css/dataTables.checkboxes.css" rel="stylesheet" />
+<style>
+    div.dataTables_processing>div:last-child>div {
+        background: rgb(187 65 38) !important;
+    }
+</style>
+{% endblock %}
+{% block content %}
+
+<div class="col-12 col-md-12 order-2 order-md-1">
+    <div class="card ">
+    <div class="card-header o-bg-primary">
+        <h3 class="card-title">
+          <span class="the_title" style="font-weight:bold;">
+            {{_('RESUME_DES_REMBOURSEMENTS_VALIDES')}}
+          </span>
+        </h3>
+    </div>
+        <div class="card-body">
+
+
+            <div class="col-md-12 mb-3">
+                <div class="row">
+                  <div class="col-sm-4">
+                    <div class="form-groupn mb-2 row">
+                      <div class="col-sm-5">{{_('Base_de_remboursement')}}: </div>
+                      <div class="col-sm-7">
+                        <span class="text-bold col-sm-6 badge badge-warning" style="font-size:18px;color:white;" id="montant_remb_total">
+                         0
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-sm-4">
+                    <div class="form-groupn mb-2 row">
+                      <div class="col-sm-4">{{_('Rejet')}}: </div>
+                      <div class="col-sm-8">
+                        <span class="text-bold col-sm-6 badge badge-secondary" style="font-size:18px;color:white;" id="montant_rejet_total">
+                          0
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="col-sm-4">
+                    <div class="form-groupn mb-2 row">
+                      <div class="col-sm-4">{{_('Montant_a_payer')}}: </div>
+                      <div class="col-sm-8">
+                        <span class="text-bold col-sm-6 badge badge-success" style="font-size:18px;color:white;" id="montant_accepte_total">
+                            0
+                        </span>
+                         </div>
+                    </div>
+
+                  </div>
+                </div>
+            </div>
+
+        </div>
+  </div>
+
+    <div class="card">
+        <div class="card">
+            <div class="card-header o-bg-primary d-flex justify-content-between align-items-center">
+                <h3 class="card-title"><b>{{_('LISTE_DES_REMBOURSEMENTS_VALIDES')}}</b></h3>
+                <div class="ml-auto d-flex align-items-center">
+                    <button id="btn_export_beneficiaires" class="btn btn-sm btn-default">
+                        <i class="fa fa-file-o"></i> Exporter vers Excel
+                    </button>
+                    <a class="btn btn-sm btn-default" id="loader-btn_export_beneficiaires" style="width: 40px; display: none;">
+                        <img src="{% static 'admin_custom/img/loader.gif' %}" style="width: 20px;" />
+                    </a>
+                </div>
+            </div>
+        </div>
+
+
+      <div style="display:none__;background:#CCCCCC;padding:10px;border-bottom:1px solid #eee;padding-bottom:10px;margin-bottom:10px;">
+
+            <div class="row">
+                <div class="col-12 col-md-12 col-sm-12 row">
+                    <!--div class="col-md-2 row">
+                        <span class="col-sm-12 text-left" style="margin-top:5px;font-weight:bold;">Recherche</span>
+                    </div-->
+
+                    <div class="col-md-2">
+                        <span class="col-sm-6 text-right" style="margin-top:5px;">{{_('Type_de_remb')}}. <span class="required">*</span>: </span>
+                        <div class="col-sm-12">
+                            <select class="form-control tags-multiple" id="search_type_remboursement" style="border:1px solid rgba(0, 0, 0, 0.3);" name="search_type_remboursement">
+                                <option value="">{{_('Choisir')}}</option>
+                                {% for type_remboursement in type_remboursements %}
+                                    <option  value="{{type_remboursement.id}}">{{type_remboursement.libelle}}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+
+
+                    <div class="col-sm-2 remboursement-direct">
+                                <span class="col text-right" style="margin-top:5px;">Bénéf. de remb. <span class="required">*</span>: </span>
+                                <div class="col-sm-12">
+                                    <select class="form-control tags-multiple" id="search_type_benef_rd" style="border:1px solid rgba(0, 0, 0, 0.3);">
+                                        <option value="AD">ADHÉRENT</option>
+                                        <option  value="AS">ASSURÉ</option>
+                                    </select>
+                                </div>
+                    </div>
+
+                    <div class="col-md-2">
+                        <span class="col-sm-5 text-right" style="margin-top:5px;">{{_('Beneficiaire')}} ({{_('Adherent')}}) <span class="required">*</span>: </span>
+                        <div class="col-sm-12">
+                            <select class="form-control tags-multiple" id="search_adherent_principal" style="border:1px solid rgba(0, 0, 0, 0.3);" name="search_adherent_principal">
+                                <option value="">{{_('Choisir')}}</option>
+                                {% for adherent_principal in adhs %}
+                                    <option  value="{{adherent_principal.id}}">{{adherent_principal.nom|default_if_none:""}} {{adherent_principal.prenoms|default_if_none:""}} {% if adherent_principal.veos_numero_carte %} ({{adherent_principal.veos_numero_carte|default_if_none:""}}) {% endif %} </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="col-md-2 search_assure">
+                        <span class="col text-right" style="margin-top:5px;">Bénéficiaire (Assuré) : </span>
+                        <div class="col-sm-12">
+                            <select class="form-control tags-multiple" id="search_assure" style="border:1px solid rgba(0, 0, 0, 0.3);" name="search_assure">
+                                <option value="">Choisir</option>
+                                {% for assure in assures %}
+                                    <option  value="{{assure.id}}">{{assure.nom|default_if_none:""}} {{assure.prenoms|default_if_none:""}} ({{assure.code|default_if_none:""}})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="col-md-2">
+                        <span class="col-sm-5 text-right" style="margin-top:5px;">{{_('Prestataire')}} <span class="required">*</span>: </span>
+                        <div class="col-sm-12">
+                            <select class="form-control tags-multiple" id="search_prestataire" style="border:1px solid rgba(0, 0, 0, 0.3);" name="search_prestataire">
+                                <option value="">{{_('Choisir')}}</option>
+                                {% for prestataire in prestataires %}
+                                    <option  value="{{prestataire.id}}">{{prestataire.name|default_if_none:""}} ({{prestataire.code|default_if_none:""}})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="col-md-2 search_periode_comptable">
+                        <span class="col-sm-6 text-right" style="margin-top:5px;">Période comptable <span class="required">*</span>:
+                            <img id="search_periode_comptable_loader" src="{% static 'admin_custom/img/loader.gif' %}" style="width: 20px;display:none"/>
+                        </span>
+                        <div class="col-sm-12">
+                            <select class="form-control tags-multiple" id="search_periode_comptable" style="border:1px solid rgba(0, 0, 0, 0.3);" name="search_periode_comptable">
+                                <option value="">Choisir</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="col-md-2 search_facture">
+                        <span class="col-sm-6 text-right" style="margin-top:5px;">N° facture :
+                            <img id="search_facture_loader" src="{% static 'admin_custom/img/loader.gif' %}" style="width: 20px;display:none"/>
+                        </span>
+                        <div class="col-sm-12">
+                            <select class="form-control tags-multiple" id="search_facture" style="border:1px solid rgba(0, 0, 0, 0.3);" name="search_facture">
+                                <option value="">Choisir</option>
+
+                            </select>
+                        </div>
+                    </div>
+
+
+                     <div class="col-md-2">
+                        <span class="col-sm-5 text-right" style="margin-top:5px;">{{_('A_l_ordre_de')}} <span class="required">*</span>: </span>
+                        <div class="col-sm-12">
+                            <input id="ordre_de" class="form-control" type="text" name="ordre_de" style="border-radius:3px;border:1px solid rgba(0, 0, 0, 0.3);text-transform:uppercase;" disabled>
+                        </div>
+                    </div>
+                    <div class="col-md-2 row" style="align-content: end;">
+                        <div class="col-sm-12" style="margin-top:5px;">
+                            <input type="checkbox" id="par_compagnie" name="par_compagnie" checked />&nbsp;&nbsp;
+                            <label for="par_compagnie">{{_('Cheque_par_compagnie')}} </label>
+                        </div>
+                    </div>
+                    <div class="col-md-2">
+                        <br>
+                        <button class="btn btn-sm o-bg-primary" style="height: 40px;width: 80%;" id="btn_generation_bordereau_ordonnancement">{{_('Ordonnancer')}}</button>
+                        <img id="loader" src="{% static 'admin_custom/img/loader.gif' %}" style="width: 40px;display:none"/>
+                    </div>
+
+                </div>
+            </div>
+
+      </div>
+
+      <div class="card-body">
+        <div id="example1_wrapper" class="dataTables_wrapper dt-bootstrap4">
+          <div class="row">
+            <div class="col-12 col-md-12 col-sm-12">
+                 <!--div class="form-group row">
+                    <label class="offset-8 col-sm-2 col-form-label">Période comptable <span class="required"></span></label>
+                    <div class="col-sm-2">
+
+                    </div>
+                </div-->
+                <form id="checkBoxSelect">
+                <div class="table-responsive">
+                    <table id="table_liste_remboursements_accepte" class="table table-bordered table-striped dataTable_ dtr-inline table_v_middle">
+        <thead>
+          <tr>
+<!--            <th><input type="checkbox" value="" id="selectAll"></th>-->
+            <th scope="col">{{_('Date_soin')}}</th>
+            <th scope="col">{{_('Numero_Sinistre')}}</th>
+            <th scope="col">{{_('Numero_feuille_de_soins')}}</th>
+            <th scope="col">{{_('Prestataire')}}</th>
+              <th scope="col">{{_('Matricule')}}</th>
+            <th scope="col">{{_('Beneficiaire_du_soin')}}</th>
+            <th scope="col">{{_('Acte')}}</th>
+            <th scope="col">{{_('Montant_facture')}}</th>
+            <th scope="col">{{_('Part_assure')}}</th>
+            <th scope="col">{{_('Base_remb')}}.</th>
+            <th scope="col">{{_('Rejet')}}</th>
+            <th scope="col">{{_('Net_a_payer')}}</th>
+            <th scope="col">{{_('Statut')}}</th>
+            <th scope="col">{{_('Action')}}</th>
+          </tr>
+        </thead>
+        <tbody>
+      </tbody>
+  </table>
+
+                </div>
+                </form>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+</div>
+
+
+{% endblock %}
+
+
+{% block extrajs %}
+<script type="text/javascript" src="//gyrocode.github.io/jquery-datatables-checkboxes/1.2.12/js/dataTables.checkboxes.min.js"></script>
+<script>
+
+    // Stocker les lignes sélectionnées dans le stockage local du navigateur
+    var selectedItems = [];
+
+   $(document).ready(function() {
+         // Desactiver le submit du formulaire
+         $("form#selection_form").submit(function(e){
+            e.preventDefault(e);
+         });
+
+
+
+
+
+         dataTable = $('#table_liste_remboursements_accepte').DataTable({
+            "language": {
+                "url": "https://cdn.datatables.net/plug-ins/9dcbecd42ad/i18n/French.json"
+            },
+            "serverSide": true,
+            "deferLoading": 0, // empecher l'initialisation automatique
+            "ajax": {
+                "url": "{% url 'generation_br_ordonnancement_datatable' %}",
+                "data": function (data) {
+                    data.page = data.start / data.length + 1;
+                    data.search_prestataire = $('#search_prestataire').val();
+                    data.search_type_remboursement = $('#search_type_remboursement').val();
+                    data.search_adherent_principal = $('#search_adherent_principal').val();
+                    data.search_assure = $('#search_assure').val();
+                    data.search_facture = $('#search_facture').val();
+                    data.search_periode_comptable = $('#search_periode_comptable').val();
+
+
+                    if($('#search_periode_comptable').val() == '' || $('#search_prestataire').val() == '' || $('#ordre_de').val() == ''){
+                        $('#btn_generation_bordereau_ordonnancement').prop("disabled",true);
+                    }else{
+                        $('#btn_generation_bordereau_ordonnancement').prop("disabled",false);
+                    }
+
+                },
+                "dataSrc": function (json) {
+                    if(json.data.length == 0){
+                        $('#btn_generation_bordereau_ordonnancement').prop("disabled",true);
+                        $('#montant_remb_total').html(0);
+                        $('#montant_rejet_total').html(0);
+                        $('#montant_accepte_total').html(0);
+                        $('#ordre_de').val('');
+                    }else{
+                        $('#montant_remb_total').html(json.montant_remb_total);
+                        $('#montant_rejet_total').html(json.montant_rejet_total);
+                        $('#montant_accepte_total').html(json.montant_accepte_total);
+                        if(json.ordre_de) {
+                            $('#ordre_de').val(json.ordre_de);
+                        }
+
+                        if($('#ordre_de').val() != '' && $('#search_periode_comptable').val() != '' && ($('#search_prestataire').val() != '' || $('#search_adherent_principal').val() != '' || $('#search_assure').val() != '')){
+                            $('#btn_generation_bordereau_ordonnancement').prop("disabled",false);
+                        }
+                    }
+                    return json.data;
+                }
+            },
+            'select': {
+                  'style': 'multi'
+               },
+            "columns": [
+                {"data": "date_survenance", "orderable": false},
+                {"data": "numero", "orderable": false},
+                {"data": "dossier_sinistre__numero", "orderable": false},
+                {"data": "prestataire", "orderable": false},
+                {"data": "carte_active", "orderable": false},
+                {"data": "beneficiaire", "orderable": false},
+                {"data": "acte", "orderable": false},
+                {"data": "total_facture", "orderable": false},
+                {"data": "total_part_assure", "orderable": false},
+                {"data": "total_base_remb", "orderable": false},
+                {"data": "total_rejet", "orderable": false},
+                {"data": "total_net_payer", "orderable": false},
+                {"data": "statut", "orderable": false},
+                {"data": "action", "orderable": false},
+
+            ],
+            "paging": true,
+            "pageLength": 10,
+            "processing": true,  // Show the loading indicator
+            "searching": true,   // Enable the search feature
+
+        });
+
+        // Gérer le "Sélectionner tout"
+        $('#selectAll').on('change', function() {
+           // Mettre à jour le tableau des éléments sélectionnés
+           if (this.checked) {
+               // Effectuer une requête AJAX pour récupérer toutes les lignes du serveur
+               var url = "{% url 'generation_br_ordonnancement_datatable' %}?all=true&search_facture=" + $('#search_facture').val() + "&search_prestataire=" + $('#search_prestataire').val();
+               $.ajax({
+                   url: url,  // Endpoint pour récupérer toutes les données
+                   type: "GET",
+                   dataType: "json",
+                   success: function(response) {
+                       // Mettre à jour le tableau des éléments sélectionnés
+                       console.log('response.data', response.data);
+                       selectedItems = response.data.map(function(item) {
+                           return item;
+                       });
+
+                       // Cocher/décocher toutes les cases individuelles
+                       $('input[type="checkbox"]', dataTable.rows().nodes()).prop('checked', true);
+                   }
+               });
+           } else {
+               // Désélectionner toutes les lignes
+               selectedItems = [];
+
+               // Cocher/décocher toutes les cases individuelles
+               $('input[type="checkbox"]', dataTable.rows().nodes()).prop('checked', false);
+           }
+
+           // Stocker les éléments sélectionnés dans le stockage local (si nécessaire)
+           localStorage.setItem('selectedItems', JSON.stringify(selectedItems));
+       });
+
+        // Gérer les changements de sélection
+        $('#table_liste_remboursements_accepte tbody').on('change', 'input[type="checkbox"]', function () {
+            var data = dataTable.row($(this).closest('tr')).data();
+            var itemId = data.id;
+            console.log('itemId', itemId);
+            // Mettre à jour le tableau des éléments sélectionnés
+            console.log('this.checked', this.checked);
+            if (this.checked) {
+                selectedItems.push(itemId);
+            } else {
+                var index = selectedItems.indexOf(itemId);
+                if (index !== -1) {
+                    selectedItems.splice(index, 1);
+                }
+            }
+
+            // Désélectionner "Sélectionner tout" si toutes les cases individuelles ne sont pas cochées
+            $('#selectAll').prop('checked', selectedItems.length === dataTable.rows().count());
+
+
+            // Stocker les éléments sélectionnés dans le stockage local
+            localStorage.setItem('selectedItems', JSON.stringify(selectedItems));
+        });
+
+
+        dataTable.on('xhr.dt', function (e, settings, json, xhr) {
+            // Hide the spinner when the data is loaded
+            $('.spinner-border').show();
+        });
+
+        // Show the spinner when the table is processing
+        dataTable.on('processing.dt', function (e, settings, processing) {
+            if (processing) {
+                $('.spinner-border').show();
+            }
+        });
+
+        // Add custom search functionality for code, name, and prenoms columns
+        $('#search_facture, #search_periode_comptable, #search_prestataire, #ordre_de, #search_type_remboursement, #search_adherent_principal, #search_assure, #search_type_benef_rd').on('keyup change', function() {
+            // on remet tout à plat
+            // dataTable.search('').draw(); // Clear existing search
+            dataTable.search(''); // Clear existing search
+            dataTable.clear(); // clear table       });
+
+            let search_facture = $('#search_facture').val();
+            let search_prestataire = $('#search_prestataire').val();
+            let search_adherent_principal = $('#search_adherent_principal').val();
+            let search_assure = $('#search_assure').val();
+
+            let search_type_remboursement = $('#search_type_remboursement').val();
+            let search_periode_comptable = $('#search_periode_comptable').val();
+
+
+            var selectedValue = $(this).val();
+            var param = "";
+            switch ($(this).attr('id')) {
+                case 'search_prestataire':
+                    param = '?prestataire_id=' + selectedValue;
+                    break;
+                case 'search_adherent_principal':
+                    param = '?adherent_principal_id=' + selectedValue;
+                    break;
+                case 'search_assure':
+                    param = '?assure_id=' + selectedValue;
+                    break;
+                case 'search_type_remboursement':
+                    $('#search_facture').val('').empty();
+                    $('#search_periode_comptable').val('').empty();
+                    break;
+                case 'search_type_benef_rd':
+                    $('#search_facture').val('').empty();
+                    $('#search_periode_comptable').val('').empty();
+                    break;
+                case 'search_periode_comptable':
+
+                    $('#search_facture').val('').empty();
+
+                    if(search_periode_comptable != ''){
+                        $('#search_facture_loader').show();
+                        $('#search_facture').prop('disabled', true);
+
+                        $.ajax({
+                        url: "{% url 'get_facture_br_ordonnancement' %}",
+                        type: 'GET',
+                        data: {
+                            periode_comptable_id: search_periode_comptable,
+                            prestataire_id: search_prestataire,
+                            assure_id: search_assure,
+                            adherent_principal_id: search_adherent_principal,
+                        },
+                        success: function(response) {
+                            console.log('response', response);
+                            $('#search_facture').append('<option value="">Choisir</option>');
+                            response.forEach(function(facture) {
+                                $('#search_facture').append('<option value="' + facture.id + '">' + facture.numero + ' (' + facture.periode_comptable+ ')</option>');
+                            });
+                            $('#search_facture').prop('disabled', false);
+                            $('#search_facture_loader').hide();
+                        }
+                        });
+                    }
+
+                    break;
+
+            }
+            if(param != ''){
+                $('#search_periode_comptable_loader').show();
+                $('#search_periode_comptable').val('').empty();
+                $('#search_facture').val('').empty();
+                $('#search_periode_comptable').prop('disabled', true);
+
+
+                $.ajax({
+                    url: "{% url 'get_periode_br_ordonnancement' %}" + param,
+                    type: 'GET',
+                    success: function(response) {
+                        console.log('response', response);
+                        $('#search_periode_comptable').append('<option value="">Choisir</option>');
+                        response.forEach(function(periode) {
+                            $('#search_periode_comptable').append('<option value="' + periode.id + '">' + periode.libelle + '</option>');
+                        });
+                        $('#search_periode_comptable').prop('disabled', false);
+                        $('#search_periode_comptable_loader').hide();
+                    }
+                });
+
+            }else{
+                $('#ordre_de').val('');
+            }
+
+            // on verifie les selection pour redessiner le tableau ce qui implicitera reactivera ce devra l'etre depuis le traitement datatable
+            if(search_type_remboursement != "" && ((search_prestataire != "" && $('#search_prestataire').is(":visible")) || (search_adherent_principal != "" && $('#search_adherent_principal').is(":visible")) || (search_assure != "" && $('#search_assure').is(":visible"))) && search_periode_comptable != ""){
+                dataTable.draw(); // Trigger a new draw, which will include the updated search parameters
+            }
+            // on desactive le bouton d'action car selection incomplète
+            else{
+                $('#btn_generation_bordereau_ordonnancement').prop("disabled",true);
+            }
+        });    
+    });
+
+</script>
+
+<script>
+$(document).ready(function() {
+    $(".search_assure").hide();
+    $(".search_facture").hide();
+    $(".search_periode_comptable").hide();
+    $(".remboursement-direct").hide();
+    // $('#search_facture_loader').show();
+    // Écouter les changements de la sélection search_type_remboursement
+    $('#search_type_remboursement').change(function() {
+        // get selected value
+        var selectedValue = $(this).val();
+
+        // Si la valeur est égale à 1
+        if (selectedValue === '1') {
+            // Réinitialisez et masquez la sélection search_adherent_principal
+            $('#search_adherent_principal').val('').closest('.col-md-2').hide();
+
+            // Affichez la sélection search_prestataire
+            $('#search_prestataire').closest('.col-md-2').show();
+            $(".search_facture").show();
+            $(".search_periode_comptable").show();
+
+            $(".search_assure").hide();
+            $(".remboursement-direct").hide();
+        } else if (selectedValue == 2) {
+             // Réinitialisez et masquez la sélection search_prestataire
+            $('#search_prestataire').val('').closest('.col-md-2').hide();
+
+            // Affichez la sélection search_adherent_principal
+            $(this).typeBenef($("#search_type_benef_rd").val());
+
+            $(".remboursement-direct").show();
+            $(".search_facture").show();
+            $(".search_periode_comptable").show();
+        }else {
+           $("#search_prestataire, #search_adherent_principal").val('').closest('.col-md-2').hide();
+           $("#search_assure").val('');
+           $(".search_assure").hide();
+           $(".remboursement-direct").hide();
+           $(".search_facture").hide();
+           $(".search_periode_comptable").hide();
+        }
+    });
+
+    // $('#search_prestataire, #search_adherent_principal, #search_assure').change(function() {
+    //
+    // });
+
+    $("#search_type_benef_rd").change(function(){
+            var selectedType = $(this).val();
+            $(this).typeBenef(selectedType);
+        });
+
+    $.fn.typeBenef = function(selectedType) {
+            if(selectedType == 'AS'){
+                  $("#search_adherent_principal").val('').closest('.col-md-2').hide()
+                $(".search_assure").show();
+
+                $("#search_adherent_principal").val('');
+            } else if(selectedType == 'AD') {
+                // Cacher les deux blocs si aucune option sélectionnée
+                $(".search_assure").hide();
+                $("#search_adherent_principal").closest('.col-md-2').show();
+                $("#search_assure").val('')
+
+            }
+        };
+
+    // Exécutez la logique initiale
+    $('#search_type_remboursement').trigger('change');
+});
+</script>
+
+
+
+
+
+
+
+
+
+
+
+
+<script>
+
+    // Add event listener for the export button click
+document.getElementById('btn_export_beneficiaires').addEventListener('click', function() {
+    // Show the loading spinner
+    document.getElementById('loader-btn_export_beneficiaires').style.display = 'inline';
+
+    // Make an AJAX request to trigger the Excel download
+    fetch("{% url 'export_sinistres_ordonnancement' %}", {
+        method: 'GET',  // Using GET for the download
+    })
+    .then(response => {
+        if (response.ok) {
+            return response.blob(); // Get the blob data (Excel file)
+        } else {
+            throw new Error('Error downloading file');
+        }
+    })
+    .then(blob => {
+        // Hide the loading spinner
+        document.getElementById('loader-btn_export_beneficiaires').style.display = 'none';
+
+        // Create a URL for the Blob object and trigger the download
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = url;
+        a.download = 'Liste_Sinistres_Beneficiaires.xlsx';  // Set the file name
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);  // Clean up the URL after download
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while exporting the file.');
+        // Hide the loading spinner in case of error
+        document.getElementById('loader-btn_export_beneficiaires').style.display = 'none';
+    });
+});
+
+</script>
+
+
+{% endblock %}

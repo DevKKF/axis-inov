@@ -1,0 +1,4827 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-10-10 14:40+0000\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
+msgid "Search"
+msgstr "Rechercher"
+
+msgid "Account"
+msgstr "Compte"
+
+msgid "Change password"
+msgstr "Changer le mot de passe"
+
+msgid "Log out"
+msgstr "Se déconnecter"
+
+msgid "See Profile"
+msgstr "Voir le profil"
+
+msgid "Home"
+msgstr "Accueil"
+
+msgid "Copyright"
+msgstr "Droits d'auteur"
+
+msgid "All rights reserved."
+msgstr "Tous droits réservés."
+
+msgid "UI Configuration"
+msgstr "Configuration de l'interface utilisateur"
+
+msgid "Copy this info your settings file to persist these UI changes"
+msgstr "Copiez ces informations dans votre fichier de configuration pour conserver ces modifications d'interface"
+
+msgid "Close"
+msgstr "Fermer"
+
+#, python-format
+msgid "Add %(name)s"
+msgstr "Ajouter %(name)s"
+
+msgid "Please correct the error below."
+msgstr "Veuillez corriger l'erreur ci-dessous."
+
+msgid "Please correct the errors below."
+msgstr "Veuillez corriger les erreurs ci-dessous."
+
+msgid "Delete?"
+msgstr "Supprimer ?"
+
+msgid "View on site"
+msgstr "Voir sur le site"
+
+#, python-format
+msgid "You are authenticated as %(username)s, but are not authorized to access this page. Would you like to login to a different account?"
+msgstr "Vous êtes authentifié en tant que %(username)s, mais vous n'êtes pas autorisé à accéder à cette page. Souhaitez-vous vous connecter avec un autre compte ?"
+
+msgid "Forgotten your password or username?"
+msgstr "Mot de passe ou nom d'utilisateur oublié ?"
+
+msgid "Log in"
+msgstr "Se connecter"
+
+msgid "Actions"
+msgstr "Actions"
+
+msgid "Save"
+msgstr "Enregistrer"
+
+msgid "Delete"
+msgstr "Supprimer"
+
+msgid "Save as new"
+msgstr "Enregistrer en tant que nouveau"
+
+msgid "Save and add another"
+msgstr "Enregistrer et ajouter un autre"
+
+msgid "Save and continue editing"
+msgstr "Enregistrer et continuer l'édition"
+
+msgid "Save and view"
+msgstr "Enregistrer et voir"
+
+msgid "Gestion du client"
+msgstr "Gestion du client"
+
+msgid "Gestion de la formule"
+msgstr "Gestion de la formule"
+
+msgid "Bienvenue"
+msgstr "Bienvenue"
+
+msgid "Etat_des"
+msgstr "Etat des"
+
+msgid "Demandes_en_attente"
+msgstr "Demandes en attente"
+
+msgid "SERVIR_DES_MEDICAMENTS"
+msgstr "SERVIR DES MEDICAMENTS"
+
+msgid "CONSULTATION"
+msgstr "CONSULTATION"
+
+msgid "SOINS_AMBULATOIRES"
+msgstr "SOINS AMBULATOIRES"
+
+msgid "REALISER_UNE_PRISE_EN_CHARGE"
+msgstr "REALISER UNE PRISE EN CHARGE"
+
+msgid "HOSPITALISATION"
+msgstr "HOSPITALISATION"
+
+msgid "Rechercher"
+msgstr "Rechercher"
+
+msgid "DASHBOARD"
+msgstr "DASHBOARD"
+
+msgid "FICHE CLIENT"
+msgstr "FICHE CLIENT"
+
+msgid "POLICES"
+msgstr "POLICES"
+
+msgid "ACOMPTES"
+msgstr "ACOMPTES"
+
+msgid "ALIMENTS"
+msgstr "ALIMENTS"
+
+msgid "LISTE DES BORDEREAUX ORDONNANCÉS"
+msgstr "LISTE DES BORDEREAUX ORDONNANCÉS"
+
+msgid "Formulaire de recherche"
+msgstr "Formulaire de recherche"
+
+msgid "Type de remb"
+msgstr "Type de remb"
+
+msgid "Choisir"
+msgstr "Choisir"
+
+msgid "N˚ Bordereau"
+msgstr "N˚ Bordereau"
+
+msgid "Bénéficiaire"
+msgstr "Bénéficiaire"
+
+msgid "Période comptable"
+msgstr "Période comptable"
+
+msgid "Filtrer"
+msgstr "Filtrer"
+
+msgid "Montant Total"
+msgstr "Montant Total"
+
+msgid "Numero_Bordereau"
+msgstr "Numero Bordereau"
+
+msgid "Type"
+msgstr "Type"
+
+msgid "Beneficiaire"
+msgstr "Beneficiaire"
+
+msgid "Periode_comptable"
+msgstr "Periode comptable"
+
+msgid "Base_remb"
+msgstr "Base remb"
+
+msgid "Rejet"
+msgstr "Rejet"
+
+msgid "Net_a_payer"
+msgstr "Net a payer"
+
+msgid "Date_de_generation"
+msgstr "Date de generation"
+msgid "Action"
+msgstr "Action"
+
+msgid "LISTE_DES_BORDEREAUX_PAYES"
+msgstr "LISTE DES BORDEREAUX PAYÉS"
+
+msgid "Recherche"
+msgstr "Recherche"
+
+msgid "Benef. de remb."
+msgstr "Benef. de remb."
+
+msgid "Adherent"
+msgstr "Adhérent"
+
+msgid "Periode comptable"
+msgstr "Période comptable"
+
+msgid "Net_paye"
+msgstr "Net payé"
+
+msgid "Date_de_paiement"
+msgstr "Date de paiement"
+
+msgid "Retour_a_la_liste_des_prises_en_charges"
+msgstr "Retour à la liste des prises en charges"
+
+msgid "Retour"
+msgstr "Retour"
+
+msgid "DETAILS_DU_BORDEREAU_NUMERO"
+msgstr "DÉTAILS DU BORDEREAU NUMÉRO"
+
+msgid "Telecharger"
+msgstr "Télécharger"
+
+msgid "Regenerer_le_bordereau"
+msgstr "Régénérer le bordereau"
+
+msgid "Type_remboursement"
+msgstr "Type remboursement"
+
+msgid "Genere_par"
+msgstr "Généré par"
+
+msgid "Statut"
+msgstr "Statut"
+
+msgid "Nombre_de_lignes"
+msgstr "Nombre de lignes"
+
+msgid "Total_net_a_payer"
+msgstr "Total net à payer"
+
+msgid "Total_a_payer"
+msgstr "Total à payer"
+
+msgid "Déjà réglé"
+msgstr "Déjà réglé"
+
+msgid "Restant"
+msgstr "Restant"
+
+msgid "Montant_a_payer"
+msgstr "Montant à payer"
+
+msgid "Montant_deja_paye"
+msgstr "Montant déjà payé"
+
+msgid "Reste_a_payer"
+msgstr "Reste à payer"
+
+msgid "Autres taxes"
+msgstr "Autres taxes"
+
+msgid "Mise_en_reglement"
+msgstr "Mise en règlement"
+
+msgid "LISTE_DES_REMBOURSEMENTS"
+msgstr "LISTE DES REMBOURSEMENTS"
+
+msgid "Numero_Sinistre"
+msgstr "Numéro Sinistre"
+
+msgid "Numero_Bon"
+msgstr "Numéro Bon"
+
+msgid "Garant"
+msgstr "Garant"
+
+msgid "Prestataire"
+msgstr "Prestataire"
+
+msgid "Statut_paiement"
+msgstr "Statut paiement"
+
+msgid "ORDONNANCE"
+msgstr "ORDONNANCE"
+
+msgid "PAYE"
+msgstr "PAYÉ"
+
+msgid "Date_soin"
+msgstr "Date soin"
+
+msgid "Beneficiaire_du_soin"
+msgstr "Bénéficiaire du soin"
+
+msgid "Matricule"
+msgstr "Matricule"
+
+msgid "Montant_facture"
+msgstr "Montant facture"
+
+msgid "Par_assure"
+msgstr "Par assuré"
+
+msgid "LISTE_DES_PAIEMENTS_REALISES_PAR_LETTRE_CHEQUE"
+msgstr "LISTE DES PAIEMENTS RÉALISÉS PAR LETTRE CHÈQUE"
+
+msgid "Formulaire_de_recherche"
+msgstr "Formulaire de recherche"
+
+msgid "Numero_Paiement"
+msgstr "Numéro Paiement"
+
+msgid "Numero_Bord_Ord."
+msgstr "Numéro Bord. Ord."
+
+msgid "Editer_la_selection"
+msgstr "Éditer la sélection"
+
+msgid "Numero_Bordereau_ord"
+msgstr "Numéro Bordereau ord."
+
+msgid "Date_paiement"
+msgstr "Date paiement"
+
+msgid "Effectue_par"
+msgstr "Effectué par"
+
+msgid "ENCAISSEMENT_DE_COMMISSIONS"
+msgstr "ENCAISSEMENT DE COMMISSIONS"
+
+msgid "Encaisser_des_commissions"
+msgstr "Encaisser des commissions"
+
+msgid "Compagnie"
+msgstr "Compagnie"
+
+msgid "Montant_total_regle_client"
+msgstr "Montant total réglé client"
+
+msgid "Total_com_courtage"
+msgstr "Total com. courtage"
+
+msgid "Restant_com_courtage"
+msgstr "Restant com. courtage"
+
+msgid "Total_com_gestion"
+msgstr "Total com. gestion"
+
+msgid "Restant_com_gestion"
+msgstr "Restant com. gestion"
+
+msgid "Nbre_lignes"
+msgstr "Nbre lignes"
+
+msgid "ENCAISSEMENT_DE_COMMISSIONS_DE"
+msgstr "ENCAISSEMENT DE COMMISSIONS DE"
+
+msgid "COURTAGE"
+msgstr "COURTAGE"
+
+msgid "GESTION"
+msgstr "GESTION"
+
+msgid "Encaisser_des_commissions_de"
+msgstr "Encaisser des commissions de"
+
+msgid "courtage"
+msgstr "courtage"
+
+msgid "gestion"
+msgstr "gestion"
+
+msgid "EXECUTION_DES_REQUETES_EXCEL"
+msgstr "EXÉCUTION DES REQUÊTES EXCEL"
+
+msgid "Requete"
+msgstr "Requête"
+
+msgid "Execution_requete_excel"
+msgstr "Exécution requête excel"
+
+msgid "Date_de_debut"
+msgstr "Date de début"
+
+msgid "Date_de_fin"
+msgstr "Date de fin"
+
+msgid "Numero_Police"
+msgstr "Numéro Police"
+
+msgid "Modifier"
+msgstr "Modifier"
+
+msgid "EDITION_DE_LETTRE_CHEQUE"
+msgstr "ÉDITION DE LETTRE CHÈQUE"
+
+msgid "TRAITEMENT_EN_COURS"
+msgstr "TRAITEMENT EN COURS"
+
+msgid "Banque"
+msgstr "Banque"
+
+msgid "Editer"
+msgstr "Éditer"
+
+msgid "Apercu_des_donnees"
+msgstr "Aperçu des données"
+
+msgid "Numero_benef"
+msgstr "Numéro benef"
+
+msgid "Prenoms"
+msgstr "Prénoms"
+
+msgid "Nom"
+msgstr "Nom"
+
+msgid "Date_Naiss"
+msgstr "Date Naiss"
+
+msgid "Sexe"
+msgstr "Sexe"
+
+msgid "Carte"
+msgstr "Carte"
+
+msgid "Lien"
+msgstr "Lien"
+
+msgid "Numero_Famille"
+msgstr "Numéro Famille"
+
+msgid "Etat"
+msgstr "État"
+
+msgid "Sortie"
+msgstr "Sortie"
+
+msgid "Formule"
+msgstr "Formule"
+
+msgid "LISTE_DES_PAIEMENTS_REALISES"
+msgstr "LISTE DES PAIEMENTS RÉALISÉS"
+
+msgid "Numero_Bord_Ord"
+msgstr "Numéro Bord. Ord."
+
+msgid "Type_de_remb"
+msgstr "Type de remb."
+
+msgid "Total_a_refacturer"
+msgstr "Total à refacturer"
+
+msgid "REGLEMENTS_APPORTEURS"
+msgstr "RÈGLEMENTS APPORTEURS"
+
+msgid "Regler_un_apporteur"
+msgstr "Régler un apporteur"
+
+msgid "Nom_Apporteur"
+msgstr "Nom Apporteur"
+
+msgid "Nom_client"
+msgstr "Nom client"
+
+msgid "Numero_Reglement"
+msgstr "Numéro Règlement"
+
+msgid "Mode_reglement"
+msgstr "Mode règlement"
+
+msgid "Montant_regle"
+msgstr "Montant réglé"
+
+msgid "Date_Reg_client"
+msgstr "Date Règ. client"
+
+msgid "Date_reg_cie"
+msgstr "Date règ. cie"
+
+msgid "REGLEMENTS_COMPAGNIES"
+msgstr "RÈGLEMENTS COMPAGNIES"
+
+msgid "Regler_une_compagnie"
+msgstr "Régler une compagnie"
+
+msgid "Total_a_reverser"
+msgstr "Total à reverser"
+
+msgid "Commissions"
+msgstr "Commissions"
+
+msgid "BORDEREAU_DES_COMMISSIONS_REGLEES"
+msgstr "BORDEREAU DES COMMISSIONS RÉGLÉES"
+
+msgid "NUMERO_BORDEREAU"
+msgstr "NUMÉRO BORDEREAU"
+
+msgid "Numero_client"
+msgstr "Numéro client"
+
+msgid "Nom_Client"
+msgstr "Nom Client"
+
+msgid "Numero_Quittance"
+msgstr "Numéro Quittance"
+
+msgid "Echeance"
+msgstr "Échéance"
+
+msgid "Comm_Quittance"
+msgstr "Comm. Quittance"
+
+msgid "Prime_Due"
+msgstr "Prime Due"
+
+msgid "Comm_Réglée"
+msgstr "Comm. Réglée"
+
+msgid "Reglement_recu"
+msgstr "Règlement reçu"
+
+msgid "Total_Compagnie"
+msgstr "Total Compagnie"
+
+msgid "Total_Societe"
+msgstr "Total Société"
+
+msgid "BORDEREAU_DES_COMMISSIONS_DE"
+msgstr "BORDEREAU DES COMMISSIONS DE"
+
+msgid "REGLEES"
+msgstr "RÉGLÉES"
+
+msgid "BORDEREAU DES COMMISSIONS DE"
+msgstr "BORDEREAU DES COMMISSIONS DE"
+
+msgid "Code_courtier"
+msgstr "Code courtier"
+
+msgid "Edite_le"
+msgstr "Édité le"
+
+msgid "Comm_Courtage"
+msgstr "Comm. Courtage"
+
+msgid "Comm_Gestion"
+msgstr "Comm. Gestion"
+
+msgid "Prime Due"
+msgstr "Prime Due"
+
+msgid "Comm_Reglee"
+msgstr "Comm. Réglée"
+
+msgid "BORDEREAU_COMPAGNIE_DES_QUITTANCES_REGLEES"
+msgstr "BORDEREAU COMPAGNIE DES QUITTANCES RÉGLÉES"
+
+msgid "Numero_Reg_client"
+msgstr "Numéro Règ. client"
+
+msgid "Emission"
+msgstr "Émission"
+
+msgid "Mt_Reg_clt"
+msgstr "Mt Règ. clt"
+
+msgid "Mt_CIE"
+msgstr "Mt CIE"
+
+msgid "Com_court"
+msgstr "Com. court."
+
+msgid "Com_gest"
+msgstr "Com. gest."
+
+msgid "Com_Apport"
+msgstr "Com. Apport"
+
+msgid "Date_Reg_clt"
+msgstr "Date Règ. clt"
+
+msgid "FICHE_CLIENT"
+msgstr "FICHE CLIENT"
+
+msgid "CLIENT"
+msgstr "CLIENT"
+
+msgid "Assure"
+msgstr "Assuré"
+
+msgid "Reference"
+msgstr "Référence"
+
+msgid "Ville"
+msgstr "Ville"
+
+msgid "QUITTANCES"
+msgstr "QUITTANCES"
+
+msgid "CONTACTS"
+msgstr "CONTACTS"
+
+msgid "FILIALES"
+msgstr "FILIALES"
+
+msgid "GED"
+msgstr "GED"
+
+msgid "Nom_complet"
+msgstr "Nom complet"
+
+msgid "Code_client"
+msgstr "Code client"
+
+msgid "Langue"
+msgstr "Langue"
+
+msgid "Type_personne"
+msgstr "Type personne"
+
+msgid "Charge_de_clientelle"
+msgstr "Chargé de clientèle"
+
+msgid "Referent"
+msgstr "Référent"
+
+msgid "Date_de_enregistrement"
+msgstr "Date d'enregistrement"
+
+msgid "COORDONNEES"
+msgstr "COORDONNÉES"
+
+msgid "Pays"
+msgstr "Pays"
+
+msgid "Adresse"
+msgstr "Adresse"
+
+msgid "Telephone_fixe"
+msgstr "Téléphone fixe"
+
+msgid "Telephone_mobile"
+msgstr "Téléphone mobile"
+
+msgid "Email"
+msgstr "Email"
+
+msgid "RESEAUX_SOCIAUX"
+msgstr "RÉSEAUX SOCIAUX"
+
+msgid "Site_web"
+msgstr "Site web"
+
+msgid "Facebook"
+msgstr "Facebook"
+
+msgid "Twitter"
+msgstr "Twitter"
+
+msgid "Instagram"
+msgstr "Instagram"
+
+msgid "Ajouter_un_contact"
+msgstr "Ajouter un contact"
+
+msgid "  Nom"
+msgstr "Nom"
+
+msgid "Fonction"
+msgstr "Fonction"
+
+msgid "Telephone"
+msgstr "Téléphone"
+
+msgid "Date_d_emission"
+msgstr "Date d'émission"
+
+msgid "Debut_periode"
+msgstr "Début période"
+
+msgid "Prime_ttc"
+msgstr "Prime TTC"
+
+msgid "Mt_cie"
+msgstr "Mt cie"
+
+msgid "Com_Gestion"
+msgstr "Com. Gestion"
+
+msgid "Com_Courtage"
+msgstr "Com. Courtage"
+
+msgid "Devise"
+msgstr "Devise"
+
+msgid "LISTE_DE_SES_POLICES"
+msgstr "LISTE DE SES POLICES"
+
+msgid "Creer_une_police"
+msgstr "Créer une police"
+
+msgid "Numero"
+msgstr "Numéro"
+
+msgid "Produit"
+msgstr "Produit"
+
+msgid "Assureur"
+msgstr "Assureur"
+
+msgid "Prime_HT"
+msgstr "Prime HT"
+
+msgid "Prime_TTC"
+msgstr "Prime TTC"
+
+msgid "Com_gestion"
+msgstr "Com. gestion"
+
+msgid "Com_courtage"
+msgstr "Com. courtage"
+
+msgid "Date_debut"
+msgstr "Date début"
+
+msgid "Date_echeance"
+msgstr "Date échéance"
+
+msgid "Ajouter une filiale"
+msgstr "Ajouter une filiale"
+
+msgid "GESTION_ELECTRONIQUE_DE_DOCUMENTS"
+msgstr "GESTION ÉLECTRONIQUE DE DOCUMENTS"
+
+msgid "Ajouter_un_document"
+msgstr "Ajouter un document"
+
+msgid "Nom_du_document"
+msgstr "Nom du document"
+
+msgid "Type_de_document"
+msgstr "Type de document"
+
+msgid "Fichier"
+msgstr "Fichier"
+
+msgid "Ajouter_un_acompte"
+msgstr "Ajouter un acompte"
+
+msgid "Date_versement"
+msgstr "Date versement"
+
+msgid "FORMULAIRE_D_ENCAISSEMENT_DE_COMMISSION_DE_COURTAGE"
+msgstr "FORMULAIRE D'ENCAISSEMENT DE COMMISSION DE COURTAGE"
+
+msgid "FORMULAIRE_D_ENCAISSEMENT_DE_COMMISSION_DE_GESTION"
+msgstr "FORMULAIRE D'ENCAISSEMENT DE COMMISSION DE GESTION"
+
+msgid "Compte_d_encaissement"
+msgstr "Compte d'encaissement"
+
+msgid "Banque_emettrice"
+msgstr "Banque émettrice"
+
+msgid "Mode_d_encaissement"
+msgstr "Mode d'encaissement"
+
+msgid "Date_encaissement"
+msgstr "Date encaissement"
+
+msgid "Liste_des_reglements_reverses"
+msgstr "Liste des règlements reversés"
+
+msgid "Numero_Piece"
+msgstr "Numéro Pièce"
+
+msgid "Com_court_enc"
+msgstr "Com. court. enc."
+
+msgid "Com_gest_enc"
+msgstr "Com. gest. enc."
+
+msgid "Montant Restant"
+msgstr "Montant Restant"
+
+msgid "Client"
+msgstr "Client"
+
+msgid "Selectionner_une_compagnie_pour_charger_la_liste"
+msgstr "Sélectionner une compagnie pour charger la liste"
+
+msgid "Compte"
+msgstr "Compte"
+
+msgid "Debit"
+msgstr "Débit"
+
+msgid "Credit"
+msgstr "Crédit"
+
+msgid "Libelle"
+msgstr "Libellé"
+
+msgid "Commissions à encaisser"
+msgstr "Commissions à encaisser"
+
+msgid "Valider"
+msgstr "Valider"
+
+msgid "FORMULAIRE_D_ENCAISSEMENT_DE_COMMISSION"
+msgstr "FORMULAIRE D'ENCAISSEMENT DE COMMISSION"
+
+msgid "Restant_total"
+msgstr "Restant total"
+
+msgid "Commissions_a_encaisser"
+msgstr "Commissions à encaisser"
+
+msgid "FORMULAIRE_DE_REVERSEMENT_COMPAGNIE"
+msgstr "FORMULAIRE DE REVERSEMENT COMPAGNIE"
+
+msgid "Compte_de_reglement"
+msgstr "Compte de règlement"
+
+msgid "Mode_reglement "
+msgstr "Mode règlement"
+
+msgid "Date_reg_Cie"
+msgstr "Date règ. Cie"
+
+msgid "Numero_piece"
+msgstr "Numéro pièce"
+
+msgid "Banque émettrice"
+msgstr "Banque émettrice"
+
+msgid "Liste_des_reglements_non_reverses"
+msgstr "Liste des règlements non reversés"
+
+msgid "Prime_totale"
+msgstr "Prime totale"
+
+msgid "Total_reg_clt"
+msgstr "Total règ. clt"
+
+msgid "Montant_Total_Cie"
+msgstr "Montant Total Cie"
+
+msgid "EFFECTUER_UN_PAIEMENT"
+msgstr "EFFECTUER UN PAIEMENT"
+
+msgid "Tous"
+msgstr "Tous"
+
+msgid "Mode_de_paiement"
+msgstr "Mode de paiement"
+
+msgid "Numero_pièce"
+msgstr "Numéro pièce"
+
+msgid "Beneficiaire_du_paiement"
+msgstr "Bénéficiaire du paiement"
+
+msgid "Numero_IBAN"
+msgstr "Numéro IBAN"
+
+msgid "Periode"
+msgstr "Période"
+
+msgid "A_la_ordre_de"
+msgstr "À l'ordre de"
+
+msgid "Montant"
+msgstr "Montant"
+
+msgid "Traitement_en_cours"
+msgstr "Traitement en cours"
+
+msgid "Chargement_en_cours"
+msgstr "Chargement en cours"
+
+msgid "REGLEMENT_DE_FACTURE_S_GARANT"
+msgstr "RÈGLEMENT DE FACTURE S. GARANT"
+
+msgid "Mode_de_reglement"
+msgstr "Mode de règlement"
+
+msgid "Montant_Total"
+msgstr "Montant Total"
+
+msgid "Restant_a_ajouter_sur_la_caution"
+msgstr "Restant à ajouter sur la caution"
+
+msgid "BORDEREAU_DE_PAIEMENT_EFFECTUE"
+msgstr "BORDEREAU DE PAIEMENT EFFECTUÉ"
+
+msgid "BORDEREAU_DE_PAIEMENT_COMPTABLE_NUMERO"
+msgstr "BORDEREAU DE PAIEMENT COMPTABLE NUMÉRO"
+
+msgid "Numero_paiement"
+msgstr "Numéro paiement"
+
+msgid "Mode_de_paiement "
+msgstr "Mode de paiement"
+
+msgid "Date_de_paiement "
+msgstr "Date de paiement"
+
+msgid " Numero_Bordereau_ord."
+msgstr "Numéro Bordereau ord."
+
+msgid "Nombre_de_sinistres"
+msgstr "Nombre de sinistres"
+
+msgid "Montant_total"
+msgstr "Montant total"
+
+msgid "Numero_Dossier"
+msgstr "Numéro Dossier"
+
+msgid "Souscripteur"
+msgstr "Souscripteur"
+
+msgid "Formule_de_garantie"
+msgstr "Formule de garantie"
+
+msgid "Beneficiaire_de_soins"
+msgstr "Bénéficiaire de soins"
+
+msgid "Type_de_acte"
+msgstr "Type d'acte"
+
+msgid "Frais_reels"
+msgstr "Frais réels"
+
+msgid "Part_beneficiaire"
+msgstr "Part bénéficiaire"
+
+msgid "Base_de_rembours."
+msgstr "Base de rembours."
+
+msgid "Rejete"
+msgstr "Rejeté"
+
+msgid "Base_taxable"
+msgstr "Base taxable"
+
+msgid "Taxes"
+msgstr "Taxes"
+
+msgid "Date_ordonn."
+msgstr "Date ordonn."
+
+msgid "Observations"
+msgstr "Observations"
+
+msgid "TOTAL"
+msgstr "TOTAL"
+
+msgid "Nbre_de_actes"
+msgstr "Nbre d'actes"
+
+msgid "TOTAL_GENERAL"
+msgstr "TOTAL GÉNÉRAL"
+
+msgid "VISA_DIRECTION"
+msgstr "VISA DIRECTION"
+
+msgid "Montant_Restant"
+msgstr "Montant Restant"
+
+msgid "Enter_Verification_Code"
+msgstr "Entrez le Code de Vérification"
+
+msgid "LISTE_DES_ACTES"
+msgstr "LISTE DES ACTES"
+
+msgid "Creer_un_acte"
+msgstr "Créer un acte"
+
+msgid "Code"
+msgstr "Code"
+
+msgid "Rubrique"
+msgstr "Rubrique"
+
+msgid "Regroupement_de_acte"
+msgstr "Regroupement d'acte"
+
+msgid "Entente_prealable"
+msgstr "Entente préalable"
+
+msgid "OUI"
+msgstr "OUI"
+
+msgid "NON"
+msgstr "NON"
+
+msgid "Regroupement"
+msgstr "Regroupement"
+
+msgid "Lettre_cle"
+msgstr "Lettre clé"
+
+msgid "Base_calcul_TM"
+msgstr "Base calcul TM"
+
+msgid "Delais_controle"
+msgstr "Délais contrôle"
+
+msgid "Avec_seances"
+msgstr "Avec séances"
+
+msgid "Specialiste_uniquement"
+msgstr "Spécialiste uniquement"
+
+msgid "CREATION_DUN_ACTE"
+msgstr "CRÉATION D'UN ACTE"
+
+msgid "GENERAL"
+msgstr "GÉNÉRAL"
+
+msgid "PARAMETRAGE_DE_LA_ACTE"
+msgstr "PARAMÉTRAGE DE L'ACTE"
+
+msgid "TARIF"
+msgstr "TARIF"
+
+msgid "Regroupement_acte"
+msgstr "Regroupement acte"
+
+msgid "Type_acte"
+msgstr "Type acte"
+
+msgid "Lettre_Cle"
+msgstr "Lettre Clé"
+
+msgid "Base_Calcul_TM"
+msgstr "Base Calcul TM"
+
+msgid "Coef_classique "
+msgstr "Coef classique"
+
+msgid "PU_classique"
+msgstr "PU classique"
+
+msgid "Cout_classique"
+msgstr "Coût classique"
+
+msgid "Coef_mutuelle"
+msgstr "Coef mutuelle"
+
+msgid "PU_mutuelle"
+msgstr "PU mutuelle"
+
+msgid "Cout_mutuelle"
+msgstr "Coût mutuelle"
+
+msgid "Coef_HG"
+msgstr "Coef HG"
+
+msgid "PU_HG"
+msgstr "PU HG"
+
+msgid "Cout_HG"
+msgstr "Coût HG"
+
+msgid "Coef CHU"
+msgstr "Coef CHU"
+
+msgid "PU_CHU"
+msgstr "PU CHU"
+
+msgid "Cout_CHU"
+msgstr "Coût CHU"
+
+msgid "Coef_ICA"
+msgstr "Coef ICA"
+
+msgid "PU_ICA"
+msgstr "PU ICA"
+
+msgid "Cout_ICA"
+msgstr "Coût ICA"
+
+msgid "Bureau"
+msgstr "Bureau"
+
+msgid "Delai_controle"
+msgstr "Délai contrôle"
+
+msgid "Est_gratuit"
+msgstr "Est gratuit"
+
+msgid "DETAILS_DE_LA_ACTE"
+msgstr "DÉTAILS DE L'ACTE"
+
+msgid "Base_calcul_tm"
+msgstr "Base calcul TM"
+
+msgid "Option_seance"
+msgstr "Option séance"
+
+msgid "Option_quantite"
+msgstr "Option quantité"
+
+msgid "Fermer"
+msgstr "Fermer"
+
+msgid "ACTIF"
+msgstr "ACTIF"
+
+msgid "INACTIF"
+msgstr "INACTIF"
+
+msgid "MODIFICATION_DE_LA_ACTE"
+msgstr "MODIFICATION DE L'ACTE"
+
+msgid "LISTE_DES_TARIFS"
+msgstr "LISTE DES TARIFS"
+
+msgid "Nouveau_tarif"
+msgstr "Nouveau tarif"
+
+msgid "Code_çacte"
+msgstr "Code acte"
+
+msgid "Coot_mutuelle"
+msgstr "Coût mutuelle"
+
+msgid "Coot_ICA"
+msgstr "Coût ICA"
+
+msgid "Desactiver"
+msgstr "Désactiver"
+
+msgid "AJOUT_DUN_NOUVEAU_TARIF"
+msgstr "AJOUT D'UN NOUVEAU TARIF"
+
+msgid "Acte"
+msgstr "Acte"
+
+msgid "Coef_classique"
+msgstr "Coef classique"
+
+msgid "PU_mutuelle "
+msgstr "PU mutuelle"
+
+msgid "Cout_HG "
+msgstr "Coût HG"
+
+msgid "Coef_CHU "
+msgstr "Coef CHU"
+
+msgid "GESTION DES PERMISSIONS"
+msgstr "GESTION DES PERMISSIONS"
+
+msgid "Groupe"
+msgstr "Groupe"
+
+msgid "Afficher"
+msgstr "Afficher"
+
+msgid "Choix"
+msgstr "Choix"
+
+msgid "AJOUTER_UN_PRESCRIPTEUR"
+msgstr "AJOUTER UN PRESCRIPTEUR"
+
+msgid "Numero_de_ordre"
+msgstr "Numéro d'ordre"
+
+msgid "Specialite"
+msgstr "Spécialité"
+
+msgid "CREATION_DUN_PRESTATAIRE"
+msgstr "CRÉATION D'UN PRESTATAIRE"
+
+msgid "Remboursement_a_l_ordre_de"
+msgstr "Remboursement à l'ordre de"
+
+msgid "Type_prestataire"
+msgstr "Type prestataire"
+
+msgid "Secteur"
+msgstr "Secteur"
+
+msgid "Type_de_etablissement"
+msgstr "Type d'établissement"
+
+msgid "Logo"
+msgstr "Logo"
+
+msgid "Email "
+msgstr "Email"
+
+msgid "Latitude"
+msgstr "Latitude"
+
+msgid "Longitude"
+msgstr "Longitude"
+
+msgid "Reseaux_de_soins"
+msgstr "Réseaux de soins"
+
+msgid "LIER_UN_PRESTATAIRE_A_DES_RESEAUX_DE_SOINS"
+msgstr "LIER UN PRESTATAIRE À DES RÉSEAUX DE SOINS"
+
+msgid "Nom_du_prestataire"
+msgstr "Nom du prestataire"
+
+msgid "IMPORTATION_DES_PRESCRIPTEURS"
+msgstr "IMPORTATION DES PRESCRIPTEURS"
+
+msgid "Fichier_modele_import"
+msgstr "Fichier modèle d'import"
+
+msgid "Fichier_de_Importation"
+msgstr "Fichier d'importation"
+
+msgid "Importer"
+msgstr "Importer"
+
+msgid "TARIF_PRESTATAIRE"
+msgstr "TARIF PRESTATAIRE"
+
+msgid "Fichier_contenant_le_tarif_du_prestataire"
+msgstr "Fichier contenant le tarif du prestataire"
+
+msgid "Importation_en_cours"
+msgstr "Importation en cours"
+
+msgid "MODIFICATION_DU_PRESCRIPTEUR"
+msgstr "MODIFICATION DU PRESCRIPTEUR"
+
+msgid "Numero_ordre"
+msgstr "Numéro d'ordre"
+
+msgid "MODIFICATION_DU_PRESTATAIRE"
+msgstr "MODIFICATION DU PRESTATAIRE"
+
+msgid "FICHE_PRESTATAIRE"
+msgstr "FICHE PRESTATAIRE"
+
+msgid "PRESTATAIRE"
+msgstr "PRESTATAIRE"
+
+msgid "Chargement"
+msgstr "Chargement"
+
+msgid "PRESCRIPTEURS"
+msgstr "PRESCRIPTEURS"
+
+msgid "COMPTES"
+msgstr "COMPTES"
+
+msgid "UTILISATEURS"
+msgstr "UTILISATEURS"
+
+msgid "RESEAUX_DE_SOINS"
+msgstr "RÉSEAUX DE SOINS"
+
+msgid "DU_PRESTATAIRE"
+msgstr "DU PRESTATAIRE"
+
+msgid "LISTE_DES_PRESCRIPTEURS"
+msgstr "LISTE DES PRESCRIPTEURS"
+
+msgid "Nouveau_prescripteur"
+msgstr "Nouveau prescripteur"
+
+msgid "Importation_des_prescripteurs"
+msgstr "Importation des prescripteurs"
+
+msgid "Telecharger_le_modele_de_tarif"
+msgstr "Télécharger le modèle de tarif"
+
+msgid "Importer_le_fichier_tarif_du_prestataire"
+msgstr "Importer le fichier tarif du prestataire"
+
+msgid "Code_acte"
+msgstr "Code acte"
+
+msgid "Libelle_acte "
+msgstr "Libellé acte"
+
+msgid "Libelle_acte"
+msgstr "Libellé acte"
+
+msgid "Coef"
+msgstr "Coef"
+
+msgid "PU"
+msgstr "PU"
+
+msgid "Cout"
+msgstr "Coût"
+
+msgid "LISTE_DES_COMPTES_UTILISATEURS"
+msgstr "LISTE DES COMPTES UTILISATEURS"
+
+msgid "Prénoms"
+msgstr "Prénoms"
+
+msgid "Login"
+msgstr "Login"
+
+msgid "LISTE_DES_RESEAUX_DE_SOINS"
+msgstr "LISTE DES RÉSEAUX DE SOINS"
+
+msgid "Lier_le_prestataire_a_des_reseaux_de_soins"
+msgstr "Lier le prestataire à des réseaux de soins"
+
+msgid "Nom_du_reseau_de_soin"
+msgstr "Nom du réseau de soin"
+
+msgid "Date_ajout"
+msgstr "Date d'ajout"
+
+msgid "Retirer"
+msgstr "Retirer"
+
+msgid "LISTE_DES_PRESTATAIRES"
+msgstr "LISTE DES PRESTATAIRES"
+
+msgid "Nouveau prestataire "
+msgstr "Nouveau prestataire"
+
+msgid "Name"
+msgstr "Nom"
+
+msgid "CREATION_DUN_RESEAU_DE_SOINS"
+msgstr "CRÉATION D'UN RÉSEAU DE SOINS"
+
+msgid "Nom_du_reseau_de_soins"
+msgstr "Nom du réseau de soins"
+
+msgid "MODIFICATION_DUN_RESEAU_DE_SOINS"
+msgstr "MODIFICATION D'UN RÉSEAU DE SOINS"
+
+msgid "JOINDRE_DES_PRESTATAIRES_AU_RESEAU_DE_SOINS"
+msgstr "JOINDRE DES PRESTATAIRES AU RÉSEAU DE SOINS"
+
+msgid "LISTE_DES_PRESTATAIRES_NON_ENCORE_MEMBRE_DU_RESEAU_DE_SOINS"
+msgstr "LISTE DES PRESTATAIRES NON ENCORE MEMBRES DU RÉSEAU DE SOINS"
+
+msgid "Integrer_tous_les_prestataires_selectionnes"
+msgstr "Intégrer tous les prestataires sélectionnés"
+
+msgid "Code_prestataire"
+msgstr "Code prestataire"
+
+msgid "Type_prestataire "
+msgstr "Type prestataire"
+
+msgid "FICHE_RESEAU_DE_SOINS"
+msgstr "FICHE RÉSEAU DE SOINS"
+
+msgid "RESEAU_DE_SOINS"
+msgstr "RÉSEAU DE SOINS"
+
+msgid "Nombre_prestataires"
+msgstr "Nombre de prestataires"
+
+msgid "LISTE_DES_PRESTATAIRES_DU_RESEAU_DESOINS"
+msgstr "LISTE DES PRESTATAIRES DU RÉSEAU DE SOINS"
+
+msgid "Joindre_des_prestataires"
+msgstr "Joindre des prestataires"
+
+msgid "Type prestataire"
+msgstr "Type prestataire"
+
+msgid "Creer_un_reseau_de_soins"
+msgstr "Créer un réseau de soins"
+
+msgid "PARAMETRAGE_DUN_TARIF"
+msgstr "PARAMÉTRAGE D'UN TARIF"
+
+msgid "PU_mutuel "
+msgstr "PU mutuel"
+
+msgid "Coefficient"
+msgstr "Coefficient"
+
+msgid "Cout_mutuel"
+msgstr "Coût mutuel"
+
+msgid "DETAILS_DUN_TARIF"
+msgstr "DÉTAILS D'UN TARIF"
+
+msgid "Coefficient_HG "
+msgstr "Coefficient HG"
+
+msgid "Coefficient_CHU "
+msgstr "Coefficient CHU"
+
+msgid "PU_CHU "
+msgstr "PU CHU"
+
+msgid "Coefficient_ICA"
+msgstr "Coefficient ICA"
+
+msgid "Cout_ICA "
+msgstr "Coût ICA"
+
+msgid "TARIFS_DE_BUREAU"
+msgstr "TARIFS DE BUREAU"
+
+msgid "Fichier_contenant_les_tarifs_de_bureau"
+msgstr "Fichier contenant les tarifs de bureau"
+
+msgid "Importer_les_tarifs_du_bureau"
+msgstr "Importer les tarifs du bureau"
+
+msgid "Web_Service_boBy"
+msgstr "Service Web BoBy"
+
+msgid "Actif"
+msgstr "Actif"
+
+msgid "Inactif"
+msgstr "Inactif"
+
+msgid "Ajouter un paramètre"
+msgstr "Ajouter un paramètre"
+
+msgid "Parametre"
+msgstr "Paramètre"
+
+msgid "Valeur"
+msgstr "Valeur"
+
+msgid "Enregistrer"
+msgstr "Enregistrer"
+
+msgid "LISTE_DES_WS_BOBYS"
+msgstr "LISTE DES SERVICES WEB BOBY"
+
+msgid "Nouveau_ws_boby"
+msgstr "Nouveau service web BoBy"
+
+msgid "ID"
+msgstr "ID"
+
+msgid "Ws_Boby"
+msgstr "Service Web BoBy"
+
+msgid "Ajouter_un_parametre"
+msgstr "Ajouter un paramètre"
+
+msgid "AJOUTER_DOCUMENT_BENEFICIAIRE"
+msgstr "AJOUTER DOCUMENT BÉNÉFICIAIRE"
+
+msgid "RETOUR"
+msgstr "RETOUR"
+
+msgid "BENEFICIAIRE"
+msgstr "BÉNÉFICIAIRE"
+
+msgid "Numero_Carte"
+msgstr "Numéro de carte"
+
+msgid "Prenom"
+msgstr "Prénom"
+
+msgid "Numero_police"
+msgstr "Numéro de police"
+
+msgid "Code_situation"
+msgstr "Code situation"
+
+msgid "CHARGER_UN_DOCUMENT_SUR_LE_BENEFICIAIRE"
+msgstr "CHARGER UN DOCUMENT SUR LE BÉNÉFICIAIRE"
+
+msgid "Type_de_document "
+msgstr "Type de document"
+
+msgid "Ce_document_est_il_confidentiel"
+msgstr "Ce document est-il confidentiel ?"
+
+msgid "Oui"
+msgstr "Oui"
+
+msgid "Commentaire"
+msgstr "Commentaire"
+
+msgid "ENREGISTRER"
+msgstr "ENREGISTRER"
+
+msgid "CONNEXION"
+msgstr "CONNEXION"
+
+msgid "Souvenez_vous_de_moi"
+msgstr "Souvenez-vous de moi"
+
+msgid "Mot_de_passe_oublie"
+msgstr "Mot de passe oublié"
+
+msgid "SE_CONNECTER"
+msgstr "SE CONNECTER"
+
+msgid "REINITIALISER_LE_MOT_DE_PASSE"
+msgstr "RÉINITIALISER LE MOT DE PASSE"
+
+msgid "Entrez_votre_email_ci_dessous_pour_recevoir_les_instructions_de_reinitialisation_du_mot_de_passe"
+msgstr "Entrez votre email ci-dessous pour recevoir les instructions de réinitialisation du mot de passe"
+
+msgid "ENVOYER"
+msgstr "ENVOYER"
+
+msgid "MOT_DE_PASSE_MODIFIE"
+msgstr "MOT DE PASSE MODIFIÉ"
+
+msgid "REINITIALISATION_DE_MOT_DE_PASSE"
+msgstr "RÉINITIALISATION DE MOT DE PASSE"
+
+msgid "VOTRE_MOT_DE_PASSE_A_ETE_DEFINI_AVEC_SUCCES !"
+msgstr "VOTRE MOT DE PASSE A ÉTÉ DÉFINI AVEC SUCCÈS !"
+
+msgid "CONNECTEZ_VOUS_ICI"
+msgstr "CONNECTEZ-VOUS ICI"
+
+msgid "Nouveau_mot_de_passe "
+msgstr "Nouveau mot de passe"
+
+msgid "Confirmer_nouveau_mot_de_passe"
+msgstr "Confirmer le nouveau mot de passe"
+
+msgid "REINITIALISER"
+msgstr "RÉINITIALISER"
+
+msgid "Les_mots_de_passe_ne_correspondent_pas"
+msgstr "Les mots de passe ne correspondent pas"
+
+msgid "The_password_reset_link_was_invalid"
+msgstr "Le lien de réinitialisation du mot de passe était invalide"
+
+msgid "possibly_because_it_has_already_been_used"
+msgstr "Possiblement parce qu'il a déjà été utilisé"
+
+msgid "Please_request_a_new_password_reset"
+msgstr "Veuillez demander une nouvelle réinitialisation du mot de passe"
+
+msgid "EMAIL_ENVOYE"
+msgstr "EMAIL ENVOYÉ"
+
+msgid "VERIFIEZ_VOTRE_EMAIL_POUR_REINITIALISER_VOTRE_MOT_DE_PASSE"
+msgstr "VÉRIFIEZ VOTRE EMAIL POUR RÉINITIALISER VOTRE MOT DE PASSE"
+
+msgid "Authentification_double_facteur"
+msgstr "Authentification à double facteur"
+
+msgid "Code de verification"
+msgstr "Code de vérification"
+
+msgid "Le code de verification a ete envoye a l_adresse e-mail"
+msgstr "Le code de vérification a été envoyé à l'adresse e-mail"
+
+msgid "Le code de verification a ete envoye au numero de telephone"
+msgstr "Le code de vérification a été envoyé au numéro de téléphone"
+
+msgid "Verifier"
+msgstr "Vérifier"
+
+msgid "Retour_a_la_page_de_connexion"
+msgstr "Retour à la page de connexion"
+
+msgid "ENTREE_EN_COURS"
+msgstr "ENTRÉE EN COURS"
+
+msgid "ENTREE"
+msgstr "ENTRÉE"
+
+msgid "SORTIE_EN_COURS"
+msgstr "SORTIE EN COURS"
+
+msgid "SORTIE"
+msgstr "SORTIE"
+
+msgid "LISTE_DES_BENEFICIAIRES"
+msgstr "LISTE DES BÉNÉFICIAIRES"
+
+msgid "EXPORTER_VERS_EXCEL"
+msgstr "EXPORTER VERS EXCEL"
+
+msgid "Ajoute_le"
+msgstr "Ajouté le"
+
+msgid "Entree_le"
+msgstr "Entrée le"
+
+msgid "Motif"
+msgstr "Motif"
+
+msgid "AUCUNE_DONNEE"
+msgstr "AUCUNE DONNÉE"
+
+msgid "BENEFICIAIRE_OVERVIEW"
+msgstr "APERÇU BÉNÉFICIAIRE"
+
+msgid "FICHE"
+msgstr "FICHE"
+
+msgid "FAMILLE"
+msgstr "FAMILLE"
+
+msgid "GARANTIES"
+msgstr "GARANTIES"
+
+msgid "IMPORTER_UNE_PHOTO"
+msgstr "IMPORTER UNE PHOTO"
+
+msgid "DEMANDER_UNE_SUSPENSION"
+msgstr "DEMANDER UNE SUSPENSION"
+
+msgid "DEMANDER_UNE_SORTIE"
+msgstr "DEMANDER UNE SORTIE"
+
+msgid "DEMANDER_UN_AJOUT"
+msgstr "DEMANDER UN AJOUT"
+
+msgid "TABLEAU_DE_BORD"
+msgstr "TABLEAU DE BORD"
+
+msgid "SELECTIONNER_UNE_POLICE"
+msgstr "SÉLECTIONNER UNE POLICE"
+
+msgid "STATISTIQUES"
+msgstr "STATISTIQUES"
+
+msgid "POPULATION_TOTALE"
+msgstr "POPULATION TOTALE"
+
+msgid "DETAILS_CAMPAGNE_D_ENROLEMENT"
+msgstr "DÉTAILS CAMPAGNE D'ENRÔLEMENT"
+
+msgid "CAMPAGNE_D_ENROLEMENT"
+msgstr "CAMPAGNE D'ENRÔLEMENT"
+
+msgid "Date_Debut"
+msgstr "Date de début"
+
+msgid "Date_Fin"
+msgstr "Date de fin"
+
+msgid "Police"
+msgstr "Police"
+
+msgid "LISTE_DES_ENROLES_A_VALIDER"
+msgstr "LISTE DES ENRÔLÉS À VALIDER"
+
+msgid "Adherent_principal"
+msgstr "Adhérent principal"
+
+msgid "Date_Naissance"
+msgstr "Date de naissance"
+
+msgid "Qualite"
+msgstr "Qualité"
+
+msgid "LISTE_DES_ENROLES_EN_ATTENTE"
+msgstr "LISTE DES ENRÔLÉS EN ATTENTE"
+
+msgid " AUCUNE_DONNEE"
+msgstr "AUCUNE DONNÉE"
+
+msgid "LISTE_DES_ENROLES_ACCEPTES"
+msgstr "LISTE DES ENRÔLÉS ACCEPTÉS"
+
+msgid "DETAILS_FORMULE_POLICE"
+msgstr "DÉTAILS FORMULE POLICE"
+
+msgid "POLICE"
+msgstr "POLICE"
+
+msgid "Nom_assure"
+msgstr "Nom de l'assuré"
+
+msgid "Reference_police"
+msgstr "Référence police"
+
+msgid "FORMULE"
+msgstr "FORMULE"
+
+msgid "Libelle_formule"
+msgstr "Libellé formule"
+
+msgid "Code_formule"
+msgstr "Code formule"
+
+msgid "SPECIFICITES_DU_BAREME"
+msgstr "SPÉCIFICITÉS DU BARÈME"
+
+msgid "Sous_rubrique"
+msgstr "Sous-rubrique"
+
+msgid "Regroupement_Acte"
+msgstr "Regroupement d'acte"
+
+msgid "Lien_Parente"
+msgstr "Lien de parenté"
+
+msgid "Age_Min"
+msgstr "Âge minimum"
+
+msgid "Age_Max"
+msgstr "Âge maximum"
+
+msgid "Garantie_Exclu"
+msgstr "Garantie exclue"
+
+msgid "Couverture"
+msgstr "Couverture"
+
+msgid "Plafond_Sous_Rubrique"
+msgstr "Plafond sous-rubrique"
+
+msgid "Plafond_Regroupement"
+msgstr "Plafond de regroupement"
+
+msgid "Plafond_Acte"
+msgstr "Plafond acte"
+
+msgid "Periodicite"
+msgstr "Périodicité"
+
+msgid "Garantie"
+msgstr "Garantie"
+
+msgid "Exclu"
+msgstr "Exclu"
+
+msgid "PLAFONDS_GENERAUX"
+msgstr "PLAFONDS GÉNÉRAUX"
+
+msgid "Type_plafond"
+msgstr "Type de plafond"
+
+msgid "Plafond_Consommation_Famille"
+msgstr "Plafond de consommation familiale"
+
+msgid "Plafond_Consommation_Individuelle"
+msgstr "Plafond de consommation individuelle"
+
+msgid "DETAILS_ACTE"
+msgstr "DÉTAILS ACTE"
+
+msgid "FORMULE_DE_LA_POLICE"
+msgstr "FORMULE DE LA POLICE"
+
+msgid "Code_Formule"
+msgstr "Code formule"
+
+msgid "Libelle_Formule"
+msgstr "Libellé formule"
+
+msgid "Territorialite"
+msgstr "Territorialité"
+
+msgid "GARANTIE"
+msgstr "GARANTIE"
+
+msgid "FRANCHISE"
+msgstr "FRANCHISE"
+
+msgid "TICKET_MODERATEUR"
+msgstr "TICKET MODÉRATEUR"
+
+msgid "Type_de_franchise"
+msgstr "Type de franchise"
+
+msgid "Franchise"
+msgstr "Franchise"
+
+msgid "PLAFONDS_PAR_PERIODE"
+msgstr "PLAFONDS PAR PÉRIODE"
+
+msgid "Unite_de_la_periode"
+msgstr "Unité de la période"
+
+msgid "Duree_de_la_periode"
+msgstr "Durée de la période"
+msgid "ACTE"
+msgstr "ACTE"
+
+msgid "DETAILS_POLICE"
+msgstr "DÉTAILS POLICE"
+
+msgid "DATES"
+msgstr "DATES"
+
+msgid "FACTURATION"
+msgstr "FACTURATION"
+
+msgid "LA_PRIME"
+msgstr "LA PRIME"
+
+msgid "DOCUMENTS_DU_BENEFICIAIRE"
+msgstr "DOCUMENTS DU BÉNÉFICIAIRE"
+
+msgid "AJOUTER_UN_NOUVEAU_DOCUMENT"
+msgstr "AJOUTER UN NOUVEAU DOCUMENT"
+
+msgid "Type_document"
+msgstr "Type de document"
+
+msgid "Telecharger_document"
+msgstr "Télécharger le document"
+
+msgid "DOCUMENTS_DE_LA_POLICE"
+msgstr "DOCUMENTS DE LA POLICE"
+
+msgid "Nous_vous_invitons_a_vous_enregister_a_la_nouvelle_compagne_d_enrolement_sur_votre_police_sante"
+msgstr "Nous vous invitons à vous enregistrer à la nouvelle campagne d'enrôlement sur votre police santé"
+
+msgid "en_cliquant_sur_ce_lien_ci_dessous"
+msgstr "en cliquant sur ce lien ci-dessous"
+
+msgid "Campagne"
+msgstr "Campagne"
+
+msgid "S__enroler"
+msgstr "S'enrôler"
+
+msgid "Cordialement"
+msgstr "Cordialement"
+
+msgid "L_equipe_OLEA_Sante"
+msgstr "L'équipe OLEA Santé"
+
+msgid "ENROLEMENT"
+msgstr "ENRÔLEMENT"
+
+msgid "SUIVI_DES_ENROLEMENTS"
+msgstr "SUIVI DES ENRÔLEMENTS"
+
+msgid "VOTRE_LIEN_EXPIRE_DANS"
+msgstr "VOTRE LIEN EXPIRE DANS"
+
+msgid "L_ADHERENT_PRINCIPAL_DU_DOSSIER_D_ENROLEMENT_EST"
+msgstr "L'ADHÉRENT PRINCIPAL DU DOSSIER D'ENRÔLEMENT EST"
+
+msgid "DEJA_INSCRIT"
+msgstr "DÉJÀ INSCRIT"
+
+msgid "Date_de_naissance"
+msgstr "Date de naissance"
+
+msgid "Date_d_entree"
+msgstr "Date d'entrée"
+
+msgid "Cree_le"
+msgstr "Créé le"
+
+msgid "Statut_d_enrolement"
+msgstr "Statut d'enrôlement"
+
+msgid "MODIFIER"
+msgstr "MODIFIER"
+
+msgid "SOUMETTRE_AU_GRH"
+msgstr "SOUMETTRE AU GRH"
+
+msgid "AUCUN_ENROLEMENT"
+msgstr "AUCUN ENRÔLEMENT"
+
+msgid "VOULEZ_VOUS_VRAIMENT_SOUMETTRE_LE_DOSSIER_D_ENROLEMENT"
+msgstr "VOULEZ-VOUS VRAIMENT SOUMETTRE LE DOSSIER D'ENRÔLEMENT"
+
+msgid "CONFIRMER"
+msgstr "CONFIRMER"
+
+msgid "ANNULER"
+msgstr "ANNULER"
+
+msgid "MODIFIER_L_ENROLEMENT"
+msgstr "MODIFIER L'ENRÔLEMENT"
+
+msgid "CREER_NOUVEAU_ENROLEMENT"
+msgstr "CRÉER UN NOUVEL ENRÔLEMENT"
+
+msgid "AJOUTER_UN_NOUVEAU_ENROLEMENT"
+msgstr "AJOUTER UN NOUVEL ENRÔLEMENT"
+
+msgid "VOUS_POUVEZ_AJOUTER"
+msgstr "VOUS POUVEZ AJOUTER"
+
+msgid "MODIFIER_ET_ENREGISTRER_UN_ENROLEMENT_SUR_VOTRE_CAMPAGNE"
+msgstr "MODIFIER ET ENREGISTRER UN ENRÔLEMENT SUR VOTRE CAMPAGNE"
+
+msgid "IDENTITE"
+msgstr "IDENTITÉ"
+
+msgid "Photo"
+msgstr "Photo"
+
+msgid "ADHERANT_PRINCIPAL"
+msgstr "ADHÉRENT PRINCIPAL"
+
+msgid "Qualite_beneficiaire"
+msgstr "Qualité bénéficiaire"
+
+msgid "Code_postal"
+msgstr "Code postal"
+
+msgid "VALIDER_L_ENREGISTREMENT"
+msgstr "VALIDER L'ENREGISTREMENT"
+
+msgid "MEMBRES_DE_LA_FAMILLE"
+msgstr "MEMBRES DE LA FAMILLE"
+
+msgid "Date_naissance"
+msgstr "Date de naissance"
+
+msgid "Entree"
+msgstr "Entrée"
+
+msgid "FICHE_D_IDENTITE"
+msgstr "FICHE D'IDENTITÉ"
+
+msgid "AUCUNE_PHOTO"
+msgstr "AUCUNE PHOTO"
+
+msgid "ASSURANCE"
+msgstr "ASSURANCE"
+
+msgid "ADHERENT_PRINCIPAL"
+msgstr "ADHÉRENT PRINCIPAL"
+
+msgid "FICHE_QUITTANCE"
+msgstr "FICHE QUITTANCE"
+
+msgid "Emise_le"
+msgstr "Émise le"
+
+msgid "Fin_periode"
+msgstr "Fin de période"
+
+msgid "Type_quittance"
+msgstr "Type de quittance"
+
+msgid "Prime_Nette"
+msgstr "Prime Nette"
+
+msgid "Totale_TTC"
+msgstr "Total TTC"
+
+msgid "CREER_NOUVEAU_BENEFICIAIRE"
+msgstr "CRÉER UN NOUVEAU BÉNÉFICIAIRE"
+
+msgid "ADHERENT_DE_LA_FAMILLE"
+msgstr "ADHÉRENT DE LA FAMILLE"
+
+msgid "AJOUTER_UN_MEMBRE_A_LA_FAMILLE"
+msgstr "AJOUTER UN MEMBRE À LA FAMILLE"
+
+msgid "Pays_de_naissance"
+msgstr "Pays de naissance"
+
+msgid "Civilite"
+msgstr "Civilité"
+
+msgid "Masculin"
+msgstr "Masculin"
+
+msgid "Feminin"
+msgstr "Féminin"
+
+msgid "FORMULE_DE_GARANTIE_COLLEGE"
+msgstr "FORMULE DE GARANTIE COLLÈGE"
+
+msgid "AJOUTER"
+msgstr "AJOUTER"
+
+msgid "CREER_UN_NOUVEAU_BENEFICIAIRE"
+msgstr "CRÉER UN NOUVEAU BÉNÉFICIAIRE"
+
+msgid "FORMULAIRE_D_AJOUT_D_UN_BENEFICIAIRE"
+msgstr "FORMULAIRE D'AJOUT D'UN BÉNÉFICIAIRE"
+
+msgid "Numero_Matricule"
+msgstr "Numéro Matricule"
+
+msgid "Numero_CNI"
+msgstr "Numéro CNI"
+
+msgid "Numero_de_securite_sociale"
+msgstr "Numéro de sécurité sociale"
+
+msgid "Pays_de_residence"
+msgstr "Pays de résidence"
+
+msgid "FORMULES_DE_GARANTIE"
+msgstr "FORMULES DE GARANTIE"
+
+msgid "Taux_de_couverture"
+msgstr "Taux de couverture"
+
+msgid "Type_tarif"
+msgstr "Type tarif"
+
+msgid "Date_d_effet"
+msgstr "Date d'effet"
+
+msgid "IMPORTER_PHOTO_BENEFICIAIRE"
+msgstr "IMPORTER PHOTO BÉNÉFICIAIRE"
+
+msgid "IMPORTER_LA_PHOTO_DU_BENEFICIAIRE"
+msgstr "IMPORTER LA PHOTO DU BÉNÉFICIAIRE"
+
+msgid "IMPORTER"
+msgstr "IMPORTER"
+
+msgid "PHOTO_ENREGISTREE_AVEC_SUCCES"
+msgstr "PHOTO ENREGISTRÉE AVEC SUCCÈS"
+
+msgid "INSCRIPTIONS_A_VALIDER"
+msgstr "INSCRIPTIONS À VALIDER"
+
+msgid "INCORPORATIONS_A_VALIDER"
+msgstr "INCORPORATIONS À VALIDER"
+
+msgid "VALIDER"
+msgstr "VALIDER"
+
+msgid "REJETER"
+msgstr "REJETER"
+
+msgid "VALIDER_TOUS"
+msgstr "VALIDER TOUS"
+
+msgid "AUCUNE_DEMANDE_D_INCORPORATIONS"
+msgstr "AUCUNE DEMANDE D'INCORPORATIONS"
+
+msgid "VEUILLEZ_RENSEIGNER_LA_DATE_D_ENTREE"
+msgstr "VEUILLEZ RENSEIGNER LA DATE D'ENTRÉE"
+
+msgid "DEMANDES_EN_ATTENTE_DE_VALIDATION"
+msgstr "DEMANDES EN ATTENTE DE VALIDATION"
+
+msgid "NOUVELLE_DEMANDE_D_INCORPORATION"
+msgstr "NOUVELLE DEMANDE D'INCORPORATION"
+
+msgid "Lien_de_parente"
+msgstr "Lien de parenté"
+
+msgid "Tableau_de_bord"
+msgstr "Tableau de bord"
+
+msgid "Polices"
+msgstr "Polices"
+
+msgid "OnBoarding"
+msgstr "OnBoarding"
+
+msgid "Enrolement"
+msgstr "Enrôlement"
+
+msgid "CAMPAGNES_D_ENROLEMENT"
+msgstr "CAMPAGNES D'ENROLEMENT"
+
+msgid "NOUVELLE_CAMPAGNE_D_ENROLEMENT"
+msgstr "NOUVELLE CAMPAGNE D'ENROLEMENT"
+
+msgid "AJOUTER_UNE_CAMPAGNE_D_ENROLEMENT"
+msgstr "AJOUTER UNE CAMPAGNE D'ENROLEMENT"
+
+msgid "Date_fin"
+msgstr "Date fin"
+
+msgid "Formules"
+msgstr "Formules"
+
+msgid "Destinataire"
+msgstr "Destinataire"
+
+msgid "Veuillez_separer_chaque_adresse_email_par_un_point_virgule"
+msgstr "Veuillez séparer chaque adresse email par un point-virgule"
+
+msgid "CREER"
+msgstr "CRÉER"
+
+msgid "POLICE_OVERVIEW"
+msgstr "APERÇU DE LA POLICE"
+
+msgid "FORMULES"
+msgstr "FORMULES"
+
+msgid "DEMANDES_EN_COURS"
+msgstr "DEMANDES EN COURS"
+
+msgid "PRESTATAIRE_MEDICAL"
+msgstr "PRESTATAIRE MÉDICAL"
+
+msgid "RETOUR_A_L_ACCEUIL"
+msgstr "RETOUR À L'ACCUEIL"
+
+msgid "Societe"
+msgstr "Société"
+
+msgid "Categorie"
+msgstr "Catégorie"
+
+msgid "Medecin_conseil"
+msgstr "Médecin conseil"
+
+msgid "Ref"
+msgstr "Réf"
+
+msgid "Public"
+msgstr "Public"
+
+msgid "Prive"
+msgstr "Privé"
+
+msgid "SPECIALITES"
+msgstr "SPÉCIALITÉS"
+
+msgid "AUTRES"
+msgstr "AUTRES"
+
+msgid "RESEAUX_DU_PRESTATAIRE"
+msgstr "RÉSEAUX DU PRESTATAIRE"
+
+msgid "Num_reseau"
+msgstr "Num réseau"
+
+msgid "Nom_reseau"
+msgstr "Nom réseau"
+
+msgid "Debut"
+msgstr "Début"
+
+msgid "Fin"
+msgstr "Fin"
+
+msgid "PRATICIENS_RATTACHES_AU_CENTRE_DE_SOINS"
+msgstr "PRATICIENS RATTACHÉS AU CENTRE DE SOINS"
+
+msgid "Nom_Prenom"
+msgstr "Nom Prénom"
+
+msgid "QUITTANCES_IMPAYEES"
+msgstr "QUITTANCES IMPAYÉES"
+
+msgid "Numero_de_quittance"
+msgstr "Numéro de quittance"
+
+msgid "Prime_nette"
+msgstr "Prime nette"
+
+msgid "LISTE_TOTALE_DES_QUITTANCES"
+msgstr "LISTE TOTALE DES QUITTANCES"
+
+msgid "RESEAU_DE_SOIN"
+msgstr "RÉSEAU DE SOIN"
+
+msgid "RESEAU"
+msgstr "RÉSEAU"
+
+msgid "Nom_du_reseau"
+msgstr "Nom du réseau"
+
+msgid "Statut_de_reseau"
+msgstr "Statut de réseau"
+
+msgid "PRESTATAIRE_DU_RESEAU"
+msgstr "PRESTATAIRE DU RÉSEAU"
+
+msgid "PRESTATAIRE_EXCLUS_DU_RESEAU"
+msgstr "PRESTATAIRE EXCLUS DU RÉSEAU"
+
+msgid "SORTIR_BENEFICIAIRE"
+msgstr "SORTIR BÉNÉFICIAIRE"
+
+msgid "SORTIR_LE_BENEFICIAIRE"
+msgstr "SORTIR LE BÉNÉFICIAIRE"
+
+msgid "Date_de_sortie"
+msgstr "Date de sortie"
+
+msgid "SORTIR"
+msgstr "SORTIR"
+
+msgid "DEMANDE_SORTIE_ENREGISTREE_AVEC_SUCCES"
+msgstr "DEMANDE DE SORTIE ENREGISTRÉE AVEC SUCCÈS"
+
+msgid "DEMANDER_SUSPENSION_BENEFICIAIRE"
+msgstr "DEMANDER SUSPENSION BÉNÉFICIAIRE"
+
+msgid "SUSPENDRE_LE_BENEFICIAIRE"
+msgstr "SUSPENDRE LE BÉNÉFICIAIRE"
+
+msgid "Date_de_suspension"
+msgstr "Date de suspension"
+
+msgid "SUSPENDRE"
+msgstr "SUSPENDRE"
+
+msgid "DEMANDE_ENREGISTREE_AVEC_SUCCES"
+msgstr "DEMANDE ENREGISTRÉE AVEC SUCCÈS"
+
+msgid "EVOLUTION_DU_TARIF_DE_L_ADHESION_POUR_L_ENSEMBLE_DE_LA_FAMILLE"
+msgstr "ÉVOLUTION DU TARIF DE L'ADHÉSION POUR L'ENSEMBLE DE LA FAMILLE"
+
+msgid "Numero_famille"
+msgstr "Numéro famille"
+
+msgid "Date"
+msgstr "Date"
+
+msgid "Total_HT"
+msgstr "Total HT"
+
+msgid "Total_TTC"
+msgstr "Total TTC"
+
+msgid "NB_conjoints"
+msgstr "Nb conjoints"
+
+msgid "NB_ascendants"
+msgstr "Nb ascendants"
+
+msgid "NB_enfants"
+msgstr "Nb enfants"
+
+msgid "NB_adultes"
+msgstr "Nb adultes"
+
+msgid "NB_enfants_sup"
+msgstr "Nb enfants sup"
+
+msgid "NB_adultes_sup"
+msgstr "Nb adultes sup"
+
+msgid "Mode_calcul"
+msgstr "Mode de calcul"
+
+msgid "TTC_enfant"
+msgstr "TTC enfant"
+
+msgid "TTC_adulte"
+msgstr "TTC adulte"
+
+msgid "TTC_ascendant"
+msgstr "TTC ascendant"
+
+msgid "TTC_enfants_sup"
+msgstr "TTC enfants sup"
+
+msgid "TTC_adultes_sup"
+msgstr "TTC adultes sup"
+
+msgid "TTC_famille"
+msgstr "TTC famille"
+
+msgid "TTC_surprime"
+msgstr "TTC surprime"
+
+msgid "Français"
+msgstr "Français"
+
+msgid "English"
+msgstr "Anglais"
+
+#, python-format
+msgid "%d élément a été désactivé avec succès."
+msgid_plural "%d éléments ont été désactivés avec succès."
+msgstr[0] "%d élément a été désactivé avec succès."
+msgstr[1] "%d éléments ont été désactivés avec succès."
+
+#, python-format
+msgid "%d élément été désactivé avec succès."
+msgid_plural "%d éléments ont été désactivés avec succès."
+msgstr[0] "%d élément a été désactivé avec succès."
+msgstr[1] "%d éléments ont été désactivés avec succès."
+
+#, python-format
+msgid "%d carte a été désactivé avec succès."
+msgid_plural "%d cartes ont été désactivées avec succès."
+msgstr[0] "%d carte a été désactivée avec succès."
+msgstr[1] "%d cartes ont été désactivées avec succès."
+
+#, python-format
+msgid "%d carte été désactivé avec succès."
+msgid_plural "%d cartes ont été désactivées avec succès."
+msgstr[0] "%d carte a été désactivée avec succès."
+msgstr[1] "%d cartes ont été désactivées avec succès."
+
+msgid "LISTE DES CLIENTS"
+msgstr "LISTE DES CLIENTS"
+
+msgid "Nouveau client"
+msgstr "Nouveau client"
+
+msgid "Nom du client"
+msgstr "Nom du client"
+
+msgid "N° Police"
+msgstr "N° Police"
+
+msgid "N° Carte"
+msgstr "N° Carte"
+
+msgid "Code client"
+msgstr "Code client"
+
+msgid "Nom complet"
+msgstr "Nom complet"
+
+msgid "N° Polices"
+msgstr "N° Polices"
+
+msgid "Type personne"
+msgstr "Type de personne"
+
+msgid "DETAILS_DU_CLIENT"
+msgstr "DÉTAILS DU CLIENT"
+
+msgid "Gestionnaire"
+msgstr "Gestionnaire"
+
+#msgid "Site_web"
+#msgstr "Site web"
+
+msgid "LISTE_DE_SES_QUITTANCES"
+msgstr "LISTE DE SES QUITTANCES"
+
+msgid "Debut_priode"
+msgstr "Début période"
+
+msgid "Changement_d_assureur"
+msgstr "Changement d'assureur"
+
+msgid "Transfert_de_beneficiaires"
+msgstr "Transfert de bénéficiaires"
+
+msgid "Ajouter_une_filiale"
+msgstr "Ajouter une filiale"
+
+msgid "PAGE_POLICE"
+msgstr "PAGE POLICE"
+
+msgid "ASSUREUR"
+msgstr "ASSUREUR"
+
+msgid "En_cours"
+msgstr "En cours"
+
+msgid "AVENANTS"
+msgstr "AVENANTS"
+
+msgid "BENEFICIAIRES"
+msgstr "BÉNÉFICIAIRES"
+
+msgid "SINISTRES"
+msgstr "SINISTRES"
+
+msgid "CHARGER_LES_COEFF_PAR_DEFAUT"
+msgstr "CHARGER LES COEFFICIENTS PAR DÉFAUT"
+
+msgid "Nom_Societe"
+msgstr "Nom Société"
+
+msgid "Branche"
+msgstr "Branche"
+
+msgid "APPORTEUR_ET_PROGRAMME"
+msgstr "APPORTEUR ET PROGRAMME"
+
+msgid "Apporteur"
+msgstr "Apporteur"
+
+msgid "Programme_international"
+msgstr "Programme international"
+
+msgid "Placement_et_gestion"
+msgstr "Placement et gestion"
+
+msgid "en local"
+msgstr "en local"
+
+msgid "Date_de_effet"
+msgstr "Date d'effet"
+
+msgid "Duree_de_la_police"
+msgstr "Durée de la police"
+
+msgid "Renouvellement"
+msgstr "Renouvellement"
+
+msgid "Tacite_reconduction"
+msgstr "Tacite reconduction"
+
+msgid "Prochaine_date_de_effet"
+msgstr "Prochaine date d'effet"
+
+msgid "Preavis_de_resiliation"
+msgstr "Préavis de résiliation"
+
+msgid "Date_de_fin_de_periode_de_garantie"
+msgstr "Date de fin de période de garantie"
+
+msgid "Devise_Police"
+msgstr "Devise de la police"
+
+msgid "Fractionnement"
+msgstr "Fractionnement"
+
+msgid "Trimestriel"
+msgstr "Trimestriel"
+
+msgid "Virement"
+msgstr "Virement"
+
+msgid "Prochaine_date_de_facture"
+msgstr "Prochaine date de facture"
+
+msgid "COMMISSION"
+msgstr "COMMISSION"
+
+msgid "Taux_de_com_global"
+msgstr "Taux de commission global"
+
+msgid "Dont_taux_de_com_de_apport"
+msgstr "Dont taux de commission d'apport"
+
+msgid "Dont_taux_com_de_gestion"
+msgstr "Dont taux de commission de gestion"
+
+msgid "Participation"
+msgstr "Participation"
+
+msgid "BUDGET_ANNUEL_ESTIMATIF"
+msgstr "BUDGET ANNUEL ESTIMATIF"
+
+msgid "Police_TTC"
+msgstr "Police TTC"
+
+msgid "Com_Annuelle"
+msgstr "Commission Annuelle"
+
+msgid "Frais"
+msgstr "Frais"
+
+msgid "Com_totale_annuelle"
+msgstr "Commission totale annuelle"
+
+msgid "PARAMETRES_POLICE_SANTE"
+msgstr "PARAMÈTRES POLICE SANTÉ"
+
+msgid "Mode_calcul_de_la_prime"
+msgstr "Mode de calcul de la prime"
+
+msgid "non_renseignee"
+msgstr "non renseignée"
+
+msgid "Ticket_Moderateur"
+msgstr "Ticket Modérateur"
+
+msgid "aucun_(TM_deduit_des_remboursement)"
+msgstr "aucun (TM déduit des remboursements)"
+
+msgid "Age_maximum_adulte"
+msgstr "Âge maximum adulte"
+
+msgid "Age_maximum_enfant"
+msgstr "Âge maximum enfant"
+
+msgid "Calcul_du_TM"
+msgstr "Calcul du TM"
+
+msgid "Nb_de_enfants_max_par_famille"
+msgstr "Nb d'enfants max par famille"
+
+msgid "Nb_de_personnes_max_par_famille"
+msgstr "Nb de personnes max par famille"
+
+msgid "Autofinancement"
+msgstr "Autofinancement"
+
+msgid "GESTIONNAIRES"
+msgstr "GESTIONNAIRES"
+
+msgid "SITUATION"
+msgstr "SITUATION"
+
+msgid "Mouvement"
+msgstr "Mouvement"
+
+msgid "Affaire_Nouvelle"
+msgstr "Affaire Nouvelle"
+
+msgid "ID_Police"
+msgstr "ID Police"
+
+msgid "COEFFICIENTS_STATS"
+msgstr "COEFFICIENTS STATISTIQUES"
+
+msgid "Taux_charge_sur_prime_HT"
+msgstr "Taux de charge sur prime HT"
+
+msgid "Coefficient_N1"
+msgstr "Coefficient N1"
+
+msgid "Coefficient_N3"
+msgstr "Coefficient N3"
+
+msgid "Coefficien_N"
+msgstr "Coefficient N"
+
+msgid "Coefficient_N2"
+msgstr "Coefficient N2"
+
+msgid "AJOUT_DUN_ACOMPTE"
+msgstr "AJOUT D'UN ACOMPTE"
+
+msgid "Montant_acompte"
+msgstr "Montant acompte"
+
+msgid "CHANGEMENT_DE_ASSUREUR"
+msgstr "CHANGEMENT D'ASSUREUR"
+
+msgid "Ancienne_police "
+msgstr "Ancienne police"
+
+msgid "Nouvelle_Police"
+msgstr "Nouvelle Police"
+
+msgid "Transferer"
+msgstr "Transférer"
+
+msgid "AJOUT_DUN_CLIENT"
+msgstr "AJOUT D'UN CLIENT"
+
+msgid "Type_client"
+msgstr "Type de client"
+
+msgid "Fichier_tarification "
+msgstr "Fichier de tarification"
+
+msgid "Logo_du_client"
+msgstr "Logo du client"
+
+msgid "Adresse_postale"
+msgstr "Adresse postale"
+
+msgid "MODIFICATION_DUN_CLIENT"
+msgstr "MODIFICATION D'UN CLIENT"
+
+msgid "Fichier_tarification"
+msgstr "Fichier de tarification"
+
+msgid "Valider_les_modifications"
+msgstr "Valider les modifications"
+
+msgid "AJOUT_DUN_CONTACT"
+msgstr "AJOUT D'UN CONTACT"
+
+msgid "AJOUT_DUN_DOCUMENT"
+msgstr "AJOUT D'UN DOCUMENT"
+
+msgid "Ce_document_est_il_confidentiel "
+msgstr "Ce document est-il confidentiel ?"
+
+msgid "TITRE_DU_MODAL"
+msgstr "TITRE DU MODAL"
+
+msgid "CONTENU_DU_MODAL_DYNAMIQUE"
+msgstr "CONTENU DU MODAL DYNAMIQUE"
+
+msgid "AJOUT_DUNE_FILIALE"
+msgstr "AJOUT D'UNE FILIALE"
+
+msgid "TRANSFERT_DE_BENEFICIAIRES_DUNE_POLICE_VERS_UNE_AUTRE"
+msgstr "TRANSFERT DE BÉNÉFICIAIRES D'UNE POLICE VERS UNE AUTRE"
+
+msgid "Police_actuelle "
+msgstr "Police actuelle"
+
+msgid "Formule_actuelle"
+msgstr "Formule actuelle"
+
+msgid "Etat_beneficiaire"
+msgstr "État bénéficiaire"
+
+msgid "SORTI"
+msgstr "SORTI"
+
+msgid "Nouvelle_formule"
+msgstr "Nouvelle formule"
+
+msgid "Liste_des_beneficiaires_actifs"
+msgstr "Liste des bénéficiaires actifs"
+
+msgid "Numero_carte"
+msgstr "Numéro de carte"
+
+msgid "Traitement en cours"
+msgstr "Traitement en cours"
+
+msgid "Montant_acompte "
+msgstr "Montant acompte"
+
+msgid "LISTE_DES_MOUVEMENTS_GRH_A_VALIDER"
+msgstr "LISTE DES MOUVEMENTS GRH À VALIDER"
+
+msgid "Exporter_vers_Excel"
+msgstr "Exporter vers Excel"
+
+msgid "Client:"
+msgstr "Client :"
+
+msgid "Nom_beneficiaire"
+msgstr "Nom bénéficiaire"
+
+msgid "Date_mouvement"
+msgstr "Date du mouvement"
+
+msgid "Nom_du_beneficiaire"
+msgstr "Nom du bénéficiaire"
+
+msgid "Prenoms_du_beneficiaire"
+msgstr "Prénoms du bénéficiaire"
+
+msgid "FICHE_BENEFICIAIRE"
+msgstr "FICHE BÉNÉFICIAIRE"
+
+msgid "FORMULE_DE_GARANTIE"
+msgstr "FORMULE DE GARANTIE"
+
+msgid "AVENANT"
+msgstr "AVENANT"
+
+msgid "Date_de_mouvement"
+msgstr "Date de mouvement"
+
+msgid "Situation_matrimoniale"
+msgstr "Situation matrimoniale"
+
+msgid "Nom_jeune_fille"
+msgstr "Nom de jeune fille"
+
+msgid "Lieu_de_naissance"
+msgstr "Lieu de naissance"
+
+msgid "Pays_d_activite_professionnelle"
+msgstr "Pays d'activité professionnelle"
+
+msgid "Profession"
+msgstr "Profession"
+
+msgid "Matricule_salarie"
+msgstr "Matricule salarié"
+
+msgid "Liste_des_membres_de_la_famille"
+msgstr "Liste des membres de la famille"
+
+msgid "Formule_du_beneficiaire"
+msgstr "Formule du bénéficiaire"
+
+msgid "Historique_des_mouvements_du_beneficiaire"
+msgstr "Historique des mouvements du bénéficiaire"
+
+msgid "Date_effet"
+msgstr "Date d'effet"
+
+msgid "L_adherent_principal_n_a_pas_encore_ete_incorpore"
+msgstr "L'adhérent principal n'a pas encore été incorporé"
+
+msgid "MODIFICATION_D_UN_BENEFICIAIRE"
+msgstr "MODIFICATION D'UN BÉNÉFICIAIRE"
+
+msgid "TRAITEMENT_EN COURS"
+msgstr "TRAITEMENT EN COURS"
+
+msgid "Celibataire"
+msgstr "Célibataire"
+
+msgid "Marie(e)"
+msgstr "Marié(e)"
+
+msgid "Divorce(e)"
+msgstr "Divorcé(e)"
+
+msgid "Surprime_Hors_Taxes"
+msgstr "Surprime Hors Taxes"
+
+msgid "Surprime_Toutes_Taxes_Comprises"
+msgstr "Surprime Toutes Taxes Comprises"
+
+msgid "Plafond_extra"
+msgstr "Plafond extra"
+
+msgid "Releve_d_Identite_Bancaire"
+msgstr "Relevé d'Identité Bancaire"
+
+msgid "ANNULATION_D_UNE_QUITTANCE_NON_REVERSEE_COMPAGNIE"
+msgstr "ANNULATION D'UNE QUITTANCE NON REVERSÉE À LA COMPAGNIE"
+
+msgid "Quittance"
+msgstr "Quittance"
+
+msgid "Type_Quittance"
+msgstr "Type de Quittance"
+
+msgid "Prime_Toutes_Taxes_Comprises"
+msgstr "Prime Toutes Taxes Comprises"
+
+msgid "Solde"
+msgstr "Solde"
+
+msgid "Annuler"
+msgstr "Annuler"
+
+msgid "La_quittance"
+msgstr "La quittance"
+
+msgid "a_bien_ete_supprimee"
+msgstr "a bien été supprimée"
+
+msgid "Aucune_correspondance"
+msgstr "Aucune correspondance"
+
+msgid "L_annulation_ne_peut_s_effectuer_car_au_moins_un_reglement_associe_est_reverse_compagnie"
+msgstr "L'annulation ne peut s'effectuer car au moins un règlement associé est reversé à la compagnie"
+
+msgid "Faire_un_avenant"
+msgstr "Faire un avenant"
+
+msgid "Date_fin_periode_garantie"
+msgstr "Date de fin de période de garantie"
+
+msgid "Effectue_le"
+msgstr "Effectué le"
+
+msgid "Importation"
+msgstr "Importation"
+
+msgid "Nouveau_beneficiaire"
+msgstr "Nouveau bénéficiaire"
+
+msgid "Charger_les_photos"
+msgstr "Charger les photos"
+
+msgid "Edition_des_cartes"
+msgstr "Édition des cartes"
+
+msgid "TOUS"
+msgstr "TOUS"
+
+msgid "ACTIFS"
+msgstr "ACTIFS"
+
+msgid "SUSPENDUS"
+msgstr "SUSPENDUS"
+
+msgid "SORTIS"
+msgstr "SORTIS"
+
+msgid "Numero_de_la_Famille"
+msgstr "Numéro de la Famille"
+
+msgid "Seules_les_photos_manquantes_sont_listees_pour_modifier_une_photo_existante_rendez_vous_sur_la_fiche_du_beneficiaire"
+msgstr "Seules les photos manquantes sont listées. Pour modifier une photo existante, rendez-vous sur la fiche du bénéficiaire."
+
+msgid "IMPORT_DES_PHOTOS_MANQUANTES"
+msgstr "IMPORT DES PHOTOS MANQUANTES"
+
+msgid "Numero_de_la_famille"
+msgstr "Numéro de la famille"
+
+msgid "Age"
+msgstr "Âge"
+
+msgid "ans"
+msgstr "ans"
+
+msgid "Selectionner_une_photo"
+msgstr "Sélectionner une photo"
+
+msgid "NUMERO_CARTE"
+msgstr "NUMÉRO CARTE"
+
+msgid "NUMERO_COUVERTURE_MALADIE_UNIVERSELLE"
+msgstr "NUMÉRO COUVERTURE MALADIE UNIVERSELLE"
+
+msgid "NUMERO_POLICE"
+msgstr "NUMÉRO POLICE"
+
+msgid "Carte_assurance_beneficiaire"
+msgstr "Carte d'assurance bénéficiaire"
+
+msgid "Cette_carte_est_strictement_personnelle_et_uniquement_valable_pour_votre_contrat"
+msgstr "Cette carte est strictement personnelle et uniquement valable pour votre contrat."
+
+msgid "En_cas_de_perte_vous_pouvez_vous_adresser_a"
+msgstr "En cas de perte, vous pouvez vous adresser à"
+
+msgid "WhatsApp"
+msgstr "WhatsApp"
+
+msgid "Fixe"
+msgstr "Fixe"
+
+msgid "E_mail"
+msgstr "E-mail"
+
+msgid "Ne(e)_le"
+msgstr "Né(e) le"
+
+msgid "NUMERO_CMU"
+msgstr "NUMÉRO CMU"
+
+msgid "Numero_CARTE"
+msgstr "Numéro CARTE"
+
+msgid "KONE_MARIAM_EMMANUELLE_MALIKA_ANAIS_SOROYA"
+msgstr "KONE MARIAM EMMANUELLE MALIKA ANAIS SOROYA"
+
+msgid "AKAKPO_ENAM_CURTIS_ELIE"
+msgstr "AKAKPO ENAM CURTIS ELIE"
+
+msgid "OLEA_Cote_d_Ivoire"
+msgstr "OLEA Côte d'Ivoire"
+
+msgid "Numero_CMU"
+msgstr "Numéro CMU"
+
+msgid "Plafond_famille"
+msgstr "Plafond famille"
+
+msgid "Plafond_individuel"
+msgstr "Plafond individuel"
+
+msgid "Reseau_de_soins"
+msgstr "Réseau de soins"
+
+msgid "Pharmacie"
+msgstr "Pharmacie"
+
+msgid "vaccins"
+msgstr "Vaccins"
+
+msgid "vitamines"
+msgstr "Vitamines"
+
+msgid "Mode_de_prefinancement"
+msgstr "Mode de préfinancement"
+
+msgid "Rubriques préfinancées"
+msgstr "Rubriques préfinancées"
+
+msgid "Exclusion"
+msgstr "Exclusion"
+
+msgid "Ajouter_un_acte"
+msgstr "Ajouter un acte"
+
+msgid "Lien_parente"
+msgstr "Lien parenté"
+
+msgid "Age_minimum"
+msgstr "Âge minimum"
+
+msgid "Age_maximum"
+msgstr "Âge maximum"
+
+msgid "Garanti"
+msgstr "Garanti"
+
+msgid "Plafond_rubrique"
+msgstr "Plafond rubrique"
+
+msgid "Plafond_sous_rubrique"
+msgstr "Plafond sous-rubrique"
+
+msgid "Plafond_regroupement"
+msgstr "Plafond regroupement"
+
+msgid "Plafond_acte"
+msgstr "Plafond acte"
+
+msgid "GARANTI"
+msgstr "GARANTI"
+
+msgid "EXCLU"
+msgstr "EXCLU"
+
+msgid "Details"
+msgstr "Détails"
+
+msgid "PARAMETRAGE_DU_BAREME"
+msgstr "PARAMÉTRAGE DU BARÈME"
+
+msgid "Mode de préfinancement"
+msgstr "Mode de préfinancement"
+
+msgid "Sous_Rubrique"
+msgstr "Sous-Rubrique"
+
+msgid "CREATION_D_UNE_QUITTANCE"
+msgstr "CRÉATION D'UNE QUITTANCE"
+
+msgid "NUMERO"
+msgstr "NUMÉRO"
+
+msgid "Nature"
+msgstr "Nature"
+
+msgid "Type_de_quittance"
+msgstr "Type de quittance"
+
+msgid "Prime_Hors_Taxes"
+msgstr "Prime Hors Taxes"
+
+msgid "Cout_police_Compagnie"
+msgstr "Coût police Compagnie"
+
+msgid "Cout_police_courtier"
+msgstr "Coût police courtier"
+
+msgid "Taxe"
+msgstr "Taxe"
+
+msgid "Autres_Taxes"
+msgstr "Autres Taxes"
+
+msgid "Commission_de_Courtage"
+msgstr "Commission de Courtage"
+
+msgid "Commission_de_Gestion"
+msgstr "Commission de Gestion"
+
+msgid "Commission_Intermediaire"
+msgstr "Commission Intermédiaire"
+
+msgid "AJOUT_DE_TAXES"
+msgstr "AJOUT DE TAXES"
+
+msgid "Creer_une_formule_de_garantie"
+msgstr "Créer une formule de garantie"
+
+msgid "Taux_Couverture"
+msgstr "Taux de Couverture"
+
+msgid "Préfinancement"
+msgstr "Préfinancement"
+
+msgid "FORMULE_DE_GARANTIE_UNIVERSELLE"
+msgstr "FORMULE DE GARANTIE UNIVERSELLE"
+
+msgid "Creer_une_formule_de_garantie_universelle"
+msgstr "Créer une formule de garantie universelle"
+
+msgid "Taux_de_ouverture"
+msgstr "Taux d'ouverture"
+
+msgid "Date fin"
+msgstr "Date de fin"
+
+msgid "Ajouter_une_garantie"
+msgstr "Ajouter une garantie"
+
+msgid "Type_de_tarif"
+msgstr "Type de tarif"
+
+msgid "POLICE_NUMERO"
+msgstr "NUMÉRO DE POLICE"
+
+msgid "FICHE_POLICE"
+msgstr "FICHE POLICE"
+
+msgid "COLLEGE"
+msgstr "COLLÈGE"
+
+msgid "TARIF_SPECIFIQUE"
+msgstr "TARIF SPÉCIFIQUE"
+
+msgid "QUITTANCE"
+msgstr "QUITTANCE"
+
+msgid "SINISTRE"
+msgstr "SINISTRE"
+
+
+
+msgid "Numero_Police_cie"
+msgstr "Numéro de Police Compagnie"
+
+msgid "Numero_Police_provisoire"
+msgstr "Numéro de Police Provisoire"
+
+msgid "Type_de_prefinancement"
+msgstr "Type de préfinancement"
+
+msgid "Date_debut_effet"
+msgstr "Date de début d'effet"
+
+msgid "Date_fin_effet"
+msgstr "Date de fin d'effet"
+
+msgid "MOIS"
+msgstr "MOIS"
+
+msgid "Date_fin_police"
+msgstr "Date de fin de police"
+
+msgid "OPTION_DE_CALCUL_DE_LA_PRIME"
+msgstr "OPTION DE CALCUL DE LA PRIME"
+
+msgid "Option_de_calcul_de_la_prime"
+msgstr "Option de calcul de la prime"
+
+msgid "Prime_famille"
+msgstr "Prime famille"
+
+msgid "Prime_personne"
+msgstr "Prime personne"
+
+msgid "Prime_adulte"
+msgstr "Prime adulte"
+
+msgid "Prime_enfant"
+msgstr "Prime enfant"
+
+msgid "Nombre_max_personne_par_famille"
+msgstr "Nombre max de personnes par famille"
+
+msgid "Nombre_max_d_enfants_par_famille"
+msgstr "Nombre max d'enfants par famille"
+
+msgid "Age_maximum_des_adultes"
+msgstr "Âge maximum des adultes"
+
+msgid "Age_maximum_des_enfants"
+msgstr "Âge maximum des enfants"
+
+msgid "Taux_cotisation"
+msgstr "Taux de cotisation"
+
+msgid "Part_employeur"
+msgstr "Part employeur"
+
+msgid "Cotisation_minimale"
+msgstr "Cotisation minimale"
+
+msgid "Cotisation_maximale"
+msgstr "Cotisation maximale"
+
+msgid "Surprime_d_age_adulte"
+msgstr "Surprime d'âge adulte"
+
+msgid "Surprime_personne_sup"
+msgstr "Surprime personne sup"
+
+msgid "Surprime_enfant_sup"
+msgstr "Surprime enfant sup"
+
+msgid "Surprime_ascendant"
+msgstr "Surprime ascendant"
+
+msgid "Type_majoration"
+msgstr "Type de majoration"
+
+msgid "Cout_police_cie"
+msgstr "Coût police Compagnie"
+
+msgid "Autres_taxes"
+msgstr "Autres taxes"
+
+msgid "COMMISSIONS"
+msgstr "COMMISSIONS"
+
+msgid "Taux_Com_Courtage"
+msgstr "Taux de Commission de Courtage"
+
+msgid "Taux_Com_Gestion"
+msgstr "Taux de Commission de Gestion"
+
+msgid "Taux_Participation"
+msgstr "Taux de Participation"
+
+msgid "Com_de_Courtage"
+msgstr "Commission de Courtage"
+
+msgid "Com_de_Gestion"
+msgstr "Commission de Gestion"
+
+msgid "INTERMEDIAIRES"
+msgstr "INTERMÉDIAIRES"
+
+msgid "Nom_prenoms"
+msgstr "Nom et prénoms"
+
+msgid "Base_de_calcul"
+msgstr "Base de calcul"
+
+msgid "Taux_Retro_Affaire_nouvelle"
+msgstr "Taux de Rétro pour Affaire nouvelle"
+
+msgid "Montant_Retro_AN"
+msgstr "Montant Rétro AN"
+
+msgid "Taux_Retro_Renouvellement"
+msgstr "Taux de Rétro pour Renouvellement"
+
+msgid "Retro_Apporteurs"
+msgstr "Rétro Apporteurs"
+
+msgid "PARTENAIRE"
+msgstr "PARTENAIRE"
+
+msgid "Logo_du_partenaire"
+msgstr "Logo du partenaire"
+
+msgid "CREATION_D_UNE_QUITTANCE_POLICE"
+msgstr "CRÉATION D'UNE QUITTANCE POLICE"
+
+msgid "PrimeHT "
+msgstr "Prime HT"
+
+msgid "Cout_police_Cie"
+msgstr "Coût police Compagnie"
+
+msgid "Retrocession_Apporteur"
+msgstr "Rétrocession Apporteur"
+
+msgid "Base_calcul"
+msgstr "Base de calcul"
+
+msgid "Tx_Com_AN"
+msgstr "Taux de Commission AN"
+
+msgid "Tx_Com_Renouv"
+msgstr "Taux de Commission Renouvellement"
+
+msgid "FORMULAIRE_DE_REGLEMENT"
+msgstr "FORMULAIRE DE RÈGLEMENT"
+
+msgid "Nature_de_l_operation"
+msgstr "Nature de l'opération"
+
+msgid "Numero_de_piece"
+msgstr "Numéro de pièce"
+
+msgid "Date_reglement "
+msgstr "Date de règlement"
+
+msgid "Compte_Tresorerie"
+msgstr "Compte Trésorerie"
+
+msgid "Liste_des_quittances_impayees"
+msgstr "Liste des quittances impayées"
+
+msgid "Montant_a_regler"
+msgstr "Montant à régler"
+
+msgid "Solde_actuel"
+msgstr "Solde actuel"
+
+msgid "Solde_apres"
+msgstr "Solde après"
+
+msgid "AJOUT_DE_TARIF_NEGOCIE_CLIENT_PRESTATAIRE"
+msgstr "AJOUT DE TARIF NÉGOCIÉ CLIENT PRESTATAIRE"
+
+msgid "Fichier_tarif"
+msgstr "Fichier tarif"
+
+msgid "ETES_VOUS_SUR"
+msgstr "ÊTES-VOUS SÛR"
+
+msgid "Motif_suppression"
+msgstr "Motif de suppression"
+
+msgid "Non_Retour"
+msgstr "Non Retour"
+
+msgid "Oui_Annuler"
+msgstr "Oui Annuler"
+
+msgid "TRAITEMENT_EN_COURS "
+msgstr "TRAITEMENT EN COURS"
+
+msgid "LISTE_DES_APPORTEURS"
+msgstr "LISTE DES APPORTS"
+
+msgid "OK"
+msgstr "OK"
+
+msgid "Date_fin "
+msgstr "Date de fin"
+
+msgid "PARAMETRAGE_DU_BAREME_SPECIFICITES"
+msgstr "PARAMÉTRAGE DU BARÈME SPÉCIFICITÉS"
+
+msgid "Rubrique_d_actes"
+msgstr "Rubrique d'actes"
+
+msgid "Regroupement_d_acte"
+msgstr "Regroupement d'acte"
+
+msgid "Sous_regroupement_d_acte"
+msgstr "Sous-regroupement d'acte"
+
+msgid "Garanti_Exclu"
+msgstr "Garanti Exclu"
+
+msgid "Taux_couverture"
+msgstr "Taux de couverture"
+
+msgid "Toutes"
+msgstr "Toutes"
+
+msgid "Plafond_rubrique_d_acte"
+msgstr "Plafond rubrique d'acte"
+
+msgid "Plafond_sous_rubrique "
+msgstr "Plafond sous-rubrique"
+
+msgid "Plafond_regroupement_acte"
+msgstr "Plafond regroupement acte"
+
+msgid "Plafond_sous_regroupement"
+msgstr "Plafond sous-regroupement"
+
+msgid "Nombre_d_actes"
+msgstr "Nombre d'actes"
+
+msgid "AJOUT_D_UN_BENEFICIAIRE"
+msgstr "AJOUT D'UN BÉNÉFICIAIRE"
+
+msgid "Marie"
+msgstr "Mariée"
+
+msgid "Divorce"
+msgstr "Divorcé"
+
+msgid "Pays_d_activite_profes"
+msgstr "Pays d'activité professionnelle"
+
+msgid "Surprime_HT"
+msgstr "Surprime HT"
+
+msgid "Surprime_TTC"
+msgstr "Surprime TTC"
+
+msgid "APCI_ALD"
+msgstr "APCI ALD"
+
+msgid "RIB"
+msgstr "RIB"
+
+msgid "Telephone_fixe "
+msgstr "Téléphone fixe"
+
+msgid "Telephone_mobile "
+msgstr "Téléphone mobile"
+
+msgid "Code postal"
+msgstr "Code postal"
+
+msgid "CARTE_SANTE"
+msgstr "CARTE SANTÉ"
+
+msgid "Dernier_jour_nouvelle_periode_de_garantie"
+msgstr "Dernier jour nouvelle période de garantie"
+
+msgid "Imprimer"
+msgstr "Imprimer"
+
+msgid "IMPORTATION_DES_BENEFICIAIRES_D_UNE_ANCIENNE_FORMULE)"
+msgstr "IMPORTATION DES BÉNÉFICIAIRES D'UNE ANCIENNE FORMULE"
+
+msgid "Ancienne_police_resiliee"
+msgstr "Ancienne police résiliée"
+
+msgid "Ancienne_formule"
+msgstr "Ancienne formule"
+
+msgid "CREATION_D_UN_COLLEGE"
+msgstr "CRÉATION D'UN COLLÈGE"
+
+msgid "TRAITEMENT EN COURS"
+msgstr "TRAITEMENT EN COURS"
+
+msgid "Bareme"
+msgstr "Barème"
+
+msgid "DESACTIVATION_D_UNE_SPECIFICITE"
+msgstr "DÉSACTIVATION D'UNE SPÉCIFICITÉ"
+
+msgid "Age_min"
+msgstr "Âge min"
+
+msgid "Age_max"
+msgstr "Âge max"
+
+msgid "CARTE"
+msgstr "CARTE"
+
+msgid "TARIFS"
+msgstr "TARIFS"
+
+msgid "Date_de_naissances"
+msgstr "Date de naissance"
+
+msgid "Surprime_HT "
+msgstr "Surprime HT"
+
+msgid "APCI"
+msgstr "APCI"
+
+msgid "ALD"
+msgstr "ALD"
+
+msgid "Code_ostal"
+msgstr "Code postal"
+
+msgid "Date_edition"
+msgstr "Date d'édition"
+
+msgid "Date_desactivation"
+msgstr "Date de désactivation"
+
+msgid "Apercu"
+msgstr "Aperçu"
+
+msgid "Ne"
+msgstr "Né"
+
+msgid "le"
+msgstr "le"
+
+msgid "Nouvelle_carte"
+msgstr "Nouvelle carte"
+
+msgid "Imprimer_la_carte"
+msgstr "Imprimer la carte"
+
+msgid "Liste_des_membres_de_la_famille_Numero"
+msgstr "Liste des membres de la famille Numéro"
+
+msgid "Nuemro_carte"
+msgstr "Numéro carte"
+
+msgid "Historique_des_formules_du_beneficiaire"
+msgstr "Historique des formules du bénéficiaire"
+
+msgid "Evolution_du_tarif_de_l_adhesion_pour_l_ensemble_de_la_famille"
+msgstr "Évolution du tarif de l'adhésion pour l'ensemble de la famille"
+
+msgid "Nuemro_famille"
+msgstr "Numéro famille"
+
+msgid "Conjoints"
+msgstr "Conjoints"
+
+msgid "Ascendants"
+msgstr "Ascendants"
+
+msgid "Enfants"
+msgstr "Enfants"
+
+msgid "Adultes"
+msgstr "Adultes"
+
+msgid "Enf_sup"
+msgstr "Enfant sup"
+
+msgid "Adulte_sup"
+msgstr "Adulte sup"
+
+msgid "Ses_documents"
+msgstr "Ses documents"
+
+msgid "Nouveau_document"
+msgstr "Nouveau document"
+
+msgid "Liste_de_ses_sinistres"
+msgstr "Liste de ses sinistres"
+
+msgid "Exporter_ses_sinistres_vers_Excel"
+msgstr "Exporter ses sinistres vers Excel"
+
+msgid "Exporter_les_sinsitres_de_sa_famille_vers_Excel"
+msgstr "Exporter les sinistres de sa famille vers Excel"
+
+msgid "Changement_de_formule"
+msgstr "Changement de formule"
+
+msgid "Suspension"
+msgstr "Suspension"
+
+msgid "Remise_en_vigueur"
+msgstr "Remise en vigueur"
+
+msgid "Sortie_de_la_police"
+msgstr "Sortie de la police"
+
+msgid "NOUVELLE_CARTE"
+msgstr "NOUVELLE CARTE"
+
+msgid "Nouvelle_incorporation"
+msgstr "Nouvelle incorporation"
+
+msgid "Carte_egaree_volee,"
+msgstr "Carte égarée volée"
+
+msgid "Autres"
+msgstr "Autres"
+
+msgid "FAIRE_UN_MOUVEMENT_SUR_LE_BENEFICIAIRE"
+msgstr "FAIRE UN MOUVEMENT SUR LE BÉNÉFICIAIRE"
+
+msgid "CHANGEMENT_DE_FORMULE"
+msgstr "CHANGEMENT DE FORMULE"
+
+msgid "SUSPENSION_DU_BENEFICIAIRE"
+msgstr "SUSPENSION DU BÉNÉFICIAIRE"
+
+msgid "Motif_suspension"
+msgstr "Motif de suspension"
+
+msgid "REMISE_EN_VIGUEUR_DU_BENEFICIAIRE"
+msgstr "REMISE EN VIGUEUR DU BÉNÉFICIAIRE"
+
+msgid "SORTIE_DU_BENEFICIAIRE"
+msgstr "SORTIE DU BÉNÉFICIAIRE"
+
+msgid "Motif_sortie"
+msgstr "Motif de sortie"
+
+msgid "AJOUT_D_UN_DOCUMENT"
+msgstr "AJOUT D'UN DOCUMENT"
+
+msgid "Nom_du_document "
+msgstr "Nom du document"
+
+msgid "AJOUT_D_UN_MEMBRE_DE_LA_FAMILLE"
+msgstr "AJOUT D'UN MEMBRE DE LA FAMILLE"
+
+msgid "Pays_de_naissance "
+msgstr "Pays de naissance"
+
+msgid "Pays_de_residence "
+msgstr "Pays de résidence"
+
+msgid "Surprime_TTC "
+msgstr "Surprime TTC"
+
+msgid "Numero_de_securite_sociale "
+msgstr "Numéro de sécurité sociale"
+
+msgid "Code_postal "
+msgstr "Code postal"
+
+msgid "DETAIL_DU_BAREME"
+msgstr "DÉTAIL DU BARÈME"
+
+msgid "Actes"
+msgstr "Actes"
+
+msgid "Lien_de_parente "
+msgstr "Lien de parenté"
+
+msgid "Plafond_regroupement_d_acte"
+msgstr "Plafond regroupement d'acte"
+
+msgid "Nombre_de_prestation"
+msgstr "Nombre de prestations"
+
+msgid "Date_debut "
+msgstr "Date de début"
+
+msgid "INFORMATIONS"
+msgstr "INFORMATIONS"
+
+msgid "INFORMATIONS_DE_LA_QUITTANCE"
+msgstr "INFORMATIONS DE LA QUITTANCE"
+
+msgid "LISTE_DES_REGLEMENTS"
+msgstr "LISTE DES RÈGLEMENTS"
+
+msgid "Autres_Taxes "
+msgstr "Autres Taxes"
+
+msgid "Retrocession_apporteur"
+msgstr "Rétrocession apporteur"
+
+msgid "Date_reglement"
+msgstr "Date de règlement"
+
+msgid "Revers_Cie"
+msgstr "Revers Compagnie"
+
+msgid "Date_saisie"
+msgstr "Date de saisie"
+
+msgid "Enregistre_par"
+msgstr "Enregistré par"
+
+msgid "LISTE_DES_AUTRES_TAXES"
+msgstr "LISTE DES AUTRES TAXES"
+
+msgid "FICHE_VEHICULE"
+msgstr "FICHE VÉHICULE"
+
+msgid "SES_SINISTRES"
+msgstr "SES SINISTRES"
+
+msgid "Numero_immatriculation "
+msgstr "Numéro d'immatriculation"
+
+msgid "Numero_immatric_provisoire "
+msgstr "Numéro d'immatriculation provisoire"
+
+msgid "Marque"
+msgstr "Marque"
+
+msgid "Modele"
+msgstr "Modèle"
+
+msgid "Conducteur"
+msgstr "Conducteur"
+
+msgid "Energie"
+msgstr "Énergie"
+
+msgid "Place"
+msgstr "Place"
+
+msgid "Puissance"
+msgstr "Puissance"
+
+msgid "Numero_serie"
+msgstr "Numéro de série"
+
+msgid "Categorie_vehicule"
+msgstr "Catégorie véhicule"
+
+msgid "Type_carrosserie"
+msgstr "Type de carrosserie"
+
+msgid "Date_de_mise_en_circulation "
+msgstr "Date de mise en circulation"
+
+msgid "Valeur_neuve"
+msgstr "Valeur neuve"
+
+msgid "Valeur_actuelle"
+msgstr "Valeur actuelle"
+
+msgid "Poids_a_vide"
+msgstr "Poids à vide"
+
+msgid "Poids_a_charge"
+msgstr "Poids à charge"
+
+msgid "Nouveau_sinistre"
+msgstr "Nouveau sinistre"
+
+msgid "Numero_sinistre"
+msgstr "Numéro de sinistre"
+
+msgid "Ouverture"
+msgstr "Ouverture"
+
+msgid "Prestation"
+msgstr "Prestation"
+
+msgid "Frais_reel"
+msgstr "Frais réel"
+
+msgid "PEC"
+msgstr "PEC"
+
+msgid "EDITION_DES_CARTES"
+msgstr "ÉDITION DES CARTES"
+
+msgid "Parametres_de_l.impression"
+msgstr "Paramètres de l'impression"
+
+msgid "Toutes_les_cartes"
+msgstr "Toutes les cartes"
+
+msgid "Personnaliser_la_plage"
+msgstr "Personnaliser la plage"
+
+msgid "De"
+msgstr "De"
+
+msgid "A"
+msgstr "À"
+
+msgid "Imprimer_les_cartes"
+msgstr "Imprimer les cartes"
+
+msgid "CREATION_D_UNE_FORMULE_DE_GARANTIE"
+msgstr "CRÉATION D'UNE FORMULE DE GARANTIE"
+
+msgid "PREFINANCEMENT"
+msgstr "PRÉFINANCEMENT"
+
+msgid "Plafond_conso_famille"
+msgstr "Plafond conso famille"
+
+msgid "Plafond_conso_individuelle"
+msgstr "Plafond conso individuelle"
+
+msgid "Pharmacie_vitamines_vaccins"
+msgstr "Pharmacie, vitamines, vaccins"
+
+msgid "Champs à afficher sur la carte(complémentaire)"
+msgstr "Champs à afficher sur la carte (complémentaire)"
+
+msgid "Champ"
+msgstr "Champ"
+
+msgid "Afficher_le_Numero_police"
+msgstr "Afficher le Numéro de police"
+
+msgid "Rubriques_prefinancees"
+msgstr "Rubriques préfinancées"
+
+msgid "DESACTIVATION_D_UNE_FORMULE_DE_GARANTIE"
+msgstr "DÉSACTIVATION D'UNE FORMULE DE GARANTIE"
+
+msgid "MODIFICATION_D_UNE_FORMULE_DE_GARANTIE"
+msgstr "MODIFICATION D'UNE FORMULE DE GARANTIE"
+
+msgid "Champs_a_afficher_sur_la_carte_complementaire"
+msgstr "Champs à afficher sur la carte complémentaire"
+
+msgid "Rubriques_prefinancées"
+msgstr "Rubriques préfinancées"
+
+msgid "Rubriques"
+msgstr "Rubriques"
+
+msgid "IMPORT_DES_BENEFICIAIRES"
+msgstr "IMPORT DES BÉNÉFICIAIRES"
+
+msgid "Fichier_Excel"
+msgstr "Fichier Excel"
+
+msgid "IMPORT_DES_VEHICULES"
+msgstr "IMPORT DES VÉHICULES"
+
+msgid "Fichier_Excel_CSV"
+msgstr "Fichier Excel CSV"
+
+msgid "Appercu_des_donnees"
+msgstr "Aperçu des données"
+
+msgid "Import_photo_benef"
+msgstr "Importer photo bénéficiaire"
+
+msgid "CREATION_D_UNE_POLICE_CLIENT"
+msgstr "CRÉATION D'UNE POLICE CLIENT"
+
+msgid "COEFICIENTS_STATS"
+msgstr "COEFFICIENTS STATS"
+
+msgid "PRIME"
+msgstr "PRIME"
+
+msgid "Numero_police_Cie"
+msgstr "Numéro police Compagnie"
+
+msgid "Date_debuteffet"
+msgstr "Date de début d'effet"
+
+msgid "Date_Fin_periode_garantie "
+msgstr "Date de fin de période de garantie"
+
+msgid "Mode_renouvellement "
+msgstr "Mode renouvellement"
+
+msgid "Placement_gestion "
+msgstr "Placement gestion"
+
+msgid "Programme_international "
+msgstr "Programme international"
+
+msgid "Logo_du_partenaire "
+msgstr "Logo du partenaire"
+
+msgid "Prime_personne "
+msgstr "Prime personne"
+
+msgid "Nombre_max_personne_par_famille "
+msgstr "Nombre max de personnes par famille"
+
+msgid "Nombre_max_d_enfants_par_famille "
+msgstr "Nombre max d'enfants par famille"
+
+msgid "Cotisation_maximale "
+msgstr "Cotisation maximale"
+
+msgid "Type_de_majoration_contrat"
+msgstr "Type de majoration contrat"
+
+msgid "Ticket_moderateur "
+msgstr "Ticket modérateur"
+
+msgid "Apporteur_d_affaire "
+msgstr "Apporteur d'affaire"
+
+msgid "Taux_Com_Affaire_nouvelle"
+msgstr "Taux de Commission Affaire nouvelle"
+
+msgid "Taux_Com_Renouvellement"
+msgstr "Taux de Commission Renouvellement"
+
+msgid "Ajouter_une_ligne"
+msgstr "Ajouter une ligne"
+
+msgid "Regularisation"
+msgstr "Régularisation"
+
+msgid "Date_prochaine_facture"
+msgstr "Date prochaine facture"
+
+msgid "Taux_com_Courtage"
+msgstr "Taux de Commission Courtage"
+
+msgid "Taux_com_Courtage_Terme"
+msgstr "Taux de Commission Courtage Terme"
+
+msgid "Taux_com_Gestion"
+msgstr "Taux de Commission Gestion"
+
+msgid "Taux_de_participation "
+msgstr "Taux de participation"
+
+msgid "Prime_HT_Budget"
+msgstr "Prime HT Budget"
+
+msgid "MODIFICATION_DE_LA_POLICE "
+msgstr "MODIFICATION DE LA POLICE"
+
+msgid "Numero_police_sCie"
+msgstr "Numéro police sCie"
+
+msgid "Date_Fin_periode_garantie"
+msgstr "Date de fin de période de garantie"
+
+msgid "Preavis_de_resiliation "
+msgstr "Préavis de résiliation"
+
+msgid "Placement_gestion"
+msgstr "Placement gestion"
+
+msgid "Prime_enfant "
+msgstr "Prime enfant"
+
+msgid "Age_maximum_des_adultes "
+msgstr "Âge maximum des adultes"
+
+msgid "Taux_cotisation "
+msgstr "Taux de cotisation"
+
+msgid "Cotisation_minimale "
+msgstr "Cotisation minimale"
+
+msgid "Surprime_d_age_adulte "
+msgstr "Surprime d'âge adulte"
+
+msgid "Apporteur_d_affaire"
+msgstr "Apporteur d'affaire"
+
+msgid "Prime_HT_Budget "
+msgstr "Prime HT Budget"
+
+msgid "MODIFICATION_DES_TAXES"
+msgstr "MODIFICATION DES TAXES"
+
+msgid "AJOUT_D_UN_VEHICULE"
+msgstr "AJOUT D'UN VÉHICULE"
+
+msgid "INFORMATIONS_GENERALES"
+msgstr "INFORMATIONS GÉNÉRALES"
+
+msgid "Numero_immatriculation"
+msgstr "Numéro d'immatriculation"
+
+msgid "Numero_immatric_provisoire"
+msgstr "Numéro d'immatriculation provisoire"
+
+msgid "Categorie_vehicule "
+msgstr "Catégorie véhicule"
+
+msgid "Date_mise_en_circulation"
+msgstr "Date de mise en circulation"
+
+msgid "Valeur_neuve "
+msgstr "Valeur neuve"
+
+msgid "MODIFICATION_D_UN_VEHICULE"
+msgstr "MODIFICATION D'UN VÉHICULE"
+
+msgid "VEHICULE"
+msgstr "VÉHICULE"
+
+msgid "MODIFIER_POLICE"
+msgstr "MODIFIER POLICE"
+
+msgid "option"
+msgstr "Option"
+
+msgid "Prochaine_date_d_effet"
+msgstr "Prochaine date d'effet"
+
+msgid "Dernier_jour_de_la_periode_de_garantie"
+msgstr "Dernier jour de la période de garantie"
+
+msgid "Dont_taux_de_com_d_apport"
+msgstr "Dont taux de commission d'apport"
+
+msgid "TTC"
+msgstr "TTC"
+
+msgid "Verif"
+msgstr "Vérif"
+
+msgid "Cout_de_police"
+msgstr "Coût de police"
+
+msgid "Nb_d_enfants_max_par_famille"
+msgstr "Nb d'enfants max par famille"
+
+msgid "Gestionnaire_prod"
+msgstr "Gestionnaire prod"
+
+msgid "Gestionnaire_sinistre"
+msgstr "Gestionnaire sinistre"
+
+msgid "Coefficient_N"
+msgstr "Coefficient N"
+
+msgid "PRIME_PAR_FAMILLE"
+msgstr "PRIME PAR FAMILLE"
+
+msgid "Nom_Adherent_principal"
+msgstr "Nom Adhérent principal"
+
+msgid "Prime_AP"
+msgstr "Prime AP"
+
+msgid "Prime_Conjoints"
+msgstr "Prime Conjoints"
+
+msgid "Prime_Enfants"
+msgstr "Prime Enfants"
+
+msgid "Quittances_impayees"
+msgstr "Quittances impayées"
+
+msgid "Creer_une_quittance"
+msgstr "Créer une quittance"
+
+msgid "Faire_un_Reglement"
+msgstr "Faire un Règlement"
+
+msgid "Veuillez_parametrer_les_taux_de_com_sur_la_compagnie"
+msgstr "Veuillez paramétrer les taux de commission sur la compagnie"
+
+msgid "Retro_Apporteur"
+msgstr "Rétro Apporteur"
+
+msgid "Situation"
+msgstr "Situation"
+
+msgid "SOLDEE"
+msgstr "SOLDE"
+
+msgid "Toutes_les_quittances"
+msgstr "Toutes les quittances"
+
+msgid "Honoraires"
+msgstr "Honoraires"
+
+msgid "Les_quittances_annulees"
+msgstr "Les quittances annulées"
+
+msgid "LISTE_DES_SINISTRES"
+msgstr "LISTE DES SINISTRES"
+
+msgid "Numero_BS"
+msgstr "Numéro BS"
+
+msgid "Numero_carte "
+msgstr "Numéro carte"
+
+msgid "Date_prestation"
+msgstr "Date prestation"
+
+msgid "Numero_feuille_de_soins"
+msgstr "Numéro feuille de soins"
+
+msgid "Part_assureur"
+msgstr "Part assureur"
+
+msgid "Date_de_soins"
+msgstr "Date de soins"
+
+msgid "TARIFS_SPECIFIQUES"
+msgstr "TARIFS SPÉCIFIQUES"
+
+msgid "Ajouter_un_tarif_specifique"
+msgstr "Ajouter un tarif spécifique"
+
+msgid "Date_creation"
+msgstr "Date de création"
+
+msgid "VEHICULES"
+msgstr "VÉHICULES"
+
+msgid "Nouveau_vehicule"
+msgstr "Nouveau véhicule"
+
+msgid "Numero_Serie"
+msgstr "Numéro Série"
+
+msgid "Mise_en_circulation"
+msgstr "Mise en circulation"
+
+msgid "Poids"
+msgstr "Poids"
+
+msgid "Enregistrement effectué avec succès !"
+msgstr "Enregistrement effectué avec succès !"
+
+msgid "Modification effectuée avec succès !"
+msgstr "Modification effectuée avec succès !"
+
+msgid "ANNULATION_D_UN_BORDEREAU_D_ORDONNANCEMENT"
+msgstr "ANNULATION D'UN BORDEREAU D'ORDONNANCEMENT"
+
+msgid "Numero_Bordereau_d_ordonnancement"
+msgstr "Numéro Bordereau d'ordonnancement"
+
+msgid "BORDEREAU_D_ORDONNANCEMENT"
+msgstr "BORDEREAU D'ORDONNANCEMENT"
+
+msgid "Le_bordereau_d_ordonnancement"
+msgstr "Le bordereau d'ordonnancement"
+
+msgid "ANNULER_UNE_FACTURE"
+msgstr "ANNULER UNE FACTURE"
+
+msgid "FACTURE"
+msgstr "FACTURE"
+
+msgid "Base_de_remboursement"
+msgstr "Base de remboursement"
+
+msgid "La_facture"
+msgstr "La facture"
+
+msgid "ANNULER_UN_SINISTRE"
+msgstr "ANNULER UN SINISTRE"
+
+msgid "DOSSIER"
+msgstr "DOSSIER"
+
+msgid "Centre_prescripteur"
+msgstr "Centre prescripteur"
+
+msgid "Centre_executant"
+msgstr "Centre exécutant"
+
+msgid "Part_assure"
+msgstr "Part assuré"
+
+msgid "Annuler_le_dossier"
+msgstr "Annuler le dossier"
+
+msgid "Annulation_impossible"
+msgstr "Annulation impossible"
+
+msgid "Annuler_la_selection"
+msgstr "Annuler la sélection"
+
+msgid "TM"
+msgstr "TM"
+
+msgid "Valeur_du_TM"
+msgstr "Valeur du TM"
+
+msgid "Depas"
+msgstr "Dépassement"
+
+msgid "Medicament"
+msgstr "Médicament"
+
+msgid "BORDEREAU_EMISSION_ORDRE_DE_PAIEMENT"
+msgstr "BORDEREAU ÉMISSION ORDRE DE PAIEMENT"
+
+msgid "A_L_ORDRE_DE"
+msgstr "À L'ORDRE DE"
+
+msgid "Type_d_acte"
+msgstr "Type d'acte"
+
+msgid "Base_de_rembours"
+msgstr "Base de remboursement"
+
+msgid "Date_ordonn"
+msgstr "Date d'ordonnance"
+
+msgid "Ref_facture_prest"
+msgstr "Réf. facture prestataire"
+
+msgid "TPS"
+msgstr "TPS"
+
+msgid "AIB"
+msgstr "AIB"
+
+msgid "BNC"
+msgstr "BNC"
+
+msgid "FAR"
+msgstr "FAR"
+
+msgid "Nbre_d_actes"
+msgstr "Nombre d'actes"
+
+msgid "Arrete_le_present_bordereau_la_somme_de"
+msgstr "Arrête le présent bordereau la somme de"
+
+msgid "REMBOURSEMENTS_VALIDES"
+msgstr "REMBOURSEMENTS VALIDES"
+
+msgid "BROUILLARD_DE_SAISIE"
+msgstr "BROUILLARD DE SAISIE"
+
+msgid "Numerp_Dossier"
+msgstr "Numéro Dossier"
+
+msgid "VISA_GESTIONNAIRE_SANTE"
+msgstr "VISA GESTIONNAIRE SANTÉ"
+
+msgid "Date_soins"
+msgstr "Date des soins"
+
+msgid "Numrto_Sinistre"
+msgstr "Numéro Sinistre"
+
+msgid "prenom"
+msgstr "Prénom"
+
+msgid "patient"
+msgstr "Patient"
+
+msgid "Arrete_la_facture_la_presente_somme_de"
+msgstr "Arrête la facture la présente somme de"
+
+msgid "RELEVE_DE_FACTURE_NUMERO"
+msgstr "RELEVÉ DE FACTURE NUMÉRO"
+
+msgid "Veuillez_trouver_en_annexe_les_factures_mentionnees_ci_dessous_dont_le_reglement_devra_nous_parvenir_avec_votre_amabilite_a"
+msgstr "Veuillez trouver en annexe les factures mentionnées ci-dessous dont le règlement devra nous parvenir avec votre amabilité à"
+
+msgid "Rappelez_s_il_vous_plait_la_reference_du_releve_au_reglement"
+msgstr "Rappelez s'il vous plaît la référence du relevé au règlement"
+
+msgid "Date soins"
+msgstr "Date des soins"
+
+msgid "Numero Sinistre"
+msgstr "Numéro Sinistre"
+
+msgid "Numero Bon"
+msgstr "Numéro Bon"
+
+msgid "Nom & prenom(s) patient(e)"
+msgstr "Nom & prénom(s) patient(e)"
+
+msgid "Part assureur"
+msgstr "Part assureur"
+
+msgid "TOTAL GÉNÉRAL"
+msgstr "TOTAL GÉNÉRAL"
+
+msgid "Arrete la facture la présente somme de"
+msgstr "Arrête la facture la présente somme de"
+
+msgid "ADHERENT"
+msgstr "ADHÉRENT"
+
+msgid "Telecharger_le_bordereau"
+msgstr "Télécharger le bordereau"
+
+msgid "Accepter_la_selection"
+msgstr "Accepter la sélection"
+
+msgid "Refuser_la_selection"
+msgstr "Refuser la sélection"
+
+msgid "Valider_la_facture_prestataire"
+msgstr "Valider la facture prestataire"
+
+msgid "MOTIF_DE_REFUS"
+msgstr "MOTIF DE REFUS"
+
+msgid "FACTURE_PRESTATAIRE"
+msgstr "FACTURE PRESTATAIRE"
+
+msgid "BORDEREAU_Numero"
+msgstr "BORDEREAU Numéro"
+
+msgid "Traiter_la_selection"
+msgstr "Traiter la sélection"
+
+msgid "Par_assureur"
+msgstr "Par assureur"
+
+msgid "Detail"
+msgstr "Détail"
+
+msgid "Traiter"
+msgstr "Traiter"
+
+msgid "BORDEREAU_D_ORDONNANCEMENT_Numero"
+msgstr "BORDEREAU D'ORDONNANCEMENT Numéro"
+
+msgid "Beneficiaire_de_remb"
+msgstr "Bénéficiaire de remboursement"
+
+msgid "BORDEREAU_DE_VALIDATION_Numero"
+msgstr "BORDEREAU DE VALIDATION Numéro"
+
+msgid "Numero_Assure"
+msgstr "Numéro Assuré"
+
+msgid "LISTE_DES_FEUILLES_DE_SOIN"
+msgstr "LISTE DES FEUILLES DE SOIN"
+
+msgid "Numero_Feuille_de_soin"
+msgstr "Numéro Feuille de soin"
+
+msgid "Date_de_prestation"
+msgstr "Date de prestation"
+
+msgid "FEUILLE_DE_SOINS_NUMERO"
+msgstr "FEUILLE DE SOINS NUMÉRO"
+
+msgid "PHARMACIE"
+msgstr "PHARMACIE"
+
+msgid "Plafond_chambre"
+msgstr "Plafond chambre"
+
+msgid "Plafond_Hospit"
+msgstr "Plafond hospitalisation"
+
+msgid "Plafond_accouch"
+msgstr "Plafond accouchement"
+
+msgid "Date_du_dossier"
+msgstr "Date du dossier"
+
+msgid "Centre_presc"
+msgstr "Centre prescripteur"
+
+msgid "Prescripteur"
+msgstr "Prescripteur"
+
+msgid "Prestataire_executant"
+msgstr "Prestataire exécutant"
+
+msgid "Cree_par"
+msgstr "Créé par"
+
+msgid "Type_remb"
+msgstr "Type remboursement"
+
+msgid "Affection"
+msgstr "Affection"
+
+msgid "Renseignement_clinique"
+msgstr "Renseignements cliniques"
+
+msgid "Telecharger_le_bon"
+msgstr "Télécharger le bon"
+
+msgid "Prefinance"
+msgstr "Préfinnancement"
+
+msgid "Rejeter_la_selection"
+msgstr "Rejeter la sélection"
+
+msgid "Approuver_la_selection"
+msgstr "Approuver la sélection"
+
+msgid "Cocher_tout"
+msgstr "Cocher tout"
+
+msgid "Prorogation"
+msgstr "Prorogation"
+
+msgid "Seance"
+msgstr "Séance"
+
+msgid "seances"
+msgstr "Séances"
+
+msgid "LISTE_DES_MEDICAMENTS"
+msgstr "LISTE DES MÉDICAMENTS"
+
+msgid "Ajouter_un_medicament"
+msgstr "Ajouter un médicament"
+
+msgid "Cloturer_ce_bon"
+msgstr "Clôturer ce bon"
+
+msgid "Nom_du_medicament"
+msgstr "Nom du médicament"
+
+msgid "Qte"
+msgstr "Qté"
+
+msgid "Prix_Unitaire"
+msgstr "Prix Unitaire"
+
+msgid "Prix_Total"
+msgstr "Prix Total"
+
+msgid "Servi_par"
+msgstr "Servi par"
+
+msgid "Total"
+msgstr "Total"
+
+msgid "DOCUMENTS_JUSTIFICATIFS"
+msgstr "DOCUMENTS JUSTIFICATIFS"
+
+msgid "Ajouter_document"
+msgstr "Ajouter document"
+
+msgid "AJOUTER_UN_MEDICAMENT"
+msgstr "AJOUTER UN MÉDICAMENT"
+
+msgid "Quantite"
+msgstr "Quantité"
+
+msgid "Prix_unitaire"
+msgstr "Prix unitaire"
+
+msgid "Ajouter_le_medicament"
+msgstr "Ajouter le médicament"
+
+msgid "MOTIF_DU_REJET"
+msgstr "MOTIF DU REJET"
+
+msgid "Rejeter"
+msgstr "Rejeter"
+
+msgid "COUT_DE_L_HOSPITALISATION"
+msgstr "COUT DE L'HOSPITALISATION"
+
+msgid "Cout_total"
+msgstr "Coût total"
+
+msgid "NB"
+msgstr "NB"
+
+msgid "Le_cout_de_la_chambre_y_est_compris"
+msgstr "Le coût de la chambre y est compris"
+
+msgid "BON_DE_SOINS_NUMERO"
+msgstr "BON DE SOINS NUMÉRO"
+
+msgid "Code_affection"
+msgstr "Code affection"
+
+msgid "Nbre_demande"
+msgstr "Nombre de demandes"
+
+msgid "Nbre_accorde"
+msgstr "Nombre accordé"
+
+msgid "Reference_facture"
+msgstr "Référence facture"
+
+msgid "SP_a_la_date_du"
+msgstr "SP à la date du"
+
+msgid "INFORMATIONS_DU_BENEFICIAIRE"
+msgstr "INFORMATIONS DU BÉNÉFICIAIRE"
+
+msgid "Numero_de_carte"
+msgstr "Numéro de carte"
+
+msgid "Recherche_par_nom"
+msgstr "Recherche par nom"
+
+msgid "Type_de_contrat"
+msgstr "Type de contrat"
+
+msgid "SAISIE_D_UNE_PRISE_EN_CHARGE"
+msgstr "SAISIE D'UNE PRISE EN CHARGE"
+
+msgid "Cliquez_pour_changer_de_prestataire"
+msgstr "Cliquez pour changer de prestataire"
+
+msgid "Medecin"
+msgstr "Médecin"
+
+msgid "Date_reception_facture"
+msgstr "Date de réception facture"
+
+msgid "Type_PEC"
+msgstr "Type PEC"
+
+msgid "Veuillez_choisir_les_actes_a_exécuter_SVP"
+msgstr "Veuillez choisir les actes à exécuter SVP"
+
+msgid "Renseignements_cliniques"
+msgstr "Renseignements cliniques"
+
+msgid "Commentaires"
+msgstr "Commentaires"
+
+msgid "Nombre_de_jours"
+msgstr "Nombre de jours"
+
+msgid "Reinitialiser"
+msgstr "Réinitialiser"
+
+msgid "TIERS_PAYANT"
+msgstr "TIERS PAYANT"
+
+msgid "Generer_un_bordereau_de_facturation"
+msgstr "Générer un bordereau de facturation"
+
+msgid "du_patient"
+msgstr "du patient"
+
+msgid "de_l_assure"
+msgstr "de l'assuré"
+
+msgid "RESUME_DES_REMBOURSEMENTS_VALIDES"
+msgstr "RÉSUMÉ DES REMBOURSEMENTS VALIDES"
+
+msgid "LISTE_DES_REMBOURSEMENTS_VALIDES"
+msgstr "LISTE DES REMBOURSEMENTS VALIDÉS"
+
+msgid "A_l_ordre_de"
+msgstr "À l'ordre de"
+
+msgid "Cheque_par_compagnie"
+msgstr "Chèque par compagnie"
+
+msgid "Ordonnancer"
+msgstr "Ordonnancer"
+
+msgid "Ref_facture"
+msgstr "Réf. facture"
+
+msgid "Par_compagnie"
+msgstr "Par compagnie"
+
+msgid "Generer_un_brouillard_de_saisie"
+msgstr "Générer un brouillard de saisie"
+
+msgid "Recapitulatif_des_actes"
+msgstr "Récapitulatif des actes"
+
+msgid "Cout_de_l_acte"
+msgstr "Coût de l'acte"
+
+msgid "Part_Assureur"
+msgstr "Part Assureur"
+
+msgid "Nbre_seances"
+msgstr "Nombre de séances"
+
+msgid "Medicaments"
+msgstr "Médicaments"
+
+msgid "Supprimer"
+msgstr "Supprimer"
+
+msgid "Les_montants_sont_provisoires_sous_reserve_de_la_validation_des_ententes_prealables"
+msgstr "Les montants sont provisoires sous réserve de la validation des ententes préalables"
+
+msgid "Nombre_seance"
+msgstr "Nombre de séances"
+
+msgid "LISTE_DES_FACTURES_EN_ATTENTE_DE_PAIEMENT"
+msgstr "LISTE DES FACTURES EN ATTENTE DE PAIEMENT"
+
+msgid "LISTE_DES_FACTURES_REGLEES"
+msgstr "LISTE DES FACTURES RÉGLÉES"
+
+msgid "Annee_comptable"
+msgstr "Année comptable"
+
+msgid "LISTE_DES_BORDEREAUX_D_ORDONNANCEMENT"
+msgstr "LISTE DES BORDEREAUX D'ORDONNANCEMENT"
+
+msgid "LISTE_DES_BORDEREAUX_D_ORDONNANCEMENT_PAYES"
+msgstr "LISTE DES BORDEREAUX D'ORDONNANCEMENT PAYÉS"
+
+msgid "LISTE_DES_DOSSIERS_EN_REMBOURSEMENT_DIRECT"
+msgstr "LISTE DES DOSSIERS EN REMBOURSEMENT DIRECT"
+
+msgid "LISTE_DES_DOSSIERS_REMBOURSEMENTS"
+msgstr "LISTE DES DOSSIERS REMBOURSEMENTS"
+
+msgid "LISTE_DES_DEMANDES_EN_ENTTENTE_PREALABLE"
+msgstr "LISTE DES DEMANDES EN ENTENTE PRÉALABLE"
+
+msgid "LISTE_DES_PRISES_EN_CHARGE_SAISIES_PAR_LES_PRESTATAIRES"
+msgstr "LISTE DES PRISET EN CHARGE SAISIES PAR LES PRESTATAIRES"
+
+msgid "Date_recep_facture"
+msgstr "Date de réception facture"
+
+msgid "du_beneficiaire"
+msgstr "du bénéficiaire"
+
+msgid "Part"
+msgstr "Part"
+
+msgid "assure"
+msgstr "assuré"
+
+msgid "LISTE_DES_PRESTATIONS_SAISIES_PAR_LES_GESTIONNAIRES"
+msgstr "LISTE DES PRESTATIONS SAISIES PAR LES GESTIONNAIRES"
+
+msgid "LISTE_DES_DEMANDES_TRAITEES"
+msgstr "LISTE DES DEMANDES TRAITÉES"
+
+msgid "Numero_feuille"
+msgstr "Numéro feuille"
+
+msgid "Part_benef"
+msgstr "Part bénéficiaire"
+
+msgid "LISTE_DES_FACTURES_ADHERENTS_ET_PRESTATAIRES_EN_ATTENTES"
+msgstr "LISTE DES FACTURES ADHÉRENTS ET PRESTATAIRES EN ATTENTES"
+
+msgid "Bordereau"
+msgstr "Bordereau"
+
+msgid "Bénéficiaire de remboursement"
+msgstr "Bénéficiaire de remboursement"
+
+msgid "Assuré"
+msgstr "Assuré"
+
+msgid "LISTE_DES_FACTURES_TRAITEES_VALIDEES"
+msgstr "LISTE DES FACTURES TRAITÉES VALIDÉES"
+
+msgid "SAISIE_DES_MEDICAMENTS"
+msgstr "SAISIE DES MÉDICAMENTS"
+
+msgid "Date_survenance"
+msgstr "Date de survenance"
+
+msgid "Ajouter"
+msgstr "Ajouter"
+
+msgid "Prix_total"
+msgstr "Prix total"
+
+msgid "Depassement"
+msgstr "Dépassement"
+
+msgid "Continuer"
+msgstr "Continuer"
+
+msgid "Motif_de_l_annulation"
+msgstr "Motif de l'annulation"
+
+msgid "Motif_suppression "
+msgstr "Motif suppression"
+
+msgid "Oui_annuler"
+msgstr "Oui, annuler"
+
+msgid "CHOIX_DU_PRESTATAIRE_EXECUTAN"
+msgstr "CHOIX DU PRESTATAIRE EXÉCUTANT"
+
+msgid "Reference_facture "
+msgstr "Référence facture"
+
+msgid "Date_reception_facture "
+msgstr "Date de réception facture"
+
+msgid "DETAIL_DE_L_ACTE"
+msgstr "DÉTAIL DE L'ACTE"
+
+msgid "Ticket_moderateur"
+msgstr "Ticket modérateur"
+
+msgid "Taux_TM_applique"
+msgstr "Taux TM appliqué"
+
+msgid "Ce_dossier_est_prefinance"
+msgstr "Ce dossier est préfinancé"
+
+msgid "Traite_par"
+msgstr "Traité par"
+
+msgid "Le_systeme"
+msgstr "Le système"
+
+msgid "Traite_le"
+msgstr "Traité le"
+
+msgid "Cree_par "
+msgstr "Créé par"
+
+msgid "Date_prise_en_charge"
+msgstr "Date de prise en charge"
+
+msgid "Nombre_jours_demandes"
+msgstr "Nombre de jours demandés"
+
+msgid "Nombre_seances_demandes"
+msgstr "Nombre de séances demandées"
+
+msgid "Nombre_jours_accordes"
+msgstr "Nombre de jours accordés"
+
+msgid "Nombre_seances_accordes"
+msgstr "Nombre de séances accordées"
+
+msgid "Motif_de_rejet"
+msgstr "Motif de rejet"
+
+msgid "Jour_demande"
+msgstr "Jour demandé"
+
+msgid "Jour_accorde"
+msgstr "Jour accordé"
+
+msgid "Motif_de_la_demande"
+msgstr "Motif de la demande"
+
+
+msgid "HISTORIQUE_DE_L_ACTE"
+msgstr "HISTORIQUE DE L'ACTE"
+
+msgid "REMBOURSEMENT"
+msgstr "REMBOURSEMENT"
+
+msgid "Numero_Facture"
+msgstr "Numéro Facture"
+
+msgid "Date_generation"
+msgstr "Date de génération"
+
+msgid "Motif_du_rejet_a_l_ordonnancement"
+msgstr "Motif du rejet à l'ordonnancement"
+
+msgid "Refuser"
+msgstr "Refuser"
+
+msgid "Statut_remb"
+msgstr "Statut remboursement"
+
+msgid "Demande_de_prorogation"
+msgstr "Demande de prorogation"
+
+msgid "Approuver"
+msgstr "Approuver"
+
+msgid "MOTIF_DE_REJET"
+msgstr "MOTIF DE REJET"
+
+msgid "Confirmer_le_rejet"
+msgstr "Confirmer le rejet"
+
+msgid "DEMANDE_DE_PROROGATION"
+msgstr "DEMANDE DE PROROGATION"
+
+msgid "Motif_de_la_prorogation"
+msgstr "Motif de la prorogation"
+
+msgid "APPROUVER_LA_DEMANDE_DE_PROROGATION"
+msgstr "APPROUVER LA DEMANDE DE PROROGATION"
+
+msgid "Nombre_de_jours_demandes"
+msgstr "Nombre de jours demandés"
+
+msgid "Nombre_de_jours_accordes"
+msgstr "Nombre de jours accordés"
+
+msgid "REJET_D_UNE_DEMANDE_PROROGATION"
+msgstr "REJET D'UNE DEMANDE DE PROROGATION"
+
+msgid "ACCEPTER_LA_DEMANDE_DE_REMBOURSEMENT"
+msgstr "ACCEPTER LA DEMANDE DE REMBOURSEMENT"
+
+msgid "REFUS_D_UNE_DEMANDE_REMBOURSEMENT"
+msgstr "REFUS D'UNE DEMANDE DE REMBOURSEMENT"
+
+msgid "Motif_du_refus"
+msgstr "Motif du refus"
+
+msgid "AJOUT_DE_DOCUMENTS_JUSTIFICATIFS"
+msgstr "AJOUT DE DOCUMENTS JUSTIFICATIFS"
+
+msgid "MEDICAMENT"
+msgstr "MÉDICAMENT"
+
+msgid "QUANTITE"
+msgstr "QUANTITÉ"
+
+msgid "PRIX_UNITAIRE"
+msgstr "PRIX UNITAIRE"
+
+msgid "MODIFICATION_D_UN_MEDICAMENT"
+msgstr "MODIFICATION D'UN MÉDICAMENT"
+
+msgid "Nombre_demande"
+msgstr "Nombre de demandes"
+
+msgid "Nombre_accorde"
+msgstr "Nombre accordé"
+
+msgid "Modal_title"
+msgstr "Titre du modal"
+
+msgid "RECHERCHER_UN_ASSURE"
+msgstr "RECHERCHER UN ASSURÉ"
+
+msgid "Refus_pour_traitement"
+msgstr "Refus pour traitement"
+
+msgid "Annuler_remboursement"
+msgstr "Annuler remboursement"
+
+msgid "GESTION_DE_LA_SEANCE"
+msgstr "GESTION DE LA SÉANCE"
+
+msgid "MARQUER_COMME_EFFECTUER"
+msgstr "MARQUER COMME EFFECTUÉ"
+
+msgid "CHERCHER_UN_BENEFICIAIRE_PAR_NOM"
+msgstr "CHERCHER UN BÉNÉFICIAIRE PAR NOM"
+
+msgid "DEMANDE_DE_PRISE_EN_CHARGE_CONSULTATION"
+msgstr "DEMANDE DE PRISE EN CHARGE CONSULTATION"
+
+msgid "Date_de_la_prestation"
+msgstr "Date de la prestation"
+
+msgid "Date_de_soin"
+msgstr "Date de soin"
+
+msgid "Veuillez_choisir_l_acte_a_executer_SVP"
+msgstr "Veuillez choisir l'acte à exécuter SVP"
+
+msgid "DEMANDE_DE_PRISE_EN_CHARGE_HOSPITALISATION"
+msgstr "DEMANDE DE PRISE EN CHARGE HOSPITALISATION"
+
+msgid "Plafond_hospit"
+msgstr "Plafond hospitalisation"
+
+msgid "Motif_de_l_admission"
+msgstr "Motif de l'admission"
+
+msgid "REALISER_UNE_PRISE_EN_CHARGE_LABORATOIRE"
+msgstr "RÉALISER UNE PRISE EN CHARGE LABORATOIRE"
+
+msgid "REALISER_UNE_PRISE_EN_CHARGE_IMAGERIE"
+msgstr "RÉALISER UNE PRISE EN CHARGE IMAGERIE"
+
+msgid "REALISER_UNE_PRISE_EN_CHARGE_DENTAIRE"
+msgstr "RÉALISER UNE PRISE EN CHARGE DENTAIRE"
+
+msgid "REALISER_UNE_PRISE_EN_CHARGE_OPTIQUE"
+msgstr "RÉALISER UNE PRISE EN CHARGE OPTIQUE"
+
+msgid "Veuillez_choisir_les_actes_a_executer_SVP"
+msgstr "Veuillez choisir les actes à exécuter SVP"
+
+msgid "DEMANDE_DE_PRISE_EN_CHARGE_SOINS_AMBULATOIRES"
+msgstr "DEMANDE DE PRISE EN CHARGE SOINS AMBULATOIRES"
+
+msgid "LISTE_DES_REMBOURSEMENTS_ACCEPTES"
+msgstr "LISTE DES REMBOURSEMENTS ACCEPTÉS"
+
+msgid "Imprimer_le_bordereau_de_validation"
+msgstr "Imprimer le bordereau de validation"
+
+msgid "Generer__le_bordereau"
+msgstr "Générer le bordereau"
+
+msgid "ATTESTATION_DE_PRISE_EN_CHARGE"
+msgstr "ATTESTATION DE PRISE EN CHARGE"
+
+msgid "Adherent_principal "
+msgstr "Adhérent principal"
+
+msgid "Patient"
+msgstr "Patient"
+
+msgid "PRISE_EN_CHARGE_A_RETOURNER_AVEC_LES_DOCUMENTS_SUIVANTS_A "
+msgstr "PRISE EN CHARGE À RETOURNER AVEC LES DOCUMENTS SUIVANTS À"
+
+msgid "Facture_detaillee"
+msgstr "Facture détaillée"
+
+msgid "Original_de_la_prescription "
+msgstr "Original de la prescription"
+
+msgid "Deetails_examens_paracliniques"
+msgstr "Détails examens paracliniques"
+
+msgid "Nature_des_actes"
+msgstr "Nature des actes"
+
+msgid "Cout_unit"
+msgstr "Coût unitaire"
+
+msgid "Plafond_d_acte"
+msgstr "Plafond d'acte"
+
+msgid "Taux_couv"
+msgstr "Taux de couverture"
+
+msgid "OBSERVATION"
+msgstr "OBSERVATION"
+
+msgid "DECOMPTE_DES_PRESTATIONS"
+msgstr "DÉCOMPTE DES PRESTATIONS"
+
+msgid "PART OLEA"
+msgstr "PART OLEA"
+
+msgid "PART ASSURE"
+msgstr "PART ASSURÉ"
+
+msgid "OLEA_SANTE"
+msgstr "OLEA SANTÉ"
+
+msgid "Cachet_et_Signature_obligatoires"
+msgstr "Cachet et signature obligatoires"
+
+msgid "ASSURE"
+msgstr "ASSURÉ"
+
+msgid "Signature_et_Telephone_obligatoires"
+msgstr "Signature et téléphone obligatoires"
+
+msgid "Date_de_demande "
+msgstr "Date de demande"
+
+msgid "Valide_le"
+msgstr "Validé le"
+
+msgid "Police_Numero"
+msgstr "Numéro de police"
+
+msgid "PRISE_EN_CHARGE_A_RETOURNER_AVEC_LES_DOCUMENTS_SUIVANTS_A"
+msgstr "PRISE EN CHARGE À RETOURNER AVEC LES DOCUMENTS SUIVANTS À"
+
+msgid "Original_de_la_prescription"
+msgstr "Original de la prescription"
+
+msgid "Details_examens_paracliniques"
+msgstr "Détails examens paracliniques"
+
+msgid "Date_de_demande"
+msgstr "Date de demande"
+
+msgid "Police Numero"
+msgstr "Numéro de police"
+
+msgid "Rapport_Medical_et_ou_compte_rendu"
+msgstr "Rapport médical et/ou compte rendu"
+
+msgid "Detail_de_la_pharmacie_utilisee"
+msgstr "Détail de la pharmacie utilisée"
+
+msgid "Original_de_la_demande_de_prise"
+msgstr "Original de la demande de prise"
+
+msgid "Details_examens_paracliniques "
+msgstr "Détails examens paracliniques"
+
+msgid "PLAFOND_CHAMBRE"
+msgstr "PLAFOND CHAMBRE"
+
+msgid "Nbre_de_jour_demande"
+msgstr "Nombre de jours demandés"
+
+msgid "Nbre_de_jour_accorde"
+msgstr "Nombre de jours accordés"
+
+msgid "Plafond_de_chambre"
+msgstr "Plafond de chambre"
+
+msgid "PART_OLEA"
+msgstr "PART OLEA"
+
+msgid "PART_ASSURE"
+msgstr "PART ASSURÉ"
+
+msgid "Taux_chargement"
+msgstr "Taux de chargement (%)"
+
+msgid "Date_avenant"
+msgstr "Date d'avenant"

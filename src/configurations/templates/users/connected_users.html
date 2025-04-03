@@ -1,0 +1,117 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+{% block extrastyle %} {% endblock %}
+{% block content %}
+<div class="col-12 col-md-12 order-2 order-md-1">
+  <div class="card">
+    <div class="card-header">
+        <h3 class="card-title"><b>{{_('LISTE_DES_UTILISATEURS_CONNECTES') }}</b></h3>
+        <div class="card-tools">
+            <!--<span class="btn btn-sm btn-default" id="export_prestaitaires" title="Exporter la liste vers Excel" >
+                <i class="fa fa-file-excel"></i> Exporter vers Excel
+            </span>
+            <a class="btn btn-sm btn-default" id="loader-btn_export_prestaitaires" style="width: 40px; display: none;">
+                <img src="{% static 'admin_custom/img/loader.gif' %}" style="width: 20px;"/>
+            </a>-->
+        </div>
+    </div>
+
+  <div style="display:none;background:#CCCCCC;padding:10px;border-bottom:1px solid #eee;padding-bottom:10px;margin-bottom:10px;">
+    <form id="form_recherche_prestaitaires" method="get"><label style="font-weight:normal;font-size:12px;display:none;"><i>{{ _('Formulaire de recherche') }}</i></label>
+        <div class="row">
+            <div class="col-12 col-md-12 col-sm-12 row">
+                <div class="col-md-3 row">
+                    <span class="col-sm-12 text-left" style="margin-top:5px;font-weight:bold;">{{_('Formulaire_de_recherche') }}</span>
+                </div>
+                <div class="col-md-3 row">
+                    <span class="col-sm-6 text-right" style="margin-top:5px;">{{_('Bureau') }} : </span>
+                    <div class="col-sm-6">
+                        <select class="form-control tags-multiple" id="search_type" name="search_bureau" style="border:1px solid rgba(0, 0, 0, 0.3);">
+                            <option  value="">{{_('Choisir') }}</option>
+                            {% for bureau in bureaux %}
+                                <option  value="{{bureau.id}}">{{bureau.nom}}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-3 row">
+                    <span class="col-sm-6 text-right" style="margin-top:5px;">{{_('Login') }} : </span>
+                    <div class="col-sm-6">
+                        <input id="search_code" class="form-control" type="text" name="login" style="border-radius:3px;border:1px solid rgba(0, 0, 0, 0.3);text-transform:uppercase;">
+                    </div>
+                </div>
+                <div class="col-md-3 row">
+                    <span class="col-sm-3 text-right" style="margin-top:5px;">{{_('Name') }} : </span>
+                    <div class="col-sm-9">
+                        <input id="search_nom" class="form-control" type="text" name="nom" style="border-radius:3px;border:1px solid rgba(0, 0, 0, 0.3);text-transform:uppercase;">
+                    </div>
+                </div>
+                <div class="col-md-3 row">
+                    <!--div class="col-sm-7 text-right">
+                        <button type="submit" class="btn btn-complement-rouge">{{ _('Rechercher') }}</button>
+                    </div>
+                    <div class="col-sm-5 text-right" style="padding-left:0px;">
+                        <a href="/configurations/prestataire" class="btn btn-secondary" title="Vider le formulaire de recherche">Rafraichir</a>
+                    </div-->
+                </div>
+            </div>
+        </div>
+    </form>
+  </div>
+
+    <div class="card-body">
+      <div id="example1_wrapper" class="dataTables_wrapper dt-bootstrap4">
+        <div class="row">
+          <div class="col-12 col-md-12 col-sm-12">
+              <div class="spinner-border__" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); display: none;"></div>
+
+              <table class="table table-bordered table-striped dataTable _customDataTable dtr-inline" id="table_prestataires">
+                  <thead>
+                    <tr>
+                      <th scope="col">{{_('Bureau') }}</th>
+                      <th scope="col">{{_('Type compte') }}</th>
+                      <th scope="col">{{_('Nom') }}</th>
+                      <th scope="col">{{_('Prénoms') }}</th>
+                      <th scope="col">{{_('Login') }}</th>
+                      <th scope="col">{{_('Dernière page visitée') }}</th>
+                      <th scope="col">{{_('Dernière activité') }}</th>
+                      <th scope="col">{{_('Temps écoulé') }}</th>
+                      <th>{{_('Actions')}}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for cu in active_users_session_data %}
+                    <tr>
+                      <td scope="col">{{ cu.user_data.bureau }}</td>
+                      <td scope="col">{{ cu.user_data.type_utilisateur|default_if_none:"" }}</td>
+                      <td scope="col">{{ cu.user_data.last_name }}</td>
+                      <td scope="col">{{ cu.user_data.first_name }}</td>
+                      <td scope="col">{{ cu.user_data.username }}</td>
+                      <td scope="col">{{ cu.session_data.last_visited }}</td>
+                      <td scope="col">{{ cu.session_data.last_visit_time|date:"d/m/Y H:i:s" }}</td>
+                      <td scope="col">{{ cu.session_data.elapsed_time }}</td>
+                      <td scope="col"><a href="{% url 'logoutuser' cu.user_data.id %}">Déconnecter</a> </td>
+                    </tr>
+                  {% endfor %}
+                  </tbody>
+              </table>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+
+{% endblock %}
+
+
+{% block extrajs %}
+<script>
+
+</script>
+
+{% endblock %}

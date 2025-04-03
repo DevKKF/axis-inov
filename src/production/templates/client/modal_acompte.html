@@ -1,0 +1,84 @@
+<div class="modal fade" id="modal-acompte" data-backdrop="static" data-keyboard="false" aria-hidden="false" style="display: none">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <form method="post" action="{% url 'client_add_acompte' client.id %}" id="form_acompte_client">
+       {% csrf_token %}
+       <input type="hidden" id="client_id" name="client_id" value="{{ client.id }}"/>
+      <div class="modal-header">
+        <h4 class="modal-title">{{_("AJOUT D'UN ACOMPTE")}}</h4>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+      </div>
+      <div class="modal-body">
+            <div class="alert  alert-dismissible fade show hidden" role="alert">
+              <span class="message"> {{_("TRAITEMENT EN COURS")}}</span>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group row">
+                        <label class="col-sm-5 col-form-label">{{_("Montant")}} <span class="required">*</span></label>
+                        <div class="col-sm-7">
+                        <input type="text" class="form-control money_field" name="montant" id="montant" value="" required/>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-sm-5 col-form-label">{{_("Date de versement")}} <span class="required">*</span></label>
+                        <div class="col-sm-7">
+                        <input type="date" class="form-control" name="date_versement" id="date_versement" required/>
+                        </div>
+                    </div>
+                </div>
+                <div class="vl"></div>
+                <div class="col-md-5">
+                    <div class="form-group row">
+                        <label class="col-sm-5 col-form-label">{{_("Période début")}} </label>
+                        <div class="col-sm-7">
+                            <input type="date" class="form-control" name="periode_debut" id="periode_debut">
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-sm-5 col-form-label">{{_("Période fin")}}</label>
+                        <div class="col-sm-7">
+                            <input type="date" class="form-control" name="periode_fin" id="periode_fin">
+                        </div>
+                    </div>
+                </div>
+            </div>
+          </div>
+      <div class="modal-footer justify-content-between">
+          <button type="button" class="btn btn-danger" data-dismiss="modal"><i class="fa fa-remove"></i> {{_("Retour")}}</button>
+          <button type="button" id="btn_client_acompte" class="btn btn-info"><i class="fa fa-check-circle"></i> {{_("Enregistrer")}}</button>
+      </div>
+      </form>
+    </div>
+  </div>
+</div>
+<script>
+    $(document).ready(function() {
+
+        {% if request.user.is_ges %}
+
+        //Si un gestionnaire sinistre, cacher l'item liste-des-prises-en-charge
+        //$('.nav-item_liste-des-prises-en-charge').hide();
+
+        {% endif %}
+
+    });
+</script>
+
+<script>
+    function formatMontant(input) {
+        // Supprimez d'abord tous les caractères non numériques
+        var montant = input.value.replace(/\D/g, '');
+
+        // Ajoutez un espace comme séparateur pour les milliers
+        montant = addSpacesForThousands(montant);
+
+        // Mettez à jour la valeur de l'input
+        input.value = montant;
+    }
+
+    // Fonction pour ajouter un espace comme séparateur pour les milliers
+    function addSpacesForThousands(x) {
+        return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+    }
+</script>

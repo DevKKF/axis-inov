@@ -1,0 +1,388 @@
+{% load my_filters %}
+<div  class="modal fade" id="modal-details_quittance" data-backdrop="static" data-keyboard="false" aria-hidden="true"  style="display: none">
+	<div class="modal-dialog modal-xl">
+		<div class="modal-content">
+
+			<div class="modal-header">
+				<h4 class="modal-title">{{_('QUITTANCE')}} <b>N° {{quittance.numero}}</b> - {{_('CLIENT')}} <b>{{quittance.police.client.nom}}</b></h4>
+				<button type="button"class="close"data-dismiss="modal"aria-label="Close">
+					<span aria-hidden="true">×</span>
+				</button>
+			</div>
+			<div class="modal-body">
+				<div class="alert  alert-dismissible fade show hidden" role="alert">
+				  <span class="message">{{_('INFORMATIONS')}}</span>
+				</div>
+
+				<div class="col-md-12 offset-0">
+					<ul class="nav nav-tabs" id="myTab" role="tablist">
+						<li class="nav-item"><a class="nav-link active" id="infos_quittance-tab" data-toggle="tab" href="#infos_quittance" role="tab" aria-controls="infos_quittance" aria-selected="true">{{_("INFORMATIONS DE LA QUITTANCE")}}</a></li>
+						<li class="nav-item"><a class="nav-link" id="reglements-tab" data-toggle="tab" href="#reglements" role="tab" aria-controls="reglements" aria-selected="false">{{_("LISTE DES REGLEMENTS")}}</a></li>
+						<li class="nav-item"><a class="nav-link" id="ged_beneficiaire-tab" data-toggle="tab" href="#ged_beneficiaire" role="tab" aria-controls="ged" aria-selected="false">{{_('GED')}}</a></li>
+					</ul>
+					<div class="tab-content" id="myTabContent">
+
+						<!-- TAB INFOS QUITTANCE -->
+						<div class="tab-pane fade show active mt-3" id="infos_quittance" role="tabpanel" aria-labelledby="identity-tab">
+
+							<div class="row">
+								<div class="col-md-6">
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_('Nature')}}</label>
+										<div class="col-sm-7">
+											<span type="text" class="form-control text-right">{{quittance.nature_quittance}}</span>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Type de quittance")}}</label>
+										<div class="col-sm-7">
+											<span type="text" class="form-control text-right">{{quittance.type_quittance}}</span>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Date d'émission")}}</label>
+										<div class="col-sm-7">
+											<span type="date" class="form-control text-right" name="date_emission">{{quittance.date_emission|date:"d/m/Y"}}</span>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Date début")}}</label>
+										<div class="col-sm-7">
+											<span type="date" class="form-control text-right" name="date_debut">{{quittance.date_debut|date:"d/m/Y"}}</span>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Date fin")}}</label>
+										<div class="col-sm-7">
+											<span type="date" class="form-control text-right" name="date_fin">{{quittance.date_fin|date:"d/m/Y"}}</span>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Prime HT")}} <span class="required"></span></label>
+										<div class="col-sm-7">
+											<span type="text" class="form-control money_field_negative calculs_handler_police" name="prime_ht" id="prime_ht">{{quittance.prime_ht}}</span>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Coût police Cie")}} <span class="required"></span></label>
+										<div class="col-sm-7">
+											<span type="text" class="form-control money_field_negative calculs_handler_police" name="cout_police_compagnie" id="cout_police_compagnie">{{quittance.cout_police_compagnie}}</span>
+										</div>
+									</div>
+								</div>
+								<div class="vl"></div>
+								<div class="col-md-5" style="border-left:0px;">
+
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Coût police courtier")}}<span class="required"></span></label>
+										<div class="col-sm-7">
+											<span type="text" class="form-control money_field_negative calculs_handler_police" name="cout_police_courtier" id="cout_police_courtier">{{quittance.cout_police_courtier}}</span>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_('Taxe')}} <span class="required"></span></label>
+										<div class="col-sm-7">
+											<span type="text" class="form-control money_field_negative calculs_handler_police" name="taxe" id="taxe">{{quittance.taxe}}</span>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Autres Taxes")}}<span class="required"></span></label>
+										<div class="{% if quittance.autres_taxes <= 0 %}col-sm-7{% endif %} {% if quittance.autres_taxes > 0 %}col-sm-5{% endif %}" {% if quittance.autres_taxes > 0 %} style="padding-right:0px;"{% endif %}>
+											<span style="border-top-right-radius:0px;border-bottom-right-radius:0px;" type="text" class="form-control money_field_negative calculs_handler_police" name="autres_taxes" id="autres_taxes">{{quittance.autres_taxes}}</span>
+										</div>
+										{% if quittance.autres_taxes > 0 %}
+										<div class="col-sm-2" style="padding-left:0px;">
+											<span class="btn " style="background:gray;color:white;border-top-left-radius:0px;border-bottom-left-radius:0px;" data-toggle="modal" data-target="#modal-autres_taxes_quittance">Détails</span>
+										</div>
+										{% endif %}
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Prime TTC")}} <span class="required"></span></label>
+										<div class="col-sm-7">
+											<span type="text" class="form-control money_field_negative" name="prime_ttc" id="prime_ttc">{{quittance.prime_ttc}}</span>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Com Courtage")}} ({{quittance.taux_com_courtage|default_if_none:"" }})%<span class="required"></span></label>
+										<div class="col-sm-7">
+											<input type="hidden" class="form-control" name="taux_com_courtage" id="taux_com_courtage" value="{{quittance.taux_com_courtage}}"/>
+											<span type="text" class="form-control money_field_negative" name="commission_courtage" id="commission_courtage">{{quittance.commission_courtage}}</span>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Retrocession apporteur")}} <span class="required"></span></label>
+										<div class="col-sm-7">
+											<span type="text" class="form-control money_field_negative" name="commission_intermediaire" id="total_commission_intermediaire">{{quittance.commission_intermediaires}}</span>
+										</div>
+									</div>
+								</div>
+							</div>
+
+						</div>
+						<!-- FIN TAB INFOS QUITTANCE -->
+
+
+                        <!-- TAB REGLEMENTS QUITTANCE -->
+						<div class="tab-pane fade mt-3" id="reglements" role="tabpanel" aria-labelledby="reglements-tab">
+
+							<div class="row">
+								<div class="col-12 col-md-12 col-sm-12 table-responsive">
+									<table class="table table-bordered table-striped dataTable dtr-inline" id="table_reglements">
+										<thead>
+										  <tr>
+											<th scope="col">{{_("N° Règlement")}}</th>
+											<th scope="col">{{_("N° Pièce")}}</th>
+											<th scope="col">{{_("Banque")}}</th>
+											<th scope="col">{{_("Mode règlement")}}</th>
+											<th scope="col">{{_("Montant reglé")}}</th>
+											<th scope="col">{{_("Dévise")}}</th>
+											<th scope="col">{{_("Date règlement")}}</th>
+											<th scope="col">{{_("Revers Cie")}}</th>
+											<!--th scope="col">{{_("Enc com")}}</th-->
+											<th scope="col">{{_("Date saisie")}}</th>
+											<th scope="col">{{_("Enregistrer par")}}</th>
+											<th scope="col">{{_("Action")}}</th>
+										  </tr>
+										</thead>
+										<tbody>
+											{% for reglement in reglements %}
+											  <tr>
+												<td>{{ reglement.numero|default_if_none:"" }}</td>
+												<td>{{ reglement.numero_piece|default_if_none:"" }}</td>
+												<td>{{ reglement.banque_emettrice|default_if_none:"" }}</td>
+												<td>{{ reglement.mode_reglement|default_if_none:"" }}</td>
+												<td class="text-right">{{ reglement.montant|money_field }}</td>
+												<td>{{ reglement.devise.code|default_if_none:"" }}</td>
+												<td>{{ reglement.date_paiement|date:'d/m/Y'|default_if_none:"" }}</td>
+												<td><span class="badge badge-{{ reglement.statut_reversement_compagnie|lower|replace_espace }}" title="{{ reglement.statut_reversement_compagnie|date:'d/m/Y'|default_if_none:'' }}">{{ reglement.statut_reversement_compagnie|default_if_none:"" }}</span></td>
+												<!--td><span class="badge badge-{{ reglement.statut_commission|lower|replace_espace }}">{{ reglement.statut_commission|default_if_none:"" }}</span></td-->
+												<td>{{ reglement.created_at|date:'d/m/Y à H:i'|default_if_none:"" }}</td>
+												<td>{{ reglement.created_by|default_if_none:"" }}</td>
+												<td>
+													{% if reglement.statut_reversement_compagnie == "REVERSE" %}
+														<a href="{% url 'imprimer_recu_reglement' quittance.id reglement.id %}" class="badge badge-info" target="_blank"><i class="fa fa-print"></i> Imprimer reçu paiement</a>
+													{% endif %}
+												</td>
+											  </tr>
+											{% endfor %}
+										</tbody>
+								  </table>
+								</div>
+							</div>
+						</div>
+						<!-- FIN REGLEMENTS QUITTANCE -->
+
+                        <!-- TAB GED -->
+						<div class="tab-pane fade mt-3" id="ged_beneficiaire" role="tabpanel" aria-labelledby="ged_beneficiaire-tab">
+							<div class="rowd" style="padding-top:0px;">
+								<div class="card">
+									<div class="card-header nobg">
+										<div class="card-title">
+										  Liste des documents
+										</div>
+										<div class="card-tools">
+										  <span class="btn btn-sm btn-default" data-toggle="modal" data-target="#modal-document_beneficiaire"><i class="fas fa-plus-circle"></i> Nouveau document</span>
+										  <span class="btn btn-sm btn-default" data-toggle="modal" data-target="#modal-imprimer_document"><i class="fas fa-print"></i> Imprimer un document</span>
+										</div>
+									</div>
+									<div class="">
+										<table class="table table-bordered table-striped dataTable dtr-inline" id="table_documents">
+											<thead>
+											  <tr>
+												<th scope="col">{{_("Nom du document")}}</th>
+												<th scope="col">{{_("Type de document")}}</th>
+												<th scope="col">{{_("Fichier")}}</th>
+												<th scope="col">{{_("Date ajout")}}</th>
+												<th scope="col">{{_("Action")}}</th>
+											  </tr>
+											</thead>
+											<tbody>
+											{% for document in documents %}
+											  <tr>
+												<td>{{ document.nom }}</td>
+												<td>{{ document.type_document.libelle|default_if_none:"" }}</td>
+												<td><a target="_blank" href="{{ document.fichier.url }}"><i class="fa fa-file" title="Aperçu"></i> Afficher</a></td>
+												<td>{{ document.created_at|date:'d/m/Y'|default_if_none:"" }}</td>
+												<td class="">
+													<span class="btn_supprimer_document" data-document_id="{{ document.id }}" onclick="supprimer_document({{ document.id }})" style="cursor:pointer;"><i class="fa fa-times text-danger"></i> </span>&nbsp;&nbsp;&nbsp;
+													<span class="btn_modifier_on_modal" data-model_name="document" data-href="{% url 'modifier_document' document.id %}" data-modal_title="Modification d'un document" title="Modifier" style="cursor:pointer;"><i class="fas fa-edit text-warning"></i></span>
+												</td>
+											  </tr>
+											{% endfor %}
+											</tbody>
+										</table>
+									</div>
+								</div>
+							</div>
+						</div>
+                        <!-- FIN GED -->
+
+					</div>
+
+				</div>
+				<div class="modal-footer justify-content-between">
+					<button type="button" class="btn btn-default" data-dismiss="modal">{{_('Fermer')}}</button>
+					<!--button type="button" class="btn btn-default" id="btnImprimerQuittance" data-quittance_id="{{quittance.id}}"><i class="fa fa-print"></i> Imprimer la quittance</button-->
+				</div>
+			</div>
+
+		</div>
+	</div>
+
+</div>
+
+<!-- modal interne des autres taxes -->
+<div  class="modal fade modal_interne"  id="modal-autres_taxes_quittance" data-backdrop="static" data-keyboard="false" aria-hidden="true"  style="isplay: none">
+	<div class="modal-dialog modal-None" style="width:;">
+		<div class="modal-content">
+			<form id="form_add_autres_taxes_quittance" action="" method="post">
+				{% csrf_token %}
+				<div class="modal-header">
+					<h4 class="modal-title">{{_("LISTE DES AUTRES TAXES")}}</h4>
+					<button type="button"class="close"data-dismiss="modal"aria-label="Close">
+						<span aria-hidden="true">×</span>
+					</button>
+				</div>
+				<div class="modal-body">
+					<div class="alert  alert-dismissible fade show hidden" role="alert">
+						<span class="message"> {{_("TRAITEMENT EN COURS")}}</span>
+					</div>
+					<div class="col-md-12 offset-0">
+						<div class="row">
+							<table style="width:100%;" class="table table-bordered table-striped dataTable_ dtr-inline">
+								<thead>
+									<tr>
+										<th style="width:70%;">{{_("Taxe")}}</th>
+										<th>{{_("Montant")}}</th>
+									</tr>
+								</thead>
+								<tbody>
+								{% for taxe_quittance in taxes_quittances %}
+									<tr>
+									<td style="vertical-align:middle;">
+										{{ taxe_quittance.taxe.libelle }} ({{ taxe_quittance.taxe.code|default_if_none:"" }})
+									</td>
+									<td style="padding:5px;">
+										<span type="text" class="form-control money_field">{{taxe_quittance.montant}}</span>
+									</td>
+									</tr>
+								{% endfor %}
+								</tbody>
+							</table>
+						</div>
+					</div>
+				</div>
+				<div class="modal-footer justify-content-between">
+					<button type="button" class="btn btn-danger" data-dismiss="modal"><i class="fa fa-remove"></i> {{_('Fermer')}}</button>
+					<span>{{_('Montant_Total')}}: <span class="badge badge-warning money_field" style="font-weight:bold;">{{quittance.autres_taxes}}</span> {{quittance.police.client.pays.devise}}</span>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+<!-- fin modal interne des autres taxes -->
+
+<!-- modal interne du document -->
+<div class="modal fade modal_interne" id="modal-document_beneficiaire" data-backdrop="static" data-keyboard="false" aria-hidden="true" style="display: none">
+	<div class="modal-dialog modal-lg">
+	  <div class="modal-content">
+		<form enctype="multipart/form-data" method="post" action="{% url 'add_document_to_quittance' quittance.id police.id %}" id="modal_form_document" validate>
+		{% csrf_token %}
+		<div class="modal-header">
+		  <h4 class="modal-title">AJOUT D'UN DOCUMENT</h4>
+		  <button type="button" class="close" data-dismiss="modal" aria-label="Close"> <span aria-hidden="true">×</span></button>
+		</div>
+		 <div class="modal-body">
+		 <div class="alert  alert-dismissible fade show hidden" role="alert">
+			<span class="message"> TRAITEMENT EN COURS</span>
+		  </div>
+		  <div class="row">
+			  <div class="col-md-12">
+				  <div class="form-group row">
+					  <label class="col-sm-5 col-form-label">Type de document <span class="required">*</span></label>
+					  <div class="col-sm-7">
+					  <select class="form-control" name="type_document" id="type_document" required>
+						  <option value="">Choisir</option>
+						  {% for type_document in types_documents %}
+						  <option value="{{ type_document.id }}">{{ type_document.libelle }}</option>
+						  {% endfor %}
+					  </select>
+					  </div>
+				  </div>
+				  <div class="form-group row">
+					  <label class="col-sm-5 col-form-label">Nom du document <span class="required">*</span></label>
+					  <div class="col-sm-7">
+					  <input type="text" class="form-control" name="nom" id="nom" required/>
+					  </div>
+				  </div>
+				  <div class="form-group row">
+					  <label class="col-sm-5 col-form-label">Fichier <span class="required">*</span></label>
+					  <div class="col-sm-7">
+						  <input type="file" class="form-control" name="fichier" id="fichier" required/>
+					  </div>
+				  </div>
+				  <div class="form-group row">
+					  <label class="col-sm-5 col-form-label">Ce document est-il confidentiel ? <span class="required">*</span></label>
+					  <div class="col-sm-7">
+						  <input type="checkbox" value="OUI" name="confidentialite" id="confidentialite"/>
+					  </div>
+				  </div>
+				  <div class="form-group row">
+					  <label class="col-sm-5 col-form-label">Commentaire</label>
+					  <div class="col-sm-7">
+						  <textarea class="form-control" name="commentaire" id="commentaire"></textarea>
+					  </div>
+				  </div>
+			  </div>
+		  </div>
+		</div>
+		<div class="modal-footer justify-content-between">
+		  <button type="button" class="btn btn-danger" data-dismiss="modal"><i class="fa fa-remove"></i> Retour</button>
+		  <button type="button" id="btn_save_document" data-option="aliment" class="btn bg-info"><i class="fa fa-check-circle"></i> Valider</button>
+		</div>
+		  </form>
+	  </div>
+	</div>
+  </div>
+<!-- fin modal interne du document -->
+
+<!-- modal interne du document -->
+<div class="modal fade modal_interne" id="modal-imprimer_document" data-backdrop="static" data-keyboard="false" aria-hidden="true" style="display: none">
+	<div class="modal-dialog modal-lg">
+	  <div class="modal-content">
+		<form enctype="multipart/form-data" method="post" action="" id="modal_form_imprimer_document" validate>
+		{% csrf_token %}
+		<div class="modal-header">
+		  <h4 class="modal-title">CHOISIR UN MODELE</h4>
+		  <button type="button" class="close" data-dismiss="modal" aria-label="Close"> <span aria-hidden="true">×</span></button>
+		</div>
+
+		 <div class="modal-body">
+		 <div class="alert  alert-dismissible fade show hidden" role="alert">
+			<span class="message"> TRAITEMENT EN COURS</span>
+		  </div>
+		  <div class="row">
+			  <div class="col-md-12">
+				  <div class="form-group row">
+					  <label class="col-sm-5 col-form-label">Liste des modèles <span class="required">*</span></label>
+					  <div class="col-sm-7">
+					  <select class="form-control" name="type_courrier" id="type_courrier" required>
+						  	<option value='appel de prime'>Appel de prime</option>
+					  </select>
+					  </div>
+				  </div>
+			  </div>
+		  </div>
+		</div>
+		<div class="modal-footer justify-content-between">
+		  <button type="button" class="btn btn-danger" data-dismiss="modal"><i class="fa fa-remove"></i> Retour</button>
+
+
+<!--			<button  id="btn_save_imprimer_document" ><i ><a href="{% url 'generer_pdf' police_id=quittance.police.id courrier_id=30 quittance_id=quittance.id %}"></a></i> Imprimer</button>-->
+			<button type="button" data-option="aliment"  class="btn bg-info"><a style="cursor:pointer;"  href="{% url 'generer_word' police_id=quittance.police.id courrier_id=30 quittance_id=quittance.id %}"><i class="fa fa-print"></i> Imprimer</a>&nbsp;</button>
+		</div>
+		  </form>
+	  </div>
+	</div>
+  </div>
+<!-- fin modal interne du document -->

@@ -1,0 +1,156 @@
+{% extends "admin/base_site.html" %}
+{% load my_filters %}
+{% block extrastyle %}
+<style>
+    div.dataTables_processing>div:last-child>div {
+        background: rgb(187 65 38) !important;
+    }
+</style>
+{% endblock %}
+{% block content %}
+
+<div class="col-12 col-md-12 order-2 order-md-1">
+    <div class="card">
+      <div class="card-header o-bg-primary">
+          <h3 class="card-title"><b>{{_('LISTE_DES_BORDEREAUX_D_ORDONNANCEMENT')}} </b></h3>
+          <div class="card-tools">
+          </div>
+      </div>
+
+      <div style="display:none__;background:#CCCCCC;padding:10px;border-bottom:1px solid #eee;padding-bottom:10px;margin-bottom:10px;">
+        <form method="get"><label style="font-weight:normal;font-size:12px;display:none;"><i>{{_('Formulaire_de_recherche')}}</i></label>
+          {% csrf_token %}
+            <div class="row">
+                <div class="col-12 col-md-12 col-sm-12 row">
+                    <div class="col-md-4">
+                        <span class="col-sm-5 text-right" style="margin-top:5px;">{{_('Numero_Bordereau')}} : </span>
+                        <div class="col-sm-7">
+                            <input id="search_numero_bordereau" class="form-control" type="text" name="search_numero_bordereau" style="border-radius:3px;border:1px solid rgba(0, 0, 0, 0.3);text-transform:uppercase;">
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <span class="col-sm-5 text-right" style="margin-top:5px;">{{_('Prestataire')}} : </span>
+                        <div class="col-sm-7">
+                            <select class="form-control tags-multiple" id="search_prestataire" style="border:1px solid rgba(0, 0, 0, 0.3);" name="search_prestataire">
+                                <option value="">{{_('Choisir')}}</option>
+                                {% for prestataire in prestataires %}
+                                    <option  value="{{prestataire.id}}">{{prestataire.name|default_if_none:""}} ({{prestataire.code|default_if_none:""}})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="col-md-5">
+                        <span class="" style="margin-top:5px;">{{_('Periode_comptable')}} : </span>
+                        <select class="form-control tags-multiple" id="search_periode_comptable" style="border:1px solid rgba(0, 0, 0, 0.3);" name="search_periode_comptable">
+                            <option value="">{{_('Choisir')}}</option>
+                            {% for periode in periodes_comptables %}
+                                <option  value="{{periode.id}}">{{periode}}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </form>
+      </div>
+
+      <div class="card-body">
+        <div id="example1_wrapper" class="dataTables_wrapper dt-bootstrap4">
+          <div class="row">
+            <div class="col-12 col-md-12 col-sm-12">
+                 <!--div class="form-group row">
+                    <label class="offset-8 col-sm-2 col-form-label">Période comptable <span class="required"></span></label>
+                    <div class="col-sm-2">
+
+                    </div>
+                </div-->
+                <table class="table table-bordered table-striped dataTable_ dtr-inline table_v_middle" id="table_bordereau_ordonnancement">
+                    <thead>
+                      <tr>
+                        <th scope="col">{{_('Numero_Bordereau')}}</th>
+                        <th scope="col">{{_('Prestataire')}}</th>
+                        <th scope="col">{{_('Periode_comptable')}}</th>
+                        <th scope="col">{{_('Base_remb')}}.</th>
+                        <th scope="col">{{_('Rejet')}}</th>
+                        <th scope="col">{{_('Net_a_payer')}}</th>
+                        <th scope="col">{{_('Date_de_generation')}}</th>
+                        <th scope="col">{{_('Action')}}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+</div>
+
+
+{% endblock %}
+
+
+{% block extrajs %}
+<script>
+    $(document).ready(function() {
+dataTable = $('#table_bordereau_ordonnancement').DataTable({
+            "language": {
+                "url": "https://cdn.datatables.net/plug-ins/9dcbecd42ad/i18n/French.json"
+            },
+            "serverSide": true,
+            "ajax": {
+                "url": "{% url 'bordereau_ordonnancement_datatable' %}",
+                "data": function (data) {
+                    data.page = data.start / data.length + 1;
+                    data.search_periode_comptable = $('#search_periode_comptable').val();
+                    data.search_prestataire = $('#search_prestataire').val();
+                    data.search_numero_bordereau = $('#search_numero_bordereau').val();
+
+                },
+                "dataSrc": function (json) {
+
+                    return json.data;
+                }
+            },
+            "columns": [
+                {"data": "numero", "orderable": true},
+                {"data": "prestataire__name", "orderable": true},
+                {"data": "periode_comptable", "orderable": true},
+                {"data": "net_a_payer", "orderable": true},
+                {"data": "rejet", "orderable": true},
+                {"data": "rembourse", "orderable": true},
+                {"data": "created_at", "orderable": true},
+                {"data": "actions", "orderable": false, "searchable": false},
+            ],
+            "paging": true,
+            "pageLength": 10,
+            "processing": true,  // Show the loading indicator
+            "searching": false,   // Enable the search feature
+            "search": {
+                "search": $('#table_dossiers_sinistres-table_filter input').val()
+            }
+        });
+
+
+        dataTable.on('xhr.dt', function (e, settings, json, xhr) {
+            // Hide the spinner when the data is loaded
+            $('.spinner-border').show();
+        });
+
+        // Show the spinner when the table is processing
+        dataTable.on('processing.dt', function (e, settings, processing) {
+            if (processing) {
+                $('.spinner-border').show();
+            }
+        });
+
+        // Add custom search functionality for code, name, and prenoms columns
+        $('#search_periode_comptable, #search_prestataire, #search_numero_bordereau').on('keyup change', function() {
+            dataTable.search('').draw(); // Clear existing search
+            dataTable.draw(); // Trigger a new draw, which will include the updated search parameters
+        });
+    });
+</script>
+
+{% endblock %}

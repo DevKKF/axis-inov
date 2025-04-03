@@ -1,0 +1,832 @@
+{% extends "admin/base_site.html" %}
+{% load my_filters static %}
+{% block extrastyle %}
+<style>
+    div.dataTables_processing>div:last-child>div {
+        background: rgb(187 65 38) !important;
+    }
+</style>
+{% endblock %}
+{% block content %}
+
+ <div class="col-12 col-md-12 order-2 order-md-1">
+    <div class="card">
+      <div class="card-header o-bg-primary">
+          <h3 class="card-title"><b>{{_('LISTE_DES_SINISTRES')}}</b></h3>
+          <div class="card-tools">
+
+            </div>
+      </div>
+        <div style="background:#CCCCCC;padding:10px;border-bottom:1px solid #eee;padding-bottom:10px;margin-bottom:10px;">
+
+                <div class="row">
+
+                    {% if not request.user.prestataire %}
+                        <div class="col-sm-3">
+                            <span class="col text-right" style="margin-top:5px;">{{_('Type_remboursement')}} <span class="required">*</span>: </span>
+                            <div class="col-sm-12">
+                                <select class="form-control tags-multiple" id="search_type_remboursement" name="type_remboursement" style="border:1px solid rgba(0, 0, 0, 0.3);">
+                                    <option value="" selected>{{_('Choisir')}}</option>
+                                    {% for type_remboursement in type_remboursements %}
+                                        <option  value="{{type_remboursement.id}}">{{type_remboursement}}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col-sm-3" id="tiers-payant">
+                            <div class="row">
+                                 <span class="col-sm-12 " style="margin-top:0px;">{{_('Prestataire')}} <span class="required">*</span>: </span>
+                            <div class="col">
+                                <input class="form-control " id="search_prestataire_name" type="text" readonly/>
+                                <input class="form-control " id="search_prestataire" type="hidden"/>
+                            </div>
+                            <div class="col-sm-3">
+                                <span class="btn" data-toggle="modal" data-target="#modal_search_presta_by_name_generation_bordereau" style="background:gray;color:white;font-size:12px;"><i class="fa fa-search"></i></span>
+                            </div>
+
+                            </div>
+
+                        </div>
+
+                        <div class="col-sm-3 remboursement-direct">
+                                <span class="col text-right" style="margin-top:5px;">Bénéficiaire de remboursement <span class="required">*</span>: </span>
+                                <div class="col-sm-12">
+                                    <select class="form-control tags-multiple" id="search_type_benef_rd" style="border:1px solid rgba(0, 0, 0, 0.3);">
+                                        <option value="AD">ADHÉRENT</option>
+                                        <option  value="AS">ASSURÉ</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                        <div class="col-sm-3" id="remboursement-direct-adherent">
+                            <div class="row">
+                            <span class="col-sm-12" style="margin-top:0px;">Bénéficiaire (Adhérent)<span class="required">*</span>: </span>
+                            <div class="col">
+                                <input class="form-control" id="search_adh_name" type="text" readonly/>
+                                <input class="form-control" id="search_adh" type="hidden"/>
+                            </div>
+                            <div class="col-sm-3">
+                                <span class="btn" data-toggle="modal" data-target="#modal_search_benef_by_name_generation_bordereau" style="background:gray;color:white;font-size:12px;"><i class="fa fa-search"></i></span>
+                            </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-3 remboursement-direct" id="remboursement-direct-assure">
+                            <div class="row">
+                            <span class="col-sm-12" style="margin-top:0px;">Bénéficiaire (Assuré)<span class="required">*</span>: </span>
+                            <div class="col">
+                                <input class="form-control" id="search_assure_name" type="text" readonly/>
+                                <input class="form-control" id="search_assure" type="hidden"/>
+                            </div>
+                            <div class="col-sm-3">
+                                <span class="btn" data-toggle="modal" data-target="#modal_search_assure_by_name_generation_bordereau" style="background:gray;color:white;font-size:12px;"><i class="fa fa-search"></i></span>
+                            </div>
+                            </div>
+                        </div>
+                    {% else %}
+                    <div class="col-sm-3" style="display:none;">
+                        <span class="col text-right" style="margin-top:5px;">{{_('Type_remboursement')}} <span class="required">*</span>: </span>
+                        <div class="col-sm-6">
+                            <select class="form-control" id="search_type_remboursement" name="type_remboursement" readonly style="border:1px solid rgba(0, 0, 0, 0.3);">
+                                <option  value="1">{{_('TIERS_PAYANT')}}</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <input id="search_prestataire" readonly style="width:1px;height:1px;background:none;border:none;" value="1">
+
+                    {% endif %}
+
+                    <div class="col-sm-3">
+                        <span class="col text-right" style="margin-top:5px;">Période comptable <span class="required">*</span>: </span>
+                        <div class="col-sm-12">
+                            <select class="form-control tags-multiple" id="search_periode_comptable" style="border:1px solid rgba(0, 0, 0, 0.3);">
+                                <option value="">{{_('Choisir')}}</option>
+                                {% for periode in periode_comptable %}
+                                    <option  value="{{periode.id}}">{{periode}}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="col{% if not request.user.prestataire %}-3{% endif %}">
+                         <br>
+                        <button id="btn_generation_bordereau" class="btn btn-complement-rouge">{{_('Generer_un_bordereau_de_facturation')}}
+                        </button>
+
+                        <img id="loader" src="{% static 'admin_custom/img/loader.gif' %}" style="width: 40px;display: none;"/>
+
+                    </div>
+
+              </div>
+
+          </div>
+      <div class="card-body">
+        <div id="example1_wrapper" class="dataTables_wrapper dt-bootstrap4">
+          <div class="row">
+            <div class="col-12 col-md-12 col-sm-12">
+                <!--table class="table table-bordered table-striped dataTable dtr-inline table_v_middle" id="table_bordereaux__old_to_remove">
+                    <thead>
+                      <tr>
+                        <th scope="col">Date soin</th>
+                        <th scope="col">N˚ Bon</th>
+                        <th scope="col">Bénéficiaire du soin</th>
+                        <th scope="col">Matricule</th>
+                        <th scope="col">Montant facturé</th>
+                        <th scope="col">Part assuré</th>
+                        <th scope="col">Net à payer</th>
+                        <th scope="col">Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+
+                    {% for dossier_sinistre in dossiers_sinistres %}
+                      <tr>
+                          <td>{{ dossier_sinistre.created_at|date:'d/m/Y à H:i'|default_if_none:"" }}</td>
+                          <td>{{ dossier_sinistre.numero}}</td>
+                          <td>{{ dossier_sinistre.aliment.nom|default_if_none:"" }} {{ dossier_sinistre.aliment.prenoms|default_if_none:"" }}</td>
+                          <td>{{ dossier_sinistre.aliment.carte_active|default_if_none:"" }}</td>
+                          <td style="text-align:right">{{ dossier_sinistre.total_frais_reel|money_field|default_if_none:"0" }}</td>
+                          <td style="text-align:right">{% if dossier_sinistre.tm_prefinanced and request.user.is_prestataire %} 0 {% else %} {{ dossier_sinistre.total_part_assure|money_field|default_if_none:"0" }} {% endif %}</td>
+                          <td style="text-align:right">{% if dossier_sinistre.tm_prefinanced and request.user.is_prestataire %} {{ dossier_sinistre.total_frais_reel|money_field|default_if_none:"0" }} {% else %} {{ dossier_sinistre.total_part_compagnie|money_field|default_if_none:"0" }} {% endif %}</td>
+                          <td>
+                              <a href="{% url 'details_dossier_sinistre' dossier_sinistre.id %}"><span class="btn btn-sm btn-details rounded-pill"><i class="fa fa-eye"></i> Voir plus</span></a>&nbsp;&nbsp;
+                          </td>
+                      </tr>
+                    {% endfor %}
+                    </tbody>
+                </table-->
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped dtr-inline" id="table_generation_bordereau" style="width: 100%;" data-orderby="0">
+                        <thead>
+                        <tr>
+                            <th><input type="checkbox" value="" id="selectAll"></th>
+                            <th scope="col">{{_('Date_soin')}}</th>
+                            <th scope="col">{{_('Numero_Sinistre')}}</th>
+                            <th scope="col">{{_('Numero_feuille_de_soins')}}</th>
+                              {% if not request.user.prestataire %}
+                                <th scope="col">{{_('Prestataire')}}</th>
+                              {% endif %}
+                            <th scope="col">{{_('Matricule')}}</th>
+                            <th scope="col">{{_('Nom')}} {% if request.user.is_pres %} {{_('du_patient')}}{% else %} {{_('de_l_assure')}}{% endif %}</th>
+                            <th scope="col">{{_('Acte')}}</th>
+                            <th scope="col">{% if request.user.is_pres %} {{_('Part_assureur')}}{% else %} {{_('Montant_facture')}}{% endif %} </th>
+                            {% if not request.user.is_pres %}
+                             <th scope="col">{{_('Part_assure')}}</th>
+                            {% endif %}
+<!--                            <th scope="col">Net à payer</th>-->
+                            <th scope="col">{{_('Statut')}}</th>
+                            <th scope="col">{{_('Actions')}}</th>
+<!--                        </tr>-->
+<!--                          <tr>-->
+<!--                            <th scope="col" style="display:none;">ID</th>-->
+<!--                            <th scope="col">N° feuille de soins</th>-->
+<!--                              {% if not request.user.prestataire %}-->
+<!--                                <th scope="col">Prestataire</th>-->
+<!--                              {% endif %}-->
+<!--                            <th scope="col">-->
+<!--                                {% if request.user.is_pharm %}-->
+<!--                                N°Carte-->
+<!--                                {% else %}-->
+<!--                                Type-->
+<!--                                {% endif %}-->
+<!--                            </th>-->
+<!--                            <th scope="col">Nom {% if request.user.is_pres %} du patient{% else %} de l'assuré{% endif %}</th>-->
+<!--                            &lt;!&ndash;th scope="col">Prestataire</th&ndash;&gt;-->
+<!--                            <th scope="col">Montant facturé</th>-->
+<!--                            <th scope="col">Part {% if request.user.is_pres %} patient{% else %} assuré{% endif %}</th>-->
+<!--                            <th scope="col">Net à payer</th>-->
+<!--                            <th scope="col">Date prestation</th>-->
+<!--                            <th scope="col">Statut</th>-->
+<!--                            <th scope="col">Actions</th>-->
+<!--                          </tr>-->
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+
+
+{% endblock %}
+
+
+{% block extrajs %}
+
+<script>
+
+
+    $(document).ready(function(){
+        // Cacher les blocs au chargement de la page
+        $("#tiers-payant").hide();
+        $(".remboursement-direct").hide();
+        $("#remboursement-direct-adherent").hide()
+        // $("#remboursement-direct-assure").hide();
+    });
+
+
+
+
+    var selectedItems = [];
+    var fistLoad = true;
+
+    $.fn.updateSelectedItemFunction = function() {
+        /*
+        var url = "{% url 'generation_bordereau_datatable' %}?all=true&search_periode_comptable=" + $('#search_periode_comptable').val() + "&search_type_remboursement=" + $('#search_type_remboursement').val()  {% if not request.user.prestataire %} + "&search_prestataire=" + $('#search_prestataire').val() {% endif %};
+                        $.ajax({
+                           url: url,  // Endpoint pour récupérer toutes les données
+                           type: "GET",
+                           dataType: "json",
+                           success: function(response) {
+                               // Mettre à jour le tableau des éléments sélectionnés
+                               console.log('response.data', response.data);
+                               selectedItems = response.data.map(function(item) {
+                                   return item;
+                               });
+
+                               // Cocher/décocher toutes les cases individuelles
+                               $('input[type="checkbox"]', dataTable.rows().nodes()).prop('checked', true);
+                           }
+                       });
+
+                       // Stocker les éléments sélectionnés dans le stockage local (si nécessaire)
+                        localStorage.setItem('selectedItems', JSON.stringify(selectedItems));
+        */
+    };
+
+    $(document).ready(function() {
+
+        $('#btn_generation_bordereau').prop("disabled",true); // givrer le bouton d'action de la selection pendant qu'on initialise
+
+        dataTable = $('#table_generation_bordereau').DataTable({
+            "language": {
+                "emptyTable": 'Aucune donnée disponible.',
+                "url": "https://cdn.datatables.net/plug-ins/9dcbecd42ad/i18n/French.json"
+            },
+            "paging": true,
+            "pageLength": 100000000,
+            "processing": true,  // Show the loading indicator
+            "searching": true,   // // Enable the search feature
+            // "search": {
+            //    "search": $('#table_dossiers_sinistres-table_filter input').val()
+            // },
+            "bLengthChange" : false,
+            "lengthMenu": [
+                [100, 500, 1000],
+                [100, 500, 1000]
+            ],
+            "serverSide": true,
+            "deferLoading": 0, // empecher l'initialisation automatique
+            "ajax": {
+                "url": "{% url 'generation_bordereau_datatable' %}",
+                "data": function (data) {
+                    data.page = data.start / data.length + 1;
+                    data.search_periode_comptable = $('#search_periode_comptable').val();
+                    data.search_prestataire = $('#search_prestataire').val();
+                    data.search_adh = $('#search_adh').val();
+                    data.search_assure = $('#search_assure').val();
+                    data.search_type_remboursement = $('#search_type_remboursement').val();
+
+                    $('#btn_generation_bordereau').prop("disabled",true); // givrer le bouton d'action de la selection pendant qu'on vient faire le traitement
+
+                    if(fistLoad) {
+                        fistLoad = false;
+                        $(this).updateSelectedItemFunction();
+                    }
+
+
+
+
+                },
+                "dataSrc": function (json) {
+                    if(json.data.length == 0){
+                        $('#btn_generation_bordereau').prop("disabled",true);
+                    }
+                    // si on a de la data alors on peut activer le bouton d'action
+                    else{
+                        $('#btn_generation_bordereau').prop("disabled",false);
+                    }
+                    return json.data;
+                }
+            },
+            "columns": [
+                {
+                  "data": null,
+                  "orderable": false,
+                  "searchable": false,
+                  "render": function (data, type, row) {
+                    var isChecked = selectedItems.indexOf(row.id) !== -1 ? 'checked' : '';
+                    return '<input type="checkbox" value="' + row.id + '" ' + isChecked + '>';
+                }
+
+              },
+                {"data": "date_survenance", "orderable": true},
+                {"data": "numero", "orderable": false},
+                {"data": "dossier_sinistre__numero", "orderable": false},
+                {% if not request.user.prestataire %}
+                {"data": "prestataire", "orderable": false},
+                {% endif %}
+                {"data": "carte_active", "orderable": false},
+                {"data": "beneficiaire", "orderable": false},
+                {"data": "acte", "orderable": false},
+                {"data": "total_frais_reel", "orderable": false},
+                {% if not request.user.is_pres %}
+                {"data": "total_part_assure", "orderable": false},
+                {% endif %}
+                // {"data": "total_part_compagnie", "orderable": false},
+                {"data": "statut", "orderable": false},
+                {"data": "actions", "orderable": false, "searchable": false}
+            ]
+        });
+
+
+
+        // Gérer la visibilité en fonction de la sélection dans la liste déroulante
+        $("#search_type_remboursement").change(function(){
+            var selectedType = $(this).val();
+
+            if(selectedType == 1){
+                $("#tiers-payant").show();
+                $(".remboursement-direct").hide();
+                $("#remboursement-direct-adherent").hide();
+
+                $("#search_adh_name").val('')
+                $("#search_adh").val('');
+            } else if(selectedType == 2){
+                $("#tiers-payant").hide();
+                $(".remboursement-direct").show();
+                $("#remboursement-direct-assure").hide();
+
+                $("#search_prestataire").val('');
+                $("#search_prestataire_name").val('');
+                $("#search_adh_name").val('')
+                $("#search_adh").val('');
+
+                $(this).typeBenef($("#search_type_benef_rd").val());
+
+            } else {
+                // Cacher les deux blocs si aucune option sélectionnée
+                $("#tiers-payant").hide();
+                $(".remboursement-direct").hide();
+
+                $("#search_prestataire").val('');
+                $("#search_prestataire_name").val('');
+
+                $("#search_adh").val('');
+                $("#search_adh_name").val('');
+
+                $("#search_assure_name").val('');
+                $("#search_assure").val('');
+            }
+            // Clear data table
+            dataTable.draw();
+        });
+
+         $("#search_type_benef_rd").change(function(){
+            var selectedType = $(this).val();
+            $(this).typeBenef(selectedType);
+            // // Clear data table
+            dataTable.draw();
+        });
+
+        $.fn.typeBenef = function(selectedType) {
+            if(selectedType == 'AS'){
+                $("#remboursement-direct-assure").show();
+                $("#remboursement-direct-adherent").hide();
+
+
+                $("#search_adh_name").val('');
+                $("#search_adh").val('');
+            } else if(selectedType == 'AD') {
+                // Cacher les deux blocs si aucune option sélectionnée
+                $("#remboursement-direct-adherent").show();
+                $("#remboursement-direct-assure").hide();
+
+                $("#search_assure_name").val('')
+                $("#search_assure").val('');
+
+            }
+        };
+
+       // Gérer le "Sélectionner tout"
+        $('#selectAll').on('change', function() {
+           // Mettre à jour le tableau des éléments sélectionnés
+           if (this.checked) {
+               // Effectuer une requête AJAX pour récupérer toutes les lignes du serveur
+                //$(this).updateSelectedItemFunction();
+
+
+                $('input[type="checkbox"]', dataTable.rows().nodes()).prop('checked', true);
+
+           } else {
+               // Désélectionner toutes les lignes
+               selectedItems = [];
+
+               // Cocher/décocher toutes les cases individuelles
+               $('input[type="checkbox"]', dataTable.rows().nodes()).prop('checked', false);
+           }
+
+           // Stocker les éléments sélectionnés dans le stockage local (si nécessaire)
+           localStorage.setItem('selectedItems', JSON.stringify(selectedItems));
+       });
+
+        // Gérer les changements de sélection
+        $('#table_generation_bordereau tbody').on('change', 'input[type="checkbox"]', function () {
+            var data = dataTable.row($(this).closest('tr')).data();
+            var itemId = data.id;
+            console.log('itemId', itemId);
+            // Mettre à jour le tableau des éléments sélectionnés
+            console.log('this.checked', this.checked);
+            if (this.checked) {
+                selectedItems.push(itemId);
+            } else {
+                var index = selectedItems.indexOf(itemId);
+                if (index !== -1) {
+                    selectedItems.splice(index, 1);
+                }
+            }
+
+            // Désélectionner "Sélectionner tout" si toutes les cases individuelles ne sont pas cochées
+            $('#selectAll').prop('checked', selectedItems.length === dataTable.rows().count());
+
+
+            // Stocker les éléments sélectionnés dans le stockage local
+            console.log('selectedItems', selectedItems);
+            localStorage.setItem('selectedItems', JSON.stringify(selectedItems));
+        });
+
+        dataTable.on('xhr.dt', function (e, settings, json, xhr) {
+            // Hide the spinner when the data is loaded
+            $('.spinner-border').show();
+        });
+
+        // Show the spinner when the table is processing
+        dataTable.on('processing.dt', function (e, settings, processing) {
+            if (processing) {
+                $('.spinner-border').show();
+            }
+        });
+
+        {% if not request.user.is_prestataire %}
+            // Add custom search functionality for code, name, and prenoms columns
+            $('#search_periode_comptable, #search_prestataire, #search_adh, #search_type_remboursement').on('keyup change', function() {
+            // on remet tout à plat
+            // dataTable.search('').draw(); // Clear existing search
+            dataTable.search(''); // Clear existing search
+            dataTable.clear(); // clear table
+            $(this).updateSelectedItemFunction();
+            //$('#selectAll').prop('checked', true);
+
+            let search_periode_comptable = $('#search_periode_comptable').val();
+            let search_prestataire = $('#search_prestataire').val();
+            let search_adh = $('#search_adh').val();
+            let search_assure = $('#search_assure').val();
+
+            let search_type_remboursement = $('#search_type_remboursement').val();
+
+            if(search_periode_comptable == ''){
+                $('#btn_generation_bordereau').prop("disabled",true);
+            }else{
+                $('#btn_generation_bordereau').prop("disabled",false);
+            }
+
+            // on verifie les selection pour redessiner le tableau ce qui implicitera reactivera ce devra l'etre depuis le traitement datatable
+            if(search_type_remboursement != "" && ((search_prestataire != "" && $('#search_prestataire_name').is(":visible")) || (search_adh != "" && $('#search_adh_name').is(":visible")) || (search_assure != "" && $('#search_assure_name').is(":visible"))) && search_periode_comptable != ""){
+                dataTable.draw(); // Trigger a new draw, which will include the updated search parameters
+            }
+            // on desactive le bouton d'action car selection incomplète
+            else{
+                $('#btn_generation_bordereau').prop("disabled",true);
+            }
+        });
+        {% else %}
+            // Add custom search functionality for code, name, and prenoms columns
+            $('#search_periode_comptable, #search_prestataire, #search_adh, #search_type_remboursement').on('keyup change', function() {
+            // on remet tout à plat
+            // dataTable.search('').draw(); // Clear existing search
+            dataTable.search(''); // Clear existing search
+            dataTable.clear(); // clear table
+            $(this).updateSelectedItemFunction();
+            //$('#selectAll').prop('checked', true);
+
+            let search_periode_comptable = $('#search_periode_comptable').val();
+            let search_prestataire = $('#search_prestataire').val();
+            let search_adh = $('#search_adh').val();
+
+            let search_type_remboursement = $('#search_type_remboursement').val();
+
+            if(search_periode_comptable == ''){
+                $('#btn_generation_bordereau').prop("disabled",true);
+            }else{
+                $('#btn_generation_bordereau').prop("disabled",false);
+            }
+
+            // on verifie les selection pour redessiner le tableau ce qui implicitera reactivera ce devra l'etre depuis le traitement datatable
+            if(search_type_remboursement != "" &&  search_periode_comptable != ""){
+                dataTable.draw(); // Trigger a new draw, which will include the updated search parameters
+            }
+            // on desactive le bouton d'action car selection incomplète
+            else{
+                $('#btn_generation_bordereau').prop("disabled",true);
+            }
+        });
+
+        {% endif %}
+        // Gérer la sélection d'un bénéficiaire
+        $(document).on("click", ".btn_select_beneficiaire", function(e) {
+            console.log('button btn_select_beneficiaire is clicked.');
+
+            e.preventDefault();
+            var benef_id = $(this).data('benef_id');
+            var benef_nom = $(this).data('benef_nom');
+            console.log('Selected benef_id:', benef_id);
+            console.log('Selected benef_nom:', benef_nom);
+
+            // Close the modal
+            $('#modal_search_benef_by_name_generation_bordereau').modal('hide');
+
+            // Populate the numero_carte field in form_saisie_prestation_gestionnaires.html
+            $('#search_adh_name').val(benef_nom);
+            $('#search_adh').val(benef_id);
+
+
+            dataTable.search(''); // Clear existing search
+            dataTable.clear(); // clear table
+            $(this).updateSelectedItemFunction();
+            //$('#selectAll').prop('checked', true);
+
+            let search_periode_comptable = $('#search_periode_comptable').val();
+            let search_prestataire = $('#search_prestataire').val();
+            let search_adh = $('#search_adh').val();
+            let search_assure = $('#search_assure').val();
+
+            let search_type_remboursement = $('#search_type_remboursement').val();
+
+            if(search_periode_comptable == ''){
+                $('#btn_generation_bordereau').prop("disabled",true);
+            }else{
+                $('#btn_generation_bordereau').prop("disabled",false);
+            }
+
+            // on verifie les selection pour redessiner le tableau ce qui implicitera reactivera ce devra l'etre depuis le traitement datatable
+            if(search_type_remboursement != "" && ((search_prestataire != "" && $('#search_prestataire_name').is(":visible")) || (search_adh != "" && $('#search_adh_name').is(":visible")) || (search_assure != "" && $('#search_assure_name').is(":visible"))) && search_periode_comptable != ""){
+                dataTable.draw(); // Trigger a new draw, which will include the updated search parameters
+            }
+            // on desactive le bouton d'action car selection incomplète
+            else{
+                $('#btn_generation_bordereau').prop("disabled",true);
+            }
+
+        });
+
+
+        // Gérer la sélection d'un prestataire
+        $(document).on("click", ".btn_select_prestataire", function(e) {
+            console.log('button btn_select_prestataire is clicked.');
+
+            e.preventDefault();
+            var presta_id = $(this).data('presta_id');
+            var presta_name = $(this).data('presta_name');
+            console.log('Selected presta_id:', presta_id);
+            console.log('Selected presta_name:', presta_name);
+
+            // Close the modal
+            $('#modal_search_presta_by_name_generation_bordereau').modal('hide');
+
+            // Populate the numero_carte field in form_saisie_prestation_gestionnaires.html
+            $('#search_prestataire_name').val(presta_name);
+            $('#search_prestataire').val(presta_id);
+
+
+            dataTable.search(''); // Clear existing search
+            dataTable.clear(); // clear table
+            $(this).updateSelectedItemFunction();
+            //$('#selectAll').prop('checked', true);
+
+            let search_periode_comptable = $('#search_periode_comptable').val();
+            let search_prestataire = $('#search_prestataire').val();
+            let search_adh = $('#search_adh').val();
+            let search_assure = $('#search_assure').val();
+
+
+            let search_type_remboursement = $('#search_type_remboursement').val();
+
+            if(search_periode_comptable == ''){
+                $('#btn_generation_bordereau').prop("disabled",true);
+            }else{
+                $('#btn_generation_bordereau').prop("disabled",false);
+            }
+
+            // on verifie les selection pour redessiner le tableau ce qui implicitera reactivera ce devra l'etre depuis le traitement datatable
+            if(search_type_remboursement != "" && ((search_prestataire != "" && $('#search_prestataire_name').is(":visible")) || (search_adh != "" && $('#search_adh_name').is(":visible")) || (search_assure != "" && $('#search_assure_name').is(":visible"))) && search_periode_comptable != ""){
+                dataTable.draw(); // Trigger a new draw, which will include the updated search parameters
+            }
+            // on desactive le bouton d'action car selection incomplète
+            else{
+                $('#btn_generation_bordereau').prop("disabled",true);
+            }
+
+        });
+
+         // Gérer la sélection d'un assuré
+        $(document).on("click", ".btn_select_assure", function(e) {
+            console.log('button btn_select_assur is clicked.');
+
+            e.preventDefault();
+            var assure_id = $(this).data('assure_id');
+            var assure_name = $(this).data('assure_name');
+            console.log('Selected assure_id:', assure_id);
+            console.log('Selected assure_name:', assure_name);
+
+            // Close the modal
+            $('#modal_search_assure_by_name_generation_bordereau').modal('hide');
+
+            // Populate the numero_carte field in form_saisie_assuretion_gestionnaires.html
+            $('#search_assure_name').val(assure_name);
+            $('#search_assure').val(assure_id);
+
+
+            dataTable.search(''); // Clear existing search
+            dataTable.clear(); // clear table
+            $(this).updateSelectedItemFunction();
+            //$('#selectAll').prop('checked', true);
+
+            let search_periode_comptable = $('#search_periode_comptable').val();
+            let search_prestataire = $('#search_prestataire').val();
+            let search_adh = $('#search_adh').val();
+            let search_assure = $('#search_assure').val();
+
+            let search_type_remboursement = $('#search_type_remboursement').val();
+
+            if(search_periode_comptable == ''){
+                $('#btn_generation_bordereau').prop("disabled",true);
+            }else{
+                $('#btn_generation_bordereau').prop("disabled",false);
+            }
+
+            // on verifie les selection pour redessiner le tableau ce qui implicitera reactivera ce devra l'etre depuis le traitement datatable
+            if(search_type_remboursement != "" && ((search_prestataire != "" && $('#search_prestataire_name').is(":visible")) || (search_adh != "" && $('#search_adh_name').is(":visible")) || (search_assure != "" && $('#search_assure_name').is(":visible"))) && search_periode_comptable != ""){
+                dataTable.draw(); // Trigger a new draw, which will include the updated search parameters
+            }
+            // on desactive le bouton d'action car selection incomplète
+            else{
+                $('#btn_generation_bordereau').prop("disabled",true);
+            }
+
+        });
+
+        // hide modal
+        $(document).on("click", ".close_modal", function(e) {
+            // Close the modal
+            $('#modal_search_benef_by_name_generation_bordereau').modal('hide');
+            $('#modal_search_presta_by_name_generation_bordereau').modal('hide');
+            $('#modal_search_assure_by_name_generation_bordereau').modal('hide');
+        });
+
+
+        $(document).on("click", "#btn_generation_bordereau" , function(e) {
+
+            var selected_sinistres_ids = [];
+            var checkedCheckboxes = $('input[type="checkbox"]:checked', dataTable.rows().nodes());
+
+            console.log("Nombre de lignes cochées : ", checkedCheckboxes.length);
+
+            checkedCheckboxes.each(function() {
+                selected_sinistre_id = $(this).val();
+                selected_sinistres_ids.push(selected_sinistre_id);
+
+                console.log("selected_sinistre_id : ", selected_sinistre_id);
+            });
+
+            if(checkedCheckboxes.length > 0){
+
+                 $.ajax({
+                    type:'post',
+                    url:'/sinistre/submit_generate_bordereau',
+                    data: {'periode_id':$('#search_periode_comptable').val(),'prestataire_id':$('#search_prestataire').val(), 'search_adh':$('#search_adh').val(), 'search_assure':$('#search_assure').val(), 'type_remboursement_id':$('#search_type_remboursement').val() , "selectedItems": JSON.stringify(selected_sinistres_ids)},
+                    beforeSend:function(){
+                         $('#btn_generation_bordereau').prop('disabled', true);
+                         $('#loader').show();
+                    },
+                    success: function(response){
+
+                        console.log(response);
+
+                        if (response.statut == 1){
+
+                            $('#btn_generation_bordereau').prop('disabled', false);
+                            var link = response.bordereau_pdf;
+                            var a = document.createElement('a');
+                            a.href = link;
+                            a.download = link.substr(link.lastIndexOf('/') + 1);
+                            document.body.appendChild(a);
+                            a.click();
+                            document.body.removeChild(a);
+
+                            location.reload();
+
+                        }else{
+                            notifyWarning(response.message);
+                            $('#btn_generation_bordereau').prop('disabled', false);
+                            $('#loader').hide();
+                        }
+
+                    },
+                    error: function(){
+                        notifyWarning("Erreur lors de la génération du bordereau");
+                        $('#loader').hide();
+                    }
+
+                });
+
+            }else{
+                notifyWarning("Veuillez sélectionner des sinistres");
+            }
+
+        });
+
+
+
+
+
+var my_noty;//variale global pour pouvoir le fermer de popup de l'extérieur
+function notifySuccess(message, fnCallback){
+    my_noty = noty({
+            text        : message,
+            type        : 'success',
+            dismissQueue: true,
+            layout      : 'center',
+            theme       : 'defaultTheme',
+            buttons     : [
+                {addClass: 'btn btn-primary', text: 'OK', onClick: function ($noty) {
+
+                    if (typeof fnCallback === 'function') fnCallback();
+
+                    $noty.close();
+                }
+                }
+            ]
+        });
+}
+
+function notifyWarning(message, fnCallback){
+      if (my_noty) {
+        my_noty.close();
+      }
+
+    my_noty = noty({
+            text        : message,
+            type        : 'warning',
+            dismissQueue: true,
+            layout      : 'center',
+            theme       : 'defaultTheme',
+            buttons     : [
+                {addClass: 'btn btn-primary', text: 'OK', onClick: function ($noty) {
+
+                    if (typeof fnCallback === 'function') fnCallback();
+
+                    $noty.close();
+                }
+                }
+            ]
+        });
+
+}
+
+function notifyError(message, fnCallback){
+    my_noty = noty({
+            text        : message,
+            type        : 'error',
+            dismissQueue: true,
+            layout      : 'center',
+            theme       : 'defaultTheme',
+            buttons     : [
+                {addClass: 'btn btn-primary', text: 'OK', onClick: function ($noty) {
+
+                    if (typeof fnCallback === 'function') fnCallback();
+
+                    $noty.close();
+                }
+                }
+            ]
+        });
+}
+
+
+    });
+
+</script>
+
+
+{% include 'modal_search_presta_by_name_generation_bordereau.html' %}
+{% include 'modal_search_benef_by_name_generation_bordereau.html' %}
+{% include 'modal_search_assure_by_name_generation_bordereau.html' %}
+
+{% endblock %}

@@ -1,0 +1,95 @@
+# Environnements virtuels
+venv/
+.env
+.venv/
+env/
+ENV/
+env.bak/
+env.d/
+.Python
+
+# Fichiers de configuration spécifiques au système
+.DS_Store
+Thumbs.db
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Distribution / packaging
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Logs and databases
+*.log
+*.sqlite3
+*.db
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Pytest cache
+.pytest_cache/
+
+# Coverage reports
+htmlcov/
+.coverage
+*.cover
+*.py,cover
+.tox/
+.nox/
+.cache
+coverage.xml
+
+# Alembic migrations
+migrations/versions/*.pyc
+migrations/__pycache__/
+migrations/versions/__pycache__/
+
+# MyPy cache
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# IDE files
+.idea/
+*.swp
+*.swo
+*.swn
+*.bak
+*.tmp
+*.backup
+.vscode/
+
+# Static files and compiled files
+static/
+media/
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.svg
+*.ico
+node_modules/
+npm-debug.log*
+
+# Others
+*.env.*
+*.env
+
+# Fichier de reglage ou configuration
+settings.py

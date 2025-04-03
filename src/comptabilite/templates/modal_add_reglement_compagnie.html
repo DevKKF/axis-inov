@@ -1,0 +1,164 @@
+<div  class="modal fade"  id="modal-reglement_compagnie"  aria-hidden="true"  style="display: none">
+	<div class="modal-dialog modal-xl">
+		<div class="modal-content">
+			<form enctype="multipart/form-data" id="form_add_reglement_compagnie" action="{% url 'add_reglement_compagnie' %}" method="post">
+			{% csrf_token %}
+			<div class="modal-header">
+				<h4 class="modal-title">{{_("FORMULAIRE DE REVERSEMENT ASSUREUR")}}</b></h4>
+				<button type="button"class="close"data-dismiss="modal"aria-label="Close">
+					<span aria-hidden="true">×</span>
+				</button>
+			</div>
+			<div class="modal-body">
+				<div class="alert  alert-dismissible fade show hidden" role="alert">
+				  <span class="message"> {{_("TRAITEMENT EN COURS")}}</span>
+				</div>
+				<div class="col-md-12 offset-0">
+					<div class="row">
+						<div class="col-md-6">
+
+							<div class="form-group row">
+									<label class="col-sm-6 col-form-label">{{_("Compte de reglement")}} <span class="required">*</span></label>
+								<div class="col-sm-6">
+									<select class="form-control form-add_reglement_compagnie-select" name="compte_tresorerie" id="compte_tresorerie" required>
+										<option value="">{{_('Choisir')}}</option>
+										{% for ct in comptes_tresoreries %}
+											<option value="{{ ct.id }}" selected>{{ ct.libelle }}</option>
+										{% endfor %}
+									</select>
+								</div>
+							</div>
+
+							<div class="form-group row">
+								<label class="col-sm-6 col-form-label">{{_('Assureur')}} <span class="required">*</span></label>
+								<div class="col-sm-6">
+									<select class="form-control form-add_reglement_compagnie-select" name="compagnie" id="compagnie" required>
+										<option value="">{{_('Choisir')}}</option>
+										{% for compagnie in compagnies %}
+											<option value="{{ compagnie.id }}" data-href_reglements_a_reverser="{% url 'ajax_reglements_a_reverser_compagnie' compagnie.id %}">{{ compagnie.nom }}</option>
+										{% endfor %}
+									</select>
+								</div>
+							</div>
+
+						</div>
+						<div class="vl"></div>
+						<div class="col-md-6" style="border-left:0px;margin-left:-10px;padding-left:20px;">
+
+							<div class="form-group row">
+								<label class="col-sm-6 col-form-label">{{_("Mode reglement")}} <span class="required">*</span></label>
+								<div class="col-sm-6">
+									<select class="form-control form-add_reglement_compagnie-select" name="mode_reglement" id="mode_reglement" required>
+										<option value="">{{_('Choisir')}}</option>
+										{% for mode_reglement in modes_reglements %}
+											<option value="{{ mode_reglement.id }}">{{ mode_reglement.libelle }}</option>
+										{% endfor %}
+									</select>
+								</div>
+							</div>
+
+							<div class="form-group row">
+								<label class="col-sm-6 col-form-label">{{_("Date reg Cie")}} <span class="required">*</span></label>
+								<div class="col-sm-6">
+									<input type="date" class="form-control" name="date_paiement" value="{{ today|date:'Y-m-d' }}" min="{{ today|date:'Y-m-d' }}"  max="{{ today|date:'Y-m-d' }}" readonly required/>
+								</div>
+							</div>
+
+							<div class="form-group row" style="display:none;">
+								<label class="col-sm-6 col-form-label">{{_("Numéro piece")}} <span class="required"></span></label>
+								<div class="col-sm-6">
+									<input type="text" class="form-control alpha_num_input" name="numero_piece"/>
+								</div>
+							</div>
+							{% comment %}
+							<div class="form-group row" style="display:none;">
+									<label class="col-sm-6 col-form-label">{{_("Banque émettrice")}} <span class="required" id=""></span></label>
+								<div class="col-sm-6">
+									<select class="form-control form-add_reglement_compagnie-select" name="banque" id="banque_rc">
+										<option value="">{{_('Choisir')}}</option>
+										{% for banque in banques %}
+											<option value="{{ banque.id }}">{{ banque.libelle }}</option>
+										{% endfor %}
+									</select>
+								</div>
+							</div>
+							{% endcomment %}
+							<div class="form-group row" style="display:none;">
+								<label class="col-sm-6 col-form-label">{{_("Banque émettrice")}}</label>
+								<div class="col-sm-6">
+									<input type="text" class="form-control alpha_num_n_space_input" name="banque" id="banque_em"/>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="row table-responsive" style="border-top:1px solid #eee;"><span>{{_("Liste des règlements non réversés")}}</span>
+						<div id="box_reglements_a_reverser_compagnie">
+							<!-- LISTE A CHARGER DYNAMIQUEMENT  -->
+							<table class="table table-bordered table-striped dataTable0 dtr-inline" id="table_reglements_a_reverser_compagnie">
+							  <thead>
+								<tr>
+								  <th scope="col"></th>
+								  <th scope="col">{{_("N° Reg client")}}</th>
+								  <th scope="col">{{_("N° Quittance")}}</th>
+								  <th scope="col">{{_("Client")}}</th>
+								  <th scope="col">{{_("Prime totale")}}</th>
+								  <th scope="col">{{_("Mt Reg clt")}}</th>
+								  <th scope="col">{{_("Mt CIE")}}</th>
+								  <th scope="col">{{_("Com court")}}</th>
+								  <th scope="col">{{_("Retro Apport")}}</th>
+								  <th scope="col">{{_("Date Reg clt")}}</th>
+								</tr>
+							  </thead>
+							  <tbody>
+							  	<tr>
+								  <td colspan="10" style="text-align:center;">{{_("Sélectionner un assureur pour charger la liste")}}</td>
+								</tr>
+							  </tbody>
+							</table>
+						</div>
+					</div>
+
+				</div>
+				<div class="modal-footer justify-content-between">
+					<button type="button" class="btn btn-danger" data-dismiss="modal"><i class="fa fa-remove"></i> {{_('Retour')}}</button>
+					<div>{{_("Total reg clt")}}: <input type="text" class="money_field montant_total_reglements_coches" readonly style="background:none;border:none;font-size:18px;width:150px;font-weight:bold;"/></div>
+					<div>{{_("Montant Total Cie")}}: <input type="text" class="money_field montant_total_a_regler_compagnie" readonly style="background:none;border:none;font-size:18px;width:150px;font-weight:bold;"/> {{police.client.pays.devise.code}}</div>
+					<div>{{_("Commissions")}}: <input type="text" class="money_field montant_total_com" readonly style="background:none;border:none;font-size:18px;width:150px;font-weight:bold;"/></div>
+					<button disabled type="button" id="btn_save_reglement_compagnie" class="btn btn-info"><i class="fa fa-check-circle"></i> {{_('Valider')}}</button>
+				</div>
+			</div>
+			</form>
+			<div id="datatable_stock_input_reg" class="d-none">
+			
+			</div>
+		</div>
+	</div>
+
+</div><script>
+
+	function addInputAlphaNumWithSpaceValidation(inputSelector, errorId) {
+		var previousValue = ""; // Déclarer previousValue en dehors de la fonction
+		$(inputSelector).on("input", function () {
+			var inputValue = $(this).val();
+			// Modifier la regex pour inclure les espaces
+			var alphanumericRegex = /^[a-zA-Z0-9\/\-_ ]*$/; 
+			var errorMessage = $("#" + errorId);
+
+			if (!alphanumericRegex.test(inputValue)) {
+				errorMessage.css("display", "block");
+				$(this).val(previousValue); // Restaurer la valeur précédente
+				setTimeout(function () {
+					errorMessage.css("display", "none");
+				}, 5000); // Masquer le message d'erreur après 5 secondes
+			} else {
+				previousValue = inputValue; // Mettre à jour la valeur précédente
+				errorMessage.css("display", "none");
+			}
+		});
+	}
+
+	$(document).ready(function () {
+		addInputAlphaNumWithSpaceValidation(".alpha_num_n_space_input", "error-message");
+	});
+
+</script>

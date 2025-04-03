@@ -1,0 +1,66 @@
+<div  class="modal fade"  id="modal-avenant"  aria-hidden="true" data-backdrop="static" data-keyboard="false" style="display: none">
+	<div class="modal-dialog modal-lg">
+		<div class="modal-content">
+			<form id="form_add_avenant" action="{% url 'add_avenant' police.id %}" method="post">
+				{% csrf_token %}
+				<div class="modal-header">
+					<h4 class="modal-title">{{_('MOUVEMENT')}}</h4>
+					<button type="button"class="close"data-dismiss="modal"aria-label="Close">
+						<span aria-hidden="true">×</span>
+					</button>
+				</div>
+				<div class="modal-body">
+					<div class="alert  alert-dismissible fade show hidden" role="alert">
+						<span class="message"> {{_("TRAITEMENT EN COURS")}}</span>
+					</div>
+					<div class="col-md-12 offset-0">
+                      <div class="row">
+                      <!-- -->
+                      <div class="col-md-6">
+                        <div class="form-group row">
+                            <label class="col-sm-5 col-form-label">{{_('Mouvement')}} <span class="required">*</span></label>
+                            <div class="col-sm-7">
+                                <select class="form-control mouvement" name="mouvement" id="mouvement" autocomplete="off" required>
+                                    <option value="">{{_('Choisir')}}</option>
+                                    {% for mouvement in mouvements %}
+                                    <option value="{{ mouvement.id }}" data-code="{{ mouvement.code }}">{{ mouvement.libelle }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label class="col-sm-5 col-form-label">{{_('Motif')}} <span class="required">*</span></label>
+                            <div class="col-sm-7">
+                                <select class="form-control" name="motif" id="motif" autocomplete="off" required>
+                                    <option value="">{{_('Choisir')}}</option>
+                                </select>
+                            </div>
+                        </div>
+                      </div>
+                      <div class="vl"></div>
+                      <div class="col-md-5" style="border-left:0px;">
+                          <div class="form-group row">
+                              <label class="col-sm-5 col-form-label">{{_("Date avenant")}} <span class="required">*</span></label>
+                              <div class="col-sm-7">
+                                  <input type="date" class="form-control" name="date_effet" value="" autocomplete="off" required/>
+                              </div>
+                          </div>
+                          <div class="form-group row" id="box_date_fin_periode_garantie" style="display:none;">
+                              <label class="col-sm-5 col-form-label">{{_("Date fin")}}<span class="required">*</span></label>
+                              <div class="col-sm-7">
+                                  <input type="date" class="form-control" id="date_fin_periode_garantie" name="date_effet_fin" autocomplete="off" value="" />
+                              </div>
+                          </div>
+                      </div>
+                      <!-- -->
+                      </div>
+					</div>
+				</div>
+				<div class="modal-footer justify-content-between">
+					<button type="button" class="btn btn-danger" data-dismiss="modal"><i class="fa fa-remove"></i> {{_('Retour')}}</button>
+					<button type="button" id="btn_save_avenant" data-href_police="{% url 'modifier_police' police.id %}" class="btn btn-info"><i class="fa fa-check-circle"></i> {{_('Enregistrer')}}</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>

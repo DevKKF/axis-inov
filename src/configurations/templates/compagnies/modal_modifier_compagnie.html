@@ -1,0 +1,104 @@
+<div  class="modal fade"  id="modal-modification_compagnie" data-backdrop="static" data-keyboard="false" aria-hidden="true"  style="display: none">
+	<div class="modal-dialog modal-xl">
+		<div class="modal-content">
+			<form enctype="multipart/form-data" id="form_update_compagnie" action="{% url 'modifier_compagnie' compagnie.id %}" method="post">
+			{% csrf_token %}
+			<div class="modal-header">
+				<h4 class="modal-title">{{_("MODIFICATION D'UNE COMPAGNIE")}}</h4>
+				<button type="button" class="close"data-dismiss="modal"aria-label="Close">
+					<span aria-hidden="true">×</span>
+				</button>
+			</div>
+			<div class="modal-body">
+				<div class="alert  alert-dismissible fade show hidden" role="alert">
+				  <span class="message">{{_("TRAITEMENT EN COURS")}}</span>
+				</div>
+				<div class="col-md-12 offset-0">
+					<div class="tab-content" id="myTabContent">
+						<div class="row">
+								<div class="col-md-6">
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Type de garant")}} <span class="required">*</span></label>
+										<div class="col-sm-7">
+											<select class="form-control" name="type_garant_id" id="type_garant_id" autocomplete="off" required>
+												<option value="">{{_('Choisir')}}</option>
+												{% for types_garant in types_garants %}
+													<option value="{{ types_garant.id }}" {% if types_garant.id == compagnie.type_garant_id %} selected {% endif %}>{{ types_garant.libelle }}</option>
+												{% endfor %}
+											</select>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_('Nom')}} <span class="required">*</span></label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control" name="nom" value="{{compagnie.nom|default_if_none:''}}" autocomplete="off" required/>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_('Code courtier')}}</label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control" name="code_courtier" autocomplete="off" value="{{compagnie.code_courtier|default_if_none:''}}"/>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Téléphone")}}</label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control" name="telephone" autocomplete="off" value="{{compagnie.telephone|default_if_none:''}}" onkeypress="isInputNumber(event)">
+										</div>
+									</div>
+								</div>
+								<div class="vl"></div>
+								<div class="col-md-5" style="border-left:0px;">
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Fax")}} </label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control" name="fax" autocomplete="off" value="{{compagnie.fax|default_if_none:''}}" onkeypress="isInputNumber(event)">
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("E-mail")}} </label>
+										<div class="col-sm-7">
+											<input type="email" class="form-control" name="email" autocomplete="off" value="{{compagnie.email|default_if_none:''}}" />
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_('Adresse')}} </label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control" name="adresse" autocomplete="off" value="{{compagnie.adresse|default_if_none:''}}" />
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_('Statut')}} <span class="required">*</span></label>
+										<div class="col-sm-7">
+											<select class="form-control" name="statut"  autocomplete="off" required>
+												<option value="">{{_('Choisir')}}</option>
+												<option value="1" {% if 1 == compagnie.status %} selected {% endif %}>ACTIF</option>
+												<option value="0" {% if 0 == compagnie.status %} selected {% endif %}>INACTIF</option>
+											</select>
+										</div>
+									</div>
+								</div>
+							</div>
+					</div>
+
+				</div>
+				<div class="modal-footer justify-content-between">
+					<button type="button" class="btn btn-danger" data-dismiss="modal"><i class="fa fa-remove"></i> {{_('Retour')}}</button>
+					<button type="button" id="btn_save_modification_compagnie" class="btn btn-info"><i class="fa fa-check-circle"></i> {{_('Enregistrer')}}</button>
+				</div>
+			</div>
+			</form>
+		</div>
+	</div>
+</div>
+
+<script>
+    function isInputNumber(evt){
+
+        var ch = String.fromCharCode(evt.which);
+
+        if(!(/[0-9]/.test(ch))){
+            evt.preventDefault();
+        }
+    }
+</script>

@@ -1,0 +1,197 @@
+<div  class="modal fade"  id="modal-bareme" data-backdrop="static" data-keyboard="false" aria-hidden="true"  style="display: none">
+	<div class="modal-dialog modal-xl">
+		<div class="modal-content">
+			<form id="form_add_bareme" action="{% url 'add_bareme' formule.id %}" method="post">
+				{% csrf_token %}
+                <div class="modal-header">
+                    <h4 class="modal-title">{{_('PARAMETRAGE_DU_BAREME_SPECIFICITES')}}</h4>
+                    <button type="button"class="close"data-dismiss="modal"aria-label="Close">
+                        <span aria-hidden="true">×</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert  alert-dismissible fade show hidden" role="alert">
+                        <span class="message">{{_('TRAITEMENT_EN_COURS')}}</span>
+                    </div>
+                    <div class="col-md-12 offset-0">
+                        <div class="row">
+                            <!-- -->
+                            <div class="col-md-6">
+                                <div class="form-group row" style="display:none0;">
+                                    <label class="col-sm-5 col-form-label">{{_('Rubrique_d_actes')}} <span class="required">*</span></label>
+                                    <div class="col-sm-7">
+                                        <select class="form-control tags-multiple" name="rubrique" id="rubrique" required>
+                                            <option value="">{{_('Choisir')}}</option>
+                                            {% for rubrique in rubriques %}
+                                            <option value="{{ rubrique.id }}" data-href="{% url 'actes_by_rubrique' rubrique.id %}">{{ rubrique.libelle }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-group row" style="display:none0;">
+                                    <label class="col-sm-5 col-form-label">{{_('Sous_Rubrique')}} <span class="required"></span></label>
+                                    <div class="col-sm-7">
+                                        <select class="form-control tags-multiple" name="sous_rubrique" id="sous_rubrique">
+                                            <option value="">{{_('Choisir')}}</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-group row" style="display:none0;">
+                                    <label class="col-sm-5 col-form-label">{{_('Regroupement_d_acte')}}<span class="required"></span></label>
+                                    <div class="col-sm-7">
+                                        <select class="form-control tags-multiple" name="regroupement_acte" id="regroupement_acte">
+                                            <option value="">{{_('Choisir')}}</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-group row" style="display:none0;">
+                                    <label class="col-sm-5 col-form-label">{{_('Sous_regroupement_d_acte')}} <span class="required"></span></label>
+                                    <div class="col-sm-7">
+                                        <select class="form-control tags-multiple" name="sous_regroupement_acte" id="sous_regroupement_acte">
+                                            <option value="">{{_('Choisir')}}</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-group row" style="display:none0;">
+                                    <label class="col-sm-5 col-form-label">{{_('Acte')}} <span class="required"></span></label>
+                                    <div class="col-sm-7">
+                                        <select class="form-control tags-multiple" name="acte" id="acte">
+                                            <option value="">{{_('Choisir')}}</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label class="col-sm-5 col-form-label">{{_('Garanti_Exclu')}}<span class="required">*</span></label>
+                                    <div class="col-sm-7">
+                                        <select class="form-control tags-multiple" name="is_garanti" id="is_garanti" required>
+                                            <option value="">{{_('Choisir')}}</option>
+                                            <option value="1" selected>{{_('GARANTI')}}</option>
+                                            <option value="0">{{_('EXCLU')}}</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <!--div class="form-group row">
+                                    <label class="col-sm-5 col-form-label">Taux Ticket modérateur <span class="required"></span></label>
+                                    <div class="col-sm-7">
+                                        <input type="text" class="form-control money_field" name="taux_tm">
+                                    </div>
+                                </div-->
+                                <div class="form-group row">
+                                    <label class="col-sm-5 col-form-label">{{_('Taux_couverture')}} (%)<span class="required">*</span></label>
+                                    <div class="col-sm-7">
+                                        <input type="text" class="form-control money_field" name="taux_couverture" id="taux_couverture" value="{{ formule.taux_couverture }}" required>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label class="col-sm-5 col-form-label">{{_('Lien_de_parente')}} <span class="required"></span></label>
+                                    <div class="col-sm-7">
+                                        <select class="form-control tags-multiple" name="qualite_beneficiaire" id="qualite_beneficiaire" >
+                                            <option value="">{{_('Toutes')}}</option>
+                                            {% for qualite_beneficiaire in qualites_beneficiaires %}
+                                            <option value="{{ qualite_beneficiaire.id }}">{{ qualite_beneficiaire.libelle }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label class="col-sm-5 col-form-label">{{_('Age')}} (an) > ou = <span class="required"></span></label>
+                                    <div class="col-sm-7">
+                                        <input type="text" class="form-control money_field" name="age_minimum">
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label class="col-sm-5 col-form-label">{{_('Age')}} (an) < ou = <span class="required"></span></label>
+                                    <div class="col-sm-7">
+                                        <input type="text" class="form-control money_field" name="age_maximum">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="vl"></div>
+                            <div class="col-md-6" style="border-left:0px;margin-left:-5px;padding-left:20px;">
+
+                                <!--div class="form-group row">
+                                    <label class="col-sm-5 col-form-label">Plafond famille <span class="required"></span></label>
+                                    <div class="col-sm-7">
+                                        <input type="text" class="form-control money_field" name="plafond_famille">
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label class="col-sm-5 col-form-label">Plafond individuel <span class="required"></span></label>
+                                    <div class="col-sm-7">
+                                        <input type="text" class="form-control money_field" name="plafond_individuel">
+                                    </div>
+                                </div-->
+                                <div class="form-group row">
+                                    <label class="col-sm-5 col-form-label">{{_('Plafond_rubrique_d_acte')}} <span class="required"></span></label>
+                                    <div class="col-sm-7">
+                                        <input type="text" class="form-control money_field" name="plafond_rubrique" id="plafond_rubrique" readonly>
+                                    </div>
+                                </div>
+
+                                <div class="form-group row">
+                                    <label class="col-sm-5 col-form-label">{{_('Plafond_sous_rubrique ')}}<span class="required"></span></label>
+                                    <div class="col-sm-7">
+                                        <input type="text" class="form-control money_field" name="plafond_sous_rubrique" id="plafond_sous_rubrique" readonly>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label class="col-sm-5 col-form-label">{{_('Plafond_regroupement_acte')}} <span class="required"></span></label>
+                                    <div class="col-sm-7">
+                                        <input type="text" class="form-control money_field" name="plafond_regroupement_acte" id="plafond_regroupement_acte" readonly>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label class="col-sm-5 col-form-label">{{_('Plafond_sous_regroupement')}}<span class="required"></span></label>
+                                    <div class="col-sm-7">
+                                        <input type="text" class="form-control money_field" name="plafond_sous_regroupement_acte" id="plafond_sous_regroupement_acte" readonly>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label class="col-sm-5 col-form-label">{{_('Plafond_acte')}}<span class="required"></span></label>
+                                    <div class="col-sm-7">
+                                        <input type="text" class="form-control money_field" name="plafond_acte" id="plafond_acte" readonly>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label class="col-sm-5 col-form-label">{{_('Nombre_d_actes')}}<span class="required"></span></label>
+                                    <div class="col-sm-7">
+                                        <input type="text" class="form-control money_field" name="nombre_acte">
+                                    </div>
+                                </div>
+                                <!--div class="form-group row">
+                                    <label class="col-sm-5 col-form-label">Fréquence <span class="required"></span></label>
+                                    <div class="col-sm-7">
+                                        <input type="text" class="form-control money_field" name="frequence">
+                                    </div>
+                                </div-->
+                                <div class="form-group row">
+                                    <label class="col-sm-5 col-form-label">{{_('Periodicite')}}<span class="required"></span></label>
+                                    <div class="col-sm-7">
+                                        <select class="form-control tags-multiple" name="periodicite">
+                                            <option value="">{{_('Choisir')}}</option>
+                                            {% for periodicite in periodicites %}
+                                            <option value="{{ periodicite.id }}">{{ periodicite.libelle }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-group row" style="display:none0;">
+                                    <label class="col-sm-5 col-form-label">{{_('Date_debut')}}<span class="required">*</span></label>
+                                    <div class="col-sm-7">
+                                        <input type="date" class="form-control notreset" name="date_debut" value="{{ date_debut_effet_police|date:'Y-m-d' }}" min="{{ date_debut_effet_police|date:'Y-m-d' }}" required/>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- -->
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer justify-content-between">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">{{_('Retour')}}</button>
+                    <button type="button" id="btn_save_bareme" class="btn o-bg-primary">{{_('Valider')}}</button>
+                </div>
+            </form>
+		</div>
+	</div>
+</div>
+

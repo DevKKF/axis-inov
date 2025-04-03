@@ -1,0 +1,177 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+{% block extrastyle %} {% endblock %}
+{% block content_title %}
+    <div class="row mb-2">
+          <div class="col-sm-6">
+                <h1 class="m-0">Contrôle des commissions</h1>
+          </div>
+          <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                      <li class="breadcrumb-item"><a href="{% url 'admin:index' %}">{% trans 'Home' %}</a></li>
+                      <li class="breadcrumb-item active">Contrôle des commissions</li>
+                </ol>
+          </div>
+    </div>
+{% endblock %}
+{% block content %}
+<div class="col-12 col-md-12 order-2 order-md-1">
+    <div class="card">
+    <div class="card-header">
+        <h3 class="card-title text-white">{{_("Contrôle des commissions")}}</h3>
+    </div>
+    <div style="background:#CCCCCC;padding:10px;border-bottom:1px solid #eee;padding-bottom:10px;margin-bottom:10px;">
+        <form method="get"><label style="font-weight:normal;font-size:12px;display:none;"><i>{% trans 'Formulaire de recherche' %}</i></label>
+            <div class="row">
+                <div class="col-12 col-md-12 col-sm-12 row">
+                    <div class="col-md-3">
+                        <span class="text-right" style="margin-top:5px;">{% trans 'Compagnie' %} : </span>
+                        <select class="form-control tags-multiple" id="search_compagnie" style="border:1px solid rgba(0, 0, 0, 0.3);">
+                            <option value="">{% trans 'Choisir' %}</option>
+                            {% for compagnie in compagnies %}
+                                <option value="{{ compagnie.id }}">{{ compagnie.nom }}</option>
+                            {% endfor %}
+                            <option value="TOUT">Toute les compagnies</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <span class="text-right" style="margin-top:5px;">{% trans 'Commercial' %} : </span>
+                        <select class="form-control tags-multiple" id="search_commercial" style="border:1px solid rgba(0, 0, 0, 0.3);">
+                            <option value="">{% trans 'Choisir' %}</option>
+                            {% for commercial in commercials %}
+                                <option value="{{ commercial.id }}">{{ commercial.first_name }} {{ commercial.last_name }}</option>
+                            {% endfor %}
+                            <option value="AUCUN">Aucun commercial</option>
+                            <option value="TOUT">Toute les commerciaux</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <span class="text-right" style="margin-top:5px;">{% trans 'Business Unit' %} : </span>
+                        <select class="form-control tags-multiple" id="search_business_unit" style="border:1px solid rgba(0, 0, 0, 0.3);">
+                            <option value="">{% trans 'Choisir' %}</option>
+                            {% for business_unit in business_units %}
+                                <option value="{{ business_unit.id }}">{{ business_unit.libelle }}</option>
+                            {% endfor %}
+                            <option value="AUCUN">Aucun business unit</option>
+                            <option value="TOUT">Tous les business unit</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-3">
+                        <span class="text-right" style="margin-top:5px;">{% trans 'Branche' %} : </span>
+                        <select class="form-control tags-multiple" id="search_branche" style="border:1px solid rgba(0, 0, 0, 0.3);">
+                            <option value="">{% trans 'Choisir' %}</option>
+                            {% for branche in branches %}
+                                <option value="{{ branche.id }}">{{ branche.nom }}</option>
+                            {% endfor %}
+                            <option value="AUCUN">Aucune branche</option>
+                            <option value="TOUT">Toutes les branches</option>
+                        </select>
+                    </div>
+
+                </div>
+            </div>
+        </form>
+    </div>
+    <div class="card-body">
+      <div id="example1_wrapper" class="dataTables_wrapper dt-bootstrap4">
+        <div class="row">
+          <div class="col-12 col-md-12 col-sm-12 table-responsive">
+              {% if request.user.is_production %}
+                <a href="{% url 'importer_controle_commission' %}" class="btn btn-sm btn-info pull-right mb-2" id="importer_requete" target="_blank" style="display:none"><i class="fas fa-plus-circle"></i> {{_('Importer la requête')}}</a>
+              {% endif %}
+              <table class="table table-bordered table-striped dataTable__ customDataTable0 dtr-inline" id="table_clients">
+                  <thead>
+                    <tr>
+                      <th scope="col">{% trans 'Client' %}</th>
+                      <th scope="col">{% trans 'N°Police' %}</th>
+                      <th scope="col">{% trans 'Produit' %}</th>
+                      <th scope="col">{% trans 'Compagnie' %}</th>
+                      <th scope="col">{% trans 'Commercial' %}</th>
+                      <th scope="col">{% trans 'Date échéance' %}</th>
+                      <th scope="col">{% trans 'Com. compagnie' %}</th>
+                      <th scope="col">{% trans 'Com. Retro apporteur' %}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                  </tbody>
+              </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extrajs %}
+<script>
+    $(document).ready(function() {
+        dataTable = $('#table_clients').DataTable({
+            "language": {
+                "url": "https://cdn.datatables.net/plug-ins/9dcbecd42ad/i18n/French.json"
+            },
+            "serverSide": true,
+            "ajax": {
+                "url": "{% url 'controlecommission_datatable' %}",
+                "data": function (data) {
+                    data.page = data.start / data.length + 1;
+                    data.search_compagnie = $('#search_compagnie').val();
+                    data.search_commercial = $('#search_commercial').val();
+                    data.search_business_unit = $('#search_business_unit').val();
+                    data.search_branche = $('#search_branche').val();
+                },
+                "dataSrc": function (json) {
+                    return json.data;
+                }
+            },
+            "columns": [
+                {"data": "nom_client", "orderable": true},
+                {"data": "numero_police", "orderable": true},
+                {"data": "nom_produit", "orderable": true},
+                {"data": "nom_compagnie", "orderable": true},
+                {"data": "nom_commercial", "orderable": true},
+                {"data": "date_echeance", "orderable": true},
+                {"data": "comission_compagnie", "orderable": false, "searchable": false},
+                {"data": "comission_apporteur", "orderable": false, "searchable": false},
+            ],
+            "paging": true,
+            "pageLength": 100,
+            "processing": false,  // Show the loading indicator
+            "searching": false,   // Enable the search feature
+            "search": {
+                "search": $('#table_clients-table_filter input').val()
+            },
+            "lengthMenu": [
+                [100, 250, 500, 1000, 5000, 10000],
+                [100, 250, 500, 1000, 5000, 10000]
+            ]
+        });
+
+        dataTable.on('xhr.dt', function (e, settings, json, xhr) {
+            // Hide the spinner when the data is loaded
+            $('.spinner-border').hide();
+
+            if (json.show_import_button) {
+                $('#importer_requete').show();
+            } else {
+                $('#importer_requete').hide();
+            }
+        });
+
+        // Show the spinner when the table is processing
+        dataTable.on('processing.dt', function (e, settings, processing) {
+            if (processing) {
+                $('.spinner-border').show();
+            }
+        });
+
+        // Add custom search functionality for code, name, and prenoms columns
+        $('#search_compagnie, #search_commercial, #search_branche, #search_business_unit').on('keyup change', function() {
+            dataTable.search('').draw(); // Clear existing search
+            dataTable.draw(); // Trigger a new draw, which will include the updated search parameters
+        });
+
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,110 @@
+{% load static %}
+<div class="modal fade" id="modal-edition_lettre_cheque" data-backdrop="static" data-keyboard="false" aria-hidden="true"
+     style="display: none">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+
+            <form enctype="multipart/form-data" method="post" action="" id="form_edition_lettre_cheque" validate>
+                {% csrf_token %}
+                <input type="hidden" id="police_id" name="police_id" value="{{ police.id }}"/>
+                <div class="modal-header">
+                    <h4 class="modal-title">{{_('EDITION_DE_LETTRE_CHEQUE')}}</h4>
+                    <button
+                            type="button"
+                            class="close"
+                            data-dismiss="modal"
+                            aria-label="Close"
+                    >
+                        <span aria-hidden="true">×</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert  alert-dismissible fade show hidden" role="alert">
+                        <span class="message"> {{_('TRAITEMENT_EN_COURS')}}</span>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-group row">
+                                <label class="col-sm-5 col-form-label">{{_('Banque')}} <span class="required">*</span>:</label>
+                                <div class="col-sm-7">
+                                    <select class="form-control tags-multiple" id="banque"
+                                            style="border:1px solid rgba(0, 0, 0, 0.3);" name="banque" required>
+                                        <option value="">{{_('Choisir')}}</option>
+                                        {% for model_lettre_cheque in model_lettre_cheques %}
+                                        <option value="{{model_lettre_cheque.id}}">{{model_lettre_cheque|default_if_none:""}}
+                                        </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+<!--                            <fieldset class="border rounded-3 p-3">-->
+<!--                                <legend class="float-none w-auto px-3 col-form-label">Plage d'édition</legend>-->
+
+<!--                                <div class="form-group row">-->
+<!--                                <label class="col-sm-5 col-form-label">Début </label>-->
+<!--                                <div class="col-sm-7">-->
+<!--                                    <input id="numero_denut" class="form-control" type="number"-->
+<!--                                           name="numero_denut"-->
+<!--                                           style="border-radius:3px;border:1px solid rgba(0, 0, 0, 0.3);text-transform:uppercase;" min="0">-->
+<!--                                </div>-->
+<!--                            </div>-->
+<!--                                <div class="form-group row">-->
+<!--                                <label class="col-sm-5 col-form-label">Fin </label>-->
+<!--                                <div class="col-sm-7">-->
+<!--                                    <input id="numero_fin" class="form-control" type="number"-->
+<!--                                           name="numero_fin"-->
+<!--                                           style="border-radius:3px;border:1px solid rgba(0, 0, 0, 0.3);text-transform:uppercase;" min="0">-->
+<!--                                </div>-->
+<!--                            </div>-->
+<!--                            </fieldset>-->
+
+
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer justify-content-between">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">
+                        {{_('Retour')}}
+                    </button>
+                    <div>
+                        <button type="submit" id="btn_edition_lettre_cheque" class="btn o-bg-primary">
+                            {{_('Editer')}}
+                        </button>
+                        <img id="loader" src="{% static 'admin_custom/img/loader.gif' %}"
+                             style="width: 40px;display: none;"/>
+                    </div>
+                </div>
+
+            </form>
+            <div class="col-md-12 d-none" id="box_apercu_import">
+                <div class="col-md-12">
+                    <legend>{{_('Apercu_des_donnees')}}</legend>
+                    <div class="table-responsive">
+                        <table id="table_import_preview"
+                               class="table table-bordered table-striped dataTable dtr-inline">
+                            <thead>
+                            <tr>
+                                <th scope="col">{{_('Numero_benef')}}</th>
+                                <th scope="col">{{_('Prenoms')}}</th>
+                                <th scope="col">{{_('Nom')}}</th>
+                                <th scope="col">{{_('Date_Naiss')}}</th>
+                                <th scope="col">{{_('Sexe')}}</th>
+                                <th scope="col">{{_('Carte')}}</th>
+                                <th scope="col">{{_('Lien')}}</th>
+                                <th scope="col">{{_('Matricule')}}</th>
+                                <th scope="col">{{_('Numero_Famille')}}</th>
+                                <th scope="col">{{_('Etat')}}</th>
+                                <th scope="col">{{_('Sortie')}}</th>
+                                <th scope="col">{{_('Formule')}}</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

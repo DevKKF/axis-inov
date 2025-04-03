@@ -1,0 +1,63 @@
+{% extends 'police/base.html' %} {% block extrastyle %} {% endblock %} 
+{% block content %}
+<div class="col-12 col-md-12 order-2 order-md-1">
+  {% include 'police/header.html' %}
+  <div class="card">
+    <div class="card-header">
+        <h3 class="card-title text-white">{{_('GARANTIES')}}</h3>
+        <div class="card-tools">
+          {% if police.etat_police == "En cours" or police.etat_police == "En attente" %}
+          <a class="btn btn-sm btn-default" data-toggle="modal"  data-target="#modal-garantie"><i class="fas fa-plus"></i> {{_('Ajouter_une_garantie')}}</a>
+          {% endif %}
+        </div>
+    </div>
+    <div class="card-body">
+      <div id="example1_wrapper" class="dataTables_wrapper dt-bootstrap4">
+        <div class="row">
+          <div class="col-12 col-md-12 col-sm-12">
+              <table class="table table-bordered table-striped dataTable dtr-inline" id="table_garanties">
+                  <thead>
+                    <tr>
+                      <th scope="col">{{_('Formule')}}</th>
+                      <th scope="col">{{_('Type_de_tarif')}}</th>
+                      <th scope="col" style="width:70px;">{{_('Plafond_famille')}}</th>
+                      <th scope="col" style="width:70px;">{{_('Plafond_individuel')}}</th>
+                      <th scope="col">{{_('Produit')}}</th>
+                      <th scope="col">{{_('Territorialite')}}</th>
+                      <th scope="col">{{_('Mode_calcul')}}</th>
+                      <th scope="col">{{_('Date_debut')}}</th>
+                      <th scope="col">{{_('Statut')}}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                  {% for formule_police in garanties %}
+                    <tr>
+                        <td>{{ formule_police.formule|default_if_none:"" }}</td>
+                        <td>{{ formule_police.type_tarif|default_if_none:"" }}</td>
+                        <td>{{ formule_police.plafond_conso_famille|default_if_none:"" }}</td>
+                        <td>{{ formule_police.plafond_conso_individuelle|default_if_none:"" }}</td>
+                        <td>{{ formule_police.produit|default_if_none:"" }}</td>
+                        <td>{{ formule_police.territorialite|default_if_none:"" }}</td>
+                        <td>{{ formule_police.mode_calcul|default_if_none:"" }}</td>
+                        <td>{{ formule_police.date_ajout|date:'d/m/Y'|default_if_none:"" }}</td>
+                        <td>{{ formule_police.statut|default_if_none:"" }}</td>
+                    </tr>
+                  {% endfor %}
+                  </tbody>
+              </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div
+{% endblock %}
+
+{% block extrajs %}
+<script>
+    $(document).ready(function() {
+        $('#garantie').removeClass('o-bg-primary');
+        $('#garantie').addClass('o-active');
+    } );
+</script>
+{% endblock %}

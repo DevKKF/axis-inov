@@ -1,0 +1,81 @@
+{% load my_filters %}
+{% load i18n static jazzmin admin_urls %}
+<div  class="modal fade"  id="modal-initialiser_fdr_garant" aria-hidden="true"  style="display: none">
+	<div class="modal-dialog modal-lg">
+		<div class="modal-content">
+			<form enctype="multipart/form-data" id="form_add_initialiser_fdr_garant" action="{% url 'add_mise_en_initialiser_fdr_garant' %}" method="post">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h4 class="modal-title">INITIALISER LA CAUTION D'UN GARANT</b></h4>
+                    <button type="button"class="close"data-dismiss="modal"aria-label="Close">
+                        <span aria-hidden="true">×</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert  alert-dismissible fade show hidden" role="alert">
+                    <span class="message"> TRAITEMENT EN COURS</span>
+                    </div>
+
+                    <div class="col-md-12 offset-0">
+                        <div class="row">
+
+                            <div class="col-md-12">
+                                <div class="form-group row" id="">
+                                    <label class="col-form-label">Garant :<span class="required">*</span></label>
+                                    <select id="garantSelect" name="compagnie_id" data-href="#" class="tags-multiple" autocomplete="off" required>
+                                        <option value="">Choisissez un garant</option>
+                                        {% for garant_sans_caution in garants_sans_caution %}
+                                            <option value="{{ garant_sans_caution.id }}">{{ garant_sans_caution.nom }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="col-sm-12">
+                                <div class="form-group" id="">
+                                    <label class="form-label"> Caution<span class="required">*</span></label>
+                                    <input type="text" class="form-control money_field_only_positive" name="montant" placeholder="Entrez le montant de caution svp" autocomplete="off" required>
+                                </div>
+                            </div>
+
+
+
+                            <div class="col-sm-12 mb-3">
+                                <div class="form-group">
+                                    <label class="form-label">Date début effet <span class="required">*</span></label>
+                                    <input type="date" name="date_debut_effet" class="form-control" value="{% now 'Y-m-d' %}"  required>
+                                </div>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <div class="modal-footer justify-content-between">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Retour</button>
+                        <span id="loading_gif_initialiser_fdr_garant" style="display:none;color:#BB4127;">Traitement en cours... <img src="{% static 'admin_custom/ripple-loader.svg' %}" style="width:50px;"></span>
+                        <button type="button" id="btn_save_initialiser_fdr_garant" class="btn o-bg-primary">Valider</button>
+                    </div>
+                </div>
+                <div class="form_sinistre_overlay"><div style="margin:auto;padding:20px 0;color:white;text-align:center;">TRAITEMENT EN COURS ...</div></div>
+			</form>
+		</div>
+	</div>
+
+    {% comment %} <script>
+        document.getElementById('montant').addEventListener('input', function (e) {
+            let value = e.target.value.replace(/\D/g, '');
+            e.target.value = new Intl.NumberFormat('fr-FR').format(value);
+        });
+
+        document.getElementById('form_add_initialiser_fdr_garant').addEventListener('submit', function (e) {
+            let montantInput = document.getElementById('montant');
+            montantInput.value = montantInput.value.replace(/\s/g, '');
+        });
+    </script> {% endcomment %}
+
+</div>
+
+
+
+

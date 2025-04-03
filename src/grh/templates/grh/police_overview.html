@@ -1,0 +1,467 @@
+{% extends "grh/layouts/base.html" %}
+{% load static %}
+{% block title %}{{_('POLICE_OVERVIEW')}}{% endblock %}
+
+{% block content %}
+
+    <style>
+        .zoomed {
+            transform: scale(0.8);
+            transition: transform 0.5s ease;
+        }
+        .custom-background:before {
+            background: #F8AF3C;
+            opacity: 0.5;
+        }
+        .custom-background a .box {
+            background: #F8AF3C;
+            color: #000000;
+        }
+        #title {
+            color: #B7482B;
+        }
+        #link {
+            color: #0000FF;
+        }
+        #status {
+            padding: 5px;
+            border-radius: 5px;
+        }
+        .dataTables_length select {
+            width: auto;
+            display: inline-block;
+            padding: 6px 12px;
+            margin-bottom: 0;
+            font-size: 14px;
+            line-height: 1.42857143;
+            color: #555;
+            vertical-align: middle;
+            background-color: #fff;
+            background-image: none;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+            transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
+        }
+        .dataTables_info{
+             padding-bottom: 7px;
+         }
+         .dataTables_filter{
+             margin-bottom: -17px;
+         }
+    </style>
+
+    <div class="grid grid-cols-12 gap-6">
+        <div class="col-span-12 2xl:col-span-12">
+            <div class="grid grid-cols-12 gap-6">
+                <div class="intro-y col-span-12 md:col-span-12 lg:col-span-12">
+                    <div class="box">
+                        <div class="flex items-start px-5 pt-5">
+                            <div class="w-full flex flex-col lg:flex-row items-center">
+                                <h1 class="text-xl lg:text-lg font-medium mb-3 mr-5" id="title">
+                                    {{_('POLICE')}}
+                                </h1>
+                            </div>
+                        </div>
+                        <div class="text-center p-5 border-t border-slate-200/60 dark:border-darkmode-400">
+                            <div class="intro-y col-span-12 overflow-auto lg:overflow-visible">
+                                <table class="table table-report -mt-2">
+                                    <thead>
+                                        <tr>
+                                            <th class="whitespace-nowrap">{{_('Nom_assure')}}</th>
+                                            <th class="whitespace-nowrap">{{_('Assureur')}}</th>
+                                            <th class="whitespace-nowrap">{{_('Reference')}}</th>
+                                            <th class="whitespace-nowrap">{{_('Statut')}}</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr class="intro-x">
+                                            <td>{{ police.client.nom|default_if_none:"" }}</td>
+                                            <td>{{ police.compagnie|default_if_none:"" }}</td>
+                                            <td>{{ police.numero|default_if_none:"" }}</td>
+                                            <td class="w-40">
+                                                <div class="flex items justify-center" id="status" 
+                                                style="background-color: {% if police.etat_police == 'En cours' %}#007500;color:#FFFFFF;font-weight: bold;
+                                                {% elif police.etat_police == 'Annulé' %}#DC3545;color:#FFFFFF;font-weight: bold;
+                                                {% elif police.etat_police == 'Résilié' %}#C5C5C5;color:#000000;font-weight: bold;
+                                                {% endif %}">
+                                                    {{ police.etat_police|default_if_none:"" }}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-span-12 sm:col-span-6 xl:col-span-2 intro-y">
+                    <div class="report-box zoomed" data-police-id="{{ police.id }}" data-content-url="{% url 'grh.details_police' police.id %}" id="details-police-box">
+                        <a href="javascript:void(0);" onclick="loadContent({{ police.id }}, '{% url 'grh.details_police' police.id %}', 'content-container-id')">
+                            <div class="box p-5">
+                                <div class="flex items-center justify-center">
+                                    <div class="flex">
+                                        <i data-feather="clipboard" class="report-box__icon text-primary"></i>
+                                    </div>
+                                </div>
+                                <div class="flex items-center justify-center">
+                                    <div class="text-md-center font-medium leading-8 mt-8">{{_('DETAILS_POLICE')}}</div>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+                <div class="col-span-12 sm:col-span-6 xl:col-span-2 intro-y">
+                    <div class="report-box zoom-in" data-police-id="{{ police.id }}" data-content-url="{% url 'grh.formules_police' police.id %}" id="formules-box">
+                        <a href="javascript:void(0);" onclick="loadContent({{ police.id }}, '{% url 'grh.formules_police' police.id %}', 'content-container-id')">
+                            <div class="box p-5">
+                                <div class="flex items-center justify-center">
+                                    <div class="flex">
+                                        <i data-feather="layers" class="report-box__icon text-primary"></i>
+                                    </div>
+                                </div>
+                                <div class="flex items-center justify-center">
+                                    <div class="text-md-center font-medium leading-8 mt-8">{{_('FORMULES')}}</div>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+                <div class="col-span-12 sm:col-span-6 xl:col-span-2 intro-y">
+                    <div class="report-box zoom-in" data-police-id="{{ police.id }}" data-content-url="{% url 'grh.quittances_police' police.id %}" id="quittances-box">
+                        <a href="javascript:void(0);" onclick="loadContent({{ police.id }}, '{% url 'grh.quittances_police' police.id %}', 'content-container-id')">
+                            <div class="box p-5">
+                                <div class="flex items-center justify-center">
+                                    <div class="flex">
+                                        <i data-feather="dollar-sign" class="report-box__icon text-primary"></i>
+                                    </div>
+                                </div>
+                                <div class="flex items-center justify-center">
+                                    <div class="text-md-center font-medium leading-8 mt-8">{{_('QUITTANCES')}}</div>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+                <div class="col-span-12 sm:col-span-6 xl:col-span-2 intro-y">
+                    <div class="report-box zoom-in" data-police-id="{{ police.id }}" data-content-url="{% url 'grh.documents_police' police.id %}" id="documents-box">
+                        <a href="javascript:void(0);" onclick="loadContent({{ police.id }}, '{% url 'grh.documents_police' police.id %}', 'content-container-id')">
+                            <div class="box p-5">
+                                <div class="flex items-center justify-center">
+                                    <div class="flex">
+                                        <i data-feather="folder" class="report-box__icon text-primary"></i>
+                                    </div>
+                                </div>
+                                <div class="flex items-center justify-center">
+                                    <div class="text-md-center font-medium leading-8 mt-8">{{_('GED')}}</div>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+                  <div class="col-span-12 sm:col-span-6 xl:col-span-2 intro-y">
+                    <div class="report-box zoom-in" data-police-id="{{ police.id }}" data-content-url="{% url 'grh.incorporations_by_grh' police.id %}" id="documents-box">
+                        <a href="javascript:void(0);" onclick="loadContent({{ police.id }}, '{% url 'grh.incorporations_by_grh' police.id %}', 'content-container-id')">
+                            <div class="box p-5">
+                                <div class="flex items-center justify-center">
+                                    <div class="flex">
+                                        <i data-feather="archive" class="report-box__icon text-primary"></i>
+                                    </div>
+                                </div>
+                                <div class="flex items-center justify-center">
+                                    <div class="text-md-center font-medium leading-8 mt-8">{{_('DEMANDES_EN_COURS')}}</div>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+                <div class="col-span-12 sm:col-span-6 xl:col-span-2 intro-y">
+                    <div class="report-box zoom-in" data-police-id="{{ police.id }}" data-content-url="{% url 'grh.beneficiaire' police.id %}" id="beneficiaire-box">
+                        <a href="javascript:void(0);" onclick="loadContent({{ police.id }}, '{% url 'grh.beneficiaire' police.id %}', 'content-container-id')">
+                            <div class="box p-5">
+                                <div class="flex items-center justify-center">
+                                    <div class="flex">
+                                        <i data-feather="users" class="report-box__icon text-primary"></i>
+                                    </div>
+                                </div>
+                                <div class="flex items-center justify-center">
+                                    <div class="text-md-center font-medium leading-8 mt-8">{{_('BENEFICIAIRE')}}</div>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-12 gap-6" id="loader-box" style="display:none">
+        <div class="col-span-12 2xl:col-span-12">
+            <div class="grid grid-cols-12 gap-6" >
+                <img src="{% static 'admin_custom/loader-pin.gif' %}" style="height: 50px;margin: 40px;">
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-12 gap-6">
+        <div class="col-span-12 2xl:col-span-12">
+            <div class="grid grid-cols-12 gap-6">
+                <div id="content-container-id" class="col-span-12 mt-12">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.23/css/dataTables.bootstrap4.min.css" />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.23/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.23/js/dataTables.bootstrap4.min.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            var reportBoxes = document.querySelectorAll('.report-box');
+            var defaultBox = document.getElementById('details-police-box');
+            var storageKey = 'lastSelectedCard';
+
+            function resetStyles() {
+                reportBoxes.forEach(function (otherBox) {
+                    otherBox.classList.remove('zoomed', 'custom-background');
+                    var otherIcon = otherBox.querySelector('.report-box__icon');
+                    otherIcon.style.color = '';
+                });
+            }
+
+            function loadDefaultContent(policeId) {
+                var defaultUrl = '{% url 'grh.details_police' police_id %}';
+                var defaultContainerId = 'content-container-id';
+                loadContent(defaultUrl, defaultContainerId, policeId);
+                resetStyles();
+                defaultBox.classList.add('zoomed', 'custom-background');
+                var defaultIcon = defaultBox.querySelector('.report-box__icon');
+                defaultIcon.style.color = '#000000';
+            }
+
+            function saveLastSelectedCard(cardId) {
+                localStorage.setItem(storageKey, cardId);
+            }
+
+            function getLastSelectedCard() {
+                return localStorage.getItem(storageKey);
+            }
+
+            function isDefaultCardSelected() {
+                var storedCardId = getLastSelectedCard();
+                return !storedCardId || storedCardId === 'details-police-box';
+            }
+
+            function clickAndLoadDefaultCard() {
+                defaultBox.click();
+                var defaultPoliceId = '{{ police.id }}';
+                loadDefaultContent(defaultPoliceId);
+            }
+
+            reportBoxes.forEach(function (box) {
+                box.addEventListener('click', function () {
+                    resetStyles();
+                    box.classList.add('zoomed', 'custom-background');
+                    var icon = box.querySelector('.report-box__icon');
+                    icon.style.color = '#000000';
+                    var policeId = box.getAttribute('data-police-id');
+                    var contentUrl = box.getAttribute('data-content-url');
+                    var containerId = 'content-container-id';
+                    loadContent(contentUrl, containerId, policeId);
+                    saveLastSelectedCard(box.id);
+                });
+            });
+
+            var isFirstAccess = getLastSelectedCard() === null;
+
+            if (isFirstAccess || !isDefaultCardSelected()) {
+                resetStyles();
+                var defaultIcon = defaultBox.querySelector('.report-box__icon');
+                defaultIcon.style.color = '';
+            }
+
+            if (isFirstAccess) {
+                clickAndLoadDefaultCard();
+            } else {
+                var storedCardId = getLastSelectedCard();
+                var storedCard = document.getElementById(storedCardId);
+                storedCard.classList.add('zoomed', 'custom-background');
+                var storedIcon = storedCard.querySelector('.report-box__icon');
+                storedIcon.style.color = '#000000';
+
+                var storedPoliceId = storedCard.getAttribute('data-police-id');
+                var storedContentUrl = storedCard.getAttribute('data-content-url');
+                loadContent(storedContentUrl, 'content-container-id', storedPoliceId);
+            }
+        });
+        //
+        async function loadContent(url, containerId, policeId) {
+            try {
+                $("#loader-box").show();
+                const container = document.getElementById(containerId);
+                container.innerHTML = "";
+                const response = await fetch(url);
+                const data = await response.text();
+                container.innerHTML = data;
+                $("#loader-box").hide();
+                feather.replace();
+                if (url.includes('/beneficiaire/')) {
+                    const tables = container.querySelectorAll('.datatable_benef');
+                    tables.forEach(table => {
+                            if (!jQuery.fn.DataTable.isDataTable(table)) {
+                                jQuery(table).DataTable({
+                                    pageLength: 10,
+                                    lengthMenu: [10, 15, 25],
+                                    language: {
+                                        search: "",
+                                        searchPlaceholder: "Rechercher...",
+                                        processing: "Chargement en cours...",
+                                        lengthMenu: "Afficher _MENU_ &eacute;l&eacute;ments",
+                                        info: "Affichage de _START_ &agrave; _END_ sur _TOTAL_ &eacute;l&eacute;ments",
+                                        infoEmpty: "Affichage de l'&eacute;lement 0 &agrave; 0 sur 0 &eacute;l&eacute;ments",
+                                        loadingRecords: "Chargement en cours...",
+                                        zeroRecords: "Aucun &eacute;l&eacute;ment &agrave; afficher",
+                                        paginate: {
+                                            first: "Premier",
+                                            previous: "Pr&eacute;c&eacute;dent",
+                                            next: "Suivant",
+                                            last: "Dernier"
+                                        },
+                                    },
+                                    processing: true,  // Show the loading indicator
+                                    searching: true,   // Enable the search feature
+                                    serverSide: true,
+                                    ajax: {
+                                        "url": "{% url 'grh.beneficiaire_police_datatable' police.id %}",
+                                        "data": function (data) {
+                                            data.page = data.start / data.length + 1;
+                                            data.search_etat = $('#search_etat').val();
+                                            //data.search_prestataire = $('#search_prestataire').val();
+                                            //data.search_adh = $('#search_adh').val();
+
+                                        },
+                                        "dataSrc": function (json) {
+                                            return json.data;
+                                        }
+                                    },
+                                    columns: [
+                                        { data: 'numero_carte' },
+                                        { data: 'date_ajout' },
+                                        { data: 'nom_prenoms' },
+                                        { data: 'sexe' },
+                                        { data: 'lien' },
+                                        { data: 'date_entree' },
+                                        { data: 'etat' },
+                                        { data: 'motif' },
+                                        { data: 'actions' }
+                                    ],
+                                    drawCallback: function (settings) {
+                                        var info = jQuery(table).closest('.dataTables_wrapper').find('.dataTables_info');
+                                        var lengthMenu = jQuery(table).closest('.dataTables_wrapper').find('.dataTables_length');
+                                        var tableWrapper = jQuery(table).closest('.dataTables_wrapper');
+                                        tableWrapper.find('.row:eq(0)').prepend(lengthMenu);
+                                        tableWrapper.find('.row:eq(1)').prepend(info);
+                                        lengthMenu.css('position', 'absolute').css('bottom', '0').css('left', '0');
+                                        feather.replace();
+                                    }
+                                });
+                            }
+                        });
+
+                    let currentCard = null;
+                    const beneficiaireCards = document.querySelectorAll('#entree_en_cours, #entree, #sortie_en_cours, #sortie');
+                    beneficiaireCards.forEach(card => {
+                        card.addEventListener('click', function() {
+                            if (currentCard !== null && currentCard !== card) {
+                                currentCard.classList.remove('zoomed');
+                                resetCardStyles(currentCard);
+
+                            }
+                            card.classList.toggle('zoomed');
+                            if (card.classList.contains('zoomed')) {
+                                applyCardStyles(card);
+                                const etat = card.dataset.etat;
+                                $('#search_etat').val(etat);
+                                filterDataTable(etat);
+                            } else {
+                                $('#search_etat').val('');
+                                resetCardStyles(card);
+                                resetDataTable();
+
+                            }
+                            currentCard = card;
+                        });
+                    });
+                    function applyCardStyles(card) {
+                        card.style.transition = 'background-color 0.5s, color 0.5s';
+                        card.style.backgroundColor = '#B7482B';
+                        card.style.color = '#FFFFFF';
+                        const badge = card.querySelector('#badge');
+                        badge.style.transition = 'color 0.5s, background-color 0.5s';
+                        badge.style.color = '#000000';
+                        badge.style.backgroundColor = '#FFFFFF';
+                    }
+                    function resetCardStyles(card) {
+                        card.style.transition = 'background-color 0.5s, color 0.5s';
+                        card.style.backgroundColor = '';
+                        card.style.color = '';
+                        const badge = card.querySelector('#badge');
+                        badge.style.transition = 'color 0.5s, background-color 0.5s';
+                        badge.style.color = '';
+                        badge.style.backgroundColor = '';
+                    }
+
+                    function filterDataTable(etat) {
+                        const table = jQuery('.datatable_benef').DataTable();
+                        console.log(table.column(8));
+                        table.column(8).search( '^' + etat +'$', true, false ).draw();
+                    }
+                    function resetDataTable() {
+                        const table = jQuery('.datatable_benef').DataTable();
+                        table.search('').columns().search('').draw();
+                    }
+                }
+                // DataTable plugin
+                const tables = container.querySelectorAll('.datatable');
+                tables.forEach(table => {
+                    if (!jQuery.fn.DataTable.isDataTable(table)) {
+                        jQuery(table).DataTable({
+                            pageLength: 10,
+                            lengthMenu: [10, 15, 25],
+                            language: {
+                                search: "",
+                                searchPlaceholder: "Rechercher...",
+                                processing: "Chargement en cours...",
+                                lengthMenu: "Afficher _MENU_ &eacute;l&eacute;ments",
+                                info: "Affichage de _START_ &agrave; _END_ sur _TOTAL_ &eacute;l&eacute;ments",
+                                infoEmpty: "Affichage de l'&eacute;lement 0 &agrave; 0 sur 0 &eacute;l&eacute;ments",
+                                loadingRecords: "Chargement en cours...",
+                                zeroRecords: "Aucun &eacute;l&eacute;ment &agrave; afficher",
+                                paginate: {
+                                    first: "Premier",
+                                    previous: "Pr&eacute;c&eacute;dent",
+                                    next: "Suivant",
+                                    last: "Dernier"
+                                },
+                            },
+                            drawCallback: function (settings) {
+                                var info = jQuery(table).closest('.dataTables_wrapper').find('.dataTables_info');
+                                var lengthMenu = jQuery(table).closest('.dataTables_wrapper').find('.dataTables_length');
+                                var tableWrapper = jQuery(table).closest('.dataTables_wrapper');
+                                tableWrapper.find('.row:eq(0)').prepend(lengthMenu);
+                                tableWrapper.find('.row:eq(1)').prepend(info);
+                                lengthMenu.css('position', 'absolute').css('bottom', '0').css('left', '0');
+                                feather.replace();
+                            }
+                        });
+                    }
+                });
+
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+    </script>
+
+{% endblock %}

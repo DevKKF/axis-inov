@@ -1,0 +1,41 @@
+<div  class="modal fade modal_interne"  id="modal-sinistre_garantie" data-backdrop="static" data-keyboard="false" aria-hidden="true" style="display: none">
+	<div class="modal-dialog modal-lg" style="width:;">
+		<div class="modal-content">
+			<form id="form_add_sinistre_garantie" action="" method="post" enctype="multipart/form-data">
+				{% csrf_token %}
+                <div class="modal-header">
+                    <h4 class="modal-title">{{_("AJOUTER DES GARANTIES AU SINISTRE")}}</h4>
+                    <button type="button" data-dismiss="modal" aria-label="Close" style="border:none;background:none; color:#3F3F3F">
+                        <span aria-hidden="true"><i class="fa fa-remove"></i></span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert  alert-dismissible fade show hidden" role="alert">
+                        <span class="message"> {{_("TRAITEMENT EN COURS")}}</span>
+                    </div>
+                    <div class="col-md-12 offset-0">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div id="message-modal-success" class="alert alert-success" style="display:none;"></div>
+                                <div id="message-modal-warning" class="alert alert-warning" style="display:none;"></div>
+                                <div id="message-modal-error" class="alert alert-danger" style="display:none;"></div>
+                            </div>
+                            <div class="col-md-12">
+                                <div class="circonstance_garantie_null" id="circonstance_garantie_null">
+                                    <h5 class="text-center text-italic">Sélectionnez une circonstance ayant des garanties...</h5>
+                                </div>
+                                <div class="circonstance_garantie_existe" id="circonstance_garantie_existe">
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer justify-content-between">
+                    <button type="button" class="btn btn-danger" data-dismiss="modal"><i class="fa fa-remove"></i> {{_('Fermer')}}</button>
+                    <button type="button" id="btn_save_sinistre_garantie" class="btn btn-info"><i class="fa fa-check-circle"></i> {{_('Valider')}}</button>
+                </div>
+            </form>
+		</div>
+	</div>
+</div>

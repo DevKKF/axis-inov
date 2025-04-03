@@ -1,0 +1,245 @@
+{% extends "admin/base_site.html" %}
+{% load my_filters %}
+{% load static %}
+{% block extrastyle %}
+<link type="text/css" href="//gyrocode.github.io/jquery-datatables-checkboxes/1.2.12/css/dataTables.checkboxes.css"
+      rel="stylesheet"/>
+<style>
+    div.dataTables_processing>div:last-child>div {
+        background: rgb(187 65 38) !important;
+    }
+</style>
+{% endblock %}
+{% block content %}
+
+<div class="col-12 col-md-12 order-2 order-md-1">
+    <div class="card ">
+        <div class="card-header o-bg-primary">
+            <h3 class="card-title">
+          <span class="the_title" style="font-weight:bold;">
+            {{_('ACTION_SUPER_ADMIN')}}
+          </span>
+            </h3>
+        </div>
+        <div class="card-body">
+            <form enctype="multipart/form-data" method="post" action="{% url 'db_super_admin_query' %}"
+                  id="form_execution_requete_super_admin" validate>
+                {% csrf_token %}
+
+                <div class="col-md-12 mb-3">
+                    <div class="row">
+
+
+                        <div class="col form-group row">
+                            <span class="col col-form-label text-right">{{_('Action')}} <span
+                                    class="required">*</span>: </span>
+                            <div class="col-sm-6">
+                                <select class="form-control tags-multiple" id="query_selectbox"
+                                        style="border:1px solid rgba(0, 0, 0, 0.3);" name="query_name" required>
+                                    <option value="">{{_('Choisir') }}</option>
+
+                                    {% for query_data in query_datas %}
+                                    <option value="{{query_data.query_name}}">{{query_data.query_label}}</option>
+                                    {% endfor %}
+
+                                </select>
+                            </div>
+                        </div>
+
+
+
+                        <div class="col ">
+                            <button id="execution_requete_super_admin" class="btn btn-complement-rouge">{{_('Action_super_admin')}}
+                            </button>
+                            <img id="loader" src="{% static 'admin_custom/img/loader.gif' %}"
+                                 style="width: 40px;display: none;"/>
+                        </div>
+                    </div>
+
+
+
+                    <div class="row">
+
+
+                       <div class="col-6 form-group row box box-ANNULATION_QUITTANCE_SOLDEE" style="display:none">
+
+                            <span class="col text-right" style="margin-top:5px;">{{_('Numero_Quittance')}} <span
+                                    class="required" style="">*</span>:</span>
+                            <div class="col-sm-6">
+                                <input type="text" class="form-control" name="aq_numero" required>
+                            </div>
+                        </div>
+
+                        <div class="col-6 form-group row box box-ANNULATION_BR_PAIEMENT" style="display:none">
+
+                            <span class="col text-right" style="margin-top:5px;">{{_('Numero_Bordereau')}} <span
+                                    class="required" style="">*</span>:</span>
+                            <div class="col-sm-6">
+                                <input type="text" class="form-control" name="abrp_numero" required>
+                            </div>
+                        </div>
+
+                        <div class="col-6 form-group row box box-ANNULATION_BR_ORDONNANCEMENT" style="display:none">
+
+                            <span class="col text-right" style="margin-top:5px;">{{_('Numero_Bordereau')}} <span
+                                    class="required" style="">*</span>:</span>
+                            <div class="col-sm-6">
+                                <input type="text" class="form-control" name="abro_numero" required>
+                            </div>
+                        </div>
+
+                        <div class="col-6 form-group row box box-BENEF_ENTREE_MODIF" style="display:none">
+
+                            <span class="col text-right" style="margin-top:5px;">{{_('Numero_carte')}} <span
+                                    class="required" style="">*</span>:</span>
+                            <div class="col-sm-6">
+                                <input type="text" class="form-control" name="benefe_numero" required>
+                            </div>
+                        </div>
+
+                        <div class="col-6 form-group row box box-BENEF_SORTI_MODIF" style="display:none">
+
+                            <span class="col text-right" style="margin-top:5px;">{{_('Numero_carte')}} <span
+                                    class="required" style="">*</span>:</span>
+                            <div class="col-sm-6">
+                                <input type="text" class="form-control" name="benefs_numero" required>
+                            </div>
+                        </div>
+                        <!---->
+
+                    </div>
+
+                    <div class="row">
+
+                        <div class="col-6 form-group row box box-ANNULATION_QUITTANCE_SOLDEE" style="display:none">
+
+                            <span class="col text-right" style="margin-top:5px;">{{_('Motif_Annulation')}} <span
+                                    class="required" style="">*</span>:</span>
+                            <div class="col-sm-6">
+                                <textarea class="form-control" name="aq_motif" maxlength="255" required></textarea>
+                            </div>
+                        </div>
+
+                        <div class="col-6 form-group row box box-ANNULATION_BR_PAIEMENT" style="display:none">
+
+                            <span class="col text-right" style="margin-top:5px;">{{_('Motif_Annulation')}} <span
+                                    class="required" style="">*</span>:</span>
+                            <div class="col-sm-6">
+                                <textarea class="form-control" name="abrp_motif" maxlength="255" required></textarea>
+                            </div>
+                        </div>
+
+                        <div class="col-6 form-group row box box-ANNULATION_BR_ORDONNANCEMENT" style="display:none">
+
+                            <span class="col text-right" style="margin-top:5px;">{{_('Motif_Annulation')}} <span
+                                    class="required" style="">*</span>:</span>
+                            <div class="col-sm-6">
+                                <textarea class="form-control" name="abro_motif" maxlength="255" required></textarea>
+                            </div>
+                        </div>
+
+                        <div class="col-6 form-group row box box-BENEF_ENTREE_MODIF" style="display:none">
+
+                            <span class="col text-right" style="margin-top:5px;">{{_('Nouvelle_Date_entree')}} <span
+                                    class="required" style="">*</span>:</span>
+                            <div class="col-sm-6">
+                                <input type="date" class="form-control" name="benefe_date" required>
+                            </div>
+                        </div>
+
+                         <div class="col-6 form-group row box box-BENEF_SORTI_MODIF" style="display:none">
+
+                            <span class="col text-right" style="margin-top:5px;">{{_('Nouvelle_Date_sortie')}} <span
+                                    class="required" style="">*</span>:</span>
+                            <div class="col-sm-6">
+                                <input type="date" class="form-control" name="benefs_date" required>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="row">
+                        <div class="col-6 form-group row box box-BENEF_ENTREE_MODIF" style="display:none">
+
+                            <span class="col text-right" style="margin-top:5px;">{{_('Motif_modification')}} <span
+                                    class="required" style="">*</span>:</span>
+                            <div class="col-sm-6">
+                                <textarea class="form-control" name="benefe_motif" maxlength="255" required></textarea>
+                            </div>
+                        </div>
+
+                        <div class="col-6 form-group row box box-BENEF_SORTI_MODIF" style="display:none">
+
+                            <span class="col text-right" style="margin-top:5px;">{{_('Motif_modification')}} <span
+                                    class="required" style="">*</span>:</span>
+                            <div class="col-sm-6">
+                                <textarea class="form-control" name="benefs_motif" maxlength="255" required></textarea>
+                            </div>
+                        </div>
+                    </div>
+
+
+                </div>
+        </form>
+
+
+
+    </div>
+</div>
+
+   <div class="dossier_facture text-danger text-center text-bold h4" id="msg-box"></div>
+
+
+</div>
+
+
+{% endblock %}
+
+
+{% block extrajs %}
+<!--<script type="text/javascript" src="https://cdn.jsdelivr.net/jquery/latest/jquery.min.js"></script>-->
+<script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css"/>
+<script>
+    $(document).ready(function() {
+
+        $("#form_execution_requete_super_admin").submit(function(e){
+           return false;
+       });
+
+       $('input[name="dates"]').daterangepicker({
+           locale: {
+            format: 'DD/MM/YYYY'
+            }
+        });
+
+       $('#query_selectbox').on('change', function (e) {
+           var query_name = $(this).val();
+           $('.box').hide();
+           $('.box-'+query_name).show();
+       });
+
+       // Reset message box on input blur active
+       $('input, textarea, select').on('click', function (e) {
+           $('#msg-box').html('');
+       });
+
+       $('#prestataire').on('change', function (e) {
+            if($("#beneficiaire").val() > 0 && $("#prestataire").val() > 0){
+               $("#beneficiaire").val("").trigger( "change" );
+            }
+       });
+
+       $('#beneficiaire').on('change', function (e) {
+            if($("#prestataire").val() > 0 && $("#beneficiaire").val() > 0){
+               $("#prestataire").val("").trigger( "change" );
+            }
+       });
+
+
+
+    })
+
+</script>
+{% endblock %}

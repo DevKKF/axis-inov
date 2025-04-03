@@ -1,0 +1,171 @@
+{% extends "admin/base_site.html" %}
+{% load my_filters %}
+{% load static %}
+{% block extrastyle %}
+<link type="text/css" href="//gyrocode.github.io/jquery-datatables-checkboxes/1.2.12/css/dataTables.checkboxes.css"
+      rel="stylesheet"/>
+<style>
+    div.dataTables_processing>div:last-child>div {
+        background: rgb(187 65 38) !important;
+    }
+</style>
+{% endblock %}
+{% block content %}
+
+<div class="col-12 col-md-12 order-2 order-md-1">
+    <div class="card ">
+        <div class="card-header o-bg-primary">
+            <h3 class="card-title">
+          <span class="the_title" style="font-weight:bold;">
+            {{_('EXECUTION_DES_REQUETES_EXCEL') }}
+          </span>
+            </h3>
+        </div>
+        <div class="card-body">
+            <form enctype="multipart/form-data" method="post" action="{% url 'execution_requete_excel_compta' %}"
+                  id="form_execution_requete_excel_compta" validate>
+                {% csrf_token %}
+
+                <div class="col-md-12 mb-3">
+                    <div class="row">
+                        <div class="col form-group row">
+                            <span class="col col-form-label text-right">{{_('Requete') }} <span
+                                    class="required">*</span>: </span>
+                            <div class="col-sm-6">
+                                <select class="form-control tags-multiple" id="query_selectbox"
+                                        style="border:1px solid rgba(0, 0, 0, 0.3);" name="query_name" required>
+                                    <option value="">{{ _('Choisir') }}</option>
+                                    {% for query_data in query_datas %}
+                                    <option value="{{query_data.query_name}}">{{query_data.query_label}}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+
+
+
+                        <div class="col ">
+                            <button id="execution_requete_excel_compta" class="btn btn-complement-rouge">{{_('Execution_requete_excel') }}
+                            </button>
+                            <img id="loader_compta" src="{% static 'admin_custom/img/loader.gif' %}"style="width: 40px;display: none;"/>
+
+                        </div>
+                    </div>
+                    <div class="row">
+                         <div class="col-6 form-group row box box-SIN_ORDONNANCES" style="display:none">
+
+                            <span class="col text-right" style="margin-top:5px;">{{_('Prestataire') }} <span
+                                    class="required" style="display:none">*</span>:</span>
+                            <div class="col-sm-6">
+
+                                <select class="form-control tags-multiple"
+                                        style="border:1px solid rgba(0, 0, 0, 0.3);wight:100%" name="prestataire">
+                                    <option value="">{{_('Choisir') }}</option>
+                                    {% for data in prestataires %}
+                                    <option value="{{data.id}}">{{data}}</option>
+                                    {% endfor %}
+                                </select>
+
+
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="row">
+
+                        <div class="col-6 form-group row box box-SIN_ORDONNANCES" style="display:none">
+
+
+                            <span class="col text-right" style="margin-top:5px;">{{_('Periode_comptable') }} <span
+                                    class="required">*</span>:</span>
+                            <div class="col-sm-6">
+
+                                <select class="form-control tags-multiple"
+                                        style="border:1px solid rgba(0, 0, 0, 0.3);wight:100%" name="period_comptable" required>
+                                    <option value="">{{_('Choisir') }}</option>
+                                    {% for data in periode_comptable %}
+                                    <option value="{{data.id}}">{{data}}</option>
+                                    {% endfor %}
+                                </select>
+
+
+                            </div>
+                        </div>
+                    </div>
+
+
+
+                    <div class="row">
+                        <div class="col-6 form-group row box box-PAIEMENT_SINISTRE_ENTRE_DEUX_DATES" style="display:none;">
+
+                            <span class="col text-right" style="margin-top:5px;">{{_('Date_de_debut') }} <span class="required">*</span>:</span>
+                            <div class="col-sm-6">
+                                <input type="date" name="date_debut_paiment_sinisre" id="date_debut_paiment_sinisre" class="form-control" required>
+                            </div>
+                        </div>
+                        <div class="col-6"></div> {% comment %} empty div for design {% endcomment %}
+                         
+                        <div class="col-6 form-group row box box-PAIEMENT_SINISTRE_ENTRE_DEUX_DATES" style="display:none;">
+
+                            <span class="col text-right" style="margin-top:5px;">{{_('Date_de_fin') }} <span class="required">*</span>:</span>
+                            <div class="col-sm-6">
+                                <input type="date" name="date_fin_paiment_sinisre" id="date_fin_paiment_sinisre" class="form-control" required>
+                            </div>
+                        </div>
+                        <div class="col-6"></div>
+                    </div>
+
+                    <div class="row">
+
+                        <div class="col-6 form-group row box box-PAIEMENT_SINISTRE_ENTRE_DEUX_DATES" style="display:none">
+
+                            <span class="col text-right" style="margin-top:5px;">{{_('Numero_Police') }} <span
+                                    class="required" style=""></span>:</span>
+                            <div class="col-sm-6">
+                                <input type="text" class="form-control" name="numero_police" id="numero_police">
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+            </form>
+    </div>
+</div>
+
+
+</div>
+
+
+{% endblock %}
+
+
+{% block extrajs %}
+<!--<script type="text/javascript" src="https://cdn.jsdelivr.net/jquery/latest/jquery.min.js"></script>-->
+<script type="text/javascript" src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
+<link rel="stylesheet" type="text/css" href="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.css"/>
+<script>
+    $(document).ready(function() {
+
+        $("#form_execution_requete_excel_compta").submit(function(e){
+           return false;
+       });
+
+       $('input[name="dates"]').daterangepicker({
+           locale: {
+            format: 'DD/MM/YYYY'
+            }
+        });
+
+       $('#query_selectbox').on('change', function (e) {
+           var query_name = $(this).val();
+           $('.box').hide();
+           $('.box-'+query_name).show();
+       });
+
+
+    })
+
+</script>
+{% endblock %}

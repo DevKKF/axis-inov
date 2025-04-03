@@ -1,0 +1,99 @@
+{% extends "grh/layouts/base.html" %}
+{% load static %}
+{% block title %}DOCUMENTS QUITTANCE{% endblock %}
+
+{% block content %}
+
+    {% comment %}{% endcomment %}
+    <div class="flex items-start pt-5">
+        <div class="w-full flex flex-col lg:flex-row items-center">
+            <a href="{% url 'grh.fiche_quittance' %}">
+                <button class="btn btn-primary-soft flex items-center w-30 pd-5 mr-2">Retour au détails quittance</button>
+            </a>
+            <a href="{% url 'grh.police_overview' %}">
+                <button class="btn btn-primary-soft flex items-center w-30 pd-5 mr-2">Retour à la page d'acceuil</button>
+            </a>
+        </div>
+    </div>
+    {% comment %}{% endcomment %}
+
+    <div class="intro-y col-span-12 md:col-span-12 lg:col-span-12 mt-8">
+        <div class="box">
+            {% comment %}{% endcomment %}
+            <div class="flex items-start px-5 pt-5">
+                <div class="w-full flex flex-col lg:flex-row items-center border-b border-gray-500">
+                    <h1 class="text-xl lg:text-lg font-medium mb-3 mr-5" style="color:#B7482B;">
+                        DOCUMENTS DE LA QUITTANCE
+                    </h1>
+                </div>
+            </div>
+            {% comment %}{% endcomment %}
+            <div class="grid grid-cols-12 gap-6 mt-2">
+                <div class="intro-y col-span-12 flex flex-wrap sm:flex-nowrap items-center mt-2 p-8">
+                    <div class="hidden md:block mx-auto text-slate-500">Affichage de 1 à 10 sur 150 entrées</div>
+                    <div class="w-full sm:w-auto mt-3 sm:mt-0 sm:ml-auto md:ml-0">
+                        <div class="w-56 relative text-slate-500">
+                            <input type="text" class="form-control w-56 box pr-10" placeholder="Rechercher...">
+                            <i class="w-4 h-4 absolute my-auto inset-y-0 mr-3 right-0" data-feather="search"></i> 
+                        </div>
+                    </div>
+                </div>
+            {% comment %}{% endcomment %}
+            <div class="intro-y col-span-12 overflow-auto lg:overflow-visible">
+                <table class="table table-report -mt-2">
+                    <thead>
+                        <tr>
+                            <th class="whitespace-nowrap">Date</th>
+                            <th class="whitespace-nowrap">Libellé</th>
+                            <th class="whitespace-nowrap">Id document</th>
+                            <th class="whitespace-nowrap">Commentaire</th>
+                            <th class="whitespace-nowrap">Type</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="intro-x">
+                            <td class="w-40">----</td>
+                            <td class="w-40">----</td>
+                            <td class="w-40">----</td>
+                            <td class="w-40">----</td>
+                            <td class="w-40">----</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            {% comment %}{% endcomment %}
+            <div class="intro-y col-span-12 flex flex-wrap sm:flex-row sm:flex-nowrap items-center p-8">
+                <nav class="w-full sm:w-auto sm:mr-auto">
+                    <ul class="pagination">
+                        <li class="page-item">
+                            <a class="page-link" href="#"> <i class="w-4 h-4" data-feather="chevrons-left"></i> </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="#"> <i class="w-4 h-4" data-feather="chevron-left"></i> </a>
+                        </li>
+                        <li class="page-item"> <a class="page-link" href="#">...</a> </li>
+                        <li class="page-item"> <a class="page-link" href="#">1</a> </li>
+                        <li class="page-item active"> <a class="page-link" href="#">2</a> </li>
+                        <li class="page-item"> <a class="page-link" href="#">3</a> </li>
+                        <li class="page-item"> <a class="page-link" href="#">...</a> </li>
+                        <li class="page-item">
+                            <a class="page-link" href="#"> <i class="w-4 h-4" data-feather="chevron-right"></i> </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="#"> <i class="w-4 h-4" data-feather="chevrons-right"></i> </a>
+                        </li>
+                    </ul>
+                </nav>
+                <select class="w-20 form-select box mt-3 sm:mt-0">
+                    <option>10</option>
+                    <option>25</option>
+                    <option>35</option>
+                    <option>50</option>
+                </select>
+            </div>
+            {% comment %}{% endcomment %}
+        </div>
+    </div>
+</div>
+
+{% endblock %}

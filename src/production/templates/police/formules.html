@@ -1,0 +1,81 @@
+{% extends 'police/menu_police.html' %}
+{% load i18n %}
+{% block extrastyle %} {% endblock %}
+{% block content_title %}
+    <div class="row mb-2">
+          <div class="col-sm-6">
+                <h1 class="m-0">Liste des courriers  </h1>
+          </div>
+          <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                      <li class="breadcrumb-item"><a href="{% url 'admin:index' %}">{% trans 'Home' %}</a></li>
+                      <li class="breadcrumb-item">Production</li>
+                      <li class="breadcrumb-item"><a href="{% url 'clients' %}">Clients</a></li>
+                      <li class="breadcrumb-item"><a href="{% url 'police.details' police.id %}">Police</a></li>
+                      <li class="breadcrumb-item active">Courrier</li>
+                </ol>
+          </div>
+    </div>
+{% endblock %}
+{% block content %}
+<div class="col-12 col-md-12 order-2 order-md-1">
+    <div class="card">
+    <div class="card-header">
+        <h3 class="card-title text-white">{{_('COURRIER')}}</h3>
+    </div>
+    <div class="card-body">
+        <div class="button-link pull-right mb-2">
+          <a class="btn btn-sm btn-primary mb-1" data-toggle="modal"  data-target="#modal-formule"><i class="fas fa-plus"></i> {{_('Ajouter un courrier')}}</a>
+        </div>
+
+      <div id="example1_wrapper" class="dataTables_wrapper dt-bootstrap4">
+        <div class="row">
+          <div class="col-12 col-md-12 col-sm-12">
+              <div class="table-responsive">
+              <table class="table table-bordered table-striped dataTable dtr-inline" id="table_formules">
+                  <thead>
+                    <tr>
+                      <th scope="col">{{_('Code')}}</th>
+                      <th scope="col">{{_('Designation')}}</th>
+                      <th scope="col">{{_('Service')}}</th>
+                      <th scope="col">{{_('Statut')}}</th>
+                        <th scope="col">{{_("Date d'ajout")}}</th>
+                      <th scope="col">{{_('Actions')}}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                  {% for formule in formules %}
+                    <tr>
+                        <td>{{ courrier.code|default_if_none:"" }}</td>
+                        <td style="text-align:right;">{{ courrier.designation|default_if_none:"" }} </td>
+                        <td>{{ courrier.service|default_if_none:"" }}</td>
+                        <td><span class="badge badge-{{formule.statut|default_if_none:''|slugify}}">{{ formule.statut|default_if_none:""}}</span></td>
+                         <td>{{ formule.date_fin|date:"d/m/Y" }}</td>
+                        <td>
+                            <a href="{% url 'details_formule' formule.id %}" class="btn badge btn-sm btn-details rounded-pill"><i class="fa fa-eye"></i> {{_('Details')}}</a></a>
+                            {% if bareme.statut != 'INACTIF' %}
+                            <span class="btn badge btn-sm btn-complement-rouge rounded-pill btn-modal-modifier_formule" title="Modifier" data-href="{% url 'modifier_formule' formule.id %}" style="color:white;font-weight:normal;"><i class="fa fa-pencil"></i> {{_('Modifier')}}</span>&nbsp;&nbsp;
+                            <a class="btn badge btn-sm btn-danger rounded-pill btn-modal-formule-desactivate" title="Désactiver" data-href="{% url 'desactivate_formule' %}" data-type="delete" data-id="{{ formule.id }}" data-libelle="{{ formule.libelle }}" data-tauxcouverture="{{ formule.taux_couverture }}" data-territorialite="{{ formule.territorialite.id }}" data-datedebut="{{ formule.date_debut|date:'Y-m-d' }}" data-datefin="{{ formule.date_fin|date:'Y-m-d' }}" data-statut="{{ formule.statut }}" data-toggle="modal"  data-target="#modal-formule-desactivate"><i class="fa fa-trash"></i></a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                  {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extrajs %}
+<script>
+    $(document).ready(function() {
+        $('#formule').removeClass('o-bg-primary');
+        $('#formule').addClass('o-active');
+    } );
+</script>
+{% endblock %}

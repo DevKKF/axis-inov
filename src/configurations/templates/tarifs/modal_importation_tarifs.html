@@ -1,0 +1,38 @@
+{% load i18n static jazzmin admin_urls %}
+<div  class="modal fade"  id="modal_tarifs_bureau" data-backdrop="static" data-keyboard="false" aria-hidden="true"  style="display: none">
+	<div class="modal-dialog modal-md">
+		<div class="modal-content">
+			<form enctype="multipart/form-data" id="form_importer_tarifs_bureau" action="{% url 'import_tarifs_bureau' %}" method="POST">
+			{% csrf_token %}
+			<div class="modal-header">
+				<h4 class="modal-title">{{_("TARIFS DE BUREAU")}}</h4>
+				<button type="button" class="close"data-dismiss="modal"aria-label="Close">
+					<span aria-hidden="true">×</span>
+				</button>
+			</div>
+			<div class="modal-body">
+				<div class="alert  alert-dismissible fade show hidden" role="alert">
+				  <span class="message">{{_('TRAITEMENT_EN_COURS')}}</span>
+				</div>
+				<div class="col-md-12 offset-0">
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="form-group">
+                                <label class="col-form-label">{{_("Fichier contenant les tarifs de bureau")}} <span class="required"></span></label>
+                                <div>
+                                    <input type="file" class="form-control" name="fichier_import_tarif" id="fichier_import_tarif"/>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+				</div>
+				<div class="modal-footer justify-content-between">
+					<button type="button" class="btn btn-danger" data-dismiss="modal"><i class="fa fa-remove"></i> {{_('Retour')}}</button>
+					<span id="loading_gif" style="display:none;color:#BB4127;">{{_("Importation en cours")}}... <img src="{% static 'admin_custom/ripple-loader.svg' %}" style="width:50px;"></span>
+					<button type="button" id="btn_importer_tarifs_bureau" class="btn btn-info"><i class="fa fa-check-circle"></i> {{_('Importer')}}</button>
+				</div>
+			</div>
+			</form>
+		</div>
+	</div>
+</div>

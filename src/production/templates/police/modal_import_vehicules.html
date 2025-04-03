@@ -1,0 +1,36 @@
+<div class="modal fade" id="modal-import_vehicules" data-backdrop="static" data-keyboard="false" aria-hidden="true" style="display: none">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+
+      <form enctype="multipart/form-data" method="post" action="{% url 'import_vehicules' police.id %}" id="modal_form_import_vehicules" validate>
+          {% csrf_token %}
+          <input type="hidden" id="police_id" name="police_id" value="{{ police.id }}"/>
+          <div class="modal-header">
+            <h4 class="modal-title">{{_("IMPORTER DES VEHICULES")}}</h4>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">×</span>
+            </button>
+          </div>
+           <div class="modal-body">
+            <div class="alert  alert-dismissible fade show hidden" role="alert">
+              <span class="message"> {{_("TRAITEMENT EN COURS")}}</span>
+            </div>
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="form-group row">
+                        <label class="col-sm-5 col-form-label">{{_("Fichier Excel ou CSV")}} <span class="required">*</span> </label>
+                        <div class="col-sm-7">
+                        <input type="file" accept=".csv,.xlsx" class="form-control" name="fichier" id="fichier" required/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+          </div>
+          <div class="modal-footer justify-content-between">
+              <button type="button" class="btn btn-danger" data-dismiss="modal"><i class="fa fa-remove"></i> {{_('Retour')}}</button>
+              <button type="button" id="btn_importer_vehicules" class="btn btn-info" data-href="{% url 'import_vehicules' police.id %}"><i class="fa fa-check-circle"></i> {{_('Importer')}}</button>
+          </div>
+      </form>
+    </div>
+  </div>
+</div>

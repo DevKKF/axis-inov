@@ -1,0 +1,273 @@
+{% extends "grh/layouts/base_enrol.html" %}
+{% load static %}
+{% block title %}{{_('ENROLEMENT')}}{% endblock %}
+
+{% block content %}
+
+    {% comment %} CSS {% endcomment %}
+    <style>
+        #title {
+            color: #B7482B;
+        }
+        #link {
+            color: #0000FF;
+        }
+        #status {
+            color: #FFFFFF;
+            padding: 5px;
+            border-radius: 10px;
+        }
+    </style>
+
+    {% comment %} TITLE {% endcomment %}
+    <div class="flex justify-center items-center">
+        <div class="w-3/4 md:w-3/4 lg:w-2/3 mt-5 p-8">
+            <div class="box p-3">
+                <div class="w-full flex flex-col lg:flex-row items-center justify-center">
+                    <h1 class="text-xl lg:text-lg font-medium p-5" id="title">
+                        {{_('SUIVI_DES_ENROLEMENTS')}}
+                    </h1>
+                </div>
+                <div class="alert alert-secondary-soft show w-1/2 mx-auto flex flex-col lg:flex-row items-center justify-center p-2">
+                    <i data-feather="alert-circle" class="mr-2"></i>
+                    <h1>{{_('VOTRE_LIEN_EXPIRE_DANS')}} :</h1>
+                    <h2 class="ml-5"><strong id="counter">-- : -- : --</strong></h2>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% comment %} ALIMENT CARD INFO {% endcomment %}
+    {% if aliment %}
+    <div class="intro-y col-span-12 md:col-span-12 lg:col-span-12 mt-8">
+        <div class="box">
+            <div class="flex items-start px-5 pt-5">
+                <div class="w-full flex flex-col lg:flex-row items-center">
+                    <div class="alert alert-secondary-soft show w-full mx-auto flex flex-col lg:flex-row items-center justify-center p-5">
+                        <h1>
+                            {{_('L_ADHERENT_PRINCIPAL_DU_DOSSIER_D_ENROLEMENT_EST')}} <strong>{{_('DEJA_INSCRIT')}}</strong>.
+                        </h1>
+                    </div>
+                </div>
+            </div>
+            {% comment %} INFOS {% endcomment %}
+            <div class="text-center p-5 border-t border-slate-200/60 dark:border-darkmode-400 mt-2">
+                <div class="intro-y col-span-12 overflow-auto lg:overflow-visible">
+                    <table class="table table-report -mt-2">
+                        <thead>
+                            <tr>
+                                <th class="whitespace-nowrap">{{_('Nom')}} & {{_('Prenoms')}}</th>
+                                <th class="whitespace-nowrap">{{_('Date_de_naissance')}}</th>
+                                <th class="whitespace-nowrap">{{_('Sexe')}}</th>
+                                <th class="whitespace-nowrap">{{_('Email')}}</th>
+                                <th class="whitespace-nowrap">{{_('Date_d_entree')}}</th>
+                                <th class="whitespace-nowrap">{{_('Qualite')}}</th>
+                                <th class="whitespace-nowrap">{{_('Statut')}}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="intro-x">
+                                <td class="w-auto">{{ aliment.nom|default_if_none:"-" }} {{ aliment.prenoms|default_if_none:"-" }}</td>
+                                <td class="w-auto">{{ aliment.date_naissance|default_if_none:"-"|date:"d/m/Y" }}</td>
+                                <td class="w-auto">{{ aliment.genre|default_if_none:"-" }}</td>
+                                <td class="w-auto">{{ aliment.email|default_if_none:"-" }}</td>
+                                <td class="w-auto">{{ aliment.date_affiliation|default_if_none:"-"|date:"d/m/Y" }}</td>
+                                <td class="w-auto">{{ aliment.qualite_beneficiaire|default_if_none:"-" }}</td>
+                                <td class="w-auto">
+                                    <div class="flex items justify-center" id="status" 
+                                    style="background-color: {% if aliment.statut == 'ACTIF' %}#008000;
+                                    {% elif aliment.statut == 'INACTIF' %}background-color: #FF0000;
+                                    {% endif %}">
+                                        {{ aliment.statut|default_if_none:"-" }}
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    {% comment %} PROSPECTS {% endcomment %}
+    <div class="box mt-8">
+        <div class="grid grid-cols-12 gap-6 mt-2 p-8">
+            <div class="intro-y col-span-12 overflow-auto lg:overflow-visible">
+                <div class="flex items-start px-5 pt-5">
+                    <div class="w-full flex flex-row items-center justify-between border-b border-gray-500">
+                        <h1 class="text-xl lg:text-lg mb-3" id="title">
+                            <strong>{{ campagne.libelle|default_if_none:"-" }}</strong>
+                        </h1>
+                        <a href="{% if aliment %}{% url 'grh.formulaire_enrolement_by_aliment' campagne.id uiid aliment.id %}{% else %}{% url 'grh.formulaire_enrolement' campagne.id uiid %}{% endif %}" class="absolute right-0 mr-5">
+                            <button class="btn btn-primary-soft w-30 mb-5"  {% if dossier_soumis %} style="display:none" {% endif %}>
+                                AJOUTER_UN_NOUVEAU_AYANT_DROIT
+                                <i data-feather="user-plus" class="ml-2 mb-2"></i>
+                            </button>
+                        </a>
+                    </div>
+                </div>
+                {% comment %} FORM {% endcomment %}
+                <form method="post" enctype="multipart/form-data" action="#" class="preview" id="form_enrol">
+                    {% csrf_token %}
+                    {% comment %} TABLE {% endcomment %}
+                    {% if prospects %}
+                    <table class="table table-report mt-10">
+                        <thead>
+                            <tr>
+                                <th class="whitespace-nowrap">{{_('Nom')}} & {{_('Prenoms')}}</th>
+                                <th class="whitespace-nowrap">{{_('Date_de_naissance')}}</th>
+                                <th class="whitespace-nowrap">{{_('Sexe')}}</th>
+                                <th class="whitespace-nowrap">{{_('Email')}}</th>
+                                <th class="whitespace-nowrap">{{_('Cree_le')}}</th>
+                                <th class="whitespace-nowrap">{{_('Qualite')}}</th>
+                                <th class="whitespace-nowrap">{{_('Statut_d_enrolement')}}</th>
+                                <th class="whitespace-nowrap">{{_('Actions')}}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for prospect in prospects %}
+                                <tr class="intro-x">
+                                    <td class="w-auto">{{ prospect.prospect.nom|default_if_none:"" }} {{ prospect.prospect.prenoms|default_if_none:"" }}</td>
+                                    <td class="w-auto">{{ prospect.prospect.date_naissance|default_if_none:""|date:"d/m/Y" }}</td>
+                                    <td class="w-auto">{{ prospect.prospect.genre|default_if_none:"" }}</td>
+                                    <td class="w-auto">{{ prospect.prospect.email|default_if_none:"" }}</td>
+                                    <td class="w-auto">{{ prospect.prospect.created_at|default_if_none:""|date:"d/m/Y" }}</td>
+                                    <td class="w-auto">{{ prospect.prospect.qualite_beneficiaire|default_if_none:"" }}</td>
+                                    <td class="w-auto">
+                                        <div class="flex items justify-center" id="status" 
+                                            style="background-color: 
+                                                {% if prospect.statut_enrolement == 'EN ATTENTE' %} #808080;
+                                                {% elif prospect.statut_enrolement == 'EN COURS' %} #008000;
+                                                {% elif prospect.statut_enrolement == 'SOUMIS' %} #FF8000;
+                                                {% elif prospect.statut_enrolement == 'VALIDE' %} #0000FF;
+                                                 {% elif prospect.statut_enrolement == 'REJETE' %} #FF0000;
+                                                {% else %} #FFFFFF; {% endif %}">
+                                            {{ prospect.statut_enrolement|default_if_none:"" }}
+                                        </div>
+                                    </td>
+                                    <td class="w-auto">
+                                        {% if prospect.statut_enrolement == 'EN ATTENTE' %}
+                                        <a href="{% if aliment %}{% url 'grh.formulaire_enrolement_update_by_aliment' campagne.id uiid aliment.id prospect.prospect.id %}{% else %}{% url 'grh.formulaire_enrolement_update' campagne.id uiid prospect.prospect.id %}{% endif %}">
+                                            <button class="btn btn-primary-soft flex items-center w-auto p-2" onclick="event.preventDefault(); window.location.href = this.parentElement.getAttribute('href');">
+                                                {{_('MODIFIER')}}
+                                                <i data-feather="edit" class="report-box__icon text-primary ml-2 mb-2"></i>
+                                            </button>
+                                        </a>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% comment %} SOUMETTRE {% endcomment %}
+                    <div class="mt-10 text-center">
+                        <a id="programmatically-show-modal" href="javascript:;">
+                            <button type="submit" class="btn btn-primary-soft w-72 ml-4 mb-4 p-4" id="submitBtn" {% if dossier_soumis %} style="display:none" {% endif %}>
+                                {{_('SOUMETTRE_AU_GRH')}}
+                                <i data-feather="send" class="report-box__icon text-primary ml-2 mb-2"></i>
+                            </button>
+                        </a>
+                    </div>
+                    {% else %}
+                    <div class=" mt-8 pb-5 alert w-72 alert-primary-soft show flex items-center mb-5 mx-auto inline-block justify-center">
+                        <i data-feather="alert-circle" class="report-box__icon text-primary mr-2"></i>
+                        {{_('AUCUN_ENROLEMENT')}}
+                    </div>
+                    {% endif %}
+                </form>
+                {% comment %} FORM {% endcomment %}
+            </div>
+        </div>
+    </div>
+
+    {% comment %} MODAL {% endcomment %}
+    <div class="intro-y box mt-5">
+        <div id="programmatically-modal" class="modal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog w-full modal-lg">
+                <div class="modal-content p-8">
+                    <div class="w-full flex flex-col lg:flex-row items-center justify-center">
+                        <div class="alert alert-secondary-soft show w-full mx-auto flex flex-col lg:flex-row items-center justify-center p-5">
+                            <h1><strong>{{_('VOULEZ_VOUS_VRAIMENT_SOUMETTRE_LE_DOSSIER_D_ENROLEMENT')}} ?</strong></h1>
+                        </div>
+                    </div>
+                    <div class="mt-10 text-center">
+                        <button type="submit" class="btn btn-primary mr-10">
+                            {{_('CONFIRMER')}}
+                            <i data-feather="thumbs-up" class="ml-2 mb-2"></i>
+                        </button>
+                        <button type="submit" class="btn btn-outline-primary">
+                            {{_('ANNULER')}}
+                            <i data-feather="thumbs-down" class="ml-2 mb-2"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% comment %} JS {% endcomment %}
+    <script>
+        var expirationDays = {{ duree_expiration_lien.days }};
+        var expirationHours = {{ duree_expiration_lien.hours }};
+        var expirationMinutes = {{ duree_expiration_lien.minutes }};
+        var expirationSeconds = {{ duree_expiration_lien.seconds }};
+
+        function updateCounter() {
+            var counterElement = document.getElementById('counter');
+            if (expirationSeconds > 0 || expirationMinutes > 0 || expirationHours > 0 || expirationDays > 0) {
+                if (expirationSeconds === 0) {
+                    expirationSeconds = 59;
+                    if (expirationMinutes > 0) {
+                        expirationMinutes--;
+                    } else {
+                        expirationMinutes = 59;
+                        if (expirationHours > 0) {
+                            expirationHours--;
+                        } else {
+                            expirationHours = 23;
+                            if (expirationDays > 0) {
+                                expirationDays--;
+                            }
+                        }
+                    }
+                } else {
+                    expirationSeconds--;
+                }
+                counterElement.innerText = `${expirationDays} jours, ${expirationHours} heures, ${expirationMinutes} minutes, ${expirationSeconds} secondes`;
+                setTimeout(updateCounter, 1000);
+            } else {
+                counterElement.innerText = 'EXPIRÉ';
+            }
+        }
+        updateCounter();
+    </script>
+
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var formEnrol = document.getElementById('form_enrol');
+            var modal = document.getElementById('programmatically-modal');
+
+            formEnrol.addEventListener('submit', function (e) {
+                e.preventDefault();
+                modal.classList.add('show');
+                modal.style.display = 'block';
+            });
+
+            var confirmBtn = document.querySelector('#programmatically-modal .btn-primary');
+            var cancelBtn = document.querySelector('#programmatically-modal .btn-outline-primary');
+
+            confirmBtn.addEventListener('click', function () {
+                formEnrol.submit();
+            });
+
+            cancelBtn.addEventListener('click', function () {
+                modal.classList.remove('show');
+                modal.style.display = 'none';
+                location.reload();
+            });
+        });
+    </script>
+
+{% endblock %}

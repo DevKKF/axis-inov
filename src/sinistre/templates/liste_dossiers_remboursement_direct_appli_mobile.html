@@ -1,0 +1,50 @@
+{% extends "admin/base_site.html" %}
+{% load my_filters %}
+{% block extrastyle %} {% endblock %}
+{% block content %}
+
+<div class="col-12 col-md-12 order-2 order-md-1">
+    <div class="card">
+      <div class="card-header o-bg-primary">
+          <h3 class="card-title"><b>{{_('LISTE_DES_DOSSIERS_EN_REMBOURSEMENT_DIRECT')}}</b></h3>
+          <div class="card-tools">
+          </div>
+      </div>
+
+
+      <div class="card-body">
+        <div id="example1_wrapper" class="dataTables_wrapper dt-bootstrap4">
+          <div class="row">
+            <div class="col-12 col-md-12 col-sm-12">
+                <table class="table table-bordered table-striped dataTable dtr-inline table_v_middle" id="table_dossiers_rd_app_mobile">
+                    <thead>
+                      <tr>
+                        <th scope="col">{{_('Numero_Bordereau')}}</th>
+                        <th scope="col">{{_('Prestataire')}}</th>
+                        <th scope="col">{{_('Base_de_remboursement')}}</th>
+                        <th scope="col">{{_('Date_de_generation')}}</th>
+                        <th scope="col">{{_('Action')}}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+</div>
+
+
+{% endblock %}
+
+
+{% block extrajs %}
+<script>
+    $(document).ready(function() {
+
+    });
+</script>
+
+{% endblock %}

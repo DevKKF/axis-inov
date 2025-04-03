@@ -1,0 +1,235 @@
+{% extends "grh/layouts/base.html" %}
+{% load static %}
+{% block title %}{{_('DETAILS_ACTE')}}{% endblock %}
+
+{% block content %}
+
+    <style>
+        #title {
+            color: #B7482B;
+        }
+        #link {
+            color: #0000FF;
+        }
+        #status {
+            padding: 5px;
+            border-radius: 5px;
+        }
+    </style>
+
+    <div class="intro-y flex items-start pt-5">
+        <div class="w-full flex flex-col lg:flex-row items-center">
+            <a href="{% url 'grh.beneficiaire_overview' police.id beneficiaire.id  %}">
+                <button class="btn btn-primary-soft flex items-center w-30 pd-5">
+                    <i data-feather="corner-up-left" class="report-box__icon text-primary mr-2"></i>
+                    {{_('RETOUR')}}
+                </button>
+            </a>
+        </div>
+    </div>
+
+    <div class="intro-y col-span-12 md:col-span-12 lg:col-span-12 mt-8">
+        <div class="box">
+            <div class="flex items-start px-5 pt-5">
+                <div class="w-full flex flex-col lg:flex-row items-center">
+                    <h1 class="text-xl lg:text-lg font-medium mb-3 mr-5" id="title">
+                        {{_('BENEFICIAIRE')}}
+                    </h1>
+                </div>
+            </div>
+            <div class="text-center p-5 border-t border-slate-200/60 dark:border-darkmode-400">
+                <div class="intro-y col-span-12 overflow-auto lg:overflow-visible">
+                    <table class="table table-report -mt-2">
+                        <thead>
+                            <tr>
+                                <th class="whitespace-nowrap">{{_('Numero_Carte')}}</th>
+                                <th class="whitespace-nowrap">{{_('Prenom')}}</th>
+                                <th class="whitespace-nowrap">{{_('Nom')}}</th>
+                                <th class="whitespace-nowrap">{{_('Numero_police')}}</th>
+                                <th class="whitespace-nowrap">{{_('Client')}}</th>
+                                <th class="whitespace-nowrap">{{_('Code_situation')}}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="intro-x">
+                                <td>{{ beneficiaire.carte_active.numero|default_if_none:"" }}</td>
+                                <td>{{ beneficiaire.prenoms|default_if_none:"" }}</td>
+                                <td>{{ beneficiaire.nom|default_if_none:"" }}</td>
+                                <td><a href="{% url 'grh.police_overview' police.id %}" style="color:blue;">{{ police.numero|default_if_none:"" }}</a></td>
+                                <td>{{ police.client.nom|default_if_none:"" }}</td>
+                                <td class="w-40">
+                                    <div class="flex items justify-center" id="status" 
+                                    style="background-color: {% if beneficiaire.statut == 'ACTIF' %}#007500;color:#FFFFFF;font-weight: bold;
+                                    {% elif beneficiaire.statut == 'INACTIF' %}#DC3545;color:#FFFFFF;font-weight: bold;
+                                    {% endif %}">
+                                        {{ beneficiaire.statut|default_if_none:"" }}
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-12 gap-6 mt-5">
+        <div class="intro-y col-span-12 md:col-span-12 lg:col-span-12">
+            <div class="box">
+                <div class="flex items-start px-5 pt-5">
+                    <div class="w-full flex flex-col lg:flex-row items-center">
+                        <h1 class="text-xl lg:text-lg font-medium mb-3 mr-5" id="title">
+                            {{_('FORMULE_DE_LA_POLICE')}}
+                        </h1>
+                    </div>
+                </div>
+                <div class="p-5" id="striped-rows-table">
+                    <div class="preview">
+                        <div class="overflow-x-auto">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th class="whitespace-nowrap"></th>
+                                        <th class="whitespace-nowrap"></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="font-bold">{{_('Code_Formule')}}</td>
+                                        <td class="font-normal">{{ formule.code|default_if_none:"" }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="font-bold">{{_('Date_de_debut')}}</td>
+                                        <td class="font-normal">{{ formule.date_debut|default_if_none:""|date:"d/m/Y" }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="font-bold">{{_('Libelle_Formule')}}</td>
+                                        <td class="font-normal">{{ formule.libelle|default_if_none:"" }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="font-bold">{{_('Territorialite')}}</td>
+                                        <td class="font-normal">{{ formule.territorialite|default_if_none:"" }}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-12 gap-6 mt-12">
+        <div class="col-span-12 2xl:col-span-12">
+            <div class="grid grid-cols-12 gap-6">
+                <div class="intro-y col-span-12 md:col-span-12 lg:col-span-12">
+                    <div class="box">
+                        <div class="flex items-start px-5 pt-5">
+                            <div class="w-full flex flex-col lg:flex-row items-center border-b border-gray-500">
+                                <h1 class="text-xl lg:text-lg font-medium mb-3 mr-5" id="title">
+                                    {{_('GARANTIE')}}
+                                </h1>
+                            </div>
+                        </div>
+                        <div class="mt-1">
+                            <div class="flex">
+                                <div class="w-1/2 p-2 mt-2 flex border-r border-gray-500">
+                                    <div class="w-1/2 p-2 mt-2">
+                                        <p class="font-bold">{{_('Garantie')}}</p>
+                                    </div>
+                                    <div class="w-1/2 p-2 mt-2">
+                                        <p>{{ bareme.acte|default_if_none:"" }}</p>
+                                    </div>
+                                </div>
+                                <div class="w-1/2 p-2 mt-2 flex">
+                                    <div class="w-1/2 p-2 mt-2">
+                                        <p class="font-bold">{{_('Rubrique')}}</p>
+                                    </div>
+                                    <div class="w-1/2 p-2 mt-2">
+                                        <p>{{ bareme.rubrique.libelle|default_if_none:"" }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex items-start px-5 pt-5">
+                            <div class="w-full flex flex-col lg:flex-row items-center border-b border-gray-500">
+                                <h1 class="text-xl lg:text-lg font-medium mb-3 mr-5" id="title">
+                                    {{_('FRANCHISE')}} {{_('TICKET_MODERATEUR')}}
+                                </h1>
+                            </div>
+                        </div>
+                        <div class="mt-1">
+                            <div class="flex">
+                                <div class="w-1/2 p-2 mt-2 flex border-r border-gray-500">
+                                    <div class="w-1/2 p-2 mt-2">
+                                        <p class="font-bold">{{_('Type_de_franchise')}}</p>
+                                    </div>
+                                    <div class="w-1/2 p-2 mt-2">
+                                        <p>{{ police.ticket_moderateur|default_if_none:"" }}</p>
+                                    </div>
+                                </div>
+                                <div class="w-1/2 p-2 mt-2 flex">
+                                    <div class="w-1/2 p-2 mt-2">
+                                        <p class="font-bold">{{_('Franchise')}}</p>
+                                    </div>
+                                    <div class="w-1/2 p-2 mt-2">
+                                        <p>{{ police.calcul_tm|default_if_none:"" }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex items-start px-5 pt-5">
+                            <div class="w-full flex flex-col lg:flex-row items-center border-b border-gray-500">
+                                <h1 class="text-xl lg:text-lg font-medium mb-3 mr-5" id="title">
+                                    {{_('PLAFONDS_PAR_PERIODE')}}
+                                </h1>
+                            </div>
+                        </div>
+                        <div class="mt-1">
+                            <div class="flex">
+                                <div class="w-1/2 p-2 mt-2 flex border-r border-gray-500">
+                                    <div class="w-1/2 p-2 mt-2">
+                                        <p class="font-bold">{{_('Unite_de_la_periode')}}</p>
+                                    </div>
+                                    <div class="w-1/2 p-2 mt-2">
+                                        <p>{{ police.fractionnement|default_if_none:"" }}</p>
+                                    </div>
+                                </div>
+                                <div class="w-1/2 p-2 mt-2 flex">
+                                    <div class="w-1/2 p-2 mt-2">
+                                        <p class="font-bold">{{_('Duree_de_la_periode')}}</p>
+                                    </div>
+                                    <div class="w-1/2 p-2 mt-2">
+                                        <p>{{ bareme.periodicite|default_if_none:"" }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% comment %}
+                        <div class="flex items-start px-5 pt-5">
+                            <div class="w-full flex flex-col lg:flex-row items-center border-b border-gray-500">
+                                <h1 class="text-xl lg:text-lg font-medium mb-3 mr-5" id="title">
+                                    PLAFONDS UNITAIRES
+                                </h1>
+                            </div>
+                        </div>
+                        <div class="mt-1">
+                            <div class="flex">
+                                <div class="w-1/2 p-2 mt-2 flex border-r border-gray-500">
+                                    <div class="w-1/2 p-2 mt-2">#</div>
+                                    <div class="w-1/2 p-2 mt-2">#</div>
+                                </div>
+                                <div class="w-1/2 p-2 mt-2 flex">
+                                    <div class="w-1/2 p-2 mt-2">#</div>
+                                    <div class="w-1/2 p-2 mt-2">#</div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endcomment %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

@@ -1,0 +1,340 @@
+{% extends "grh/layouts/base_enrol.html" %}
+{% load static %}
+{% block title %}
+    {% if campagne_prospect %}
+        {{_('MODIFIER_L_ENROLEMENT')}}
+    {% else %}
+        {{_('CREER_NOUVEAU_ENROLEMENT')}}
+    {% endif %}
+{% endblock %}
+
+{% block content %}
+
+    {% comment %} CSS {% endcomment %}
+    <style>
+        #title {
+            color: #B7482B;
+        }
+        #link {
+            color: #0000FF;
+        }
+        #status {
+            color: #FFFFFF;
+            padding: 5px;
+            border-radius: 10px;
+        }
+        #photo{
+            border:0.5px lightgrey solid;
+            border-radius:5px;
+            padding: 7px;
+        }
+        .iti {
+            width: -webkit-fill-available;
+        }
+    </style>
+
+    {% comment %} FORM TITLE {% endcomment %}
+    <div class="flex justify-center items-center">
+        <div class="w-full md:w-3/4 lg:w-2/3 mt-5 p-10">
+            <div class="box p-3">
+                <div class="w-full flex flex-col lg:flex-row items-center justify-center">
+                    {% if campagne_prospect %}
+                        <h1 class="text-xl lg:text-lg font-medium p-5" id="title">
+                            {{_('MODIFIER_L_ENROLEMENT')}}
+                        </h1>
+                    {% else %}
+                        <h1 class="text-xl lg:text-lg font-medium p-5" id="title">
+                            {{_('AJOUTER_UN_NOUVEAU_ENROLEMENT')}}
+                        </h1>
+                    {% endif %}
+                </div>
+
+                {% comment %} RETOUR {% endcomment %}
+                <div class="flex items-start pt-5">
+                    <div class="w-full flex flex-col lg:flex-row items-center">
+                        <a href="{% if aliment %}{% url 'grh.enrolement_by_aliment' campagne.id uiid aliment.id %}{% else %}{% url 'grh.enrolement' campagne.id uiid %}{% endif %}">
+                            <button class="btn btn-primary-soft flex items-center w-30 pd-5">
+                                <i data-feather="corner-up-left" class="report-box__icon text-primary mr-2"></i>
+                                {{_('RETOUR')}}
+                            </button>
+                        </a>
+                    </div>
+                </div>
+
+                {% comment %} INFOS {% endcomment %}
+                <div class="alert w-1/2 alert-secondary-soft show flex items-center mx-auto inline-block justify-center p-2 mt-5">
+                    <i data-feather="alert-circle" class="mr-2"></i>
+                    <small>{{_('VOUS_POUVEZ_AJOUTER')}}, {{_('MODIFIER_ET_ENREGISTRER_UN_ENROLEMENT_SUR_VOTRE_CAMPAGNE')}}.</small>
+                </div>
+                <div class="mt-2 alert w-1/2 alert-secondary-soft show flex items-center mx-auto inline-block justify-center p-2">
+                    <i data-feather="alert-circle" class="mr-2"></i>
+                    <small>UNE FOIS VOUS AVEZ SOUMIS UN ENRÔLEMENT, VOUS NE POUVEZ RIEN CHANGER !</small>
+                </div>
+
+                {% comment %} FORM {% endcomment %}
+                <form method="post" enctype="multipart/form-data" action="#" class="preview" id="form_enrol">
+                    {% csrf_token %}
+                    <div class="mt-1">
+                        {% comment %} IDENTITÉ {% endcomment %}
+                        <div class="w-full flex flex-col lg:flex-row border-b border-gray-500">
+                            <h1 class="text-lg lg:text-base font-normal p-5" id="title">
+                                {{_('IDENTITE')}}
+                            </h1>
+                        </div>
+                        {% comment %} FLEX {% endcomment %}
+                        <div class="flex">
+                            <div class="w-1/2 p-2 mt-2 border-r border-gray-500">
+                                <div class="mt-0">
+                                    <label for="nom" class="form-label font-bold" placeholder="Max 40 caractéres">Nom <small class="ml-2" id="title">*</small></label>
+                                    <input id="nom" name="nom" type="text" class="form-control w-full" required
+                                        {% if campagne_prospect and campagne_prospect.prospect.nom %}
+                                            value="{{ campagne_prospect.prospect.nom|default_if_none:"" }}"
+                                        {% endif %}>
+                                </div>
+                                <div class="mt-8">
+                                    <label for="date_naissance" class="form-label font-bold">{{_('Date_de_naissance')}} <small class="ml-2" id="title">*</small></label>
+                                    <input class="form-control mt-2 w-full" type="date" id="date_naissance" name="date_naissance" required
+                                        {% if campagne_prospect and campagne_prospect.prospect.date_naissance %}
+                                            value="{{ campagne_prospect.prospect.date_naissance|date:'Y-m-d' }}"
+                                        {% endif %}>
+                                </div>
+                                <div class="mt-8">
+                                    <label for="genre" class="form-label font-bold pr-10">Sexe <small class="ml-2" id="title">*</small></label>
+                                    <select class="form-control" name="genre" id="genre" required>
+                                        <option value="">Choisir</option>
+                                        <option value="{{ M }}" {% if campagne_prospect and campagne_prospect.prospect.genre == M %}selected{% endif %}>
+                                            Masculin ({{ M }})
+                                        </option>
+                                        <option value="{{ F }}" {% if campagne_prospect and campagne_prospect.prospect.genre == F %}selected{% endif %}>
+                                            Féminin ({{ F }})
+                                        </option>
+                                    </select>
+                                </div>
+                                <div class="mt-8">
+                                    <label class="font-bold" for="photo">{{_('Photo')}}</label>
+                                    <input class="mt-2 w-full" type="file" id="photo" name="photo" />
+                                </div>
+                            </div>
+                            <div class="w-1/2 p-2 mt-2 border-r border-gray-500">
+                                <div class="mt-0">
+                                    <label for="prenoms" class="form-label font-bold" placeholder="Max 40 caractéres">Prénoms <small class="ml-2" id="title">*</small></label>
+                                    <input id="prenoms" name="prenoms" type="text" class="form-control w-full" required
+                                        {% if campagne_prospect and campagne_prospect.prospect.prenoms %}
+                                            value="{{ campagne_prospect.prospect.prenoms|default_if_none:"" }}"
+                                        {% endif %}>
+                                </div>
+                                <div class="mt-10">
+                                    <label for="civilite" class="form-label font-bold pr-10 flex">Civilité <small class="ml-2" id="title">*</small></label>
+                                    <select class="form-control" required name="civilite">
+                                        <option value="">Choisir</option>
+                                        {% for civilite in civilites_list %}
+                                            <option value="{{ civilite.code }}" {% if campagne_prospect and campagne_prospect.prospect.civilite.code == civilite.code %}selected{% endif %}>
+                                                {{ civilite.name }}
+                                            </option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="mt-8">
+                                    <label for="lieu_naissance" class="form-label font-bold">Lieu de naissance</label>
+                                    <input id="lieu_naissance" name="lieu_naissance" type="text" class="form-control w-full"
+                                        {% if campagne_prospect and campagne_prospect.prospect.lieu_naissance %}
+                                            value="{{ campagne_prospect.prospect.lieu_naissance|default_if_none:"" }}"
+                                        {% endif %}>
+                                </div>
+                                <div class="mt-8">
+                                    {% comment %} SHOW USER IMAGE IF FOUND {% endcomment %}
+                                    {% if campagne_prospect.prospect.photo %}
+                                        <div class="mx-auto w-24 h-24 flex-none mt-5">
+                                            <img class="rounded-full w-full h-full" src="{{ MEDIA_URL }}{{ campagne_prospect.prospect.photo }}" alt="Current Photo" />
+                                        </div>
+                                    {% else %}
+                                        <div class="alert w-72 alert-primary-soft show flex items-center mb-5 mx-auto inline-block justify-center">
+                                            AUCUNE PHOTO
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div> 
+                        {% comment %} ADHÉRANT PRINCIPAL {% endcomment %}
+                        <div class="w-full flex flex-col lg:flex-row border-b border-gray-500">
+                            <h1 class="text-lg lg:text-base font-normal p-5" id="title">
+                                {{_('ADHERANT_PRINCIPAL')}}
+                            </h1>
+                        </div>
+                        <div class="flex">
+                            <div class="w-1/2 p-2 mt-2 border-r border-gray-500">
+                                <div class="mt-0">
+                                    <label for="qualite_beneficiaire" class="form-label font-bold pr-10">{{_('Qualite_beneficiaire')}} <small class="ml-2" id="title">*</small></label>
+                                    <select class="form-control" name="qualite_beneficiaire" required {% if campagne_prospect and campagne_prospect.prospect.qualite_beneficiaire.code == 'AD' %} readonly {% endif %}>
+                                        {% if campagne_prospect %}
+                                            {% if campagne_prospect.prospect.qualite_beneficiaire.code == 'AD' %}
+                                                <option value="{{ campagne_prospect.prospect.qualite_beneficiaire.code }}" selected>
+                                                    {{ campagne_prospect.prospect.qualite_beneficiaire.libelle }}
+                                                </option>
+                                            {% else %}
+                                                {% for q in qualities %}
+                                                    {% if q.code == campagne_prospect.prospect.qualite_beneficiaire.code %}
+                                                        <option value="{{ q.code }}" selected>{{ q.libelle }}</option>
+                                                    {% else %}
+                                                        <option value="{{ q.code }}">{{ q.libelle }}</option>
+                                                    {% endif %}
+                                                {% endfor %}
+                                            {% endif %}
+                                        {% else %}
+                                            <option value="" selected>{{_('Choisir')}}</option>
+                                            {% for q in qualities %}
+                                                <option value="{{ q.code }}">{{ q.libelle }}</option>
+                                            {% endfor %}
+                                        {% endif %}
+                                    </select>
+                                </div>
+                            </div>
+                                <div class="w-1/2 p-2 mt-2 border-r border-gray-500">
+                                    <div class="mt-0">
+                                        <label for="adherent" class="form-label font-bold" placeholder="Max 40 caractères">{{_('Adherent_principal')}} <small class="ml-2" id="title">*</small></label>
+                                        {% if aliment %}
+                                            <input id="adherent" name="adherent" type="text" class="form-control w-full" value="{{ aliment.adherent_principal|default_if_none:"" }}" readonly required>
+                                        {% elif campagne_prospect %}
+                                            {% if campagne_prospect.prospect.qualite_beneficiaire.code == 'AD' %}
+                                                {% if campagne_prospect.prospect.nom and campagne_prospect.prospect.prenoms %}
+                                                    <input id="adherent" name="adherent" type="text" class="form-control w-full" value="{{ campagne_prospect.prospect.nom|default_if_none:"" }} {{ campagne_prospect.prospect.prenoms|default_if_none:"" }}" readonly required>
+                                                {% else %}
+                                                    <input id="adherent" name="adherent" type="text" class="form-control w-full" value="{{ campagne_prospect.prospect.email|default_if_none:"" }}" readonly required>
+                                                {% endif %}
+                                            {% else %}
+                                                <input id="adherent" name="adherent" type="text" class="form-control w-full" value="{{ campagne_prospect.prospect.adherent_principal|default_if_none:"" }}" readonly required>
+                                            {% endif %}
+                                        {% else %}
+                                            {% if adherent_principal %}
+                                                {% if adherent_principal.prospect.qualite_beneficiaire.code == 'AD' %}
+                                                    {% if adherent_principal.prospect.nom and adherent_principal.prospect.prenoms %}
+                                                        <input id="adherent" name="adherent" type="text" class="form-control w-full" value="{{ adherent_principal.prospect.nom|default_if_none:"" }} {{ adherent_principal.prospect.prenoms|default_if_none:"" }}" readonly required>
+                                                    {% else %}
+                                                        <input id="adherent" name="adherent" type="text" class="form-control w-full" value="{{ adherent_principal.prospect.email|default_if_none:"" }}" readonly required>
+                                                    {% endif %}
+                                                {% else %}
+                                                    <input id="adherent" name="adherent" type="text" class="form-control w-full" value="{{ adherent_principal.prospect.adherent_principal|default_if_none:"" }}" readonly required>
+                                                {% endif %}
+                                            {% endif %}
+                                        {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% comment %} COORDONNÉES {% endcomment %}
+                        <div class="w-full flex flex-col lg:flex-row border-b border-gray-500">
+                            <h1 class="text-lg lg:text-base font-normal p-5" id="title">
+                                {{_('COORDONNEES')}}
+                            </h1>
+                        </div>
+                        <div class="flex">
+                            <div class="w-1/2 p-2 mt-2 border-r border-gray-500">
+                                <div class="mt-0">
+                                    <label for="email" class="form-label font-bold">{{_('Email')}}</label>
+                                    {% if campagne_prospect %}
+                                        {% if campagne_prospect.prospect.qualite_beneficiaire.code == 'AD' %}
+                                            <input id="email" name="email" type="email" value="{{ campagne_prospect.prospect.email }}" class="form-control" readonly>
+                                        {% else %}
+                                            <input id="email" name="email" type="email" value="{{ campagne_prospect.prospect.email }}" class="form-control"
+                                                {% if campagne_prospect.prospect.email %}
+                                                    value="{{ campagne_prospect.prospect.email|default_if_none:"" }}"
+                                                {% endif %}>
+                                        {% endif %}
+                                    {% else %}
+                                        <input id="email" name="email" type="email" class="form-control" placeholder="example@gmail.com"
+                                            {% if campagne_prospect and campagne_prospect.prospect.email %}
+                                                value="{{ campagne_prospect.prospect.email|default_if_none:"" }}"
+                                            {% endif %}>
+                                    {% endif %}
+                                </div>
+                                <div class="mt-8">
+                                    <label for="ville" class="form-label font-bold">{{_('Ville')}}</label>
+                                    <input id="ville" name="ville" type="text" class="form-control w-full"
+                                        {% if campagne_prospect and campagne_prospect.prospect.ville %}
+                                            value="{{ campagne_prospect.prospect.ville|default_if_none:"" }}"
+                                        {% endif %}>
+                                </div>
+                                <div class="mt-8">
+                                    <label for="phoneInput" class="form-label font-bold">{{_('Telephone_mobile')}}</label><br>
+                                    <input name="tel_mobile" type="tel" id="phoneInput" class="form-control w-full" value="{% if campagne_prospect %}{{ campagne_prospect.prospect.telephone_mobile|default:'' }}{% endif %}" data-default-country="{% if country_code %}{{ country_code }}{% endif %}">
+                                </div>
+                            </div>
+                            <div class="w-1/2 p-2 mt-2 border-r border-gray-500">
+                                <div class="mt-0">
+                                    <label for="adresse" class="form-label font-bold">{{_('Adresse')}}</label>
+                                    <input id="adresse" name="adresse" type="text" class="form-control w-full"
+                                        {% if campagne_prospect and campagne_prospect.prospect.adresse %}
+                                            value="{{ campagne_prospect.prospect.adresse|default_if_none:"" }}"
+                                        {% endif %}>
+                                </div>
+                                <div class="mt-8">
+                                    <label for="code_postal" class="form-label font-bold">{{_('Code_postal')}}</label>
+                                    <input id="code_postal" name="code_postal" type="text" class="form-control w-full"
+                                        {% if campagne_prospect and campagne_prospect.prospect.code_postal %}
+                                            value="{{ campagne_prospect.prospect.code_postal|default_if_none:"" }}"
+                                        {% endif %}>
+                                </div>
+                                <div class="mt-8">
+                                    <label for="phoneInputFixe" class="form-label font-bold">{{_('Telephone_fixe')}}</label><br>
+                                    <input name="tel_fixe" type="tel" id="phoneInputFixe" class="form-control w-full" value="{% if campagne_prospect %}{{ campagne_prospect.prospect.telephone_fixe|default:'' }}{% endif %}" data-default-country="{% if country_code %}{{ country_code }}{% endif %}">
+                                </div>
+                                {% comment %} HIDDEN INPUT TO STORE AND GET PHONE NUMBERS {% endcomment %}
+                                <input type="hidden" name="selected_country_dial_code_mobile" id="selectedCountryDialCodeMobile" value="{% if campagne_prospect %}{{ campagne_prospect.prospect.civilite.pays.code }}{% endif %}">
+                                <input type="hidden" name="selected_country_dial_code_fixe" id="selectedCountryDialCodeFixe" value="{% if campagne_prospect %}{{ campagne_prospect.prospect.civilite.pays.code }}{% endif %}">
+                            </div>
+                        </div>
+                        {% comment %} SUBMIT {% endcomment %}
+                        <div class="mt-10 text-center">
+                            <button type="submit" name="enregistrer" class="btn btn-primary">
+                                {{_('VALIDER_L_ENREGISTREMENT')}}
+                                <i data-feather="save" class="ml-2 mb-2"></i>
+                            </button>
+                        </div>
+                    </form>
+                    {% comment %} FORM {% endcomment %}
+                </div>
+            </div>
+        </div>
+
+    {% comment %} JS {% endcomment %}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.12/css/intlTelInput.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.12/js/intlTelInput.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.12/js/utils.min.js"></script>
+    <script>
+        const phoneInput = document.querySelector("#phoneInput");
+        const phoneInputFixe = document.querySelector("#phoneInputFixe");
+
+        const itiMobile = window.intlTelInput(phoneInput, {
+            utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.12/js/utils.min.js",
+            initialCountry: phoneInput.getAttribute('data-default-country'), // Set default country code
+        });
+
+        const itiFixe = window.intlTelInput(phoneInputFixe, {
+            utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.12/js/utils.min.js",
+            initialCountry: phoneInputFixe.getAttribute('data-default-country'), // Set default country code
+        });
+
+        itiMobile.promise.then(() => {
+            const countryCodeMobile = (document.getElementById('selectedCountryDialCodeMobile').value || itiMobile.getSelectedCountryData().iso2);
+            itiMobile.setCountry(countryCodeMobile);
+        });
+
+        itiFixe.promise.then(() => {
+            const countryCodeFixe = (document.getElementById('selectedCountryDialCodeFixe').value || itiFixe.getSelectedCountryData().iso2);
+            itiFixe.setCountry(countryCodeFixe);
+        });
+
+        document.getElementById('selectedCountryDialCodeMobile').value = itiMobile.getSelectedCountryData().dialCode;
+        document.getElementById('selectedCountryDialCodeFixe').value = itiFixe.getSelectedCountryData().dialCode;
+
+        phoneInput.addEventListener("countrychange", function () {
+            const countryCodeMobile = itiMobile.getSelectedCountryData().iso2;
+            document.getElementById('selectedCountryDialCodeMobile').value = itiMobile.getSelectedCountryData().dialCode;
+        });
+
+        phoneInputFixe.addEventListener("countrychange", function () {
+            const countryCodeFixe = itiFixe.getSelectedCountryData().iso2;
+            document.getElementById('selectedCountryDialCodeFixe').value = itiFixe.getSelectedCountryData().dialCode;
+        });
+    </script>
+
+{% endblock %}

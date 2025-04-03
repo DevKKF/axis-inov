@@ -1,0 +1,72 @@
+{% extends "admin/base_site.html" %}
+{% block extrastyle %} {% endblock %}
+{% block content %}
+{% load my_filters %}
+<div class="col-12 col-md-12 order-2 order-md-1">
+  <div class="card">
+    <div class="card-header">
+        <h3 class="card-title"><b>{{_("ENCAISSEMENT DE COMMISSIONS DE") }} {% if type == "courtage" %}{{_("COURTAGE") }}{% else %}{{_("GESTION") }}{% endif %}</b></h3>
+    </div>
+    <div class="card-body">
+        <div class="pull-right mb-2">
+            <span id="btnOpenDialogAddEncaissementCommisionCourtGest" class="btn btn-sm btn-primary mb-1" data-toggle="modal" data-href="{% url 'add_encaissement_com_court_gest' type %}"><i class="fas fa-money-bill"></i> {{_("Encaisser des commissions de") }} {% if type == "courtage" %}{{_("courtage") }}{% else %}{{_("gestion") }}{% endif %}</span>
+        </div>
+      <div id="example1_wrapper" class="dataTables_wrapper dt-bootstrap4">
+        <div class="row">
+          <div class="col-12 col-md-12 col-sm-12">
+              <table class="table table-bordered table-striped dataTable dtr-inline" id="table_reglements_compagnies">
+                  <thead>
+                      <tr>
+                        <th scope="col" width="4%"></th>
+                        <th scope="col">{{_("Assureur") }}</th>
+                        <th scope="col">{{_("Montant total reglé client") }}</th>
+                        {% if type == "courtage" %}
+                            <th scope="col">{{_("Total com courtage") }}</th>
+                            <th scope="col">{{_("Restant com courtage") }}</th>
+                        {% else %}
+                            <th scope="col">{{_("Total com gestion") }}</th>
+                            <th scope="col">{{_("Restant com gestion") }}</th>
+                        {% endif %}
+                        <th scope="col">{{_("Nbre lignes") }}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                        {% for compagnie in compagnies %}
+                          <tr class="btnOpenDialogDetailCompagnieEncaissementCourtGest" data-compagnie="{{compagnie.id}}">
+                            <td><span class="badge badge-info"><i class="fa fa-eye"></i></span></td>
+                            <td>{{ compagnie.nom|default_if_none:"" }}</td>
+                            <td class="text-right">{{   compagnie.sum_reglements|money_field }}</td>
+                            {% if type == "courtage" %}
+                                <td class="text-right">{{ compagnie.total_montant_com_courtage|money_field }}</td>
+                                <td class="text-right">{{ compagnie.solde_montant_com_courtage|money_field }}</td>
+                                <td class="text-center">{{ compagnie.nombre_reglements_a_recevoir_com_court|money_field }}</td>
+                            {% else %}
+                                <td class="text-right">{{ compagnie.total_montant_com_gestion|money_field }}</td>
+                                <td class="text-right">{{ compagnie.solde_montant_com_gestion|money_field }}</td>
+                                <td class="text-center">{{ compagnie.nombre_reglements_a_recevoir_com_gest|money_field }}</td>
+                            {% endif %}
+                          </tr>
+                        {% endfor %}
+                    </tbody>
+              </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+
+{% block extrajs %}
+<script>
+    $(document).ready(function() {
+        $('#garantie').removeClass('o-bg-primary');
+        $('#garantie').addClass('o-active');
+    } );
+</script>
+
+{% include 'modal_add_encaissement_com_court_gest.html' %}
+
+{% endblock %}

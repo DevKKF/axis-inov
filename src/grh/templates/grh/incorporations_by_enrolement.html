@@ -1,0 +1,229 @@
+{% extends "grh/layouts/base.html" %}
+{% load static %}
+{% block title %}{{_('INSCRIPTIONS_A_VALIDER')}}{% endblock %}
+
+{% block content %}
+
+    <style>
+        #title {
+            color: #B7482B;
+        }
+        #link {
+            color: #0000FF;
+        }
+        #IncorpTab_info{
+            text-align: center;
+        }
+        #hiddenSubmitButton{
+            display: none;
+        }
+
+        .modal {
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+
+    </style>
+
+    <div class="flex items-start pt-5 intro-y">
+        <div class="w-full flex flex-col lg:flex-row items-center">
+            <a href="{% url 'grh.details_campagne' campagne.id %}">
+                <button class="btn btn-primary-soft flex items-center w-30 pd-5">
+                    <i data-feather="corner-up-left" class="report-box__icon text-primary mr-2"></i>
+                    {{_('RETOUR')}}
+                </button>
+            </a>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-12 gap-6 mt-8">
+        <div class="intro-y col-span-12 md:col-span-12 lg:col-span-12">
+            <div class="box">
+                <div class="flex items-start px-5 pt-5">
+                    <div class="w-full flex flex-col lg:flex-row items-center justify-center border-b border-gray-500">
+                        <h1 class="text-xl lg:text-lg font-medium mb-3 mr-5" id="title">
+                            {{_('INCORPORATIONS_A_VALIDER')}}
+                        </h1>
+                    </div>
+                </div>
+                <div class="flex flex-wrap -mx-1 mb-6 ">
+                    {% if incorporations %}
+                        <form method="post" enctype="multipart/form-data" action="{% url 'grh.incorporations_prospect' campagne.id prospect.id %}" class="preview" id="form_incorp" onsubmit="event.preventDefault();">
+                            {% csrf_token %}
+                            <div class="flex flex-wrap -mx-1 mb-6 mt-5">
+                                {% for i in incorporations %}
+                                <div class="w-full sm:w-1/2 md:w-1/2 lg:w-1/2 xl:w-1/2 px-4 mb-6">
+                                    <div class="box border border-slate-200/60 dark:border-darkmode-400">
+                                        <div class="flex items-center justify-center border-b border-slate-200/60 dark:border-darkmode-400 px-5 py-4">
+                                            {% if i.prospect.photo %}
+                                            <div class="mx-auto w-20 h-20 flex-none">
+                                                <img src="{{ MEDIA_URL }}{{ i.prospect.photo }}" class="rounded-full w-full h-full" alt="Prospect Photo">
+                                            </div>
+                                            {% else %}
+                                            <div class="alert w-full alert-primary-soft show flex items-center mb-5 mx-auto inline-block justify-center">
+                                                <i data-feather="alert-circle" class="report-box__icon text-primary mr-2"></i>
+                                                {{_('AUCUNE_PHOTO')}}
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                        <div class="mt-1">
+                                            <div class="flex">
+                                                <div class="w-1/2 p-2 mt-2 flex border-r border-gray-500">
+                                                    <div class="w-1/2 p-2 mt-2">
+                                                        <input type="text" class="mb-2 text-sm font-bold border-transparent rounded-lg w-full" value="Nom & Prénoms" readonly />
+                                                        <input type="text" class="mb-2 text-sm font-bold border-transparent rounded-lg w-full" value="Date de naissance" readonly />
+                                                        <input type="text" class="mb-2 text-sm font-bold border-transparent rounded-lg w-full" value="Sexe" readonly />
+                                                        <input type="text" class="mb-2 text-sm font-bold border-transparent rounded-lg w-full" value="Police" readonly />
+                                                    </div>
+                                                    <div class="w-1/2 p-2 mt-2">
+                                                        <input type="text" class="mb-2 text-sm mb-2 rounded-lg w-full" value="{{ i.prospect.nom|default_if_none:"" }} {{ i.prospect.prenoms|default_if_none:"" }}" readonly />
+                                                        <input type="text" class="mb-2 text-sm mb-2 rounded-lg w-full" value="{{ i.prospect.date_naissance|default_if_none:""|date:"d/m/Y" }}" readonly />
+                                                        <input type="text" class="mb-2 text-sm mb-2 rounded-lg w-full" value="{{ i.prospect.genre|default_if_none:"" }}" readonly />
+                                                        <input type="text" class="mb-2 text-sm mb-2 rounded-lg w-full" value="{{ i.prospect.police.numero|default_if_none:"" }}" readonly />
+                                                    </div>
+                                                </div>
+                                                <div class="w-1/2 p-2 mt-2 flex">
+                                                    <div class="w-1/2 p-2 mt-2">
+                                                        <input type="text" class="mb-2 text-sm font-bold border-transparent rounded-lg w-full" value="Email" readonly />
+                                                        <input type="text" class="mb-2 text-sm font-bold border-transparent rounded-lg w-full" value="Qualité bénéficiaire" readonly />
+                                                        <input type="text" class="mb-2 text-sm font-bold border-transparent rounded-lg w-full" value="Adhérent principal" readonly />
+                                                        <input type="text" class="mb-2 text-sm font-bold border-transparent rounded-lg w-full" value="Formule" readonly />
+                                                    </div>
+                                                    <div class="w-1/2 p-2 mt-2">
+                                                        <input type="text" class="mb-2 text-sm rounded-lg w-full" value="{{ i.prospect.email|default_if_none:"" }}" readonly />
+                                                        <input type="text" class="mb-2 text-sm rounded-lg w-full" value="{{ i.prospect.qualite_beneficiaire|default_if_none:"" }}" readonly />
+                                                        <input type="text" class="mb-2 text-sm rounded-lg w-full" value="{{ i.prospect.adherent_principal|default_if_none:"" }}" readonly />
+                                                        <input type="text" class="mb-2 text-sm mb-2 rounded-lg w-full" value="{{ i.prospect.formulegarantie.libelle|default_if_none:"" }}" readonly />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="text-center p-5 border-t border-slate-200/60 dark:border-darkmode-400">
+                                                {% if i.prospect.aliment_adherent_principal or i.prospect.adherent_principal.aliment or i.prospect.qualite_beneficiaire.code == 'AD' %}
+                                                    <button class="btn btn-primary py-1 px-2 mr-2 programmatically-show-modal" data-toggle="modal" data-valid-tag="valider_{{ i.prospect.id }}">
+                                                        {{_('VALIDER')}}<i data-feather="plus-circle" class="ml-3"></i>
+                                                    </button>
+                                                {% endif %}
+                                                <button id="programmatically1-show-modal" class="btn btn-outline-secondary py-1 px-2 reject-button" name="rejeter_{{ i.prospect.id }}" data-qualite-beneficiaire-code="{{ i.prospect.qualite_beneficiaire.code }}">
+                                                    {{_('REJETER')}}<i data-feather="slash" class="ml-3"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% if forloop.counter|divisibleby:2 %}
+                                </div><div class="flex flex-wrap -mx-2 mb-6">
+                                {% endif %}
+                            {% endfor %}
+                            </div>
+                            {% if incorporations|length > 1 %}
+                            <div class="mt-5 text-center pb-4">
+                                <button name="valider_tous" class="btn btn-primary w-auto mx-auto programmatically-show-modal" data-toggle="modal" data-valid-tag="valider_tous">
+                                    {{_('VALIDER_TOUS')}}
+                                    <i data-feather="users" class="ml-3 mb-3"></i>
+                                    <i data-feather="plus-circle" class="ml-3 mb-3"></i>
+                                </button>
+
+                            </div>
+                            {% endif %}
+<!--                            <button type="submit" id="hiddenSubmitButton"></button>-->
+                            <input name="date_affiliation" style="display:none" id="date_affiliation" />
+                            <input id="valide_option" name="valide_option" style="display:none"/>
+
+
+                        </form>
+                    {% else %}
+                        <div class="alert w-auto alert-primary-soft show flex items-center mt-10 mb-10 mx-auto inline-block justify-center">
+                            <i data-feather="alert-circle" class="report-box__icon text-primary mr-2"></i>
+                            {{_('AUCUNE_DEMANDE_D_INCORPORATIONS')}}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+                    <div class="box mt-5">
+                                <div id="programmatically-modal" class="modal" tabindex="-1" aria-hidden="true">
+                                    <div class="modal-dialog w-full modal-lg">
+                                        <div class="modal-content p-8">
+                                            <div class="w-full lg:flex-row items-center justify-center">
+                                                <div style="display:none;" class="alert alert-primary-soft show flex items-center mx-auto inline-block justify-center p-2">
+                                                    <i data-feather="alert-triangle" class="mr-2"></i>
+                                                    <h1> {{_('VEUILLEZ_RENSEIGNER_LA_DATE_D_ENTREE')}}</h1>
+                                                </div>
+                                                <div class="mt-2 alert alert-secondary-soft show flex items-center mx-auto inline-block justify-center p-4">
+
+                                                    <div class="w-1/2 p-2">
+                                                        <label for="date_aff" class="form-label font-bold">{{_('Date_d_entree')}} <small class="ml-2">*</small></label>
+                                                        <input class="form-control mt-2 w-full" type="date" id="date_aff" name="date_aff" min="{{ today }}" required>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="mt-10 text-center">
+                                                 <button type="submit" class="btn btn-outline-primary">
+                                                    {{_('ANNULER')}}
+                                                    <i data-feather="thumbs-down" class="ml-2 mb-2"></i>
+                                                </button>
+                                                <button type="submit" class="btn btn-primary mr-10">
+                                                    {{_('CONFIRMER')}}
+                                                    <i data-feather="thumbs-up" class="ml-2 mb-2"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            var form = document.getElementById('form_incorp');
+            var rejectButtons = document.querySelectorAll('.reject-button');
+            var elModal = document.getElementById('programmatically-modal');
+            const modal = tailwind.Modal.getOrCreateInstance(elModal);
+            //var valideToutBtn = document.querySelector('.programmatically-show-modal');
+            var dateAff = document.getElementById('date_aff');
+            var confirmBtn = document.querySelector('#programmatically-modal .btn-primary');
+            var cancelBtn = document.querySelector('#programmatically-modal .btn-outline-primary');
+            var hiddenSubmitButton = document.getElementById('hiddenSubmitButton');
+            var dateAffiliation = document.getElementById('date_affiliation');
+            var valideOption = document.getElementById('valide_option');
+
+            rejectButtons.forEach(function (button) {
+                button.addEventListener('click', function (e) {
+                    var qualiteBeneficiaireCode = button.getAttribute('data-qualite-beneficiaire-code');
+                    if (qualiteBeneficiaireCode === 'AD') {
+                        e.preventDefault();
+                        modal.classList.toggle('show');
+                        hiddenSubmitButton.setAttribute('data-reject-prospect-id', button.getAttribute('name').split('_')[1]);
+                    }
+                });
+            });
+
+            $('.programmatically-show-modal').on('click', function (e) {
+                var validTag = $(this).data('valid-tag');
+                valideOption.setAttribute('value',validTag);
+                //alert(validTag);
+                modal.show();
+            });
+
+            confirmBtn.addEventListener('click', function () {
+                dateAffiliation.setAttribute('value',dateAff.value);
+                if(dateAff.value === ''){
+                    $('.alert').show();
+                    $('#date_aff').addClass('border border-danger');
+                    return;
+                }else{
+                // hiddenSubmitButton.click();
+                 form.submit();
+                }
+            });
+
+            cancelBtn.addEventListener('click', function () {
+                modal.hide();
+            });
+        });
+    </script>
+
+
+{% endblock %}

@@ -1,0 +1,59 @@
+{% load i18n static jazzmin admin_urls %}
+<style type="text/css">
+
+</style>
+<div class="modal modal-choose_prestataire fade" id="modal_choose_prestataire" data-backdrop="static" data-keyboard="false" aria-hidden="true" style="display: none">
+	<div class="modal-dialog modal-l">
+		<div class="modal-content">
+			<form enctype="multipart/form-data" id="form_choose_prestataire" action="" method="post" target="_blank">
+				{% csrf_token %}
+				<div class="modal-header">
+					<h4 class="modal-title">{{_('CHOIX_DU_PRESTATAIRE_EXECUTAN')}}T</h4>
+					<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+				</div>
+				<div class="modal-body">
+					<div class="alert  alert-dismissible fade show hidden" role="alert">
+						<span class="message">{{_('TRAITEMENT_EN_COURS')}}</span>
+					</div>
+					<div class="col-md-12 offset-0">
+						<div class="row">
+							<div class="col-md-12" style="border-left:0px;margin-left:-5px;padding-left:15px;">
+								<div class="form-group row">
+									<label class="col-sm-5 col-form-label">{{_('Prestataire')}} <span class="required">*</span></label>
+									<div class="col-sm-7">
+										<select class="form-control tags-multiple" id="prestataire_executant_selected" required style="border:2px solid var(--colorJauneOlea);">
+											<option value="">{{_('Choisir')}}</option>
+											{% for pe in prestataires %}
+											<option value="{{ pe.id }}" data-type_prestataire_code="{{ pe.type_prestataire.code }}">{{ pe.name }} ({{ pe.ville|default_if_none:'' }})</option>
+											{% endfor %}
+										</select>
+									</div>
+								</div>
+								<div class="form-group row">
+									<label class="col-sm-5 col-form-label">{{_('Reference_facture ')}}<span class="required"></span></label>
+									<div class="col-sm-7">
+										<input type="text" class="form-control" name="reference_facture_origin" id="reference_facture_origin">
+									</div>
+								</div>
+
+								<div class="form-group row">
+									<label class="col-sm-5 col-form-label">{{_('Date_reception_facture ')}}<span class="required"></span></label>
+									<div class="col-sm-7">
+										<input type="date" class="form-control" name="date_reception_facture_origin" id="date_reception_facture_origin" max="{{ today|date:'Y-m-d' }}">
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="col-md-12 offset-0 error_box_aliment_not_found text-center text-red" style="display:none;font-weight: bold;font-size: 30px;"></div>
+				</div>
+				<div class="modal-footer justify-content-between">
+					<button type="button" class="btn btn-default" data-dismiss="modal">{{_('Retour')}}</button>
+					<span id="loading_gif" style="display:none;color:#BB4127;">{{_('Chargement_en_cours')}}... <img src="{% static 'admin_custom/ripple-loader.svg' %}" style="width:50px;"></span>
+					<button type="button" id="btn_confirm_selected_prestataire" class="btn o-bg-primary">{{_('Continuer')}}</button>
+				</div>
+			</form>
+			<div class="form_sinistre_overlay"><div style="margin:auto;padding:20px 0;color:white;text-align:center;">{{_('TRAITEMENT_EN_COURS')}} ...</div></div>
+		</div>
+	</div>
+</div>

@@ -1,0 +1,157 @@
+{% extends "grh/layouts/base.html" %}
+{% load static %}
+{% load custom_filters %}
+{% block title %}{{_('FICHE_QUITTANCE')}}{% endblock %}
+
+{% block content %}
+
+    <style>
+        #title {
+            color: #B7482B;
+        }
+        #link {
+            color: #0000FF;
+        }
+        #status {
+            padding: 5px;
+            border-radius: 5px;
+        }
+    </style>
+
+    <div class="intro-y flex items-start pt-5">
+        <div class="w-full flex flex-col lg:flex-row items-center">
+            <a href="{% url 'grh.police_overview' police.id %}">
+                <button class="btn btn-primary-soft flex items-center w-30 pd-5">
+                    <i data-feather="corner-up-left" class="report-box__icon text-primary mr-2"></i>
+                    {{_('RETOUR')}}
+                </button>
+            </a>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-12 gap-6 mt-8">
+        <div class="intro-y col-span-12 md:col-span-12 lg:col-span-12">
+            <div class="box">
+                <div class="flex items-start px-5 pt-5">
+                    <div class="w-full flex flex-col lg:flex-row items-center">
+                        <h1 class="text-xl lg:text-lg font-medium mb-3 mr-5" id="title">
+                            {{_('POLICE')}}
+                        </h1>
+                    </div>
+                </div>
+                <div class="text-center p-5 border-t border-slate-200/60 dark:border-darkmode-400">
+                    <div class="intro-y col-span-12 overflow-auto lg:overflow-visible">
+                        <table class="table table-report -mt-2">
+                            <thead>
+                                <tr>
+                                    <th class="whitespace-nowrap">{{_('Nom_assure')}}</th>
+                                    <th class="whitespace-nowrap">{{_('Assureur')}}</th>
+                                    <th class="whitespace-nowrap">{{_('Reference_police')}}</th>
+                                    <th class="whitespace-nowrap">{{_('Statut')}}</th>
+                                    <th class="whitespace-nowrap text-center">{{_('Actions')}}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="intro-x">
+                                    <td class="w-auto">{{ police.client.nom|default_if_none:"" }}</td>
+                                    <td class="w-auto">{{ police.compagnie|default_if_none:"" }}</td>
+                                    <td class="w-auto">{{ police.numero|default_if_none:"" }}</td>
+                                    <td class="w-auto">
+                                        <div class="flex items justify-center" id="status" 
+                                        style="background-color: {% if police.statut == 'ACTIF' %}#007500;color:#FFFFFF;font-weight: bold;
+                                        {% elif police.statut == 'INACTIF' %}#DC3545;color:#FFFFFF;font-weight: bold;
+                                        {% elif police.statut == 'ANNULE' %}#C5C5C5;color:#000000;font-weight: bold;
+                                        {% endif %}">
+                                            {{ police.statut|default_if_none:"" }}
+                                        </div>
+                                    </td>
+                                    <td class="table-report__action w-auto">
+                                        <div class="flex justify-center items-center">
+                                            <a href="{% url 'grh.police_overview' police.id %}"><i data-feather="eye" id="title"></i></a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="intro-y col-span-12 md:col-span-12 lg:col-span-12 mt-8">
+        <div class="box">
+            <div class="flex items-start px-5 pt-5">
+                <div class="w-full flex flex-col lg:flex-row items-center">
+                    <h1 class="text-xl lg:text-lg font-medium mb-3 mr-5" id="title">
+                        {{_('FICHE_QUITTANCE')}}
+                    </h1>
+                </div>
+            </div>
+            <div class="p-5" id="striped-rows-table">
+                <div class="preview">
+                    <div class="overflow-x-auto">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th class="whitespace-nowrap"></th>
+                                    <th class="whitespace-nowrap"></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td class="font-bold">{{_('Reference')}}</td>
+                                    <td class="font-normal">{{ quittance.numero|default_if_none:"" }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="font-bold">{{_('Emise_le')}}</td>
+                                    <td class="font-normal">{{ quittance.date_emission|default_if_none:""|date:"d/m/Y" }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="font-bold">{{_('Debut_periode')}}</td>
+                                    <td class="font-normal">{{ quittance.date_debut|default_if_none:""|date:"d/m/Y" }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="font-bold">{{_('Fin_periode')}}</td>
+                                    <td class="font-normal">{{ quittance.date_fin|default_if_none:""|date:"d/m/Y" }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="font-bold">{{_('Type_quittance')}}</td>
+                                    <td class="font-normal">{{ quittance.type_quittance|default_if_none:"" }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="font-bold">{{_('Statut')}}</td>
+                                    <td class="font-normal">
+                                        <div class="flex items w-20 justify-center" id="status" 
+                                        style="background-color: {% if quittance.statut == 'PAYE' %}#007500;color:#FFFFFF;font-weight: bold;
+                                        {% elif quittance.statut == 'IMPAYE' %}#DC3545;color:#FFFFFF;font-weight: bold;
+                                        {% endif %}">
+                                            {{ quittance.statut|default_if_none:"" }}
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="font-bold">{{_('Prime_Nette')}}</td>
+                                    <td class="font-normal">{{ quittance.prime_ht|default_if_none:""|format_amount }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="font-bold">{{_('Taxes')}}</td>
+                                    <td class="font-normal">{{ quittance.taxe|default_if_none:""|format_amount }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="font-bold">{{_('Totale_TTC')}}</td>
+                                    <td class="font-normal">{{ quittance.prime_ttc|default_if_none:""|format_amount }}</td>
+                                </tr>
+                                <tr>
+                                    <td class="font-bold">{{_('Devise')}}</td>
+                                    <td class="font-normal">{{ quittance.devise|default_if_none:"" }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

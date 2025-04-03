@@ -1,0 +1,33 @@
+{% load my_filters %}
+<table class="table table-bordered table-striped dataTable0 dtr-inline" id="table_reglements_a_reverser_compagnie">
+  <thead>
+    <tr>
+      <th scope="col"></th>
+      <th scope="col">{{_("N° Reg client")}}</th>
+      <th scope="col">{{_("N° Quittance")}}</th>
+      <th scope="col">{{_("Client")}}</th>
+      <th scope="col">{{_("Prime totale")}}</th>
+      <th scope="col">{{_("Mt Reg clt")}}</th>
+      <th scope="col">{{_("Mt CIE")}}</th>
+      <th scope="col">{{_("Com court")}}</th>
+      <th scope="col">{{_("Retro Apport")}}</th>
+      <th scope="col">{{_("Date Reg clt")}}</th>
+    </tr>
+  </thead>
+  <tbody>
+  {% for reglement in reglements_compagnies %}
+    <tr>
+      <td><input type="checkbox" class="checkbox_quittance_a_regler" name="reglement_selectionne" value="{{reglement.id}}" data-reglement_montant="{{reglement.montant}}"  data-reglement_montant_com_courtage="{{reglement.montant_com_courtage}}"  data-reglement_montant_com_gestion="{{reglement.montant_com_gestion}}" data-reglement_montant_compagnie="{{reglement.montant_compagnie}}"/></td>
+      <td>{{ reglement.numero|default_if_none:"" }}</td>
+      <td>{{ reglement.quittance.numero|default_if_none:"" }}</td>
+      <td>{{ reglement.quittance.police.client.nom|default_if_none:"" }}</td>
+      <td class="text-right">{{ reglement.quittance.prime_ttc|money_field }}</td>
+      <td class="text-right">{{ reglement.montant|money_field }}</td>
+      <td class="text-right">{{ reglement.montant_compagnie|money_field }}</td>
+      <td class="text-right">{{ reglement.montant_com_courtage|money_field }}</td>
+      <td class="text-right">{{ reglement.montant_com_intermediaire|money_field }}</td>
+      <td>{{ reglement.date_paiement|date:'d/m/Y'|default_if_none:"" }}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>

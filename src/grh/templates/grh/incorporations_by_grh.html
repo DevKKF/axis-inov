@@ -1,0 +1,146 @@
+{% load static %}
+<style>
+        .zoomed {
+            transform: scale(0.8);
+            transition: transform 0.5s ease;
+        }
+        .custom-background:before {
+            background: #F8AF3C;
+            opacity: 0.5;
+        }
+        .custom-background a .box {
+            background: #F8AF3C;
+            color: #000000;
+        }
+        #title {
+            color: #B7482B;
+        }
+        #link {
+            color: #0000FF;
+        }
+        #status {
+            color: #FFFFFF;
+            padding: 5px;
+            border-radius: 5px;
+        }
+        .dataTables_length select {
+            width: auto;
+            display: inline-block;
+            padding: 6px 12px;
+            margin-bottom: 0;
+            font-size: 14px;
+            line-height: 1.42857143;
+            color: #555;
+            vertical-align: middle;
+            background-color: #fff;
+            background-image: none;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+            transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
+        }
+        .dataTables_info{
+            text-align: center;
+            padding-bottom: 10px;
+        }
+
+
+        .title{
+            color: #B7482B;
+        }
+        #link{
+            color: #0000FF;
+        }
+        #status{
+            padding: 5px;
+            border-radius: 5px;
+            color: #fff;
+        }
+
+        .status{
+            padding: 5px;
+            border-radius: 5px;
+            background-color: #6c757d;
+            color: #fff;
+        }
+        .status-inactif{
+            background-color: #DC3545;
+            color: #fff;
+        }
+        .status-suspendu{
+            background-color: #ffc107;
+            color: #fff;
+        }
+        .status-encours{
+            background-color: #F8AF3C;
+            color: #fff;
+        }
+        .status-actif{
+            background-color: #007500;
+            color: #fff;
+        }
+
+    </style>
+    <div class="intro-y col-span-12 md:col-span-12 lg:col-span-12 mt-5">
+        <div class="box">
+            <div class="flex flex-col lg:flex-row items-start justify-between px-5 pt-5">
+                <div class="w-full flex flex-col lg:flex-row items-start lg:items-center border-b border-gray-500">
+                    <h1 class="text-xl lg:text-lg font-medium mb-3 lg:mb-0 lg:mr-3" id="title">{{_('DEMANDES_EN_ATTENTE_DE_VALIDATION')}}</h1>
+                </div>
+
+            {% if etat_police == "Résilié" %}
+                <button class="btn btn-primary-soft w-auto lg:absolute lg:right-0 mt-5 lg:mt-0 mr-5" disabled>
+                    <i data-feather="user-plus" class="mr-2 mb-1"></i>
+                    {{_('NOUVELLE_DEMANDE_D_INCORPORATION')}}
+                </button>
+            {% else %}
+            <a class="w-auto lg:absolute lg:right-0 mt-5 lg:mt-0 mr-5" href="{% url 'grh.formulaire_ajouter_beneficiaire_police' police.id %}">
+                <button class="btn btn-primary-soft w-full ml-4">
+                    <i data-feather="plus" class="mr-2 mb-1"></i>
+                    {{_('NOUVELLE_DEMANDE_D_INCORPORATION')}}
+                </button>
+            </a>
+            {% endif %}
+
+            </div>
+            <div class="grid grid-cols-12 gap-6 mt-1 p-8">
+                <div class="intro-y col-span-12 overflow-auto">
+                    {% if prospects or aliments %}
+                    <table class="table table-report -mt-2 datatable">
+                        <thead>
+                            <tr>
+                                <th class="whitespace-nowrap">{{_('Nom')}}</th>
+                                <th class="whitespace-nowrap">{{_('Prenoms')}}</th>
+                                <th class="whitespace-nowrap">{{_('Sexe')}}</th>
+                                <th class="whitespace-nowrap">{{_('Date_de_naissance')}}</th>
+                                <th class="whitespace-nowrap">{{_('Email')}}</th>
+                                <th class="whitespace-nowrap">{{_('Lien_de_parente')}}</th>
+                                <th class="whitespace-nowrap">{{_('Adherent_principal')}}</th>
+                                <th class="whitespace-nowrap">{{_('Statut')}}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for aliment in aliments %}
+                            <tr class="intro-x">
+                                <td class="w-auto">{{ aliment.nom|default_if_none:"" }}</td>
+                                <td class="w-auto">{{ aliment.prenoms|default_if_none:""}}</td>
+                                <td class="w-auto">{{ aliment.genre|default_if_none:""}}</td>
+                                <td class="w-auto">{{ aliment.date_naissance|default_if_none:""|date:"d/m/Y" }}</td>
+                                <td class="w-auto">{{ aliment.email|default_if_none:""}}</td>
+                                <td class="w-auto">{{ aliment.qualite_beneficiaire|default_if_none:""}}</td>
+                                <td class="w-auto">{{ aliment.adherent_principal|default_if_none:""}}</td>
+                                <td class="w-auto"><div class="flex items justify-center status status-{{ aliment.etat_beneficiaire.lower|default_if_none:'' }}">{{ aliment.etat_beneficiaire|default_if_none:"" }}</div></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                    <div class="alert alert-primary-soft show flex items-center mb-5 mx-auto inline-block justify-center">
+                        <i data-feather="info" class="mr-2"></i>
+                        {{_('AUCUNE_DONNEE')}}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>

@@ -1,0 +1,611 @@
+{% extends "admin/base_site.html" %}
+{% load my_filters %}
+{% load static %}
+{% block extrastyle %} {% endblock %}
+{% block content %}
+
+<div class="col-12 col-md-12 order-2 order-md-1">
+  <div class="card o-bg-primary">
+    <div class="card-header">
+        <h3 class="card-title">
+          <span class="back_icon">
+            {% if request.META.HTTP_REFERER %}
+            <a href="{{ request.META.HTTP_REFERER }}" class="badge btn-sm btn-default btn-retour" style="color:black;font-weight:normal;" title="Retour à la liste des prises en charges"><i class="fas fa-arrow-left"></i> {{_('Retour')}}</a>
+            {% endif %}
+          </span>
+          <span class="the_title" style="margin-left:10px;font-weight:bold;">
+            {{_('FACTURE')}} 
+            {% if bordereau.type_remboursement.code == "RD" %}
+                 {{_('ADHERENT')}}
+            {% elif bordereau.type_remboursement.code == "TP" %}
+                {{_('PRESTATAIRE')}}
+            {% endif %}
+            {{_('Numero')}} {{ bordereau.numero }}
+          </span>
+        </h3>
+    </div>
+  </div>
+  <div class="row">
+
+    <div class="col-sm-12">
+    <div class="row">
+      <div class="col-sm-2">
+        <div class="card-avatar mx-auto mb-4 pl-4" >
+          <center>
+            {% if bordereau.statut == "PAYE" %}
+              <a {% if bordereau.fichier %} href="{{ bordereau_payes.fichier.url }}" {% endif %}>
+                <!--<i class="fas fa-file-download img-fluid" style="font-size:64px;border:0px solid orange;border-radius:0px;"></i>-->
+                <img src="{% static '../media/downloader-pdf.png' %}" class="img-fluid" style="width:64px;">
+                <br><small><u>{{_('Bordereau_payes')}}</u></small>
+              </a>
+            {% else %}
+              <a {% if bordereau.fichier %} href="{{ bordereau.fichier.url }}" {% endif %}>
+                <!--<i class="fas fa-file-download img-fluid" style="font-size:64px;border:0px solid orange;border-radius:0px;"></i>-->
+                <img src="{% static '../media/downloader-pdf.png' %}" class="img-fluid" style="width:64px;">
+                <br><small><u>{{_('Telecharger_le_bordereau')}}</u></small>
+              </a>
+            {% endif %}
+          </center>
+        </div>
+      </div>
+      <div class="col-sm-10">
+      <div class="">
+        <!--div class="card-header">
+          <h5 class="card-title">INFORMATIONS PERSONNELLES</h5>
+        </div-->
+        <div class="card-body mt-0 pt-0">
+          <div class="row">
+            <div class="col-sm-6">
+              <div class="form-groupn mb-2 row">
+                <div class="col-sm-6">{{_('Periode_comptable')}} :</div>
+                <div class="col-sm-6">
+                  <span class=" col-sm-12 text-bold">{{ bordereau.periode_comptable|default_if_none:"" }}</span>
+                </div>
+              </div>
+              <div class="form-groupn mb-2 row">
+                <div class="col-sm-6">{{_('Date_de_generation')}} :</div>
+                <div class="col-sm-6">
+                  <span class=" col-sm-12 text-bold">{{ bordereau.created_at|date:"d/m/Y H:i:s" }}</span>
+                </div>
+              </div>
+              <div class="form-groupn mb-2 row">
+                <div class="col-sm-6">{{_('Prestataire')}} :</div>
+                <div class="col-sm-6">
+                  <span class="col-sm-12 text-bold">{{ bordereau.prestataire|default_if_none:"" }}</span>
+                </div>
+              </div>
+              <div class="form-groupn mb-2 row">
+                <div class="col-sm-6">{{_('Genere_par')}} :<span class="required"></span></div>
+                <div class="col-sm-6">
+                  <span class="text-bold col-sm-12">{{ bordereau.created_by }}</span>
+                </div>
+              </div>
+
+            </div>
+            {% comment %} <div class="vl"></div> {% endcomment %}
+            <div class="col-sm-6">
+              <div class="form-groupn mb-2 row">
+                <div class="col-sm-6">{{_('Statut')}} :</div>
+                <div class="col-sm-6">
+                  <span class="text-bold badge badge-{{bordereau.statut|default_if_none:''|slugify}}">{{ bordereau.statut }}</span>
+                </div>
+              </div>
+              <div class="form-groupn mb-2 row">
+                <div class="col-sm-6">{{_('Nombre_de_lignes')}}</div>
+                <div class="col-sm-6">
+                  <span class="col-sm-12 text-bold">{{ liste_sinistres_bordereau|length }}</span>
+                </div>
+              </div>
+              {% if request.user.is_prestataire %}
+              <div class="form-groupn mb-2 row">
+                <div class="col-sm-6">{{_('Total_net_a_payer')}}:</div>
+                <div class="col-sm-6">
+                  <span class="text-bold col-sm-8 badge badge-warning" style="font-size:18px;color:white;background:#F8AF3C;">{{ bordereau.net_a_payer|money_field|default_if_none:"0" }}</span>
+                </div>
+              </div>
+
+              {% else %}
+              <div class="form-groupn mb-2 row">
+                <div class="col-sm-6">{{_('Base_de_remboursement')}}: </div>
+                <div class="col-sm-6">
+                  <span class="text-bold col-sm-8 badge badge-warning" style="font-size:18px;color:white;background:#F8AF3C;">{{ montant_remb_total|money_field|default_if_none:"0" }}</span>
+                </div>
+              </div>
+              <div class="form-groupn mb-2 row">
+                <div class="col-sm-6">{{_('Rejet')}}: </div>
+                <div class="col-sm-6">
+                  <span class="text-bold col-sm-8 badge badge-secondary" style="font-size:18px;color:white;">{{ montant_rejet_total|money_field|default_if_none:"0" }}</span>
+                </div>
+              </div>
+              <div class="form-groupn mb-2 row">
+                <div class="col-sm-6">{{_('Montant_a_payer')}}: </div>
+                <div class="col-sm-6">
+                  <span class="text-bold col-sm-8 badge badge-success" style="font-size:18px;color:white;">{{ montant_accepte_total|money_field|default_if_none:"0" }}</span>
+                </div>
+              </div>
+            {% endif %}
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    </div>
+    </div>
+  </div>
+
+
+  <div class=" col-md-12">
+<!--    <form id="bulk_traitement_remboursement_form" action="{% url 'traiter_liste_remboursement' %}" method="post">-->
+      {% csrf_token %}
+    <div class="card">
+    <div class="card-header">
+      <div class="card-title">
+        <h6>{{_('LISTE_DES_ACTES')}}</h6>
+      </div>
+      <div class="card-tools">
+        {% if bordereau.statut != 'PAYE' and bordereau.statut != 'ORDONNANCE' and bordereau.statut != 'SUPPRIME' and bordereau.statut != 'ANNULEE' %}
+        {% if not request.user.is_prestataire and not is_all_processed_validated %}
+        <button class="btn btn-sm btn-success" style="border: solid 1px #fff;" id="btn_bulk_traitement_remboursement" disabled>{{_('Accepter_la_selection')}}</button>
+        <button class="btn btn-sm btn-danger" style="border: solid 1px #fff;" id="btn_open_motif_refuser_modal" data-toggle="modal" data-target="#modal-rejeter_remboursement" disabled>{{_('Refuser_la_selection')}}</button>
+        <button class="btn btn-sm btn-complement-rouge btnActionDesActes" style="border: solid 1px #fff;" id="btnValiderRemboursementsSelectionnes" data-redirection="{% url 'facturesprestataires' %}" data-href="{% url 'valider_facture_remboursement'  bordereau.id %}" {% if not is_all_processed %} disabled{% endif %}>{{_('Valider_la_facture')}}</button>
+        {% endif %}
+        {% endif %}
+      </div>
+    </div>
+    <div class="card-body">
+    <div class="table-responsive">
+    <table id="table_liste_remboursements" class="table table-bordered table-striped dataTable__ dtr-inline table_v_middle" style="width:100%">
+        <thead>
+          <tr>
+            {% if not request.user.is_prestataire %}
+            <th scope="col">
+              {% if not is_all_processed_validated%}
+              <input type="checkbox" id="selectAllRemboursements" title="Cocher tout">
+              <span class="libelle_btnSelectAllSinistres" style="cursor:pointer;font-size:10px;">
+              </span>
+              {% endif %}
+            </th>
+            {% endif %}
+            <th scope="col">{{_('Date_soin')}}</th>
+            <th scope="col">{{_('Numero_Sinistre')}}</th>
+            <th scope="col">{{_('Numero_feuille_de_soins')}}</th>
+            <th scope="col">{{_('Matricule')}}</th>
+            <th scope="col">{{_('Beneficiaire_du_soin')}}</th>
+            <th scope="col">{{_('Acte')}}</th>
+            {% if not request.user.is_prestataire %}
+            <th scope="col">{{_('Montant_facture')}}</th>
+            <th scope="col">{{_('Part_assure')}}</th>
+            <th scope="col">{{_('Base_remb')}}.</th>
+            <th scope="col">{{_('Rejet')}}</th>
+            <th scope="col">{{_('Net_a_payer')}}</th>
+            <th scope="col">{{_('Statut')}}</th>
+            {% else %}
+            <th scope="col">{{_('Part_assureur')}}</th>
+            {% endif %}
+            <th scope="col">{{_('Action')}}</th>
+          </tr>
+        </thead>
+        <tbody>
+      </tbody>
+  </table>
+
+    </div>
+    </div>
+
+
+  </div>
+<!--    </form >-->
+  </div>
+
+</div>
+
+
+
+
+
+
+{% endblock %}
+
+{% block modal %}
+
+<!-- Modal -->
+<div class="modal modal-rejeter_remboursement fade" id="modal-rejeter_remboursement" data-backdrop="static" data-keyboard="false" aria-hidden="true" style="margin-top:30px;" xmlns="http://www.w3.org/1999/html">
+	<div class="modal-dialog modal-m">
+	  <div class="modal-content">
+
+          <div class="modal-header card-header_">
+            <h5 class="modal-title">{{_('MOTIF_DE_REFUS')}}</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+
+                <div class="form-group row">
+                    <label class="col-sm-12 col-form-label">{{_('Motif')}}<span class="required">*</span></label>
+                    <div class="col-sm-12">
+						<textarea class="form-control" name="motif" required></textarea>
+                    </div>
+                </div>
+                <br/>
+                <div class="form-groupn row">
+                  <div class="col-sm-3"></div>
+                  <div class="col-sm-6">
+                    <span class=" col-sm-12 text-bold">
+                      <span title="Refuser" class="btn btn-success rounded-pill" id="btn_bulk_rejet_remboursement"  style="cursor:pointer;width:100%;"><i class="fa fa-check"></i>  {{_('Valider')}}</span>&nbsp;&nbsp;
+                    </span>
+
+                  </div>
+                  <div class="col-sm-3"><img id="loader_modal" src="{% static 'admin_custom/img/loader.gif' %}" style="width: 40px;display:none"/></div>
+                </div>
+              </div>
+          </div>
+          <div class="modal-footer d-flex justify-content-between">
+
+<!--              <span class="btn btn-default" data-dismiss="modal">Fermer</span>-->
+<!--              <span class="btn btn-success" id="btn_refuser_remboursement">Valider</span>-->
+          </div>
+<!--        </form>-->
+	  </div>
+	</div>
+</div>
+<!-- Modal -->
+{% endblock %}
+
+
+{% block extrajs %}
+
+<script>
+    var selectedItems = [];
+    var selectedItemsBase = [];
+    var fistLoad = true;
+
+    $.fn.updateSelectedItemFunction = function() {
+
+    };
+
+    $.fn.notifySuccess = function(message, fnCallback){
+    my_noty = noty({
+            text        : message,
+            type        : 'success',
+            dismissQueue: true,
+            layout      : 'center',
+            theme       : 'defaultTheme',
+            buttons     : [
+                {addClass: 'btn btn-primary', text: 'OK', onClick: function ($noty) {
+
+                    if (typeof fnCallback === 'function') fnCallback();
+
+                    $noty.close();
+                }
+                }
+            ]
+        });
+}
+
+ $.fn.notifyWarning = function(message, fnCallback){
+    if (my_noty) {
+        my_noty.close();
+      }
+
+    my_noty = noty({
+            text        : message,
+            type        : 'warning',
+            dismissQueue: true,
+            layout      : 'center',
+            theme       : 'defaultTheme',
+            buttons     : [
+                {addClass: 'btn btn-primary', text: 'OK', onClick: function ($noty) {
+
+                    if (typeof fnCallback === 'function') fnCallback();
+
+                    $noty.close();
+                }
+                }
+            ]
+        });
+}
+
+
+    $(document).ready(function() {
+
+        dataTable = $('#table_liste_remboursements').DataTable({
+            "language": {
+                "url": "https://cdn.datatables.net/plug-ins/9dcbecd42ad/i18n/French.json"
+            },
+            "serverSide": true,
+            "ajax": {
+                "url": "{% url 'detail_facture_datatable' bordereau.id %}",
+                "data": function (data) {
+                    data.page = data.start / data.length + 1;
+
+                },
+                "dataSrc": function (json) {
+                    selectedItemsBase = json.selectedItems;
+                    selectedItems = [];
+                    console.log('selectedItemsBase', selectedItemsBase);
+                    $('#selectAllRemboursements').prop('checked', false);
+                    return json.data;
+                }
+            },
+            "columns": [
+            {% if not request.user.is_prestataire %}
+                {
+                  "data": null,
+                  "orderable": false,
+                  "searchable": false,
+                  "render": function (data, type, row) {
+                    var isChecked = selectedItems.indexOf(row.id) !== -1 ? 'checked' : '';
+                    return row.is_ges_processed ? '' : '<input type="checkbox" value="' + row.id + '" ' + isChecked + '>';
+                }
+
+              },
+              {% endif %}
+                {"data": "date_survenance", "orderable": false},
+                {"data": "numero", "orderable": false},
+                {"data": "dossier_sinistre__numero", "orderable": false},
+
+                {"data": "carte_active", "orderable": false},
+                {"data": "beneficiaire", "orderable": false},
+                {"data": "acte", "orderable": false},
+               {% if not request.user.is_prestataire %}
+                {"data": "total_facture", "orderable": false},
+                {"data": "total_part_assure", "orderable": false},
+                {"data": "total_base_remb", "orderable": false},
+                {"data": "total_rejet", "orderable": false},
+                {"data": "total_net_payer", "orderable": false},
+                {"data": "statut", "orderable": true},
+               {% else %}
+                {"data": "total_base_remb", "orderable": false},
+               {% endif %}
+                {"data": "actions", "orderable": false},
+            ],
+            "paging": true,
+            "pageLength": 100,
+            "processing": true,  // Show the loading indicator
+            "searching": true,   // Enable the search feature
+            "search": {
+                "search": $('#table_liste_remboursements-table_filter input').val()
+            }
+        });
+
+       // Gérer le "Sélectionner tout"
+        $('#selectAllRemboursements').on('change', function() {
+           // Mettre à jour le tableau des éléments sélectionnés
+           if (this.checked) {
+               // Effectuer une requête AJAX pour récupérer toutes les lignes du serveur
+                selectedItems = selectedItemsBase;
+
+                //Added on 12122023
+                //dataTable.rows({search: 'applied'}).select();
+
+                // Cocher/décocher toutes les cases individuelles
+               $('input[type="checkbox"]', dataTable.rows().nodes()).prop('checked', true);
+
+
+               //activer/desactivater le bouton de traitement
+               if(selectedItems.length > 0){
+                  $('#btn_bulk_traitement_remboursement').prop('disabled', false);
+                  $('#btn_open_motif_refuser_modal').prop('disabled', false);
+                }
+
+           } else {
+               // Désélectionner toutes les lignes
+               selectedItems = [];
+
+               // Cocher/décocher toutes les cases individuelles
+               $('input[type="checkbox"]', dataTable.rows().nodes()).prop('checked', false);
+
+               //activer/desactivater le bouton de traitement
+               $('#btn_bulk_traitement_remboursement').prop('disabled', true);
+                $('#btn_open_motif_refuser_modal').prop('disabled', true);
+           }
+
+           console.log('selectedItems', selectedItems);
+
+           // Stocker les éléments sélectionnés dans le stockage local (si nécessaire)
+           // localStorage.setItem('selectedItems', JSON.stringify(selectedItems));
+       });
+
+        // Gérer les changements de sélection
+        $('#table_liste_remboursements tbody').on('change', 'input[type="checkbox"]', function () {
+            var data = dataTable.row($(this).closest('tr')).data();
+            var itemId = data.id;
+            console.log('itemId', itemId);
+            // Mettre à jour le tableau des éléments sélectionnés
+            console.log('this.checked', this.checked);
+            if (this.checked) {
+                selectedItems.push(itemId);
+            } else {
+                var index = selectedItems.indexOf(itemId);
+                if (index !== -1) {
+                    selectedItems.splice(index, 1);
+                }
+            }
+
+              //activer/desactivater le bouton de traitement
+              if(selectedItems.length > 0){
+                $('#btn_bulk_traitement_remboursement').prop('disabled', false);
+                $('#btn_open_motif_refuser_modal').prop('disabled', false);
+              }else{
+                $('#btn_bulk_traitement_remboursement').prop('disabled', true);
+                $('#btn_open_motif_refuser_modal').prop('disabled', true);
+              }
+
+
+            // Désélectionner "Sélectionner tout" si toutes les cases individuelles ne sont pas cochées
+            $('#selectAllRemboursements').prop('checked', selectedItems.length === dataTable.rows().count());
+
+
+            // Stocker les éléments sélectionnés dans le stockage local
+            console.log('selectedItems', selectedItems);
+            // localStorage.setItem('selectedItems', JSON.stringify(selectedItems));
+        });
+
+        dataTable.on('xhr.dt', function (e, settings, json, xhr) {
+            // Hide the spinner when the data is loaded
+            $('.spinner-border').show();
+        });
+
+        // Show the spinner when the table is processing
+        dataTable.on('processing.dt', function (e, settings, processing) {
+            if (processing) {
+                $('.spinner-border').show();
+            }
+        });
+
+      $("#btn_bulk_traitement_remboursement").on("click", function(e) {
+
+         console.log(selectedItems);
+        //demander confirmation
+         let n = noty({
+         text        : 'Voulez-vous vraiment traiter la selection ?',
+         type        : 'warning',
+         dismissQueue: true,
+         layout      : 'center',
+         theme       : 'defaultTheme',
+         buttons     : [
+                 {addClass: 'btn btn-primary', text: 'OUI', onClick: function ($noty) {
+
+                    $noty.close();
+
+                     $('#btn_bulk_traitement_remboursement').prop('disabled', true);
+                     $('#btn_open_motif_refuser_modal').prop('disabled', true);
+
+                      // var formulaire = $('#bulk_traitement_remboursement_form').closest('form');
+                      // console.log(formulaire.serialize());
+
+
+                        $.ajax({
+                        type:'post',
+                        url: "{% url 'traiter_liste_remboursement' %}",
+                        data: {"sinistres_ids[]": selectedItems},
+                        success: function(response){
+
+                            console.log(response);
+
+                            if (response.statut == 1){
+
+                                $(this).notifySuccess(response.message, function(){
+                                    location.reload();
+                                });
+
+
+                            }else{
+                                $(this).notifyWarning(response.message);
+                                $('#btn_bulk_traitement_remboursement').prop('disabled', false);
+                                $('#btn_open_motif_refuser_modal').prop('disabled', false);
+                            }
+
+                        },
+                        error: function(){
+                            $(this).notifyWarning("Erreur lors de la génération du bordereau");
+                        }
+
+                    });
+
+
+                     }
+                 },
+                 {addClass: 'btn btn-danger', text: 'Annuler', onClick: function ($noty) {
+                     //confirmation refusée
+                     $noty.close();
+                 }
+                 }
+             ]
+         });
+         //fin demande confirmation
+
+    });
+
+$("#btn_bulk_rejet_remboursement").on("click", function(e) {
+
+         var motif = $('textarea[name="motif"]').val();
+         console.log(selectedItems);
+         console.log(motif);
+         if(motif){
+
+                     $('#btn_open_motif_refuser_modal').prop('disabled', true);
+                     $('#btn_bulk_traitement_remboursement').prop('disabled', true);
+                     $('#btn_bulk_rejet_remboursement').hide();
+                     $('#loader_modal').show();
+
+                      // var formulaire = $('#bulk_traitement_remboursement_form').closest('form');
+                      // console.log(formulaire.serialize());
+
+
+                        $.ajax({
+                        type:'post',
+                        url: "{% url 'refuser_liste_remboursement' %}",
+                        data: {"sinistres_ids[]": selectedItems, "motif": motif},
+                        success: function(response){
+
+                            console.log(response);
+
+                            if (response.statut == 1){
+
+                            noty({
+                               text        : response.message,
+                               type        : 'success',
+                               dismissQueue: true,
+                               layout      : 'center',
+                               theme       : 'defaultTheme',
+                               buttons     : [
+                               {addClass: 'btn btn-primary', text: 'OK', onClick: function ($noty) {
+                                    location.reload();
+                                    }}]
+                              });
+
+
+
+
+                            }else{
+                                $('#btn_open_motif_refuser_modal').prop('disabled', false);
+                                $('#btn_bulk_traitement_remboursement').prop('disabled', false);
+                                $('#btn_bulk_rejet_remboursement').show();
+                                $('#loader_modal').hide();
+
+                                noty({
+                                   text        : 'Erreur lors du traitement. Veuillez réessayer.',
+                                   type        : 'warning',
+                                   dismissQueue: true,
+                                   layout      : 'center',
+                                   theme       : 'defaultTheme'
+                                });
+
+                            }
+
+                        },
+                        error: function(){
+
+                            noty({
+                               text        : 'Erreur lors du traitement. Veuillez réessayer.',
+                               type        : 'warning',
+                               dismissQueue: true,
+                               layout      : 'center',
+                               theme       : 'defaultTheme'
+                              });
+                        }
+
+                    });
+         }else{
+
+              noty({
+                 text        : 'Veuillez renseigner le motif de refus.',
+                 type        : 'warning',
+                 dismissQueue: true,
+                 layout      : 'center',
+                 theme       : 'defaultTheme'
+                });
+
+         }
+
+    });
+
+ });
+
+
+</script>
+
+{% endblock %}

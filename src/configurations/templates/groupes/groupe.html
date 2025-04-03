@@ -1,0 +1,82 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+{% block extrastyle %} {% endblock %}
+{% block content_title %}
+    <div class="row mb-2">
+          <div class="col-sm-6">
+                <h1 class="m-0">Liste des groupes</h1>
+          </div>
+          <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                      <li class="breadcrumb-item"><a href="{% url 'admin:index' %}">{% trans 'Home' %}</a></li>
+                      <li class="breadcrumb-item">Paramétrage</li>
+                      <li class="breadcrumb-item"><a href="{% url 'groupe' %}">Groupes</a></li>
+                </ol>
+          </div>
+    </div>
+{% endblock %}
+{% block content %}
+<div class="col-12 col-md-12 order-2 order-md-1">
+    <div class="card">
+    <div class="card-header">
+        <h3 class="card-title text-white">{{_('Groupes')}}</h3>
+    </div>
+    <div class="card-body">
+        <div class="button-link pull-right mb-2">
+          <a class="btn btn-sm btn-primary mb-1" data-toggle="modal"  data-target="#modal-groupe"><i class="fas fa-plus-circle"></i> {{_("Ajouter un groupe")}}</a>
+        </div>
+
+      <div id="example1_wrapper" class="dataTables_wrapper dt-bootstrap4">
+        <div class="row">
+          <div class="col-12 col-md-12 col-sm-12">
+              <div class="table-responsive">
+              <table class="table table-bordered table-striped dataTable dtr-inline" id="table_formules">
+                  <thead>
+                    <tr>
+                      <th class="d-none"></th>
+                      <th scope="col">{{_('Libelle')}}</th>
+                      <th scope="col">{{_("Date de création")}}</th>
+                      <th scope="col">{{_('Statut')}}</th>
+                      <th scope="col" class="text-center">{{_('Actions')}}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                  {% for groupe in groupes %}
+                    <tr>
+                         <td class="d-none"></td>
+                         <td>{{ groupe.libelle|default_if_none:"" }}</td>
+                         <td>{{ groupe.created_at|date:"d/m/Y" }}</td>
+                        <td>
+                            {% if groupe.statut %}
+                                <span class="badge badge-success">Actif</span>
+                            {% else %}
+                                <span class="badge badge-danger">Inactif</span>
+                            {% endif %}
+                        </td>
+                         <td class="text-center">
+                             <span style="cursor:pointer;" class="btn_modifier_groupe badge btn-sm btn-modifier rounded-pill text-center" data-groupe_id="{groupe.id}" data-model_name="groupe" data-modal_title="MODIFICATION D'UN GROUPE" data-href="{% url 'modifier_groupe' groupe.id %}"><i class="fas fa-edit"></i> {{_('Modifier')}}</span>
+                             <span class="badge badge-danger btn_supprimer_groupe" data-groupe_id="{{groupe.id}}" data-href="{% url 'supprimer_groupe' groupe.id %}" style="cursor:pointer;"><i class="fa fa-trash"></i></span>&nbsp;
+                        </td>
+                    </tr>
+                  {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extrajs %}
+<script>
+    $(document).ready(function() {
+        $('#groupe').removeClass('o-bg-primary');
+        $('#groupe').addClass('o-active');
+    } );
+</script>
+
+{% include 'groupes/modal_groupe.html' %}
+{% endblock %}

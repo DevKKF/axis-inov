@@ -1,0 +1,85 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+{% block extrastyle %} {% endblock %}
+{% block content_title %}
+    <div class="row mb-2">
+          <div class="col-sm-6">
+                <h1 class="m-0">Liste des analyses de portefeuille</h1>
+          </div>
+          <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                      <li class="breadcrumb-item"><a href="{% url 'admin:index' %}">{% trans 'Home' %}</a></li>
+                      <li class="breadcrumb-item">Analyse & Contrôle</li>
+                      <li class="breadcrumb-item active">Analyse portefeuille</li>
+                </ol>
+          </div>
+    </div>
+{% endblock %}
+{% block content %}
+<div class="col-12 col-md-12 order-2 order-md-1">
+    <div class="card">
+    <div class="card-header">
+        <h3 class="card-title text-white">{{_("Analyse portefeuille")}}</h3>
+    </div>
+    <div class="card-body">
+        <div class="button-link pull-right mb-2">
+          <a class="btn btn-sm btn-primary mb-2" data-toggle="modal" data-target="#modal-compagnie"><i class="fas fa-building"></i> {{_("Portefeuille par compagnie")}}</a>
+            <a class="btn btn-sm btn-primary mb-2" data-toggle="modal" data-target="#modal-commercial"><i class="fas fa-users"></i> {{_("Portefeuille par commercial")}}</a>
+            <a class="btn btn-sm btn-primary mb-2" data-toggle="modal" data-target="#modal-business_unit"><i class="fas fa-globe"></i> {{_("Portefeuille par Business unit")}}</a>
+        </div>
+
+      <div id="example1_wrapper" class="dataTables_wrapper dt-bootstrap4">
+        <div class="row">
+          <div class="col-12 col-md-12 col-sm-12">
+              <div class="table-responsive d-none">
+                  <table class="table table-bordered table-striped dataTable dtr-inline" id="table_analyses">
+                      <thead>
+                        <tr>
+                          <th class="d-none"></th>
+                          <th scope="col">{{_("Analyse fait par")}}</th>
+                          <th scope="col">{{_("Type de portefeuille")}}</th>
+                          <th scope="col">{{_("Compagnie")}}</th>
+                          <th scope="col">{{_("Commercial")}}</th>
+                          <th scope="col">{{_("Business Unit")}}</th>
+                          <th scope="col">{{_("Date de génération")}}</th>
+                          <th scope="col" class="text-center">{{_("Fichier")}}</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                          {% for analyse in analyseportefeuille %}
+                            <tr>
+                                 <td class="d-none"></td>
+                                 <td>{{ analyse.created_by.first_name|default_if_none:"" }} {{ analyse.created_by.last_name|default_if_none:"" }}</td>
+                                 <td>{{ analyse.type_portefeuille|default_if_none:"" }}</td>
+                                 <td>{{ analyse.compagnie.nom|default_if_none:"" }}</td>
+                                 <td>{{ analyse.commercial.first_name|default_if_none:"" }} {{ analyse.commercial.last_name|default_if_none:"" }}</td>
+                                 <td>{{ analyse.business_unit.libelle|default_if_none:"" }}</td>
+                                 <td>{{ analyse.created_at|date:"d/m/Y" }}</td>
+                                 <td class="text-center"><a href="{{ analyse.fichier.url }}" style="color:blue" target="_blank"><i class="fa fa-file-excel-o" title="Aperçu"></i> {{_('Afficher')}}</a></td>
+                            </tr>
+                          {% endfor %}
+                      </tbody>
+                  </table>
+              </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extrajs %}
+<script>
+    $(document).ready(function() {
+        $('#compagnie').removeClass('o-bg-primary');
+        $('#compagnie').addClass('o-active');
+    } );
+</script>
+
+{% include 'analyse/modal_compagnie.html' %}
+{% include 'analyse/modal_commercial.html' %}
+{% include 'analyse/modal_business_unit.html' %}
+
+
+{% endblock %}

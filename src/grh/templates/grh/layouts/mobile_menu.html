@@ -1,0 +1,30 @@
+{% load static %}
+
+<div class="mobile-menu md:hidden">
+    <div class="mobile-menu-bar">
+        <a href="" class="flex mr-auto">
+            <img alt="Rubick Tailwind HTML Admin Template" class="w-8" src="{% static 'grh/images/logo.png' %}">
+        </a>
+        <a href="javascript:;" id="mobile-menu-toggler"> <i data-feather="bar-chart-2" class="w-8 h-8 text-white transform -rotate-90"></i> </a>
+    </div>
+    <ul class="border-t border-white/[0.08] py-5 hidden">
+        <li>
+            <a href="{% url 'grh.dashboard' %}" class="menu menu--active">
+                <div class="menu__icon"> <i data-feather="home"></i> </div>
+                <div class="menu__title">{{_('Tableau_de_bord')}}</div>
+            </a>
+        </li>
+        <li>
+            <a href="{% url 'grh.polices' %}" class="menu menu--active">
+                <div class="menu__icon"> <i data-feather="layers"></i> </div>
+                <div class="menu__title">{{_('Polices')}}</div>
+            </a>
+        </li>
+        <li>
+            <a href="{% url 'grh.onboarding' %}" class="menu menu--active">
+                <div class="menu__icon"> <i data-feather="users"></i> </div>
+                <div class="menu__title">{{_('OnBoarding')}}</div>
+            </a>
+        </li>
+    </ul>
+</div>

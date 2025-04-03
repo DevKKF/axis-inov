@@ -1,0 +1,102 @@
+{% extends 'sinistre/menu_sinistre.html' %}
+{% load i18n %}
+{% block extrastyle %} {% endblock %}
+{% block content_title %}
+    <div class="row mb-2">
+          <div class="col-sm-6">
+                <h1 class="m-0">Liste des mouvements du sinistre</h1>
+          </div>
+          <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                      <li class="breadcrumb-item"><a href="{% url 'admin:index' %}">{% trans 'Home' %}</a></li>
+                      <li class="breadcrumb-item">Production</li>
+                      <li class="breadcrumb-item"><a href="{% url 'clients' %}">Clients</a></li>
+                      <li class="breadcrumb-item"><a href="{% url 'sinistre.details' sinistre.id %}">Sinistre</a></li>
+                      <li class="breadcrumb-item active">Mouvements</li>
+                </ol>
+          </div>
+    </div>
+{% endblock %}
+{% block content %}
+<div class="col-12 col-md-12 order-2 order-md-1">
+  <div class="card">
+    <div class="card-header">
+        <h3 class="card-title text-white">{{_('MOUVEMENTS')}}</h3>
+    </div>
+    <div class="card-body">
+      {% if request.user.is_production %}
+        <div class="button-link pull-right mb-2">
+            <a class="btn btn-sm btn-primary mb-1" data-toggle="modal"  data-target="#modal-avenant_sinistre"><i class="fas fa-plus-circle"></i> {{_("Faire un mouvement")}}</a>
+        </div>
+      {% endif %}
+      <div id="example1_wrapper" class="dataTables_wrapper dt-bootstrap4 ">
+        <div class="row">
+          <div class="col-12 col-md-12 col-sm-12">
+            <table class="table table-bordered table-striped dataTable dtr-inline" id="table_avenants_sinistres">
+              <thead>
+                <tr>
+                  <th class="d-none"></th>
+                  <th scope="col">{{_("Mouvement")}}</th>
+                  <th scope="col">{{_("Motif")}}</th>
+                  <th scope="col">{{_("Date éffet")}}</th>
+                  <th scope="col">{{_("Date de clôture")}}</th>
+                  <th scope="col">{{_("Effectué le")}}</th>
+                  <th scope="col">{{_("Effectué par")}}</th>
+                  <th scope="col">{{_("Action")}}</th>
+                </tr>
+              </thead>
+              <tbody>
+                  {% for avenant in mouvements_sinistre %}
+                    <tr>
+                      <td class="d-none"></td>
+                      <td>{{ avenant.mouvement.libelle|default_if_none:"" }}</td>
+                      <td>{{ avenant.motif.libelle|default_if_none:"" }}</td>
+                      <td>{{ avenant.date_effet|date:"d/m/Y"|default_if_none:"" }}</td>
+                      <td>{{ avenant.date_cloture_sinistre|date:"d/m/Y"|default_if_none:"" }}</td>
+                      <td>{{ avenant.created_at|date:"d/m/Y"|default_if_none:"" }}</td>
+                      <td>{{ avenant.created_by|default_if_none:"" }}</td>
+                      <td>
+                        {% if avenant.historique_sinistre_id %}
+                            <a style="cursor:pointer;" href=""><span class="badge btn-sm btn-details rounded-pill"><i class="fa fa-eye"></i> Détails</span></a>
+                        {% endif %}
+                      </td>
+                    </tr>
+                  {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extrajs %}
+<script>
+    $(document).ready(function() {
+        $('#avenant').removeClass('o-bg-primary');
+        $('#avenant').addClass('o-active');
+
+        $('.mouvement').on('change', function() {
+            let mouvement = $(this).val();
+            let url = '/production/mouvement/' + mouvement + '/motifs';
+            if(mouvement){
+              $.ajax({
+                url: url,
+                type: 'GET',
+                success: function(data) {
+                    let html = '<option value="">Sélectionnez un motif</option>';
+                    data.forEach(function(motif) {
+                        html += '<option value="' + motif.pk + '">' + motif.fields.libelle + '</option>';
+                    });
+                    $('#motif').html(html);
+                }
+            });
+            } else{
+              $('#motif').html('<option value="">---------------------------</option>');
+            }
+        });
+    } );
+</script>
+{% endblock %}

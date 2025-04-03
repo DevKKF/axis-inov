@@ -1,0 +1,337 @@
+{% extends "grh/layouts/base.html" %}
+{% load static %}
+{% block title %}{{_('CREER_UN_NOUVEAU_BENEFICIAIRE')}}{% endblock %}
+
+{% block content %}
+    <style>
+        #title {
+            color: #B7482B;
+        }
+        #link {
+            color: #0000FF;
+        }
+        #status {
+            padding: 5px;
+            border-radius: 5px;
+        }
+        #photo{
+            padding:7px;
+            border:0.5px lightgrey solid;
+            border-radius:10px;
+        }
+    </style>
+
+    <div class="intro-y flex items-start pt-5">
+        <div class="w-full flex flex-col lg:flex-row items-center">
+            <a href="{% url 'grh.police_overview' police.id %}">
+                <button class="btn btn-primary-soft flex items-center w-30 pd-5">
+                    <i data-feather="corner-up-left" class="report-box__icon text-primary mr-2"></i>
+                    {{_('RETOUR')}}
+                </button>
+            </a>
+        </div>
+    </div>
+
+    <div class="intro-y col-span-12 md:col-span-12 lg:col-span-12 mt-8">
+        <div class="box">
+            <div class="flex items-start px-5 pt-5">
+                <div class="w-full flex flex-col lg:flex-row items-center">
+                    <h1 class="text-xl lg:text-lg font-medium mb-3 mr-5" id="title">
+                        {{_('POLICE')}}
+                    </h1>
+                </div>
+            </div>
+            <div class="text-center p-5 border-t border-slate-200/60 dark:border-darkmode-400">
+                <div class="intro-y col-span-12 overflow-auto lg:overflow-visible">
+                    <table class="table table-report -mt-2">
+                        <thead>
+                            <tr>
+                                <th class="whitespace-nowrap">{{_('Numero_police')}}</th>
+                                <th class="whitespace-nowrap">{{_('Client')}}</th>
+                                <th class="whitespace-nowrap">{{_('Statut')}}</th>
+                                <th class="whitespace-nowrap">{{_('Actions')}}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="intro-x">
+                                <td class="w-auto"><a href="{% url 'grh.police_overview' police.id %}" id="link">{{ police.numero|default_if_none:"" }}</a></td>
+                                <td class="w-auto">{{ police.client.nom|default_if_none:"" }}</td>
+                                <td class="w-auto">
+                                    <div class="flex items justify-center" id="status" 
+                                    style="background-color: {% if police.etat_police == 'En cours' %}#007500;color:#FFFFFF;font-weight: bold;
+                                    {% endif %}">
+                                        {{ police.etat_police|default_if_none:"" }}
+                                    </div>
+                                </td>
+                                <td class="table-report__action w-auto">
+                                    <div class="flex justify-center items-center">
+                                        <a href="{% url 'grh.police_overview' police.id %}"><i data-feather="eye" id="title"></i></a>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="intro-y flex justify-center items-center">
+        <div class="w-full md:w-3/4 lg:w-2/3 mt-5 p-t-10">
+            <div class="box p-3">
+                <div class="w-full flex flex-col lg:flex-row items-center justify-center">
+                    <h1 class="text-xl lg:text-lg font-medium p-5" id="title">
+                        {{_('FORMULAIRE_D_AJOUT_D_UN_BENEFICIAIRE')}}
+                    </h1>
+                </div>
+                <form method="post" enctype="multipart/form-data" action="{% url 'grh.formulaire_ajouter_beneficiaire_police' police.id %}" class="preview" onsubmit="disableButton()">
+                    {% csrf_token %}
+                    <div class="mt-1">
+                        <div class="w-full flex flex-col lg:flex-row border-b border-gray-500">
+                            <h1 class="text-lg lg:text-base font-normal p-5" id="title">
+                                {{_('IDENTITE')}}
+                            </h1>
+                        </div>
+                        <div class="flex p-5">
+                            <div class="w-1/2 p-2 mt-2 border-r border-gray-500">
+                                <div class="flex mt-3">
+                                    <label for="nom" class="form-label font-bold w-1/2">{{_('Nom')}} <small class="ml-2" id="title">*</small></label>
+                                    <input id="nom" name="nom" type="text" class="form-control w-4/5" required>
+                                </div>
+                                <div class="flex mt-5">
+                                    <label for="prenoms" class="form-label font-bold w-1/2">{{_('Prenoms')}} <small class="ml-2" id="title">*</small></label>
+                                    <input id="prenoms" name="prenoms" type="text" class="form-control w-4/5" required>
+                                </div>
+                                <div class="flex mt-5">
+                                    <label for="date_naissance" class="form-label font-bold w-1/2">{{_('Date_de_naissance')}} <small class="ml-2" id="title">*</small></label>
+                                    <input class="form-control w-4/5" type="date" id="date_naissance" name="date_naissance" required>
+                                </div>
+                                <div class="flex mt-5">
+                                    <label for="genre" class="form-label font-bold w-1/2">{{_('Sexe')}} <small class="ml-2" id="title">*</small></label>
+                                    <select class="form-control w-4/5" name="genre" id="genre" required>
+                                        <option value="">{{_('Choisir')}}</option>
+                                        <option value="{{ M }}">{{_('Masculin')}} ({{ M }})</option>
+                                        <option value="{{ F }}">{{_('Feminin')}} ({{ F }})</option>
+                                    </select>
+                                </div>
+                                <div class="flex mt-5">
+                                    <label for="matricule_employe" class="form-label font-bold w-1/2">{{_('Numero_Matricule')}}</label>
+                                    <input id="matricule_employe" name="matricule_employe" type="text" class="form-control w-4/5 alpha_num_input" placeholder="" value="">
+                                </div>
+                            </div>
+                            <div class="w-1/2 p-2 mt-2">
+                                <div class="flex mt-3">
+                                    <label for="civilite" class="form-label font-bold w-1/2">{{_('Civilite')}} <small class="ml-2" id="title">*</small></label>
+                                    <select class="form-control w-4/5" required name="civilite">
+                                        <option value="">{{_('Choisir')}}</option>
+                                        {% for civilite in civilites %}
+                                            <option value="{{ civilite.code }}">{{ civilite.name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="flex mt-5">
+                                    <label for="pays_naissance" class="form-label font-bold w-1/2">{{_('Pays_de_naissance')}} <small class="ml-2" id="title">*</small></label>
+                                    <select class="form-control w-4/5" name="pays_naissance" id="pays_naissance" required>
+                                        <option value="">{{_('Choisir')}}</option>
+                                        {% for pays in pays %}
+                                            <option value="{{ pays.id }}">{{ pays.nom }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="flex mt-5">
+                                    <label for="numero_piece" class="form-label font-bold w-1/2">{{_('Numero_CNI')}}</label>
+                                    <input id="numero_piece" name="numero_piece" type="text" class="form-control w-4/5" placeholder="CI0000000">
+                                </div>
+                                <div class="flex mt-5">
+                                    <label class="font-bold w-1/2" for="photo">{{_('Photo')}}</label>
+                                    <br>
+                                    <input class="w-4/5" type="file" id="photo" name="photo" />
+                                </div>
+
+                                <div class="flex mt-5">
+                                    <label for="numero_securite_sociale" class="form-label font-bold w-1/2">{{_('Numero_de_securite_sociale')}}</label>
+                                    <input id="numero_securite_sociale" name="numero_securite_sociale" type="text" class="form-control w-4/5" value="{{ beneficiaire.numero_securite_sociale|default_if_none:"" }}" />
+                                </div>
+                                
+                                
+                            </div>
+                        </div>
+
+                        <div class="w-full flex flex-col lg:flex-row border-b border-gray-500">
+                            <h1 class="text-lg lg:text-base font-normal p-5" id="title">
+                                {{_('ADHERANT_PRINCIPAL')}}
+                            </h1>
+                        </div>
+                        <div class="flex p-5">
+                            <div class="w-1/2 p-2 mt-2 border-r border-gray-500">
+                                <div class="flex mt-3">
+                                    <label for="grh_qualite_beneficiaire_id" class="form-label font-bold w-1/2">{{_('Qualite_beneficiaire')}} <small class="ml-2" id="title">*</small></label>
+                                    <select class="form-control w-4/5" name="qualite_beneficiaire" id="grh_qualite_beneficiaire_id" autocomplete="off" required>
+                                    <option value="">{{_('Choisir')}}</option>
+                                    {% for qualite in qualites_beneficiaires %}
+                                    <option value="{{ qualite.id }}" data-qualite_code="{{ qualite.code }}">{{ qualite.libelle }}</option>
+                                    {% endfor %}
+                                     </select>
+                                </div>
+                            </div>
+                            <div class="w-1/2 p-2 mt-2">
+                                <div class="flex mt-3" id="box_adherent_principal">
+                                    <label for="adherent" class="form-label font-bold w-1/2" placeholder="Max 40 caractéres">{{_('Adherent_principal')}} <small class="ml-2" id="title">*</small></label>
+                                    {% if adherent_principal_id %}
+                                        <input type="hidden" name="adherent_principal" value="{{ adherent_principal_id }}">
+                                        <input id="adherent" name="adherent" type="text" class="form-control w-4/5" value="{{ adherents_principaux.last }}" readonly required>
+                                    {% else %}
+                                        <select class="form-control form-beneficiaire-select w-4/5" name="adherent_principal" id="adherent_principal" autocomplete="off" required>
+                                            <option value="">{{_('Choisir')}}</option>
+                                            {% for adherent_principal in adherents_principaux %}
+                                                <option value="{{ adherent_principal.id }}">{{ adherent_principal }} ({{ adherent_principal.carte_active }})</option>
+                                            {% endfor %}
+                                        </select>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="w-full flex flex-col lg:flex-row border-b border-gray-500">
+                            <h1 class="text-lg lg:text-base font-normal p-5" id="title">
+                                {{_('FORMULE_DE_GARANTIE_COLLEGE')}}
+                            </h1>
+                        </div>
+                        <div class="flex p-5">
+                            <div class="w-1/2 p-2 mt-2 border-r border-gray-500">
+                                <div class="flex mt-3">
+                                    <label for="formule" class="form-label font-bold w-1/2">{{_('Formule')}} <small class="ml-2" id="title">*</small></label>
+                                    <select class="form-control w-4/5" name="formule" id="formule" required>
+                                        <option value="">{{_('Choisir')}}</option>
+                                        {% for formule in formules %}
+                                            <option value="{{ formule.id }}">{{ formule.libelle }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="w-1/2 p-2 mt-2">
+                                <div class="flex mt-3">
+                                    <label for="date_affiliation" class="form-label font-bold w-2/3">{{_('Date_d_entree')}} <small class="ml-2" id="title">*</small></label>
+                                    <input class="form-control w-two-thirds-ns" type="date" id="date_affiliation" name="date_affiliation" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="w-full flex flex-col lg:flex-row border-b border-gray-500">
+                            <h1 class="text-lg lg:text-base font-normal p-5" id="title">
+                                {{_('COORDONNEES')}}
+                            </h1>
+                        </div>
+                        <div class="flex p-5">
+                            <div class="w-1/2 p-2 mt-2 border-r border-gray-500">
+                                <div class="flex mt-3">
+                                    <label for="phoneInput" class="form-label font-bold w-1/2">{{_('Telephone_mobile')}}</label>
+                                    <input name="telephone_mobile" type="tel" id="phoneInput" class="form-control" data-default-country="{% if country_code %}{{ country_code }}{% endif %}" pattern="[0-9]+" title="Veuillez saisir votre numéro mobile">
+                                </div>
+                                <input type="hidden" name="selected_country_dial_code_mobile" id="selectedCountryDialCodeMobile">
+                                <div class="flex mt-5">
+                                    <label for="email" class="form-label font-bold w-1/2">{{_('Email')}}</label>
+                                    <input id="email" name="email" type="email" class="form-control w-4/5" placeholder="example@gmail.com">
+                                </div>
+                                <div class="flex mt-5">
+                                    <label for="code_postal" class="form-label font-bold w-1/2">{{_('Code_postal')}}</label>
+                                    <input id="code_postal" name="code_postal" type="text" class="form-control w-4/5">
+                                </div>
+                            </div>
+                            <div class="w-1/2 p-2 mt-2">
+                                <div class="flex mt-3">
+                                    <label for="pays_residence" class="form-label font-bold w-1/2">{{_('Pays_de_residence')}}</label>
+                                    <select class="form-control w-4/5" name="pays_residence" id="pays_residence">
+                                        <option value="">{{_('Choisir')}}</option>
+                                        {% for pays in pays %}
+                                            <option value="{{ pays.id }}">{{ pays.nom }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                                <div class="flex mt-5">
+                                    <label for="ville" class="form-label font-bold w-1/2">{{_('Ville')}}</label>
+                                    <input id="ville" name="ville" type="text" class="form-control w-4/5">
+                                </div>
+                                <div class="flex mt-5">
+                                    <label for="adresse" class="form-label font-bold w-1/2">{{_('Adresse')}}</label>
+                                    <input id="adresse" name="adresse" type="text" class="form-control w-4/5">
+                                </div>
+                            </div>
+                        </div>
+                        {% comment %}
+                        <div class="flex">
+                            <div class="mt-8 w-full">
+                                <label for="commentaire" class="form-label font-bold">Commentaire</label>
+                                <textarea id="commentaire" class="form-control" name="commentaire" placeholder="Votre commentaire ici.." minlength="10"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                     {% endcomment %}
+                    <div class="mt-10 text-center">
+                        <button type="submit" id="submitButton" class="btn btn-primary w-48 mr-8">
+                            {{_('AJOUTER')}}
+                            <i data-feather="user-plus" class="ml-3 mb-3"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+
+        function disableButton() {
+            const button = document.getElementById('submitButton');
+            button.disabled = true;
+            button.innerHTML = 'En cours...'; // Optionnel : change le texte du bouton
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Gestion de la sélection qualité bénéficiaire et adhérent principal
+            document.getElementById('grh_qualite_beneficiaire_id').addEventListener('change', function() {
+                var qualiteCode = this.options[this.selectedIndex].getAttribute('data-qualite_code');
+
+                if (qualiteCode === "AD") {
+                    document.getElementById('adherent_principal').removeAttribute('required');
+                    document.getElementById('box_adherent_principal').style.display = 'none';
+                } else {
+                    document.getElementById('adherent_principal').setAttribute('required', 'required');
+                    document.getElementById('box_adherent_principal').style.display = 'block';
+                }
+            });
+        });
+    </script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var element = document.querySelector(".iti.iti--allow-dropdown");
+            element.classList.add("w-3/4");
+        });
+    </script>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.12/css/intlTelInput.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.12/js/intlTelInput.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.12/js/utils.min.js"></script>
+    <script>
+        // country code récupéré automatiquement & changeable..
+        const phoneInput = document.querySelector("#phoneInput");
+
+        const itiMobile = window.intlTelInput(phoneInput, {
+            utilsScript: "https://cdnjs.cloudflare.com/ajax/libs/intl-tel-input/17.0.12/js/utils.min.js",
+            initialCountry: phoneInput.getAttribute('data-default-country'),
+        });
+
+        itiMobile.promise.then(() => {
+            const countryCodeMobile = (document.getElementById('selectedCountryDialCodeMobile').value || itiMobile.getSelectedCountryData().iso2);
+            itiMobile.setCountry(countryCodeMobile);
+        });
+
+        document.getElementById('selectedCountryDialCodeMobile').value = itiMobile.getSelectedCountryData().dialCode;
+
+        phoneInput.addEventListener("countrychange", function () {
+            const countryCodeMobile = itiMobile.getSelectedCountryData().iso2;
+            document.getElementById('selectedCountryDialCodeMobile').value = itiMobile.getSelectedCountryData().dialCode;
+        });
+    </script>
+
+{% endblock %}

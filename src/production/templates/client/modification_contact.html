@@ -1,0 +1,63 @@
+{% load i18n static jazzmin admin_urls %}
+<div class="modal fade" id="modal-modification_contact" data-backdrop="static" data-keyboard="false" aria-hidden="true" style="display: none">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+
+      <form method="post" action="{% url 'modifier_contact' contact.id %}" id="form_update_contact">
+      {% csrf_token %}
+          <input type="hidden" id="client_id" name="client_id" value="{{ contact.client_id }}"/>
+          <input type="hidden" id="contact_id" name="contact_id" value="{{ contact.id }}"/>
+          <div class="modal-header">
+            <h4 class="modal-title">{{_("MODIFICATION D'UN CONTACT")}}</h4>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+          </div>
+       <div class="modal-body">
+       <div class="alert alert-dismissible fade show hidden" role="alert">
+          <span class="message"> {{_("TRAITEMENT EN COURS")}}</span>
+       </div>
+        <div class="row">
+            <div class="col-md-6">
+                <div class="form-group row">
+                    <label class="col-sm-5 col-form-label">{{_('Nom')}} <span class="required">*</span></label>
+                    <div class="col-sm-7">
+                    <input type="text" class="form-control" name="nom" value="{{ contact.nom|default_if_none:"" }}" required/>
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label class="col-sm-5 col-form-label">{{_('Prenoms')}}  <span class="required">*</span></label>
+                    <div class="col-sm-7">
+                    <input type="text" class="form-control" name="prenoms" value="{{ contact.prenoms|default_if_none:"" }}" required/>
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label class="col-sm-5 col-form-label">{{_('Fonction')}}</label>
+                    <div class="col-sm-7">
+                    <input type="text" class="form-control" name="fonction" value="{{ contact.fonction|default_if_none:"" }}"/>
+                    </div>
+                </div>
+            </div>
+            <div class="vl"></div>
+            <div class="col-md-5">
+                    <div class="form-group row">
+                        <label class="col-sm-5 col-form-label">{{_('Téléphone')}}  <span class="required">*</span></label>
+                        <div class="col-sm-7">
+                        <input type="text" class="form-control" name="telephone" value="{{ contact.telephone|default_if_none:"" }}" required/>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-sm-5 col-form-label">{{_('E-mail')}}  <span class="required">*</span></label>
+                        <div class="col-sm-7">
+                        <input type="email" class="form-control" name="email" value="{{ contact.email|default_if_none:"" }}" required/>
+                        </div>
+                    </div>
+                </div>
+        </div>
+      </div>
+      <div class="modal-footer justify-content-between">
+        <button type="button" class="btn btn-danger" data-dismiss="modal"><i class="fa fa-remove"></i> {{_('Retour')}}</button>
+        <button type="button" id="btn_save_modification_contact" class="btn btn-info"><i class="fa fa-check-circle"></i> {{_('Enregistrer')}}</button>
+      </div>
+      </form>
+    </div>
+  </div>
+</div>

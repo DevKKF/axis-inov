@@ -1,0 +1,83 @@
+<div  class="modal fade"  id="modal-courrier" aria-hidden="true" data-backdrop="static" data-keyboard="false" style="display: none">
+	<div class="modal-dialog modal-lg">
+		<div class="modal-content">
+			<form enctype="multipart/form-data" id="form_add_courrier" action="{% url 'add_courrier' %}" method="POST">
+			{% csrf_token %}
+			 <div class="modal-header">
+                    <h4 class="modal-title">{{_("CREATION D'UN COURRIER ")}}</h4>
+                    <button type="button"class="close"data-dismiss="modal"aria-label="Close">
+                        <span aria-hidden="true">×</span>
+                    </button>
+                </div>
+			<div class="modal-body">
+				<div class="alert  alert-dismissible fade show hidden" role="alert">
+				  <span class="message">{{_('TRAITEMENT_EN_COURS')}}</span>
+				</div>
+				<div class="col-md-12 offset-0">
+					<ul class="nav nav-tabs" id="myTab" role="tablist">
+						<li class="nav-item"><a class="nav-link active" id="identity-tab" data-toggle="tab" href="#identity" role="tab" aria-controls="identity" aria-selected="true">{{_('COURRIER')}}</a></li>
+						<li class="nav-item"><a class="nav-link" id="coordonnee-tab" data-toggle="tab" href="#coordonnee" role="tab" aria-controls="coordonnee" aria-selected="false">{{_('PARAMETRE')}}</a></li>
+					</ul>
+					<div class="tab-content" id="myTabContent">
+
+						<div class="tab-pane fade show active mt-3" id="identity" role="tabpanel" aria-labelledby="identity-tab">
+							<div class="row">
+								<div class="col-md-6">
+
+                                    <div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_('Designation')}} <span class="required">*</span></label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control" name="designation" id="designation" value="" autocomplete="off" required/>
+										</div>
+									</div>
+								</div>
+								<div class="vl"></div>
+								<div class="col-md-5" style="border-left:0px;">
+
+								<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("service")}} <span class="required">*</span></label>
+										<div class="col-sm-7">
+											<select class="form-control" name="service"  autocomplete="off" required>
+												<option value="">{{_('Choisir')}}</option>
+												<option value="Production" >Production</option>
+												<option value="Sinistre">Sinistre</option>
+												<option value="Comptabilité">Comptabilité</option>
+											</select>
+										</div>
+									</div>
+
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Statut")}} <span class="required">*</span></label>
+										<div class="col-sm-7">
+											<select class="form-control" name="status"  autocomplete="off" required>
+												<option value="">{{_('Choisir')}}</option>
+												<option value="ACTIF" >ACTIF</option>
+            									<option value="INACTIF">INACTIF</option>
+											</select>
+										</div>
+									</div>
+
+								</div>
+							</div>
+						</div>
+
+						<div class="tab-pane fade mt-3" id="coordonnee" role="tabpanel" aria-labelledby="coordonnee-tab">
+							<div class="row">
+								<div class="col-md-6">
+
+								</div>
+							</div>
+						</div>
+
+					</div>
+
+				</div>
+				<div class="modal-footer justify-content-between">
+					<button type="button" class="btn btn-danger" data-dismiss="modal"><i class="fa fa-remove"></i> {{_('Retour')}}</button>
+					<button type="button" id="btn_save_courrier" class="btn btn-info"><i class="fa fa-check-circle"></i> {{_('Enregistrer')}}</button>
+				</div>
+			</div>
+			</form>
+		</div>
+	</div>
+</div>

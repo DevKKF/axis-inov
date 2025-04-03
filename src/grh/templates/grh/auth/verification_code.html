@@ -1,0 +1,79 @@
+
+{% load static %}
+{% load custom_filters %}
+
+<!DOCTYPE html>
+<html lang="en" class="light">
+
+<head>
+    <meta charset="utf-8">
+    <link href="{% static 'grh/images/logo.png' %}" rel="shortcut icon">
+    <title>{{_('Authentification_double_facteur')}}</title>
+    <link rel="stylesheet" href="{% static 'grh/css/app.css' %}" />
+    <link rel="stylesheet" href="{% static 'grh/css/_app.css' %}" />
+    <style>
+        #title {
+            color: #B7482B;
+        }
+
+        #link {
+            color: #0000FF;
+        }
+
+        #status {
+            color: #FFFFFF;
+            border-radius: 10px;
+        }
+
+        .login:after {
+            background-image: url('{% static "grh/images/log.jpg" %}');
+            background-size: cover;
+            background-position: center;
+        }
+    </style>
+</head>
+
+<body class="login">
+    <div class="container sm:px-10">
+        <div class="block xl:grid grid-cols-2 gap-4">
+            <div class="hidden xl:flex flex-col min-h-screen"></div>
+            <div class="h-screen xl:h-auto flex py-5 xl:py-0 my-10 xl:my-0">
+                <div class="my-auto mx-auto xl:ml-20 bg-white dark:bg-darkmode-600 xl:bg-transparent px-5 sm:px-8 py-8 xl:p-0 rounded-md shadow-md xl:shadow-none w-full sm:w-3/4 lg:w-2/4 xl:w-auto">
+                    <h2 class="title intro-x font-bold text-2xl xl:text-3xl text-center xl:text-left" id="title">
+                        {{_('Code de verification')}}
+                    </h2>
+                    <div class="intro-x mt-8">
+                        <form   method="post">
+                             {% csrf_token %}
+                            {% if error %}
+                                    <div class="alert alert-primary-soft show flex items-center mb-5">
+                                        <i class="mr-3" data-feather="alert-triangle"></i>
+                                        {{ error }}
+                                    </div>
+                                {% endif %}
+                            {% if request.session.email %}
+                            <p>{{_('Le code de verification a ete envoye a l_adresse e-mail')}} <strong style="color: #a75033;">{{request.session.email|email_mask}}</strong></p>
+                            {% endif %}
+                            {% if request.session.phone %}
+                            <p>{{_('Le code de verification a ete envoye au numero de telephone')}} <strong style="color: #a75033;">{{request.session.phone}}</strong></p>
+                            {% endif %}<br>
+                            <input type="text" name="code" class="intro-x login__input form-control py-3 px-4 block" placeholder="Code de vérification" required>
+                            <input type="hide" name="code_verification" class="intro-x login__input form-control py-3 px-4 block" style="display: none;" value="{{request.session.code_verification}}" required>
+                            <div class="intro-x mt-8 text-center xl:text-left">
+                                <button type="submit" style="width: 100%;" class="btn btn-primary py-2 px-12 block">
+                                    {{_('Verifier')}}
+                                </button>
+                            </div>
+                            <br>
+                            <a href="{% url 'grh.login' %}" class="btn btn-secondary py-2 px-4 block">{{_('Retour_a_la_page_de_connexion')}}.</a>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+</body>
+
+</html>

@@ -1,0 +1,85 @@
+
+{% load static %}
+
+    <style>
+        #title {
+            color: #B7482B;
+        }
+        #link {
+            color: #0000FF;
+        }
+        #status {
+            padding: 5px;
+            border-radius: 5px;
+        }
+    </style>
+
+    <div class="grid grid-cols-12 gap-6 mt-8">
+        <div class="col-span-12 2xl:col-span-12">
+            <div class="grid grid-cols-12 gap-6">
+                <div class="intro-y col-span-12 md:col-span-12 lg:col-span-12">
+                    <div class="box">
+                        <div class="flex items-start px-5 pt-5">
+                            <div class="w-full flex flex-col lg:flex-row items-center border-b border-gray-500">
+                                <h1 class="text-xl lg:text-lg font-medium mb-3 mr-5" id="title">
+                                    {{_('EVOLUTION_DU_TARIF_DE_L_ADHESION_POUR_L_ENSEMBLE_DE_LA_FAMILLE')}}
+                                </h1>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-12 gap-6 mt-1">
+                        <div class="intro-y col-span-12 overflow-auto lg:overflow-auto">
+                            <div class="table-wrapper">
+                                <table class="table table-responsive -mt-2">
+                                <thead>
+                                    <tr>
+                                        <th class="whitespace-nowrap">{{_('Numero_famille')}}</th>
+                                        <th class="whitespace-nowrap">{{_('Date')}}</th>
+                                        <th class="whitespace-nowrap">{{_('Total_HT')}}</th>
+                                        <th class="whitespace-nowrap">{{_('Total_TTC')}}</th>
+                                        <th class="whitespace-nowrap">{{_('NB_conjoints')}}</th>
+                                        <th class="whitespace-nowrap">{{_('NB_ascendants')}}</th>
+                                        <th class="whitespace-nowrap">{{_('NB_enfants')}}</th>
+                                        <th class="whitespace-nowrap">{{_('NB_adultes')}}</th>
+                                        <th class="whitespace-nowrap">{{_('NB_enfants_sup')}}</th>
+                                        <th class="whitespace-nowrap">{{_('NB_adultes_sup')}}</th>
+                                        <th class="whitespace-nowrap">{{_('Mode_calcul')}}</th>
+                                        <th class="whitespace-nowrap">{{_('TTC_enfant')}}</th>
+                                        <th class="whitespace-nowrap">{{_('TTC_adulte')}}</th>
+                                        <th class="whitespace-nowrap">{{_('TTC_ascendant')}}</th>
+                                        <th class="whitespace-nowrap">{{_('TTC_enfants_sup')}}</th>
+                                        <th class="whitespace-nowrap">{{_('TTC_adultes_sup')}}</th>
+                                        <th class="whitespace-nowrap">{{_('TTC_famille')}}</th>
+                                        <th class="whitespace-nowrap">{{_('TTC_surprime')}}</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="intro-x">
+                                        <td class="w-auto">?</td>
+                                        <td class="w-auto">?</td>
+                                        <td class="w-auto">?</td>
+                                        <td class="w-auto">?</td>
+                                        <td class="w-auto">?</td>
+                                        <td class="w-auto">?</td>
+                                        <td class="w-auto">?</td>
+                                        <td class="w-auto">?</td>
+                                        <td class="w-auto">?</td>
+                                        <td class="w-auto">?</td>
+                                        <td class="w-auto">?</td>
+                                        <td class="w-auto">?</td>
+                                        <td class="w-auto">?</td>
+                                        <td class="w-auto">?</td>
+                                        <td class="w-auto">?</td>
+                                        <td class="w-auto">?</td>
+                                        <td class="w-auto">?</td>
+                                        <td class="w-auto">?</td>
+                                    </tr>
+                                </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

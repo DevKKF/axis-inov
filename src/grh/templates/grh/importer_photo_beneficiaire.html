@@ -1,0 +1,153 @@
+{% extends "grh/layouts/base.html" %}
+{% load static %}
+{% block title %}{{_('IMPORTER_PHOTO_BENEFICIAIRE')}}{% endblock %}
+
+{% block content %}
+
+    <style>
+        #title {
+            color: #B7482B;
+        }
+        #link {
+            color: #0000FF;
+        }
+        #status {
+            padding: 5px;
+            border-radius: 5px;
+        }
+        .modal.show > .modal-dialog {
+            margin-top: 15%;
+        }
+    </style>
+
+    <div class="flex items-start pt-5">
+        <div class="w-full flex flex-col lg:flex-row items-center">
+            <a href="{% url 'grh.beneficiaire_overview' police.id beneficiaire.id %}">
+                <button class="btn btn-primary-soft flex items-center w-30 pd-5">
+                    <i data-feather="corner-up-left" class="report-box__icon text-primary mr-2"></i>
+                    {{_('RETOUR')}}
+                </button>
+            </a>
+        </div>
+    </div>
+
+    <div class="intro-y col-span-12 md:col-span-12 lg:col-span-12 mt-8">
+        <div class="box">
+            <div class="flex items-start px-5 pt-5">
+                <div class="w-full flex flex-col lg:flex-row items-center">
+                    <h1 class="text-xl lg:text-lg font-medium mb-3 mr-5" id="title">
+                        {{_('BENEFICIAIRE')}}
+                    </h1>
+                </div>
+            </div>
+            <div class="text-center p-5 border-t border-slate-200/60 dark:border-darkmode-400">
+                <div class="intro-y col-span-12 overflow-auto lg:overflow-visible">
+                    <table class="table table-report -mt-2">
+                        <thead>
+                            <tr>
+                                <th class="whitespace-nowrap">{{_('Numero_Carte')}}</th>
+                                <th class="whitespace-nowrap">{{_('Prenom')}}</th>
+                                <th class="whitespace-nowrap">{{_('Nom')}}</th>
+                                <th class="whitespace-nowrap">{{_('Numero_police')}}</th>
+                                <th class="whitespace-nowrap">{{_('Client')}}</th>
+                                <th class="whitespace-nowrap">{{_('Code_situation')}}</th>
+                                <th class="whitespace-nowrap">{{_('Actions')}}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="intro-x">
+                                <td class="w-auto">{{ beneficiaire.carte_active.numero|default_if_none:"" }}</td>
+                                <td class="w-auto">{{ beneficiaire.prenoms|default_if_none:"" }}</td>
+                                <td class="w-auto">{{ beneficiaire.nom|default_if_none:"" }}</td>
+                                <td class="w-auto"><a href="{% url 'grh.police_overview' police.id %}" id="link">{{ police.numero|default_if_none:"" }}</a></td>
+                                <td class="w-auto">{{ police.client.nom|default_if_none:"" }}</td>
+                                <td class="w-auto">
+                                    <div class="flex items justify-center" id="status" 
+                                    style="background-color: {% if beneficiaire.statut == 'ACTIF' %}#007500;color:#FFFFFF;font-weight: bold;
+                                    {% elif beneficiaire.statut == 'INACTIF' %}#DC3545;color:#FFFFFF;font-weight: bold;
+                                    {% endif %}">
+                                        {{ beneficiaire.statut|default_if_none:"" }}
+                                    </div>
+                                </td>
+                                <td class="table-report__action w-auto">
+                                    <div class="flex justify-center items-center">
+                                        <a href="{% url 'grh.beneficiaire_overview' police.id beneficiaire.id %}"><i data-feather="eye" id="title"></i></a>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="flex justify-center">
+        <div class="w-full md:w-2/3 lg:w-1/2 mt-8">
+            <div class="intro-y col-span-12 md:col-span-12 lg:col-span-12">
+                <div class="box p-5">
+                    <div class="flex items-start px-5 pt-5">
+                        <div class="w-full flex flex-col lg:flex-row items-center justify-center">
+                            <h1 class="text-xl lg:text-lg font-medium p-5" id="title">
+                                {{_('IMPORTER_LA_PHOTO_DU_BENEFICIAIRE')}}
+                            </h1>
+                        </div>
+                    </div>
+                    <form method="post" id="form_update_pic" enctype="multipart/form-data" action="{% url 'grh.importer_photo_beneficiaire' police_id=police.id beneficiaire_id=beneficiaire.id %}">
+                        {% csrf_token %}
+                        <div class="mt-5 border border-solid border-gray-500 p-5 rounded-full">
+                            <label class="font-bold ml-5" for="photo">{{_('Photo')}} <small class="ml-2" id="title">*</small></label>
+                            <input class="p-5 mt-5 rounded-lg w-full" type="file" id="photo" name="photo" required />
+                        </div>
+                        <div class="mt-10 text-center">
+                            <a id="programmatically-show-modal" href="#" data-toggle="modal" data-target="#programmatically-modal">
+                                <button id="submit-btn" type="button" class="btn btn-primary w-auto">
+                                    {{_('IMPORTER')}}
+                                    <i data-feather="image" class="ml-2 mb-2"></i>
+                                </button>
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="intro-y box mt-5">
+        <div id="programmatically-modal" class="modal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog d-flex align-items-center justify-content-center min-h-screen">
+                <div class="modal-content p-8">
+                    <div class="w-full flex flex-col lg:flex-row items-center justify-center">
+                        <div class="alert alert-success-soft show w-full mx-auto flex flex-col lg:flex-row items-center justify-center p-8">
+                            <h1>{{_('PHOTO_ENREGISTREE_AVEC_SUCCES')}}</h1>
+                            <i data-feather="thumbs-up" class="ml-4 mb-2"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            document.getElementById("submit-btn").addEventListener("click", function () {
+                var form = document.getElementById("form_update_pic");
+                var modal = document.getElementById("programmatically-modal");
+                if (form.checkValidity()) {
+                    setTimeout(function () {
+                        modal.classList.add('show');
+                        setTimeout(function () {
+                            form.submit();
+                            modal.classList.remove('show');
+                        }, 2000);
+                    }, 2000);
+                } else {
+                    form.reportValidity();
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            });
+        });
+    </script>
+
+{% endblock %}

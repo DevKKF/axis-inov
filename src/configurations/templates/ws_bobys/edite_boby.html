@@ -1,0 +1,129 @@
+{% extends "admin/base_site.html" %}
+{% load my_filters %}
+{% block extrastyle %}
+{% endblock %}
+{% block content %}
+<div class="col-12 col-md-12 order-2 order-md-1">
+
+  <div class="card">
+    <div class="card-header">
+
+        <h3 class="card-title">
+            <span class="back_icon">
+
+            <a href="{% url 'ws_bobys' %}" class="badge btn-sm btn-default btn-retour" style="color:black;font-weight:normal;" title="Retour à la liste des prises en charges"><i class="fas fa-arrow-left"></i> {{_('Retour')}}</a>
+
+          </span>
+            <span class="the_title" style="margin-left:10px;font-weight:bold;">
+            {{_('Web_Service_boBy')}}
+          </span>
+        </h3>
+    </div>
+
+    <div class="card-body">
+      <div  class=" dt-bootstrap4">
+          <form enctype="multipart/form-data" id="form_add_boby" action="{% url 'ws_boby_edite' ws_boby.id %}" method="post">
+            {% csrf_token %}
+            <div class="row">
+              <div class="col-md-9 col-sm-12">
+                  <div class="card" style="border: solid 1px #bb4128;">
+                      <div class="card-body">
+                          <div class="form-group">
+                                <label class="col-sm-5 col-form-label">{{_('Nom')}} <span class="required">*</span></label>
+                                <div class="col-sm-12">
+                                    <input type="text" class="form-control" name="name" value="{% if request.session.name %}{{request.session.name}}{% else %}{{ws_boby.name}}{% endif %}" required/>
+                                </div>
+                            </div>
+
+                          <div class="form-group">
+                                <label class="col-sm-5 col-form-label">{{_('Requete')}} <span class="required">*</span></label>
+                                <div class="col-sm-12">
+                                    <textarea id="request"  style="background-color: #fff;color:#7a008e;" class="form-control language-html" name="query" rows="20" required>{% if request.session.query %}{{request.session.query}}{% else %}{{ws_boby.request}}{% endif %}</textarea>
+                                </div>
+                            </div>
+
+                          <div class="form-group">
+                                <label class="col-sm-5 col-form-label">{{_('Statut')}} <span class="required">*</span></label>
+                                <div class="col-sm-12">
+                                    <select class="form-control" name="status" required>
+                                        <option value="1" {% if ws_boby.status == 1 %} selected {% endif %}>{{_('Actif')}}</option>
+                                        <option value="0" {% if ws_boby.status == 0 %} selected {% endif %}>{{_('Inactif')}}</option>
+                                    </select>
+                                </div>
+                            </div>
+
+
+                      </div>
+                  </div>
+              </div>
+                <div class="col-md-3 col-sm-12">
+                    <div class="card" style="border: solid 1px #bb4128;">
+                      <div class="card-body">
+                           <div class="card-tools" style="text-align:left">
+                                <span class="btn btn-sm btn-success" id="add_param"><i class="fas fa-plus"></i> {{_('Ajouter_un_parametre')}}</span>
+                            </div>
+                          <hr>
+                          <table class="table table-bordered table-striped dataTable customDataTable dtr-inline">
+                                <thead>
+                                    <tr>
+                                    <th scope="col">{{_('Parametre')}}</th>
+                                    <th scope="col">{{_('Valeur')}}</th>
+                                    <th scope="col-1"></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="params_body">
+                                {% if ws_boby.paramwsboby_set %}
+                                    {% for param in ws_boby.paramwsboby_set.all %}
+                                        <tr>
+                                            <td><input type="text" class="form-control" name="params[]" value="{{param.name}}" required/></td>
+                                            <td><input type="text" class="form-control" name="value_params[]" value="{{param.value}}"/></td>
+                                            <td><span class="btn btn-sm btn-danger delete_param"><i class="fas fa-close"></i></span></td>
+                                        </tr>
+                                    {% endfor %}
+                                {% endif %}
+
+                                </tbody>
+
+                          </table>
+
+
+                      </div>
+                  </div>
+              </div>
+            </div>
+              <hr>
+              <div class="row">
+                  <div class="col-12 col-md-12 col-sm-12" style="text-align: center;">
+                      <button type="submit" class="btn btn-success">{{_('Enregistrer')}}</button>
+                  </div>
+              </div>
+          </form>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+
+{% endblock %}
+
+
+{% block extrajs %}
+<script>
+    $(document).ready(function() {
+        $('#add_param').click(function(){
+            var html = '<tr><td><input type="text" class="form-control" name="params[]" required/></td><td><input type="text" class="form-control" name="value_params[]"/></td><td><span class="btn btn-sm btn-danger delete_param"><i class="fas fa-close"></i></span></td></tr>';
+            $('#params_body').append(html);
+        });
+
+        $(document).on('click', '.delete_param', function(){
+            $(this).closest('tr').remove();
+        });
+
+    });
+
+</script>
+
+{% endblock %}

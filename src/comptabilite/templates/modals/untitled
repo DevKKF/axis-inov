@@ -1,0 +1,67 @@
+
+class FactureCompagnie(models.Model):
+    bureau = models.ForeignKey(Bureau, null=True, on_delete=models.RESTRICT)
+    created_by = models.ForeignKey(User, null=True, on_delete=models.RESTRICT)
+    compagnie = models.ForeignKey(Compagnie, null=True, on_delete=models.RESTRICT)
+    devise = models.ForeignKey(Devise, null=True, on_delete=models.RESTRICT)
+    numero = models.CharField(max_length=20, unique=True, blank=True, null=True)
+    montant_total = models.BigIntegerField(null=False)
+    montant_regle = models.BigIntegerField(null=True)
+    montant_restant = models.BigIntegerField(null=True)
+    date_emission = models.DateField(blank=True, null=True)
+    statut = models.fields.CharField(choices=StatutQuittance.choices, default=StatutQuittance.IMPAYE, max_length=15, null=True)
+    statut_validite = models.fields.CharField(choices=StatutValidite.choices, default=StatutValidite.VALIDE, max_length=15, null=True)
+    observation = models.CharField(max_length=255, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return f'N°{self.numero} - Montant: {self.montant} {self.devise.code} '
+
+    class Meta:
+        db_table = "facture_compagnie"
+        verbose_name = "Facture d'une compagnie"
+        verbose_name_plural = "Factures des compagnies"
+
+
+class ReglementCie(models.Model):
+    bureau = models.ForeignKey(Bureau, null=True, on_delete=models.RESTRICT)
+    created_by = models.ForeignKey(User, null=True, on_delete=models.RESTRICT)
+    compagnie = models.ForeignKey(Compagnie, null=True, on_delete=models.RESTRICT)
+    numero = models.CharField(max_length=50, blank=True, null=True)
+    numero_piece = models.CharField(max_length=50, blank=True, null=True)
+    banque_emettrice = models.CharField(max_length=255, blank=True, null=True)
+    mode_reglement = models.ForeignKey(ModeReglement, null=True, on_delete=models.RESTRICT)
+    banque = models.ForeignKey(Banque, null=True, on_delete=models.RESTRICT)
+    compte_tresorerie = models.ForeignKey(CompteTresorerie, null=True, on_delete=models.RESTRICT)
+    devise = models.ForeignKey(Devise, null=True, on_delete=models.CASCADE)
+    montant = models.DecimalField(max_digits=20, decimal_places=0, blank=True, null=True)
+    date_reglement = models.DateField(blank=True, null=True)
+    observation = models.CharField(max_length=255, null=True)
+    motif_annulation = models.CharField(max_length=255, null=True)
+    statut_validite = models.fields.CharField(choices=StatutValidite.choices, default=StatutValidite.VALIDE, max_length=15, null=True)
+    created_at = models.DateTimeField(auto_now=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'reglement_cie'
+        verbose_name = 'Reglement compagnie'
+        verbose_name_plural = 'Reglements faits par les compagnies'
+
+
+class ReglementFactureCompagnie(models.Model):
+    bureau = models.ForeignKey(Bureau, null=True, on_delete=models.RESTRICT)
+    created_by = models.ForeignKey(User, null=True, on_delete=models.RESTRICT)
+    reglement_compagnie = models.ForeignKey(ReglementCie, on_delete=models.RESTRICT)
+    facture_compagnie = models.ForeignKey(FactureCompagnie, on_delete=models.RESTRICT)
+    devise = models.ForeignKey(Devise, null=True, on_delete=models.CASCADE)
+    montant = models.DecimalField(max_digits=20, decimal_places=0, blank=True, null=True)
+    date_reglement = models.DateField(blank=True, null=True)
+    statut_validite = models.fields.CharField(choices=StatutValidite.choices, default=StatutValidite.VALIDE, max_length=15, null=True)
+    created_at = models.DateTimeField(auto_now=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'reglement_facture_compagnie'
+        verbose_name = 'Reglement facture'
+        verbose_name_plural = 'Reglement facture'

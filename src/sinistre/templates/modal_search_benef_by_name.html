@@ -1,0 +1,127 @@
+{% load i18n static jazzmin admin_urls %}
+
+<style type="text/css">
+
+    .dataTables_length, 
+    .dataTables_info,
+    .dataTables_filter {
+        display: none;
+    }
+
+</style>
+
+<div class="modal modal-search_benef_by_name fade" id="modal_search_benef_by_name" data-backdrop="static" data-keyboard="false" aria-hidden="true" style="display: none">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <form enctype="multipart/form-data" id="form_search_benef_by_name" action="" method="post" target="_blank">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h4 class="modal-title">{{_('CHERCHER_UN_BENEFICIAIRE_PAR_NOM')}}</h4>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-dismissible fade show hidden" role="alert">
+                        <span class="message">{{_('TRAITEMENT_EN_COURS')}}</span>
+                    </div>
+                    <form method="get">
+                        <div class="form-group row">
+                            <label class="col-sm-5 col-form-label">{{_('Nom_beneficiaire')}} <span class="required">*</span></label>
+                            <div class="col-sm-7">
+                                <input id="search_beneficiaire" class="form-control" type="text" style="border-radius:3px;border:1px solid rgba(0, 0, 0, 0.3);text-transform:uppercase;">
+                            </div>
+                        </div>
+                    </form>
+                    <div class="row">
+                        <div class="card-body">
+                            <div id="example_wrapper" class="dataTables_wrapper dt-bootstrap4">
+                                <div class="row">
+                                    <div class="col-12 col-md-12 col-sm-12">
+                                        <div class="table-responsive">
+                                            <table class="table table-bordered table-striped customDataTable dtr-inline" id="table_beneficiaires" style="width:100%">
+                                                <thead>
+                                                    <tr>
+                                                        <th scope="col">{{_('Numero_carte')}}</th>
+                                                        <th scope="col">{{_('Nom')}}</th>
+                                                        <th scope="col">{{_('Prenoms')}}</th>
+                                                        <th scope="col">{{_('Actions')}}</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody></tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+            <div class="form_sinistre_overlay"><div style="margin:auto;padding:20px 0;color:white;text-align:center;">{{_('TRAITEMENT_EN_COURS')}} ...</div></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function() {
+
+        $('#beneficiaire').removeClass('o-bg-primary');
+        $('#beneficiaire').addClass('o-active');
+
+        var dataTable = $('#table_beneficiaires').DataTable({
+            "language": {
+                "url": "https://cdn.datatables.net/plug-ins/9dcbecd42ad/i18n/French.json"
+            },
+            "serverSide": true,
+            "ajax": function(data, callback, settings) {
+                // Initialize with empty dataset
+                if ($('#search_beneficiaire').val().trim() === '') {
+                    callback({ data: [] });
+                } else {
+                    // Load data based on search criteria
+                    data.search_beneficiaire = $('#search_beneficiaire').val();
+                    $.ajax({
+                        url: "{% url 'search_benef_by_name_datatable' %}",
+                        type: "GET",
+                        data: data,
+                        success: function(response) {
+                            callback(response);
+                        }
+                    });
+                }
+            },
+            "columns": [
+                {"data": "aliment__cartes__numero", "orderable": false},
+                {"data": "aliment__nom", "orderable": false},
+                {"data": "aliment__prenoms", "orderable": false},
+                {"data": "actions", "orderable": false, "searchable": false}
+            ],
+            "paging": true,
+            "pageLength": 10,
+            "processing": true,
+            "searching": true,
+            "search": {
+                "search": '' // Initial search value as empty string
+            },
+            "drawCallback": function(settings) {
+                // Hide pagination if no data in the DataTable
+                var api = this.api();
+                if (api.rows().count() === 0) {
+                    $(api.table().container()).find('.dataTables_paginate').hide();
+                } else {
+                    $(api.table().container()).find('.dataTables_paginate').show();
+                }
+            }
+        });
+
+        // Function to handle search
+        function performSearch() {
+            dataTable.ajax.reload();
+        }
+
+        // Handle keyup and change events on search input
+        $('#search_beneficiaire').on('keyup change', function() {
+            performSearch();
+        });
+
+    });
+</script>

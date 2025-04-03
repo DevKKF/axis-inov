@@ -1,0 +1,256 @@
+{% load my_filters %}
+<style type="text/css">
+	tr.tr_totaux td
+	{
+		border:1px solid #dee2e6;
+	}
+
+	tr.tr_totaux td .money_field
+	{
+		border:none;
+		background:none;
+		font-weight:bold;
+		font-size:22px;
+	}
+
+	tr.tr_invisible td
+	{
+		border:0px solid red;
+		padding:0px;
+	}
+	.varAlimentSinistreAutre{
+		display:none;
+	}
+</style>
+<div class="modal modal-sinistre fade" id="modal-sinistre-soins_ambulatoires_gestionnaire" data-backdrop="static" data-keyboard="false" aria-hidden="true"style="display: none" xmlns="http://www.w3.org/1999/html">
+	<div class="modal-dialog modal-xl">
+		<div class="modal-content ">
+			<form id="form_add_sinistre_soins_ambulatoires" action="{% url 'add_sinistre_soins_ambulatoire' %}" method="post">
+				{% csrf_token %}
+				<div class="modal-header">
+					<h4 class="modal-title">
+						{{_('DEMANDE_DE_PRISE_EN_CHARGE_SOINS_AMBULATOIRES')}}
+					</h4>
+					<button type="button" class="close"data-dismiss="modal"aria-label="Close"><span aria-hidden="true">×</span></button>
+				</div>
+				<div class="modal-body">
+					<div class="alert  alert-dismissible fade show hidden" role="alert">
+						<span class="message">{{_('TRAITEMENT_EN_COURS')}}</span>
+					</div>
+					<div class="col-md-12 offset-0">
+						<div class="row">
+							<div class="col-md-6">
+								<div class="col-md-12">
+									<div class="row">
+										<div class="col-sm-12">
+											<div class="form-group row" style="margin-bottom:2px;">
+												<label class="col-sm-5 col-form-label">{{_('Prestataire_executant')}} <span class="required">*</span></label>
+												<div class="col-sm-6">
+													<select class="form-control tags-multiple prestataire_executant_id" name="prestataire_executant" id="prestataire_executant_id_soins_ambulatoire_gestionnaire" required style="border:2px solid var(--colorJauneOlea);">
+														<option value="">{{_('Choisir')}}</option>
+														{% for pe in prestataires %}
+														<option value="{{ pe.id }}">{{ pe.name }}</option>
+														{% endfor %}
+													</select>
+												</div>
+											</div>
+											<div class="form-group row" style="margin-bottom:2px;">
+												<label class="col-sm-5 col-form-label">{{_('Date_de_soin')}} <span class="required">*</span></label>
+												<div class="col-sm-6">
+													<input type="date" autocomplete="off" class="form-control" name="date_survenance" id="date_survenance" max="{{ today|date:'Y-m-d' }}" required style="border:2px solid var(--colorJauneOlea);"/>
+												</div>
+											</div>
+											<div class="form-group row" style="margin-bottom:1px;">
+												<label class="col-sm-5 col-form-label">{{_('Numero_de_carte')}} <span class="required">*</span></label>
+												<div class="col-sm-6">
+													<input type="text" autocomplete="off" class="form-control numero_carte" name="numero_carte" data-href="{% url 'search_assure' %}" style="border:2px solid var(--colorJauneOlea);"/>
+													<input type="hidden" class="form-control" name="current_searched_aliment_id" id="current_searched_aliment_id"/>
+
+													<input type="hidden" class="form-control" name="type_prise_en_charge" id="type_prise_en_charge" value="soins_ambulatoires"/>
+													<input type="hidden" class="form-control" name="type_prise_en_charge_code" id="type_prise_en_charge_code" value="AMBULAT"/>
+													<input type="hidden" class="form-control type_prise_en_charge_id" name="type_prise_en_charge_id" value="2"/>
+
+												</div>
+												<div class="col-sm-1" style="padding-left:0px;margin-top:3px;">
+													<span class="btn btnSearchAlimentSinistreAutre" data-href="{% url 'search_assure' %}" style="background:gray;color:white;font-size:12px;" title="Rechercher"><i class="fa fa-search"></i></span>
+												</div>
+											</div>
+										</div>
+										<div class="col-md-12 offset-0 varAlimentSinistreAutre" style="padding:0px;margin:0px;">
+											<div class="row">
+												<div class="col-md-3">
+													<div class="">
+														<img style="width:100px;border-radius:5px;border:3px solid #dee2e6;" class="" id="photo" src=""/>
+													</div>
+												</div>
+												<div class="col-md-9">
+													<div class="form-group row" style="margin-bottom:7px;">
+														<span class="col-sm-4">{{_('Nom')}} : </span>
+														<div class="col-sm-8">
+															<span class="font-weight-bold" id="span-nom"></span>
+														</div>
+													</div>
+													<div class="form-group row" style="margin-bottom:7px;">
+														<span class="col-sm-4">{{_('Prenoms')}} : </span>
+														<div class="col-sm-8">
+															<span class="font-weight-bold" id="span-prenoms"></span>
+														</div>
+													</div>
+													<div class="form-group row" style="margin-bottom:7px;">
+														<span class="col-sm-4">{{_('Date_naissance')}} : </span>
+														<div class="col-sm-8">
+															<span class="font-weight-bold" id="span-date_naissance"></span> (<span class="font-weight-normal" id="span-age"></span> {{_('ans')}})
+														</div>
+													</div>
+													<!--div class="form-group row" style="margin-bottom:7px;">
+														<span class="col-sm-4">Assureur : </span>
+														<div class="col-sm-8">
+															<span class="font-weight-bold" id="span-assureur"></span>
+														</div>
+													</div-->
+													<div class="form-group row" style="margin-bottom:7px;">
+														<span class="col-sm-4">{{_('Statut')}} :</span>
+														<div class="col-sm-8">
+															<span class="font-weight-bold" id="span-qualite_beneficiaire"></span>
+														</div>
+													</div>
+													<div class="form-group row" style="margin-bottom:7px;">
+														<span class="col-sm-4">{{_('Type_de_contrat')}}</span>
+														<div class="col-sm-8">
+															<span class="font-weight-bold" id="span-formule"></span>
+														</div>
+													</div>
+													<div class="form-group row" style="margin-bottom:7px;">
+														<span class="col-sm-4">{{_('Couverture')}} : </span>
+														<div class="col-sm-8">
+															<span class="font-weight-bold" id="span-taux" style="color:#BB4127;font-weight:bold;"></span>
+														</div>
+													</div>
+													<!--div class="form-group row" style="margin-bottom:7px;">
+														<span class="col-sm-4">Plafond famille</span>
+														<div class="col-sm-8">
+															<span class="font-weight-bold" id="span-plafond_consommation_famille"></span>
+														</div>
+													</div>
+													<div class="form-group row" style="margin-bottom:7px;">
+														<span class="col-sm-4">Plafond indiv.</span>
+														<div class="col-sm-8">
+															<span class="font-weight-bold" id="span-plafond_consommation_individuelle"></span>
+														</div>
+													</div-->
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="vl"></div>
+							<div class="col-md-6 varAlimentSinistreAutre" style="border-left:0px;margin-left:-5px;padding-left:15px;">
+
+								<div class="form-group row">
+									<label class="col-sm-4 col-form-label">{{_('Soins_a_l_etranger')}} <span class="required">*</span></label>
+									<div class="col-sm-8">
+										<select class="form-control tags-multiple" name="soins_a_l_entrange" id="soins_a_l_entrange" required>
+											<option value="0" selected>{{_('Non')}}</option>
+											<option value="1">{{_('Oui')}}</option>
+										</select>
+									</div>
+								</div>
+
+								
+								<div class="form-group row">
+									<label class="col-sm-4 col-form-label">{{_('Centre_prescripteur')}} <span class="required">*</span></label>
+									<div class="col-sm-8">
+										<select class="form-control tags-multiple" name="centre_prescripteur" id="centre_prescripteur" required>
+											<option value="">{{_('Choisir')}}</option>
+											{% for cp in centres_prescripteurs %}
+											<option {% if cp.id == request.user.prestataire.id %} selected {% endif %} value="{{ cp.id }}">{{ cp.name }}</option>
+											{% endfor %}
+										</select>
+									</div>
+								</div>
+								<div class="form-group row">
+									<label class="col-sm-4 col-form-label">{{_('Medecin')}} <span class="required">*</span></label>
+									<div class="col-sm-8">
+										<select class="form-control tags-multiple" name="prescripteur" id="prescripteur_soins_ambulatoires" required>
+											<option value="">{{_('Choisir')}}</option>
+											{% for prescripteur in prescripteurs %}
+											<option value="{{ prescripteur.id }}">{{ prescripteur.nom }} {{ prescripteur.prenoms }} ({{ prescripteur.specialite|default_if_none:'' }})</option>
+											{% endfor %}
+										</select>
+									</div>
+								</div>
+								<div class="form-group row">
+									<label class="col-sm-4 col-form-label">{{_('Actes')}} <span class="required">*</span></label>
+									<div class="col-sm-8">
+										<select class="form-control acte_prestation tags-multiple tags-multiple_actes_soins_ambulatoires" name="selected_actes[]" id="acte_soins_ambulatoires" data-href_get_infos_selected_actes="{% url 'get_infos_selected_actes_soins_ambulatoires' %}" required>
+											<option value="">{{_('Veuillez_choisir_les_actes_a_executer_SVP')}} </option>
+										</select>
+										<input type="hidden" id="actes_du_tableau" name="actes_du_tableau">
+									</div>
+								</div>
+								<div class="form-group row">
+									<label class="col-sm-4 col-form-label">{{_('Affection')}} <span class="label_affection_required__plus_utilise required">*</span></label>
+									<div class="col-sm-8">
+										<select class="form-control tags-multiple tags-multiple tags-multiple_affection_id" name="affection" id="affection_id" >
+											<option value="">{{_('Choisir')}}</option>
+											{% for affection in affections %}
+											<option value="{{ affection.id }}">{{ affection.code_cim_10 }} - {{ affection.libelle }}</option>
+											{% endfor %}
+										</select>
+									</div>
+								</div>
+								<div class="form-group row" style="margin-top:-15px;">
+									<label class="col-sm-12 col-form-label">{{_('Renseignements_cliniques')}} <span class="label_renseignement_clinique_required__plus_utilise required">*</span></label>
+									<div class="col-sm-12">
+										<textarea class="form-control" name="renseignement_clinique" id="renseignement_clinique" rows="1" required></textarea>
+									</div>
+								</div>
+								<!--div class="form-group row">
+									<label class="col-sm-4 col-form-label">Date de la prestation <span class="required">*</span></label>
+									<div class="col-sm-8">
+										<span type="text" class="form-control" style="background:#ddd;">{{ today|date:'d-m-Y' }}</span>
+									</div>
+								</div-->
+
+								<div class="form-group row">
+									<label class="col-sm-4 col-form-label">{{_('Type_remboursement')}} <span class="required">*</span></label>
+									<div class="col-sm-8">
+										<select class="form-control tags-multiple" name="type_remboursement" id="type_remboursement" required>
+											<option value="">{{_('Choisir')}}</option>
+											{% for type_remboursement in types_remboursements %}
+											<option value="{{ type_remboursement.id }}">{{ type_remboursement.libelle }}</option>
+											{% endfor %}
+										</select>
+									</div>
+								</div>
+
+							</div>
+							<div class="col-md-12 varAlimentSinistreAutre">
+								<div class="col-sm-12" id="loading_shimmer_box" style="display:none;">
+									<article>
+										<div class="line"></div>
+										<div class="line"></div>
+										<div class="line"></div>
+										<div class="shimmer"></div>
+									</article>
+								</div>
+								<div class="col-sm-12" style="padding-right:0px;padding:0px;" id="box_table_actes_selected">
+
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<div class="col-md-12 offset-0 error_box_aliment_not_found text-center text-red" style="display:none;font-weight: bold;font-size: 30px;"></div>
+				</div>
+				<div class="modal-footer justify-content-between">
+					<button type="button" class="btn btn-default" data-dismiss="modal">{{_('Retour')}}</button>
+					<img src="" id="loading">
+					<button type="button" class="btn btn_save_sinistre o-bg-primary" disabled>{{_('Valider')}}</button>
+				</div>
+			</form>
+			<div class="form_sinistre_overlay"><div style="margin:auto;padding:20px 0;color:white;text-align:center;">{{_('TRAITEMENT_EN_COURS')}} ...</div></div>
+		</div>
+	</div>
+</div>

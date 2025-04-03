@@ -1,0 +1,162 @@
+{% extends "grh/layouts/base.html" %}
+{% load static %}
+{% block title %}{{_('SORTIR_BENEFICIAIRE')}}{% endblock %}
+
+{% block content %}
+
+    <style>
+        #title {
+            color: #B7482B;
+        }
+        #link {
+            color: #0000FF;
+        }
+        #status {
+            color: #FFFFFF;
+            padding: 5px;
+            border-radius: 5px;
+        }
+    </style>
+
+    <div class="intro-y flex items-start pt-5">
+        <div class="w-full flex flex-col lg:flex-row items-center">
+            <a href="{% url 'grh.beneficiaire_overview' police.id beneficiaire.id %}">
+                <button class="btn btn-primary-soft flex items-center w-30 pd-5">
+                    <i data-feather="corner-up-left" class="report-box__icon text-primary mr-2"></i>
+                    {{_('RETOUR')}}
+                </button>
+            </a>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-12 gap-6 mt-6">
+        <div class="intro-y col-span-12 md:col-span-12 lg:col-span-12">
+            <div class="box">
+                <div class="flex items-start px-5 pt-5">
+                    <div class="w-full flex flex-col lg:flex-row items-center">
+                        <h1 class="text-xl lg:text-lg font-medium mb-3 mr-5" style="color:#B7482B;">
+                            {{_('BENEFICIAIRE')}}
+                        </h1>
+                    </div>
+                </div>
+                <div class="text-center p-5 border-t border-slate-200/60 dark:border-darkmode-400">
+                    <div class="intro-y col-span-12 overflow-auto lg:overflow-visible">
+                        <table class="table table-report -mt-2">
+                            <thead>
+                                <tr>
+                                    <th class="whitespace-nowrap">{{_('Numero_Carte')}}</th>
+                                    <th class="whitespace-nowrap">{{_('Prenom')}}</th>
+                                    <th class="whitespace-nowrap">{{_('Nom')}}</th>
+                                    <th class="whitespace-nowrap">{{_('Numero_police')}}</th>
+                                    <th class="whitespace-nowrap">{{_('Client')}}</th>
+                                    <th class="whitespace-nowrap">{{_('Code_situation')}}</th>
+                                    <th class="whitespace-nowrap">{{_('Actions')}}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="intro-x">
+                                    <td>{{ beneficiaire.carte_active.numero|default_if_none:"" }}</td>
+                                    <td>{{ beneficiaire.prenoms|default_if_none:"-" }}</td>
+                                    <td>{{ beneficiaire.nom|default_if_none:"-" }}</td>
+                                    <td><a href="{% url 'grh.police_overview' police.id %}" id="link">{{ police.numero|default_if_none:"-" }}</a></td>
+                                    <td>{{ police.client.nom|default_if_none:"-" }}</td>
+                                    <td class="w-40">
+                                        <div class="flex items justify-center" id="status" 
+                                        style="background-color: {% if beneficiaire.statut == 'ACTIF' %}#008000;
+                                        {% elif beneficiaire.statut == 'INACTIF' %}background-color: #FF0000;
+                                        {% endif %}">
+                                            {{ beneficiaire.statut|default_if_none:"-" }}
+                                        </div>
+                                    </td>
+                                    <td class="table-report__action">
+                                        <div class="flex justify-center items-center">
+                                            <a href="{% url 'grh.beneficiaire_overview' police.id beneficiaire.id %}"><i data-feather="eye" id="title"></i></a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="flex justify-center">
+        <div class="w-full md:w-2/3 lg:w-1/2 mt-5">
+            <div class="intro-y col-span-12 md:col-span-12 lg:col-span-12">
+                <div class="box">
+                    <div class="w-full flex flex-col lg:flex-row items-center justify-center">
+                        <h1 class="text-xl lg:text-lg font-medium p-5" id="title">
+                            {{_('SORTIR_LE_BENEFICIAIRE')}}
+                        </h1>
+                    </div>
+                    <div class="intro-y box">
+                        <div class="p-8">
+                            <form method="post" id="form_sortie" enctype="multipart/form-data" action="{% url 'grh.sortir_beneficiaire' police.id beneficiaire.id %}">
+                                {% csrf_token %}
+                                <div class="w-full">
+                                    <label for="date_sortie" class="form-label font-bold">{{_('Date_de_sortie')}}  <small class="ml-2" id="title">*</small></label>
+                                    <input class="form-control mt-2 w-full" type="date" id="date_sortie" name="date_sortie" min="{{ today }}" required>
+                                </div>
+                                <div class="flex mt-8">
+                                <div class="w-full">
+                                    <label for="motif" class="form-label font-bold">{{_('Motif')}} <small class="ml-2" id="title">*</small></label>
+                                    <textarea id="motif" class="form-control" name="motif" placeholder="Votre motif ici.." required></textarea>
+                                </div>
+                                </div>
+                                <div class="mt-10 text-center">
+                                    <a id="programmatically-show-modal" href="#" data-toggle="modal" data-target="#programmatically-modal">
+                                        <button id="submit-btn" type="button" class="btn btn-primary w-auto">
+                                            {{_('SORTIR')}}
+                                            <i data-feather="user-minus" class="ml-2 mb-2"></i>
+                                        </button>
+                                    </a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="intro-y box mt-5">
+        <div id="programmatically-modal" class="modal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog d-flex align-items-center justify-content-center min-h-screen">
+                <div class="modal-content p-8">
+                    <div class="w-full flex items-center justify-center">
+                        <div class="alert alert-success-soft show w-full mx-auto flex flex-col lg:flex-row items-center justify-center p-8">
+                            <h1>{{_('DEMANDE_SORTIE_ENREGISTREE_AVEC_SUCCES')}}</h1>
+                            <i data-feather="thumbs-up" class="ml-4 mb-2"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            document.getElementById("submit-btn").addEventListener("click", function () {
+                var form = document.getElementById("form_sortie");
+                var modal = document.getElementById("programmatically-modal");
+                if (form.checkValidity()) {
+                    setTimeout(function () {
+                        modal.classList.add('show');
+                        setTimeout(function () {
+                            form.submit();
+                            modal.classList.remove('show');
+                        }, 2000);
+                    }, 2000);
+                } else {
+                    form.reportValidity();
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+            });
+        });
+    </script>
+
+
+{% endblock %}

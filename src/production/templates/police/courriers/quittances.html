@@ -1,0 +1,192 @@
+{% load my_filters %}
+<html>
+<head>
+<title>{{_("TOUTES LES QUITTANCES DE LA POLICE N°")}}{{ police.numero|default:"" }} {{_("DU CLIENT")}} {{ client.nom|default:"" }} {{ client.prenoms|default:"" }}</title>
+<style>
+    @page {
+        size: a4 landscape;
+
+        @frame content_frame {          /* Content Frame */
+            /* left: 50pt; */
+            margin: 1cm;
+            /* width: 768pt; */
+            top: 100pt;
+            bottom: 35pt;
+            /* height: 632pt; */
+        }
+        @frame header_frame {           /* Another static Frame */
+            -pdf-frame-content: header_content;
+            top: -10pt;
+            margin: 1cm;
+            height: 200pt;
+        }
+        @frame footer_frame {           /* Another static Frame */
+            -pdf-frame-content: footer_content;
+            /* left: 450pt; width: 300pt; top: 672pt; height: 200pt; */
+            /* left:700pt; */
+            bottom: -40pt;
+            margin: 1cm;
+            height: 90pt;
+        }
+    }
+
+
+    body {
+        font-size: 9px;
+    }
+
+    .bold{
+        font-weight:bold
+    }
+    .text-left{
+        text-align:left;
+    }
+    .right{
+        text-align:right;
+    }
+    .center{
+        text-align:center;
+    }
+    table th, table td {
+        vertical-align: middle;
+    }
+    .table td {
+        padding-top: 6px;
+        padding-bottom: 2px;
+        text-align: center;
+        vertical-align: middle;
+        border: 1px solid #000;
+    }
+    .table th {
+        padding-top: 4px;
+        padding-bottom: 2px;
+        vertical-align: middle;
+        background-color:#DFF2FF;
+        border: 1px solid #000;
+    }
+
+    .font_size_12{
+        font-size:12px !important
+    }
+    .font_bold{
+        font-weight:bold !important
+    }
+    .couleur_rouge{
+        background:#F08080;
+        color:#fff;
+    }
+    .couleur_verte{
+        background:#008080;
+        color:#fff;
+    }
+</style>
+</head>
+
+<body>
+    <div id="header_content">
+
+        <table>
+            <tr>
+                <td class="left" width="25%">
+                    <div>
+                        <img width="75" src="{{site_logo_url}}">
+                    </div>
+                </td>
+                <td width="70%" class="center bold" style="font-size: 14px;">
+
+                </td>
+                <td class="right" width="15%">
+                </td>
+            </tr>
+            <tr>
+                <td class="" width="20%">
+                    <br/>{{ client.bureau.nom }}<br>
+                    {{ client.bureau.addresse|default:""|safe }}<br>
+                    Tel. : {{ client.bureau.telephone|default:"" }} <br>
+                    Fax. : {{ client.bureau.fax|default:"" }}<br>
+                    Mail : {{ client.bureau.email|default:"" }}
+                </td>
+                <td class="center" style="padding-bottom:0px; font-size: 14px; vertical-align: middle;" width="60%">
+                    <h3>{{_("TOUTES LES QUITTANCES DE LA POLICE N°")}}{{ police.numero|default:"" }} {{_("DU CLIENT")}} {{ client.nom|default:"" }} {{ client.prenoms|default:"" }}</h3>
+                </td>
+                <td width="20%" style="padding-left:20px;">
+                    <br><br><br><br><br><br>
+                    {% if periode_debut and periode_fin %}
+                        <span style="background-color:#DFF2FF;">{{_("PERIODE")}} :</span> {{ periode_debut|convertir_date_jj_mm_aaaa|default_if_none:"" }} - {{ periode_fin|convertir_date_jj_mm_aaaa|default_if_none:"" }}
+                    {% else %}
+
+                    {% endif %}
+                </td>
+            </tr>
+            <tr>
+                <td>&nbsp;</td>
+                <td>&nbsp;</td>
+                <td>&nbsp;</td>
+            </tr>
+        </table>
+    </div>
+    <br/>
+    <table class="table" repeat="2">
+        <thead>
+          <tr>
+            <th scope="col">{{_("N° Quittance")}}</th>
+            <th scope="col">{{_('Type')}}</th>
+            <th scope="col">{{_("Date d'émission")}}</th>
+            <th scope="col">{{_("Début période")}}</th>
+            <th scope="col">{{_("Montant HT")}}</th>
+            <th scope="col">{{_("Montant TTC")}}</th>
+            <th scope="col">{{_("Com Courtage")}}</th>
+            <th scope="col">{{_("Retro Apporteur")}}</th>
+            <th scope="col">{{_('Solde')}}</th>
+            <th scope="col">{{_('Situation')}}</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for quittance in quittances %}
+            <tr>
+              <td>{{ quittance.numero|default_if_none:"" }}</td>
+              <td>{{ quittance.type_quittance|default_if_none:"" }}</td>
+              <td>{{ quittance.date_emission|date:'d/m/Y'|default_if_none:"" }}</td>
+              <td>{{ quittance.date_debut|date:'d/m/Y'|default_if_none:"" }}</td>
+              <td class="text-right">{{ quittance.prime_ht|money_field }}</td>
+              <td class="text-right">{{ quittance.prime_ttc|money_field }}</td>
+              <td class="text-right">{{ quittance.commission_courtage|money_field }}</td>
+              <td class="text-right">{{ quittance.commission_intermediaires|money_field }}</td>
+              <td class="text-right">{{ quittance.solde|money_field }}</td>
+              <td>{% if quittance.statut == 'PAYE' %} {{_('PAYE')}} {% else %}{{ quittance.statut|default_if_none:"" }}{% endif %}</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+    </table>
+    <br/>
+    <br/>
+    <div class="recap_bloc">
+        <h3>TABLEAU RECAPITULATIF</h3>
+        <table class="table table_recap" width="55%">
+            <thead>
+                <tr>
+                    <th>TOTAL QUITTANCES IMPAYEES</th>
+                    <th>TOTAL COMPTE CLIENT</th>
+                    <th>RESTANT A PAYER</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="font_size_12">{{ solde_quittances|money_field|default_if_none:"0" }} {{police.device.code}}</td>
+                    <td class="font_size_12">{{ solde_acomptes|money_field|default_if_none:"0" }} {{police.device.code}}</td>
+                    <td class="font_size_12 font_bold {% if solde_quittances > solde_acomptes %} couleur_rouge {% else %} couleur_verte {% endif %}">{{ difference_acomptes_quittances|money_field|default_if_none:"0" }} {{police.device.code}}</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div id="footer_content"  style="font-size: 14px;">
+        <table>
+            <tr>
+                <td>{{_("Edite le")}} {{ date_exportation|convertir_date_jj_mm_aaaa|default_if_none:"" }} à {{ heure_actuelle }}</td>
+                <td style="text-align:right">Page <pdf:pagenumber>/{{ nombre_pages }}</td>
+            </tr>
+        </table>
+    </div>
+</body>
+</html>

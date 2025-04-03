@@ -1,0 +1,96 @@
+{% extends 'police/menu_police.html' %}
+{% load my_filters %}
+{% load i18n %}
+{% block extrastyle %} {% endblock %}
+{% block content_title %}
+    <div class="row mb-2">
+          <div class="col-sm-6">
+                <h4 class="m-0 f-bold">POLICE : N° {{ police.numero|default_if_none:"" }}</h4>
+          </div>
+          <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                    <li class="breadcrumb-item"><a href="{% url 'admin:index' %}">{% trans 'Home' %}</a></li>
+                    <li class="breadcrumb-item">Production</li>
+                    <li class="breadcrumb-item"><a href="{% url 'clients' %}">Clients</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'police.details' police.id %}">Police</a></li>
+                    <li class="breadcrumb-item active">Marchandises</li>
+                </ol>
+          </div>
+    </div>
+{% endblock %}
+{% block content %}
+<div class="col-12 col-md-12 order-2 order-md-1">
+
+  <div class="card">
+    <div class="card-header">
+        <h3 class="card-title text-white">{{_('LISTE DES MARCHANDISES')}}</h3>
+        <div class="card-tools"></div>
+    </div>
+    <div class="card-body">
+      <div class="button-link pull-right mb-2">
+          {% if request.user.is_production %}
+            <a class="btn btn-sm btn-primary" data-toggle="modal" data-target="#modal-marchandise_add"><i class="fas fa-plus-circle"></i> {{_("Nouvelle marchandise")}}</a>
+          {% endif %}
+      </div>
+      <div id="example1_wrapper" class="dataTables_wrapper dt-bootstrap4">
+        <div class="row">
+          <div class="col-12 col-md-12 col-sm-12 table-responsive">
+            <table class="table table-bordered table-striped dataTable dtr-inline" id="table_marchandises">
+              <thead>
+                <tr>
+                  <th scope="col">{{_("N° de certificat")}}</th>
+                  <th scope="col">{{_("Date émission certificat")}}</th>
+                  <th scope="col">{{_("N° fact fournisseur")}}</th>
+                  <th scope="col">{{_("N° de commande")}}</th>
+                  <th scope="col">{{_("Date de commande")}}</th>
+                  <th scope="col">{{_("Marchandises")}}</th>
+                  <th scope="col">{{_("Nbre de colis")}}</th>
+                  <th scope="col">{{_('Valeur assurée')}}</th>
+                  <th scope="col">{{_('Moyen de transport')}}</th>
+                  <th scope="col">{{_('Date de voyage')}}</th>
+                  <th scope="col">{{_('Statut')}}</th>
+                  <th scope="col">{{_('Actions')}}</th>
+                </tr>
+              </thead>
+              <tbody>
+              {% for mr in marchandises %}
+                <tr>
+                  <td>{{ mr.marchandise.num_certificat|default_if_none:"" }}</td>
+                  <td>{{ mr.marchandise.date_emmision_certificat|date:'Y-m-d' }}</td>
+                  <td>{{ mr.marchandise.num_fact_fournisseur|default_if_none:"" }}</td>
+                  <td>{{ mr.marchandise.num_commande|default_if_none:"" }}</td>
+                  <td>{{ mr.marchandise.date_commande|date:'Y-m-d' }}</td>
+                  <td>{{ mr.marchandise.marchandises_description|default_if_none:"" }}</td>
+                  <td>{{ mr.marchandise.nombre_colis|money_format_mille }}</td>
+                  <td>{{ mr.marchandise.valeur_assuree|money_format_mille }}</td>
+                  <td>{{ mr.marchandise.moyens_transport.libelle|default_if_none:"" }}</td>
+                  <td>{{ mr.marchandise.debut_voyage|date:'Y-m-d' }}</td>
+                  <td>
+                      <span class="badge badge-{{mr.marchandise.statut|default_if_none:''|slugify}}">{{ mr.marchandise.statut|default_if_none:"" }}</span>
+                  </td>
+                  <td>
+                    <span style="cursor:pointer;" class="btn_details_marchandise" data-marchandise_id="{{ mr.marchandise.id }}" data-model_name="marchandise" data-modal_title="INFORMATIONS MARCHANDISE - {{ mr.marchandise.num_certificat }}" data-href="{% url 'details_marchandise' police.id mr.marchandise.id %}"><i class="fas fa-eye text-info"></i></span>&nbsp;&nbsp;
+                    {% if request.user.is_production %}
+                        <span style="cursor:pointer;" class="btn_modifier_marchandise" data-marchandise_id="{{ mr.marchandise.id }}" data-model_name="marchandise" data-modal_title="MODIFICATION D'UNE MARCHANDISE" data-href="{% url 'update_marchandise' police.id mr.marchandise.id %}"><i class="fas fa-edit text-warning"></i></span>&nbsp;&nbsp;
+                        <span style="cursor:pointer;" class="btn_supprimer_marchandise" data-marchandise_id="{{ mr.marchandise.id }}" data-police_id="{{ police.id }}" data-href="{% url 'supprimer_marchandise' police.id mr.marchandise.id %}"><i class="fas fa-times text-danger"></i></span>
+                    {% endif %}
+                  </td>
+                </tr>
+              {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %} {% block extrajs %}
+<script>
+  $(document).ready(function() {
+      $('#vehicule').removeClass('o-bg-primary');
+      $('#vehicule').addClass('o-active');
+  });
+</script>
+{% endblock %}

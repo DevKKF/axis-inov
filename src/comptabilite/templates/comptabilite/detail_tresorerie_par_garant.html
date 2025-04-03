@@ -1,0 +1,402 @@
+{% extends "admin/base_site.html" %}
+{% load my_filters %}
+{% load static %}
+{% block extrastyle %} {% endblock %}
+
+
+{% block content %}
+
+<div class="col-12 col-md-12 order-2 order-md-1">
+    <div class="card">
+        <div class="card-header" style="background: #b8b8b8 !important;">
+            <h3 class="card-title"><b>{{compagnie.nom}}</b></h3>
+            <div class="card-tools">
+            </div>
+        </div>
+    </div>
+
+    <div class="d-flex justify-content-between">
+        <div class="col-sm-4 ">
+            <div class="card">
+                <div class="card-header o-bg-primary">
+                    <h3 class="card-title"><b>SINISTRES RÉGLÉS PAR RAPPORT <br> AUX FONDS DE ROULEMENTS</b></h3>
+                    <div class="card-tools">
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% comment %} <span class="loader"><img style="height:30px; width:30px;" src="{% static 'admin_custom/ripple-loader.svg' %}" alt=""></span> {% endcomment %}
+                    <canvas id="camembertcanvas"></canvas>
+                </div>
+                <div class="card-footer">
+                    <div id="camembertcanvasLegend"></div>
+                    <div class="d-flex justify-content-between">
+                        <div class="">
+                            <span class="badge" style="background:{{data_camembert.couleur_global_fdr}}"> &nbsp; </span>
+                            <span>{{data_camembert.label_global_fdr}}</span>
+                        </div>
+                        <div class="">
+                            <span class="badge" style="background:{{data_camembert.couleur_global_sinistre_reclame}}"> &nbsp; </span>
+                            <span>{{data_camembert.label_global_sinistre_reclame}}</span>
+                        </div>
+                        <div class="">
+                            <span class="badge" style="background:{{data_camembert.couleur_global_sinistre_regle}}"> &nbsp; </span>
+                            <span>{{data_camembert.label_global_sinistre_regle}}</span>
+                        </div>
+                    </div>
+                    <!-- Légende du graphique de ligne -->
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-4">
+            <div class="card">
+                <div class="card-header o-bg-primary">
+                    <h3 class="card-title"><b>CONSOMMATION <br>AU FIL DU TEMPS</b></h3>
+                    <div class="card-tools">
+                    </div>
+                </div>
+                <div class="card-body">
+                    <canvas id="income"></canvas>
+                </div>
+                <div class="card-footer">
+                    <div class="d-flex justify-content-between">
+
+                        <div class="">
+                            <span class="badge" style="background:{{data_chart_bar.sum_fdr_color}}"> &nbsp; </span>
+                            <span>{{data_chart_bar.sum_fdr_label}}</span>
+                        </div>
+                        <div class="">
+                            <span class="badge" style="background:{{data_chart_bar.sum_consumption_color}}"> &nbsp; </span>
+                            <span>{{data_chart_bar.sum_consumption_label}}</span>
+                        </div>
+                        <div class="">
+                            <span class="badge" style="background:{{data_chart_bar.sum_tresorerie_color}}"> &nbsp; </span>
+                            <span>{{data_chart_bar.sum_tresorerie_label}}</span>
+                        </div>
+                    </div>
+                    <div id="incomeLegend"></div> <!-- Légende du graphique de ligne -->
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-4">
+            <div class="card">
+                <div class="card-header o-bg-primary">
+                    <h3 class="card-title"><b>ÉVOLUTION SOLDE ET SINISTRES <br>RÉGLÉS AU FIL DU TEMPS</b></h3>
+                    <div class="card-tools">
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- line chart canvas element -->
+                    <canvas id="buyers"></canvas>
+                </div>
+
+                <div class="card-footer">
+                    {% comment %} <div id="buyerLegend"></div> <!-- Légende du graphique de ligne --> {% endcomment %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="col-12 col-md-12 order-2 order-md-1">
+        <input type="hidden" id="compagnie_id"  value="{{compagnie_id}}">
+        <div class="card">
+            <div class="card-header o-bg-primary">
+                <h3 class="card-title"><b>LISTE DES FACTURES GARANTS IMPAYÉES</b></h3>
+                <div class="card-tools">
+                </div>
+            </div>
+
+            <div style="background:bisque;padding:10px;border-bottom:1px solid #eee;padding-bottom:10px;margin-bottom:10px;">
+                <form method="get">
+                    <label style="font-weight:normal;font-size:12px;display:none;"><i>Formulaire de recherche</i></label>
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="col-12 col-md-12 col-sm-12 row">
+
+                            <div class="col-md-3">
+                                <span class="col-sm-5 text-right" style="margin-top:5px;">N˚ Facture : </span>
+                                <div class="col-sm-7">
+                                    {% comment %} <input type="hidden" id="compagnie_id_impaye"  value="{{compagnie.id}}"> {% endcomment %}
+                                    <input id="search_numero_impayee" class="form-control" type="text" name="search_numero_impayee" style="border-radius:3px;border:1px solid rgba(0, 0, 0, 0.3);text-transform:uppercase;">
+                                </div>
+                            </div>
+
+                            <div class="col-md-3">
+                                <span class="col-sm-5 text-right" style="margin-top:5px;">Date début : </span>
+                                <div class="col-sm-7">
+                                    <input id="search_date_debut_impayee" class="form-control" type="date" name="search_date_debut_impayee" style="border-radius:3px;border:1px solid rgba(0, 0, 0, 0.3);">
+                                </div>
+                            </div>
+
+                            <div class="col-md-3">
+                                <span class="col-sm-5 text-right" style="margin-top:5px;">Date fin : </span>
+                                <div class="col-sm-7">
+                                    <input id="search_date_fin_impayee" class="form-control" type="date" name="search_date_fin_impayee" style="border-radius:3px;border:1px solid rgba(0, 0, 0, 0.3);">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div class="card-body">
+                <div id="example1_wrapper" class="dataTables_wrapper dt-bootstrap4">
+                    <div class="row">
+                        <div class="col-12 col-md-12 col-sm-12">
+                            <table class="table table-bordered table-striped dataTable_ dtr-inline table_v_middle" id="table_facture_impayees_du_garant_x">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">N˚ Facture</th>
+                                        <th scope="col">Date d'émission</th>
+                                        <th scope="col">Garant</th>
+                                        <th scope="col">Montant facture</th>
+                                        <th scope="col">Montant réglé</th>
+                                        <th scope="col">Montant restant</th>
+                                        <th scope="col">Statut</th>
+                                        <th scope="col">Mise à jour</th>
+                                        <th scope="col">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                        <!-- Les données seront chargées via Ajax -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="col-12 col-md-12 order-2 order-md-1">
+        <div class="card">
+            <div class="card-header o-bg-primary">
+                <h3 class="card-title"><b>LISTE DES FACTURES GARANTS SOLDÉES</b></h3>
+            </div>
+
+            <div style="background:bisque;padding:10px;border-bottom:1px solid #eee;padding-bottom:10px;margin-bottom:10px;">
+                <form method="get">
+                    <label style="font-weight:normal;font-size:12px;display:none;"><i>Formulaire de recherche</i></label>
+                    {% csrf_token %}
+                    <div class="row d-flex justify-content-start">
+                        {% comment %} <div class="col-md-3">
+                            <span class="col-sm-5 text-right" style="margin-top:5px;">Garant : </span>
+                            <div class="col-sm-7">
+                                <select class="form-control tags-multiple" id="search_compagnie_payee" style="border:1px solid rgba(0, 0, 0, 0.3);" name="search_compagnie_payee">
+                                    <option value="">Choisir</option>
+                                    {% for compagnie in compagnies %}
+                                        <option value="{{ compagnie.id }}">{{ compagnie.nom }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div> {% endcomment %}
+
+                        <div class="col-md-3">
+                            <span class="col-sm-5 text-right" style="margin-top:5px;">N˚ Facture : </span>
+                            <div class="col-sm-7">
+                                {% comment %} <input type="hidden"  id="compagnie_id_solde" value="{{compagnie.id}}"> {% endcomment %}
+                                <input id="search_numero_payee" class="form-control" type="text" name="search_numero_payee" style="border-radius:3px;border:1px solid rgba(0, 0, 0, 0.3);text-transform:uppercase;">
+                            </div>
+                        </div>
+
+                        <div class="col-md-3">
+                            <span class="col-sm-5 text-right" style="margin-top:5px;">Date début : </span>
+                            <div class="col-sm-7">
+                                <input id="search_date_debut_payee" class="form-control" type="date" name="search_date_debut_payee" style="border-radius:3px;border:1px solid rgba(0, 0, 0, 0.3);">
+                            </div>
+                        </div>
+
+                        <div class="col-md-3">
+                            <span class="col-sm-5 text-right" style="margin-top:5px;">Date fin : </span>
+                            <div class="col-sm-7">
+                                <input id="search_date_fin_payee" class="form-control" type="date" name="search_date_fin_payee" style="border-radius:3px;border:1px solid rgba(0, 0, 0, 0.3);">
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div class="card-body">
+                <div id="example1_wrapper" class="dataTables_wrapper dt-bootstrap4">
+                    <div class="row">
+                        <div class="col-12 col-md-12 col-sm-12">
+                            <table class="table table-bordered table-striped dataTable_ dtr-inline table_v_middle" id="table_facture_payees_du_garant_x">
+                                <thead>
+                                    <tr>
+                                        <th scope="col">N˚ Facture</th>
+                                        <th scope="col">Date d'émission</th>
+                                        <th scope="col">Garant</th>
+                                        <th scope="col">Net payé</th>
+                                        <th scope="col">Statut</th>
+                                        <th scope="col">Mise à jour</th>
+                                        <th scope="col">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <!-- Les données seront chargées via Ajax -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+
+{% block extrajs %}
+
+<script src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/1.0.2/Chart.js'></script>
+
+<script>
+    // line chart data
+    var buyerData = {
+            labels : {{data_chart_line.months|safe}},
+            datasets : [
+            {
+                fillColor : "{{data_chart_line.couleur_remplissage_sin_regles}}",
+                strokeColor : "{{data_chart_line.stroke_color_sin_regles}}",
+                pointColor : "#fff",
+                pointStrokeColor : "{{data_chart_line.point_stroke_color_sin_regles}}",
+                data : {{data_chart_line.sin_regles_data|safe}}
+            }
+        ]
+    }
+// get line chart canvas
+var buyers = document.getElementById('buyers').getContext('2d');
+// draw line chart
+new Chart(buyers).Line(buyerData);
+
+// pie chart data
+var pieData = [
+    {
+        label: "{{data_camembert.label_global_fdr}}",
+        value: "{{data_camembert.valeur_global_fdr}}",
+        color: "{{data_camembert.couleur_global_fdr}}"
+    },
+    {
+        label: "{{data_camembert.label_global_sinistre_regle}}",
+        value: "{{data_camembert.valeur_global_sinistre_regle}}",
+        color: "{{data_camembert.couleur_global_sinistre_regle}}"
+    },
+    {
+        label: "{{data_camembert.label_global_sinistre_reclame}}",
+        value: "{{data_camembert.valeur_global_sinistre_reclame}}",
+        color: "{{data_camembert.couleur_global_sinistre_reclame}}" // Utilisez une fonction pour obtenir une couleur
+    },
+];
+// pie chart options
+var pieOptions = {
+    segmentShowStroke : true,
+    animateScale : true
+}
+// get pie chart canvas
+var camembertcanvas= document.getElementById("camembertcanvas").getContext("2d");
+// draw pie chart
+new Chart(camembertcanvas).Pie(pieData, pieOptions);
+// bar chart data
+var barData = {
+    // labels : ["January","February","March","April","May","June"],
+    labels : {{data_chart_bar.months|safe}},
+    datasets : [
+        {
+            fillColor : "{{data_chart_bar.sum_fdr_color}}",
+            strokeColor : "{{data_chart_bar.sum_fdr_stroke_color}}",
+            data : {{data_chart_bar.sum_fdr_data|safe}},
+            //data : [456,479,324,569,702,600],
+        },
+        {
+            fillColor : "{{data_chart_bar.sum_consumption_color}}",
+            strokeColor : "{{data_chart_bar.sum_consumption_stroke_color}}",
+            data : {{data_chart_bar.sum_consumption_data|safe}},
+            //data : [456,479,324,569,702,600],
+        },
+        {
+            fillColor : "{{data_chart_bar.sum_tresorerie_color}}",
+            strokeColor : "{{data_chart_bar.sum_tresorerie_stroke_color}}",
+            data : {{data_chart_bar.sum_tresorerie_data|safe}},
+            //data : [456,479,324,569,702,600],
+        }
+    ],
+}
+// get bar chart canvas
+var income = document.getElementById("income").getContext("2d");
+// draw bar chart
+new Chart(income).Bar(barData);
+</script>
+
+
+<script>
+    $(document).ready(function() {
+
+        $('#table_facture_impayees_du_garant_x').DataTable({
+            "processing": true,
+            "serverSide": true,
+            "ajax": {
+                "url": "{% url 'datatable_facture_compagnie_specifique' %}",
+                "data": function(d) {
+                    d.compagnie_id = $('#compagnie_id').val();
+                    d.search_numero = $('#search_numero_impayee').val();
+                    d.search_compagnie = $('#search_compagnie_impayee').val();
+                    d.search_date_debut = $('#search_date_debut_impayee').val();
+                    d.search_date_fin = $('#search_date_fin_impayee').val();
+                    d.filter_status = 'impayee';
+                }
+            },
+            "columns": [
+                { "data": "numero" },
+                { "data": "date_emission" },
+                { "data": "compagnie" },
+                { "data": "montant_total" },
+                { "data": "montant_regle" },
+                { "data": "montant_restant" },
+                { "data": "statut" },
+                { "data": "updated_at" },
+                { "data": "actions" }
+            ],
+            "order": [[0, "asc"]]
+        });
+
+        $('#table_facture_payees_du_garant_x').DataTable({
+            "processing": true,
+            "serverSide": true,
+            "ajax": {
+                "url": "{% url 'datatable_facture_compagnie_specifique' %}",
+                "data": function(d) {
+                    d.compagnie_id = $('#compagnie_id').val();
+                    d.search_numero = $('#search_numero_payee').val();
+                    d.search_compagnie = $('#search_compagnie_payee').val();
+                    d.search_date_debut = $('#search_date_debut_payee').val();
+                    d.search_date_fin = $('#search_date_fin_payee').val();
+                    d.filter_status = 'payee';
+                }
+            },
+            "columns": [
+                { "data": "numero" },
+                { "data": "date_emission" },
+                { "data": "compagnie" },
+                { "data": "montant_total" },
+                { "data": "statut" },
+                { "data": "updated_at" },
+                { "data": "actions" }
+            ],
+            "order": [[0, "asc"]]
+        });
+
+        $('#search_numero_impayee, #search_compagnie_impayee, #search_date_debut_impayee, #search_date_fin_impayee').on('change', function() {
+            $('#table_facture_impayees_du_garant_x').DataTable().draw();
+        });
+
+        $('#search_numero_payee, #search_compagnie_payee, #search_date_debut_payee, #search_date_fin_payee').on('change', function() {
+            $('#table_facture_payees_du_garant_x').DataTable().draw();
+        });
+    });
+</script>
+
+{% endblock %}

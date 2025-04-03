@@ -1,0 +1,244 @@
+{% extends "admin/base_site.html" %}
+{% load my_filters %}
+{% load static %}
+{% load my_filters %}
+{% block extrastyle %}
+<style>
+    div.dataTables_processing>div:last-child>div {
+        background: rgb(187 65 38) !important;
+    }
+</style>
+{% endblock %}
+{% block content %}
+
+<div class="col-12 col-md-12 order-2 order-md-1">
+    <div class="card">
+        <div class="card-header o-bg-primary">
+            <h3 class="card-title"><b>LISTE DES FACTURES GARANTS IMPAYÉES</b></h3>
+            <div class="card-tools">
+                {% comment %} <a id="btnOpenDialogReglementFacturesGarant" class="btn btn-paiement_comptable mr-3" data-toggle="modal" data-href="{% url 'add_mise_en_reglement_factures_garant' %}"> <i class="fa fa-credit-card"></i> Régler une facture</a> {% endcomment %}
+            </div>
+        </div>
+
+        <div style="background:bisque;padding:10px;border-bottom:1px solid #eee;padding-bottom:10px;margin-bottom:10px;">
+            <form method="get">
+                <label style="font-weight:normal;font-size:12px;display:none;"><i>Formulaire de recherche</i></label>
+                {% csrf_token %}
+                <div class="row">
+                    <div class="col-12 col-md-12 col-sm-12 row">
+                        <div class="col-md-3">
+                            <span class="col-sm-5 text-right" style="margin-top:5px;">Garant : </span>
+                            <div class="col-sm-7">
+                                <select class="form-control tags-multiple" id="search_compagnie_impayee" style="border:1px solid rgba(0, 0, 0, 0.3);" name="search_compagnie_impayee">
+                                    <option value="">Choisir</option>
+                                    {% for compagnie in compagnies %}
+                                        <option value="{{ compagnie.id }}">{{ compagnie.nom }}                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col-md-3">
+                            <span class="col-sm-5 text-right" style="margin-top:5px;">N˚ Facture : </span>
+                            <div class="col-sm-7">
+                                <input id="search_numero_impayee" class="form-control" type="text" name="search_numero_impayee" style="border-radius:3px;border:1px solid rgba(0, 0, 0, 0.3);text-transform:uppercase;">
+                            </div>
+                        </div>
+
+                        <div class="col-md-3">
+                            <span class="col-sm-5 text-right" style="margin-top:5px;">Date début : </span>
+                            <div class="col-sm-7">
+                                <input id="search_date_debut_impayee" class="form-control" type="date" name="search_date_debut_impayee" style="border-radius:3px;border:1px solid rgba(0, 0, 0, 0.3);">
+                            </div>
+                        </div>
+
+                        <div class="col-md-3">
+                            <span class="col-sm-5 text-right" style="margin-top:5px;">Date fin : </span>
+                            <div class="col-sm-7">
+                                <input id="search_date_fin_impayee" class="form-control" type="date" name="search_date_fin_impayee" style="border-radius:3px;border:1px solid rgba(0, 0, 0, 0.3);">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <div class="card-body">
+            <div id="example1_wrapper" class="dataTables_wrapper dt-bootstrap4">
+                <div class="row">
+                    <div class="col-12 col-md-12 col-sm-12">
+                        <table class="table table-bordered table-striped dataTable_ dtr-inline table_v_middle" id="table_facture_impayees">
+                            <thead>
+                                <tr>
+                                    <th scope="col">N˚ Facture</th>
+                                    <th scope="col">Date d'émission</th>
+                                    <th scope="col">Garant</th>
+                                    <th scope="col">Montant facture</th>
+                                    <th scope="col">Montant réglé</th>
+                                    <th scope="col">Montant restant</th>
+                                    <th scope="col">Statut</th>
+                                    <th scope="col">Mise à jour</th>
+                                    <th scope="col">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                    <!-- Les données seront chargées via Ajax -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="col-12 col-md-12 order-2 order-md-1">
+    <div class="card">
+        <div class="card-header o-bg-primary">
+            <h3 class="card-title"><b>LISTE DES FACTURES GARANTS SOLDÉES</b></h3>
+        </div>
+
+        <div style="background:bisque;padding:10px;border-bottom:1px solid #eee;padding-bottom:10px;margin-bottom:10px;">
+            <form method="get">
+                <label style="font-weight:normal;font-size:12px;display:none;"><i>Formulaire de recherche</i></label>
+                {% csrf_token %}
+                <div class="row d-flex justify-content-start">
+                    <div class="col-md-3">
+                        <span class="col-sm-5 text-right" style="margin-top:5px;">Garant : </span>
+                        <div class="col-sm-7">
+                            <select class="form-control tags-multiple" id="search_compagnie_payee" style="border:1px solid rgba(0, 0, 0, 0.3);" name="search_compagnie_payee">
+                                <option value="">Choisir</option>
+                                {% for compagnie in compagnies %}
+                                    <option value="{{ compagnie.id }}">{{ compagnie.nom }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <span class="col-sm-5 text-right" style="margin-top:5px;">N˚ Facture : </span>
+                        <div class="col-sm-7">
+                            <input id="search_numero_payee" class="form-control" type="text" name="search_numero_payee" style="border-radius:3px;border:1px solid rgba(0, 0, 0, 0.3);text-transform:uppercase;">
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <span class="col-sm-5 text-right" style="margin-top:5px;">Date début : </span>
+                        <div class="col-sm-7">
+                            <input id="search_date_debut_payee" class="form-control" type="date" name="search_date_debut_payee" style="border-radius:3px;border:1px solid rgba(0, 0, 0, 0.3);">
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <span class="col-sm-5 text-right" style="margin-top:5px;">Date fin : </span>
+                        <div class="col-sm-7">
+                            <input id="search_date_fin_payee" class="form-control" type="date" name="search_date_fin_payee" style="border-radius:3px;border:1px solid rgba(0, 0, 0, 0.3);">
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        <div class="card-body">
+            <div id="example1_wrapper" class="dataTables_wrapper dt-bootstrap4">
+                <div class="row">
+                    <div class="col-12 col-md-12 col-sm-12">
+                        <table class="table table-bordered table-striped dataTable_ dtr-inline table_v_middle" id="table_facture_payees">
+                            <thead>
+                                <tr>
+                                    <th scope="col">N˚ Facture</th>
+                                    <th scope="col">Date d'émission</th>
+                                    <th scope="col">Garant</th>
+                                    <th scope="col">Net payé</th>
+                                    <th scope="col">Statut</th>
+                                    <th scope="col">Mise à jour</th>
+                                    <th scope="col">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <!-- Les données seront chargées via Ajax -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extrajs %}
+<script>
+    $(document).ready(function() {
+        $('#table_facture_impayees').DataTable({
+            "processing": true,
+            "serverSide": true,
+            "ajax": {
+                "url": "{% url 'facture_compagnie_datatable' %}",
+                "data": function(d) {
+                    d.search_numero = $('#search_numero_impayee').val();
+                    d.search_compagnie = $('#search_compagnie_impayee').val();
+                    d.search_date_debut = $('#search_date_debut_impayee').val();
+                    d.search_date_fin = $('#search_date_fin_impayee').val();
+                    d.filter_status = 'impayee';
+                }
+            },
+            "columns": [
+                { "data": "numero" },
+                { "data": "date_emission" },
+                { "data": "compagnie" },
+                { "data": "montant_total" },
+                { "data": "montant_regle" },
+                { "data": "montant_restant" },
+                { "data": "statut" },
+                { "data": "updated_at" },
+                { "data": "actions" }
+            ],
+            "order": [[0, "asc"]]
+        });
+
+        $('#table_facture_payees').DataTable({
+            "processing": true,
+            "serverSide": true,
+            "ajax": {
+                "url": "{% url 'facture_compagnie_datatable' %}",
+                "data": function(d) {
+                    d.search_numero = $('#search_numero_payee').val();
+                    d.search_compagnie = $('#search_compagnie_payee').val();
+                    d.search_date_debut = $('#search_date_debut_payee').val();
+                    d.search_date_fin = $('#search_date_fin_payee').val();
+                    d.filter_status = 'payee';
+                }
+            },
+            "columns": [
+                { "data": "numero" },
+                { "data": "date_emission" },
+                { "data": "compagnie" },
+                { "data": "montant_total" },
+                { "data": "statut" },
+                { "data": "updated_at" },
+                { "data": "actions" }
+            ],
+            "order": [[0, "asc"]]
+        });
+
+        $('#search_numero_impayee, #search_compagnie_impayee, #search_date_debut_impayee, #search_date_fin_impayee').on('change', function() {
+            $('#table_facture_impayees').DataTable().draw();
+        });
+
+        $('#search_numero_payee, #search_compagnie_payee, #search_date_debut_payee, #search_date_fin_payee').on('change', function() {
+            $('#table_facture_payees').DataTable().draw();
+        });
+    });
+</script>
+
+{% comment %} Reglement par garant (facture simple) Unitile de charger ici {% endcomment %}
+{% include 'modals/creation-reglement-facture-unique-garant.html' %}
+{% include 'modals/annuler-facture-garant.html' %}
+
+{% include 'modals/creation-reglement-factures-garant.html' %}
+
+{% endblock %}
+

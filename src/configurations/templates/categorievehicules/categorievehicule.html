@@ -1,0 +1,84 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+{% block extrastyle %} {% endblock %}
+{% block content_title %}
+    <div class="row mb-2">
+          <div class="col-sm-6">
+                <h1 class="m-0">Liste des catégories de véhicule</h1>
+          </div>
+          <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                      <li class="breadcrumb-item"><a href="{% url 'admin:index' %}">{% trans 'Home' %}</a></li>
+                      <li class="breadcrumb-item">Paramétrage</li>
+                      <li class="breadcrumb-item"><a href="{% url 'categorievehicule' %}">Catégories de véhicule</a></li>
+                </ol>
+          </div>
+    </div>
+{% endblock %}
+{% block content %}
+<div class="col-12 col-md-12 order-2 order-md-1">
+    <div class="card">
+    <div class="card-header">
+        <h3 class="card-title text-white">{{_('Catégories de véhicule')}}</h3>
+    </div>
+    <div class="card-body">
+        <div class="button-link pull-right mb-2">
+          <a class="btn btn-sm btn-primary mb-1" data-toggle="modal"  data-target="#modal-categorievehicule"><i class="fas fa-plus-circle"></i> {{_("Ajouter une catégorie véhicule")}}</a>
+        </div>
+
+      <div id="example1_wrapper" class="dataTables_wrapper dt-bootstrap4">
+        <div class="row">
+          <div class="col-12 col-md-12 col-sm-12">
+              <div class="table-responsive">
+              <table class="table table-bordered table-striped dataTable dtr-inline" id="table_formules">
+                  <thead>
+                    <tr>
+                      <th class="d-none"></th>
+                      <th scope="col">{{_('Code')}}</th>
+                      <th scope="col">{{_('Nom')}}</th>
+                      <th scope="col">{{_("Date d'ajout et heure")}}</th>
+                      <th scope="col">{{_("Statut")}}</th>
+                      <th scope="col" class="text-center">{{_('Actions')}}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                  {% for categorievehicule in categorievehicules %}
+                    <tr>
+                        <td class="d-none"></td>
+                        <td>{{ categorievehicule.code|default_if_none:"" }}</td>
+                        <td>{{ categorievehicule.libelle|default_if_none:"" }}</td>
+                        <td>{{ categorievehicule.created_at|date:"d/m/Y H:i" }}</td>
+                        <td>
+                            {% if categorievehicule.status %}
+                                <span class="badge badge-success">Actif</span>
+                            {% else %}
+                                <span class="badge badge-danger">Inactif</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-center">
+                             <span style="cursor:pointer;" class="btn_modifier_categorievehicule badge btn-sm btn-modifier rounded-pill text-center" data-categorievehicule_id="{categorievehicule.id}" data-model_name="categorievehicule" data-modal_title="MODIFICATION D'UNE CATEGORIE DE VEHICULE" data-href="{% url 'modifier_categorievehicule' categorievehicule.id %}"><i class="fas fa-edit"></i> {{_('Modifier')}}</span>
+                             <span class="badge badge-danger btn_supprimer_categorievehicule" data-categorievehicule_id="{{categorievehicule.id}}" data-href="{% url 'supprimer_categorievehicule' categorievehicule.id %}" style="cursor:pointer;"><i class="fa fa-trash"></i></span>&nbsp;
+                        </td>
+                    </tr>
+                  {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extrajs %}
+<script>
+    $(document).ready(function() {
+        $('#categorievehicule').removeClass('o-bg-primary');
+        $('#categorievehicule').addClass('o-active');
+    } );
+</script>
+
+{% include 'categorievehicules/modal_categorievehicule.html' %}
+{% endblock %}

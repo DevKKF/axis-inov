@@ -1,0 +1,96 @@
+{% load my_filters %}
+<!DOCTYPE html>
+<html lang="fr">
+    <head>
+        <meta charset="UTF-8">
+        <title>Appel de prime</title>
+    <style>
+    .table th {
+                padding-top: 4px;
+                padding-bottom: 2px;
+                font-size:14px;
+                font-weight:none;
+            }
+
+
+    .info-police{
+        font-size:1.5rem
+    }
+
+        .text {
+            margin-top: 30px;
+            line-height: 1.8;
+             font-size:14px
+        }
+
+
+
+
+    </style>
+</head>
+<body>
+
+
+    <table class="table">
+            <tr>
+                <th style="vertical-align:left"><img src="{{site_logo_url}}" alt="AXIS" width="190"></th>
+                <th></th>
+                <th></th>
+            </tr>
+        </table>
+        <br><br>
+
+
+        <table class="table">
+            <tr>
+                <th></th>
+                <th></th>
+                <th style="text-align:left">
+                    <p>Abidjan le {{date_jour}}</p>
+                    <p><strong>{{nom_client}}</strong></p>
+                    <p><strong>{{adress_client}}</strong></p>
+                </th>
+            </tr>
+        </table>
+        <br><br>
+    <table class="table">
+        <tr>
+            <th style=" text-align: center;background-color: #e0e0e0;color: #000;font-weight: bold;padding: 5px 5px;margin: 20px auto;font-size: 16px;width: 200%;">
+                <p>APPEL DE PRIME</p>
+            </th>
+        </tr>
+        </table>
+     <br><br><br><br>
+
+    <div class="info-police">
+        <p>Compagnie: <span style="margin-left: 100px;font-weight: bold;">{{compagnie}}</span></p>
+        <p>N° Police: <span style="margin-left: 100px;font-weight: bold;">{{numero_police}}</span></p>
+        <p>N° Quitance: <span style="margin-left: 100px;font-weight: bold;">{{numero_quittance}}</span></p>
+        <p>Période: <span style="margin-left: 100px;font-weight: bold;">{{date_debut_effet}} au {{date_fin_effet}}</span></p>
+        <p>Prime TTC: <span style="margin-left: 100px;font-weight: bold;">{{montant_renouvellement}} F CFA</span></p>
+    </div>
+
+
+
+        <div class="text">
+        <p>
+            Arrêté le présent appel de prime à la somme de :
+        </p>
+        <p style="font-weight: bold;">{{montant_renouvellement_en_lettres}}</p>
+
+    </div>
+        <h4 style="text-align: left; margin-top: 50px;text-decoration: underline; font-size:14px">La responsable de production</h4>
+    </div>
+
+     <table class="table">
+            <tr style="border-top: 2px solid orangered;">
+                <br><br><br><br><br><br><br><br><br><br><br>
+                <th style="color:#000; font-size:11px;  line-height: 22.5px;">
+                  Société de Courtage en Assurance au capital social de 1 000 000 FCFA Agréé sous le N° 230/MEF/DGTCP/DA-DEMO du 04 Juillet 2017 <br>
+                  RCCM N° CI-ABJ-2016-B-25253 - C.C N° 1649296 N - Tél. : 27 22 23 68 83 - Cel. : 07 07 58 17 69 51 / 01 01 03 38 64 83
+                  infos@abidjanaise-assurances.net - www.abidjanaise-assurances.ci
+                </th>
+            </tr>
+        </table>
+</body>
+</html>

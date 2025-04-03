@@ -1,0 +1,167 @@
+{% extends "admin/base_site.html" %}
+{% block extrastyle %} {% endblock %}
+{% block content %}
+<div class="col-12 col-md-12 order-2 order-md-1">
+  <div class="card">
+    <div class="card-header">
+        <h3 class="card-title"><b>{{_("LISTE DES TARIFS")}}</b></h3>
+        <div class="card-tools">
+            <a href="{% url 'generate_modele_tarifs_bureau' %}" class="btn btn-sm btn-default"><i class="fas fa-file-excel-o"></i> {{_("Télécharger le modele de tarif")}}</a>
+            {% if request.user.is_superuser %}
+                <a class="btn btn-sm btn-default" data-toggle="modal"  data-target="#modal_tarifs_bureau"><i class="fas fa-plus-circle"></i> {{_("Importer les tarifs du bureau")}}</a>
+            {% endif %}
+        </div>
+    </div>
+
+  <div style="display:none__;background:#CCCCCC;padding:10px;border-bottom:1px solid #eee;padding-bottom:10px;margin-bottom:10px;">
+    <form method="get"><label style="font-weight:normal;font-size:12px;display:none;"><i>{{_("Formulaire de recherche")}}</i></label>
+        <div class="row">
+            <div class="col-12 col-md-12 col-sm-12 row">
+                <div class="col-md-4 row">
+                    <span class="col-sm-4 text-right" style="margin-top:5px;">{{_('Rubrique')}} : </span>
+                    <div class="col-sm-8">
+                        <select class="form-control tags-multiple" id="search_rubrique" style="border:1px solid rgba(0, 0, 0, 0.3);">
+                            <option  value="">{{_('Choisir')}}</option>
+                            {% for rubrique in rubriques %}
+                                <option  value="{{rubrique.id}}">{{rubrique}}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                </div>
+                <div class="col-md-4 row">
+                    <span class="col-sm-4 text-right" style="margin-top:5px;">{{_("Code acte")}}: </span>
+                    <div class="col-sm-8">
+                        <input id="search_code" class="form-control" type="text" style="border-radius:3px;border:1px solid rgba(0, 0, 0, 0.3);text-transform:uppercase;">
+                    </div>
+                </div>
+                <div class="col-md-4 row">
+                    <span class="col-sm-4 text-right" style="margin-top:5px;">{{_("Libelle acte")}} : </span>
+                    <div class="col-sm-8">
+                        <input id="search_libelle" class="form-control" type="text" style="border-radius:3px;border:1px solid rgba(0, 0, 0, 0.3);text-transform:uppercase;">
+                    </div>
+                </div>
+                <!--div class="col-md-3 row">
+                    <div class="col-sm-7 text-right">
+                        <button type="submit" class="btn btn-complement-rouge">Rechercher</button>
+                    </div>
+                    <div class="col-sm-5 text-right" style="padding-left:0px;">
+                        <a href="/configurations/prestataire" class="btn btn-secondary" title="Vider le formulaire de recherche">Rafraichir</a>
+                    </div>
+                </div-->
+            </div>
+        </div>
+    </form>
+  </div>
+
+    <div class="card-body">
+      <div id="example1_wrapper" class="dataTables_wrapper dt-bootstrap4">
+        <div class="row">
+          <div class="col-12 col-md-12 col-sm-12 table-responsive">
+              <div class="spinner-border__" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); display: none;"></div>
+
+              <table class="table table-bordered table-striped dataTable dtr-inline" id="table_tarifs">
+                  <thead>
+                    <tr>
+                      <th class="d-none"></th>
+                      <th scope="col">{{_("Code acte")}}</th>
+                      <th scope="col">{{_("Libelle acte")}}</th>
+                      <th scope="col">{{_("Rubrique")}}</th>
+                      <th scope="col">{{_("Regroupement")}}</th>
+                      <th scope="col">{{_("Lettre cle")}}</th>
+                      <th scope="col">{{_("Coût classique")}}</th>
+                      <th scope="col">{{_("Coût mutuelle")}}</th>
+                      <th scope="col">{{_("Coût HG")}}</th>
+                      <th scope="col">{{_("Coût CHU")}}</th>
+                      <th scope="col">{{_("Coût ICA")}}</th>
+                      <!--th scope="col">Statut</th-->
+                      <th>{{_('Actions')}}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                  </tbody>
+              </table>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+
+{% endblock %}
+
+
+{% block extrajs %}
+<script>
+    $(document).ready(function() {
+
+        dataTable = $('#table_tarifs').DataTable({
+            "language": {
+                "url": "//cdn.datatables.net/plug-ins/9dcbecd42ad/i18n/French.json"
+            },
+            "serverSide": true,
+            "ajax": {
+                "url": "{% url 'tarifs_datatable' %}",
+                "data": function (data) {
+                    data.page = data.start / data.length + 1;
+                    data.search_code = $('#search_code').val();
+                    data.search_libelle = $('#search_libelle').val();
+                    data.search_rubrique = $('#search_rubrique').val();
+                },
+                "dataSrc": function (json) {
+                    return json.data;
+                }
+            },
+            "columns": [
+                {"data": "code_acte", "orderable": true},
+                {"data": "libelle_acte", "orderable": true},
+                {"data": "rubrique", "orderable": true},
+                {"data": "regroupement", "orderable": true},
+                {"data": "lettre_cle_acte", "orderable": true},
+                {"data": "cout_classique", "orderable": true},
+                {"data": "cout_mutuelle", "orderable": true},
+                {"data": "cout_public_hg", "orderable": true},
+                {"data": "cout_public_chu", "orderable": true},
+                {"data": "cout_public_ica", "orderable": true},
+                //{"data": "statut", "orderable": true},
+                {"data": "actions", "orderable": false, "searchable": false},
+            ],
+            "paging": true,
+            "pageLength": 10,
+            "processing": false,
+            "searching": false,
+            "search": {
+                "search": $('#table_tarifs-table_filter input').val()
+            }
+        });
+
+         dataTable.on('xhr.dt', function (e, settings, json, xhr) {
+            // Hide the spinner when the data is loaded
+            $('.spinner-border').hide();
+         });
+
+        // Show the spinner when the table is processing
+        dataTable.on('processing.dt', function (e, settings, processing) {
+            if (processing) {
+                $('.spinner-border').show();
+            }
+        });
+
+
+        // Add custom search functionality for code and name columns
+        $('#search_code, #search_libelle, #search_rubrique').on('keyup change', function() {
+            dataTable.search('').draw();
+            dataTable.draw();
+        });
+
+    });
+
+</script>
+
+{% include './modal_add_tarif.html' %}
+{% include './modal_importation_tarifs.html' %}
+
+{% endblock %}

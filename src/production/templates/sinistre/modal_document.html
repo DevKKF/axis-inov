@@ -1,0 +1,65 @@
+<div class="modal fade" id="modal-document" data-backdrop="static" data-keyboard="false" aria-hidden="true" style="display: none">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <form enctype="multipart/form-data" method="post" action="{% url 'sinistre_add_document' sinistre.id %}" id="form_document_client" validate>
+      {% csrf_token %}
+      <div class="modal-header">
+        <h4 class="modal-title">{{_("AJOUT D'UN DOCUMENT")}}</h4>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"> <span aria-hidden="true">×</span></button>
+      </div>
+       <div class="modal-body">
+       <div class="alert  alert-dismissible fade show hidden" role="alert">
+          <span class="message"> {{_("TRAITEMENT EN COURS")}}</span>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="form-group row">
+                    <label class="col-sm-5 col-form-label">{{_("Type de document")}} <span class="required">*</span></label>
+                    <div class="col-sm-7">
+                    <select class="form-control" name="type_document" id="type_document" required>
+                        <option value="">{{_('Choisir')}}</option>
+                        {% for type_document in types_documents %}
+                        <option value="{{ type_document.id }}">{{ type_document.libelle }}</option>
+                        {% endfor %}
+                    </select>
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label class="col-sm-5 col-form-label">{{_("Nom du document")}} <span class="required">*</span></label>
+                    <div class="col-sm-7">
+                    <input type="text" class="form-control" name="nom" id="nom" required/>
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label class="col-sm-5 col-form-label">{{_('Fichier')}} <span class="required">*</span></label>
+                    <div class="col-sm-7">
+                        <input type="file" class="form-control" name="fichier" id="fichier" required/>
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label class="col-sm-5 col-form-label">{{_("Ce document est-il confidentiel")}} ? <span class="required">*</span></label>
+                    <div class="col-sm-7">
+                        <input type="radio" value="OUI" name="confidentialite" id="confidentialite_oui">
+                        <label class="form-check-label" for="confidentialite_oui">OUI</label>
+
+                        <input type="radio" value="NON" name="confidentialite" id="confidentialite_non" class="ml-3" checked>
+                        <label class="form-check-label" for="confidentialite_non">NON</label>
+                    </div>
+                </div>
+                <div class="form-group row">
+                    <label class="col-sm-5 col-form-label">{{_('Commentaire')}}</label>
+                    <div class="col-sm-7">
+                        <textarea class="form-control" name="commentaire" id="commentaire"></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+      </div>
+      <div class="modal-footer justify-content-between">
+        <button type="button" class="btn btn-danger" data-dismiss="modal"><i class="fa fa-remove"></i> {{_('Retour')}}</button>
+        <button type="button" id="btn_save_document_client" data-option="sinistre" class="btn bg-info"><i class="fa fa-check-circle"></i> {{_('Enregistrer')}}</button>
+      </div>
+        </form>
+    </div>
+  </div>
+</div>

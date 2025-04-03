@@ -1,0 +1,42 @@
+<div  class="modal fade"  id="modal-modereglement" aria-hidden="true" data-backdrop="static" data-keyboard="false" style="display: none">
+	<div class="modal-dialog modal-lg">
+		<div class="modal-content">
+			<form enctype="multipart/form-data" id="form_add_modereglement" action="{% url 'add_modereglement' %}" method="post">
+			{% csrf_token %}
+			 <div class="modal-header">
+				<h4 class="modal-title">{{_("AJOUT D'UN MODE DE REGLEMENT")}}</h4>
+				<button type="button"class="close"data-dismiss="modal"aria-label="Close">
+					<span aria-hidden="true">×</span>
+				</button>
+			 </div>
+			<div class="modal-body">
+				<div class="alert  alert-dismissible fade show hidden" role="alert">
+				  <span class="message">{{_("TRAITEMENT EN COURS")}}</span>
+				</div>
+				<div class="col-md-12 offset-0">
+
+					<div class="tab-content" id="myTabContent">
+
+						<div class="tab-pane fade show active mt-3" id="identity" role="tabpanel" aria-labelledby="identity-tab">
+							<div class="row">
+								<div class="col-md-12">
+                                    <div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_('Libelle')}} <span class="required">*</span></label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control" name="libelle" id="libelle" value="" autocomplete="off" required/>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="modal-footer justify-content-between">
+					<button type="button" class="btn btn-danger" data-dismiss="modal"><i class="fa fa-remove"></i> {{_('Retour')}}</button>
+					<button type="button" id="btn_save_modereglement" class="btn btn-info"><i class="fa fa-check-circle"></i> {{_('Enregistrer')}}</button>
+				</div>
+			</div>
+			</form>
+		</div>
+	</div>
+</div>

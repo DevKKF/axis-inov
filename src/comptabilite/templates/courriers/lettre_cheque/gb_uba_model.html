@@ -1,0 +1,160 @@
+{% load my_filters %}
+<html>
+<head>
+<title>{{_('BORDEREAU_DES_COMMISSIONS_REGLEES')}}</title>
+<style>
+    @page {
+        size: a4 portrait;
+
+        @frame content_frame {          /* Content Frame */
+            /* left: 50pt; */
+            margin: 1cm;
+            /* width: 768pt; */
+            top: 60pt;
+            bottom: 35pt;
+            /* height: 632pt; */
+        }
+        @frame header_frame {           /* Another static Frame */
+            -pdf-frame-content: header_content;
+            top: 0pt;
+            margin: 1cm;
+            height: 0pt;
+        }
+        @frame footer_frame {           /* Another static Frame */
+            -pdf-frame-content: footer_content;
+            /* left: 450pt; width: 300pt; top: 672pt; height: 200pt; */
+            /* left:700pt; */
+            bottom: -40pt;
+            margin: 1cm;
+            height: 90pt;
+        }
+    }
+
+
+    body {
+			font-size: 10.5px;
+            font-weight: bold;
+            color: black;
+		}
+
+    .bold{
+        font-weight:bold
+    }
+    .text-left{
+    text-align:left;
+    }
+    .right{
+    text-align:right;
+    }
+    .center{
+    text-align:center;
+    }
+    table th, table td {
+        vertical-align: middle;
+    }
+    .table td {
+        /*padding-top: 6px;*/
+        /*padding-bottom: 2px;*/
+        /*text-align: center;*/
+        /*vertical-align: middle;*/
+        border: 1px solid #000;
+    }
+    .table th {
+        padding-top: 4px;
+        padding-bottom: 2px;
+        vertical-align: middle;
+        background-color:#DFF2FF;
+        border: 1px solid #000;
+    }
+</style>
+</head>
+
+<body>
+    <div id="header_content">
+    </div>
+
+    {% for paiement in paiements %}
+
+        <table class="table2">
+        <tr>
+            <td style="padding-top: 45pt; text-align: left; padding-left: 32.5pt; height: 90pt" colspan="3">{{paiement.compagnie}}</td>
+            <td></td>
+            <td></td>
+
+        </tr>
+
+        <tr>
+            <td colspan="2"></td>
+            <td colspan="2"></td>
+            <td style="padding-top: 10pt; text-align: left; padding-left: 6pt; height: 80pt" colspan="3">
+                {{paiement.nom_beneficiaire}}
+            </td>
+        </tr>
+
+
+        <tr>
+            <td colspan="2"></td>
+            <td colspan="2"></td>
+
+            <td style="padding-top: 25pt; padding-left:40pt; text-align:left; height: 70pt" colspan="2">
+<!--                &nbsp; <br>-->
+<!--                &nbsp; <br>-->
+                {{date_edition}} <br>
+<!--                &nbsp; <br>-->
+<!--                &nbsp;-->
+            </td>
+        </tr>
+
+
+
+
+        <tr>
+            <td style="padding-top: 50pt;padding-left: 30pt; text-align:left; height=140pt" colspan="6">
+                # {{paiement.bordereau_ordonnancement}} #
+            </td>
+        </tr>
+
+
+        <tr>
+
+            <td></td>
+            <td style="padding-top: 100pt; padding-left: 35pt; text-align:left; height: 210pt" colspan="5">
+                **** {{paiement.montant_total|nombre_en_lettre}} {{paiement.bureau.pays.devise.code}} ({{paiement.bureau.pays.devise.libelle}}) ****
+            </td>
+        </tr>
+
+
+        <tr>
+            <td style="padding-top: 2.5pt;padding-left: 87.5pt; text-align: left; height: 22pt" colspan="6">
+                {{paiement.nom_beneficiaire}}
+            </td>
+            <td style="padding-top: 2.5pt; padding-left: 20pt;  text-align: left; height: 22pt" colspan="2">
+                # {{paiement.montant_total}} #
+            </td>
+        </tr>
+
+        <tr>
+            <td colspan="2"></td>
+            <td style="padding-top: 0pt; padding-left: 80pt; text-align: left;" colspan="4">
+                Libreville
+            </td>
+        </tr>
+
+         <tr>
+             <td colspan="4"></td>
+            <td style="padding-top: 0pt; padding-right: 25pt; text-align: right;" colspan="4">
+                {{date_edition}}
+            </td>
+         </tr>
+
+
+    </table>
+        {% if forloop.counter != paiements|length %}
+            <div style="page-break-before:always"></div>
+        {% endif %}
+    {% endfor %}
+    <div id="footer_content">
+    </div>
+
+</body>
+</html>

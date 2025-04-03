@@ -1,0 +1,335 @@
+<div  class="modal fade"  id="modal-modification_beneficiaire" data-backdrop="static" data-keyboard="false" aria-hidden="true"  style="display: none">
+	<div class="modal-dialog modal-xl">
+		<div class="modal-content">
+			<form enctype="multipart/form-data" id="form_update_beneficiaire" action="{% url 'update_beneficiaire' police.id aliment.id %}" method="post">
+			{% csrf_token %}
+			<div class="modal-header">
+				<h4 class="modal-title">{{_('MODIFICATION_D_UN_BENEFICIAIRE')}}</h4>
+				<button type="button"class="close"data-dismiss="modal"aria-label="Close">
+					<span aria-hidden="true">×</span>
+				</button>
+			</div>
+			<div class="modal-body">
+				<div class="alert  alert-dismissible fade show hidden" role="alert">
+				  <span class="message">{{_('TRAITEMENT_EN COURS')}}</span>
+				</div>
+				<div class="col-md-12 offset-0">
+					<ul class="nav nav-tabs" id="myTab" role="tablist">
+						<li class="nav-item"><a class="nav-link active" id="identity-tab" data-toggle="tab" href="#identity_modif" role="tab" aria-controls="identity" aria-selected="true">{{_('IDENTITE')}}</a></li>
+						<li class="nav-item"><a class="nav-link" id="adherent-tab" data-toggle="tab" href="#adherent_modif" role="tab" aria-controls="adherent" aria-selected="false">{{_('ADHERENT_PRINCIPAL')}}</a></li>
+						<li class="nav-item"><a class="nav-link" id="assurance-tab" data-toggle="tab" href="#assurance_modif" role="tab" aria-controls="assurance" aria-selected="false">{{_('ASSURANCE')}}</a></li>
+						<li class="nav-item"><a class="nav-link" id="coordonnee-tab" data-toggle="tab" href="#coordonnee_modif" role="tab" aria-controls="coordonnee" aria-selected="false">{{_('COORDONNEES')}}</a></li>
+					</ul>
+					<div class="tab-content" id="myTabContent">
+
+						<div class="tab-pane fade show active mt-3" id="identity_modif" role="tabpanel" aria-labelledby="identity-tab">
+							<div class="row">
+								<div class="col-md-6">
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_('Date_d_entree')}} <span class="required">*</span></label>
+										<div class="col-sm-7">
+											<input type="date" class="form-control" name="date_entree"  value="{{ aliment.date_affiliation|date:'Y-m-d' }}" required/>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_('Civilite')}} <span class="required">*</span></label>
+										<div class="col-sm-7">
+											<select class="form-control" name="civilite" required>
+												<option value="">{{_('Choisir')}}</option>
+												{% for civilite in civilites %}
+												<option {% if civilite.id == aliment.civilite_id %} selected {% endif %} value="{{ civilite.id }}">{{ civilite.name }}</option>
+												{% endfor %}
+											</select>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_('Nom')}} <span class="required">*</span></label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control" name="nom" value="{{ aliment.nom|default_if_none:'' }}" required/>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_('Prenoms')}} <span class="required">*</span></label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control" name="prenoms" value="{{ aliment.prenoms|default_if_none:'' }}" required/>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_('Sexe')}} <span class="required">*</span></label>
+										<div class="col-sm-7">
+											<select class="form-control" name="genre" id="genre" required>
+												<option value="">{{_('Choisir')}}</option>
+												<option {% if aliment.genre == genre.FEMININ %} selected {% endif %} value="F">{{_('Feminin')}} ({{genre.FEMININ}})</option>
+												<option {% if aliment.genre == genre.MASCULIN %} selected {% endif %} value="M">{{_('Masculin')}} ({{genre.MASCULIN}})</option>
+											</select>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_('Situation_matrimoniale')}} <span class="required">*</span></label>
+										<div class="col-sm-7">
+											<select class="form-control" name="statut_familiale" required>
+												<option value="">{{_('Choisir')}}</option>
+												<option {% if aliment.statut_familiale == "C" %} selected {% endif %} value="C">{{_('Celibataire')}}</option>
+												<option {% if aliment.statut_familiale == "M" %} selected {% endif %} value="M">{{_('Marie(e)')}}</option>
+												<option {% if aliment.statut_familiale == "D" %} selected {% endif %} value="D">{{_('Divorce(e)')}}</option>
+											</select>
+										</div>
+									</div>
+									<div class="form-group row" id="box_nom_jeune_fille" style="display:none;">
+										<label class="col-sm-5 col-form-label">{{_('Nom_jeune_fille')}}</label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control" name="nom_jeune_fille" value="{{ aliment.nom_jeune_fille|default_if_none:'' }}"/>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_('Photo')}}</label>
+										<div class="col-sm-7">
+											<input type="file" class="form-control" name="photo" id="photo"/>
+										</div>
+									</div>
+								</div>
+								<div class="vl"></div>
+								<div class="col-md-5" style="border-left:0px;">
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_('Numero_CNI')}}</label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control" name="numero_piece" value="{{ aliment.numero_piece|default_if_none:'' }}"/>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_('Date_de_naissance')}} <span class="required">*</span></label>
+										<div class="col-sm-7">
+											<input type="date" class="form-control" name="date_naissance" value="{{ aliment.date_naissance|date:'Y-m-d' }}" required/>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_('Lieu_de_naissance')}}</label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control" name="lieu_naissance" value="{{ aliment.lieu_naissance|default_if_none:'' }}"/>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_('Pays_de_naissance')}} <span class="required">*</span></label>
+										<div class="col-sm-7">
+											<select class="form-control" name="pays_naissance" required>
+												<option value="">{{_('Choisir')}}</option>
+												{% for p in pays %}
+												<option {% if p.id == aliment.pays_naissance_id %} selected {% endif %}  value="{{ p.id }}">{{ p.nom }}</option>
+												{% endfor %}
+											</select>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_('Pays_de_residence')}} </label>
+										<div class="col-sm-7">
+											<select class="form-control" name="pays_residence">
+												<option value="">{{_('Choisir')}}</option>
+												{% for p in pays %}
+												<option {% if p.id == aliment.pays_residence_id %} selected {% endif %} value="{{ p.id }}">{{ p.nom }}</option>
+												{% endfor %}
+											</select>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_('Pays_d_activite_professionnelle')}} </label>
+										<div class="col-sm-7">
+											<select class="form-control" name="pays_activite_professionnelle">
+												<option value="">{{_('Choisir')}}</option>
+												{% for p in pays %}
+												<option {% if p.id == aliment.pays_activite_professionnelle_id %} selected {% endif %} value="{{ p.id }}">{{ p.nom }}</option>
+												{% endfor %}
+											</select>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_('Profession')}} </label>
+										<div class="col-sm-7">
+											<select class="form-control" name="profession">
+												<option value="">{{_('Choisir')}}</option>
+												{% for profession in professions %}
+												<option {% if profession.id == aliment.profession_id %} selected {% endif %} value="{{ profession.id }}">{{ profession.name }}</option>
+												{% endfor %}
+											</select>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_('Numero_de_securite_sociale')}} </label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control alpha_num_input" name="lieu_naissance" value="{{ aliment.numero_securite_sociale|default_if_none:'' }}"/>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_('Matricule_salarie')}}</label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control alpha_num_input" name="matricule_employe" value="{{ aliment.matricule_employe|default_if_none:'' }}"/>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+
+						<div class="tab-pane fade mt-3" id="adherent_modif" role="tabpanel" aria-labelledby="adherent-tab">
+							<div class="row">
+								<div class="col-md-6">
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_('Adherent_principal')}} <span class="required">*</span></label>
+										<div class="col-sm-7">
+											<select class="form-control" name="adherent_principal" required>
+												<option>{{_('Choisir')}}</option>
+												{% for ap in adherents_principaux %}
+												<option {% if ap.id == aliment.adherent_principal_id %} selected {% endif %} value="{{ ap.id }}">{{ ap.nom }} {{ ap.prenoms }} ({{ ap.numero_famille|default_if_none:'' }})</option>
+												{% endfor %}
+											</select>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_('Lien_de_parente')}} <span class="required">*</span></label>
+										<div class="col-sm-7">
+											<select class="form-control" name="qualite_beneficiaire_id" required>
+												<option value="">{{_('Choisir')}}</option>
+												{% for qualite in qualites_beneficiaires %}
+												<option {% if qualite.id == aliment.qualite_beneficiaire_id %} selected {% endif %} value="{{ qualite.id }}">{{ qualite.libelle }}</option>
+												{% endfor %}
+											</select>
+										</div>
+									</div>
+								</div>
+								<div class="vl"></div>
+								<div class="col-md-5" style="border-left:0px;">
+
+								</div>
+							</div>
+						</div>
+
+						<div class="tab-pane fade mt-3" id="assurance_modif" role="tabpanel" aria-labelledby="assurance-tab">
+							<div class="row">
+								<div class="col-md-6">
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_('Surprime_Hors_Taxes')}} </label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control money_field" name="surprime_ht" value="{{ aliment.surprime_ht }}" />
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_('Surprime_Toutes_Taxes_Comprises')}} </label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control money_field" name="surprime_ttc" value="{{ aliment.surprime_ttc }}" />
+										</div>
+									</div>
+									<div class="form-group row" style="display: none;">
+										<label class="col-sm-5 col-form-label">{{_('Plafond_extra')}}</label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control money_field" name="plafond_extra" value="{{ aliment.plafond_extra }}"/>
+										</div>
+									</div>
+								</div>
+								<div class="vl"></div>
+								<div class="col-md-5" style="border-left:0px;">
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_('Numero_de_securite_sociale')}} </label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control" name="numero_securite_sociale" value="{{ aliment.numero_securite_sociale|default_if_none:'' }}"/>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_('Matricule_salarie')}}</label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control" name="matricule_cie" value="{{ aliment.matricule_cie|default_if_none:'' }}" />
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">APCI/ALD</label> <!-- APCI (Association des Professionnels de l'Assurance) / ALD (Affection de Longue Durée)--> <!-- suspect sur la traduction -->
+										<div class="col-sm-7">
+											<input type="radio" class="" name="apci_ald" {% if aliment.apci_ald == "OUI" %} checked {% endif %} value="OUI"/> {{_('OUI')}} &nbsp;&nbsp;&nbsp;
+											<input type="radio" class="" name="apci_ald" {% if aliment.apci_ald == "NON" %} checked {% endif %} value="NON"/> {{_('NON')}}
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+
+						<div class="tab-pane fade mt-3" id="coordonnee_modif" role="tabpanel" aria-labelledby="coordonnee-tab">
+							<div class="row">
+								<div class="col-md-6">
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_('Ville')}} </label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control" name="ville" value="{{ aliment.ville|default_if_none:'' }}"/>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_('Adresse')}} </label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control" name="adresse" value="{{ aliment.adresse|default_if_none:'' }}" />
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_('Code_postal')}} </label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control" name="code_postal" value="{{ aliment.code_postal|default_if_none:'' }}"/>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_('Releve_d_Identite_Bancaire')}} </label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control" name="rib" value="{{ aliment.rib|default_if_none:'' }}"/>
+										</div>
+									</div>
+								</div>
+								<div class="vl"></div>
+								<div class="col-md-5" style="border-left:0px;">
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_('Telephone_fixe')}} </label>
+										<div class="col-sm-7">
+											<div class="row">
+												<div class="col-sm-4">
+													<input type="text" class="form-control" name="indicatif_fixe" value="{{aliment.bureau.pays.indicatif|default_if_none:'' }}" readonly/>
+												</div>
+												<div class="col-sm-8">
+													<input type="number" class="form-control" name="telephone_fixe" value="{{ aliment.telephone_fixe_sans_indicatif|default_if_none:'' }}"/>
+												</div>
+											</div>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_('Telephone_mobile')}} </label>
+										<div class="col-sm-7">
+											<div class="row">
+												<div class="col-sm-4">
+													<input type="text" class="form-control" name="indicatif" value="{{aliment.bureau.pays.indicatif|default_if_none:'' }}" readonly/>
+												</div>
+												<div class="col-sm-8">
+													<input type="number" class="form-control" name="telephone_mobile" value="{{aliment.telephone_mobile_sans_indicatif|default_if_none:''}}"  />
+												</div>
+											</div>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_('Email')}} </label>
+										<div class="col-sm-7">
+											<input autocomplete="off" type="email" class="form-control" name="email" value="{{ aliment.email|default_if_none:'' }}" />
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_('Commentaire')}}</label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control" name="commentaire" value="{{ aliment.commentaire|default_if_none:'' }}"/>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+
+
+					</div>
+
+				</div>
+				<div class="modal-footer justify-content-between">
+					<button type="button" class="btn btn-default" data-dismiss="modal">{{_('Retour')}}</button>
+					<button type="button" id="btn_save_modification_beneficiaire" class="btn o-bg-primary">{{_('Valider')}}</button>
+				</div>
+			</div>
+			</form>
+		</div>
+	</div>
+</div>

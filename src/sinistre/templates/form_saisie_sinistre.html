@@ -1,0 +1,192 @@
+{% extends "admin/base_site.html" %}
+{% load my_filters %}
+{% load i18n static jazzmin admin_urls %}
+<style type="text/css">
+    tr.tr_totaux td
+    {
+        border:1px solid #dee2e6;
+    }
+
+    tr.tr_totaux td .money_field
+    {
+        border:none;
+        background:none;
+        font-weight:bold;
+        font-size:22px;
+    }
+
+    tr.tr_invisible td
+    {
+        border:0px solid red;
+        padding:0px;
+    }
+    .varAlimentSinistreAutre{
+        display:none;
+    }
+    div.dataTables_processing>div:last-child>div {
+        background: rgb(187 65 38) !important;
+    }
+    /**/
+    .search_by_benef_name {
+        padding: 10px;
+        background: linear-gradient(45deg, #F8AF3C, #F8AF3C);
+        border-radius: 3px;
+        font-weight: bold;
+    }
+    /**/
+</style>
+{% block content_title %}
+    <div class="row mb-2">
+          <div class="col-sm-6">
+                <h1 class="m-0">{% trans 'Créer un dossier sinistre' %}</h1>
+          </div>
+          <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                      <li class="breadcrumb-item"><a href="{% url 'admin:index' %}">{% trans 'Home' %}</a></li>
+                      <li class="breadcrumb-item">{% trans 'Sinistre' %}</li>
+                      <li class="breadcrumb-item active">{% trans 'Saisir un dossier sinistre' %}</li>
+                </ol>
+          </div>
+    </div>
+{% endblock %}
+
+{% block content %}
+
+<div class="col-12 col-md-12 order-2 order-md-1">
+    <div id="default_page">
+        <div class="card">
+          <div class="card-header" style="background-color:var(--colorJauneOlea) important!">
+              <h3 class="card-title"><b>{{_("ENREGISTRER UN SINISTRE")}}</b></h3>
+              <div class="card-tools"><a style="cursor: pointer;color:white;" data-toggle="modal" data-target="#modal_choose_client"><i class="fa fa-refresh"></i> {{_("Cliquez pour changer de client")}}</a></b></div>
+          </div>
+
+          <div class="card-body">
+
+            <div class="col-md-12">
+                <div class="row">
+                    <div class="col-md-12"><h4 class="text-center text-italic">Veuillez sélectionner une police...</h4></div>
+                </div>
+            </div>
+          </div>
+        </div>
+    </div>
+    <div id="formulaire_page"></div>
+</div>
+
+{% endblock %}
+
+{% block extrajs %}
+
+<script>
+    $(document).ready(function() {
+
+    {% if not prestataire_executant %}
+        $('#modal_choose_client').modal();
+    {% endif %}
+
+    //soumission du formulaire de sinistre
+    $(document).on("click", "#btn_save_sinistre_gestionnaire" , function(e) {
+         e.preventDefault();
+
+        let formulaire = $(this).closest('form');
+        var type_prise_en_charge_id = formulaire.find(".type_prise_en_charge_id").val();
+
+        if(formulaire.valid()){
+
+            //vérifier s'il y a des coût de l'acte vide
+            has_error_cout_acte = false;
+            cpt_error = 0;
+            let nombre_cout_acte = $('.cout_acte:not(.is_controle_non_facture)').length;
+            if(nombre_cout_acte > 0){
+
+                $('.cout_acte:not(.is_controle_non_facture)').each(function(element){
+                    let valeur = $(this).val();
+                    if(valeur == 0){
+                        $(this).addClass('error');
+                        has_error_cout_acte = true;
+                        cpt_error ++;
+
+                    }else{
+                        $(this).removeClass('error');
+                    }
+
+                });
+
+            }
+
+
+            if (!has_error_cout_acte){
+
+                 //demander confirmation
+                 let n = noty({
+                 text        : 'Voulez-vous vraiment enregistrer ?',
+                 type        : 'warning',
+                 dismissQueue: true,
+                 layout      : 'center',
+                 theme       : 'defaultTheme',
+                 buttons     : [
+                         {addClass: 'btn btn-primary', text: 'OUI', onClick: function ($noty) {
+                             $noty.close();
+
+                             //confirmation obtenu
+                             $.ajax({
+                                    type: 'POST',
+                                    url: formulaire.attr('action'),
+                                    data: formulaire.serialize(),
+                                    beforeSend:function(){
+                                        $('#form_sinistre_gestionnaire_overlay').show();
+                                    },
+                                    success: function(response) {
+                                        $('#form_sinistre_gestionnaire_overlay').hide();
+                                        notifySuccess(response.message);
+
+                                        formulaire.find('#btn_save_sinistre_gestionnaire').attr('disabled',"disabled");
+
+
+                                        //resetFieldsGestionnaire(formulaire);
+
+                                        //
+                                        performSearchAlimentByGestionnaire();
+
+                                    },
+                                    error: function(error) {
+                                        $('#form_sinistre_gestionnaire_overlay').hide();
+                                        notifyWarning("Erreur lors du traitement");
+                                    }
+                             });
+
+                             if(type_prise_en_charge_id == 1){//CONSULTATION
+                                //location.reload();
+                             }
+
+                             }
+                         },
+                         {addClass: 'btn btn-danger', text: 'Annuler', onClick: function ($noty) {
+                             //confirmation refusée
+                             $noty.close();
+
+                         }
+                         }
+                     ]
+                 });
+                 //fin demande confirmation
+
+            }else{
+                let texte = (cpt_error > 1)? "le coût de chaque acte" : "le coût de l'acte";
+                notifyWarning("Veuillez renseigner " + texte);
+            }
+
+        }else{
+            notifyWarning("Veuillez renseigner correctement le formulaire");
+        }
+
+    });
+});
+</script>
+
+{% include 'modal_choose_client.html' %}
+
+{% include 'police/modal_sinistre_garantie.html' %}
+{% include 'police/modal_sinistre_intervenant.html' %}
+
+{% endblock %}

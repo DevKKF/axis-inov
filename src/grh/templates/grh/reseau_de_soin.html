@@ -1,0 +1,189 @@
+{% extends "grh/layouts/base.html" %}
+{% load static %}
+{% block title %}{{_('RESEAU_DE_SOIN')}}{% endblock %}
+
+{% block content %}
+
+    <style>
+        #title {
+            color: #B7482B;
+        }
+        #link {
+            color: #0000FF;
+        }
+        #status {
+            padding: 5px;
+            border-radius: 5px;
+        }
+    </style>
+
+    <div class="flex items-start pt-5">
+        <div class="w-full flex flex-col lg:flex-row items-center">
+            <a href="{% url 'grh.police_overview' police.id %}">
+                <button class="btn btn-primary-soft flex items-center w-30 pd-5">
+                    <i data-feather="corner-up-left" class="report-box__icon text-primary mr-2"></i>
+                    {{_('RETOUR')}}
+                </button>            
+            </a>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-12 gap-6 mt-5">
+        <div class="col-span-12 2xl:col-span-12">
+            <div class="grid grid-cols-12 gap-6">
+                <div class="intro-y col-span-12 md:col-span-12 lg:col-span-12">
+                    <div class="box">
+                        <div class="flex items-start px-5 pt-5">
+                            <div class="w-full flex flex-col lg:flex-row items-center">
+                                <h1 class="text-xl lg:text-lg font-medium mb-3 mr-5" id="title">
+                                    {{_('RESEAU')}}
+                                </h1>
+                            </div>
+                        </div>
+                        <div class="p-5" id="striped-rows-table">
+                            <div class="preview">
+                                <div class="overflow-x-auto">
+                                    <table class="table table-striped">
+                                        <thead>
+                                            <tr>
+                                                <th class="whitespace-nowrap"></th>
+                                                <th class="whitespace-nowrap"></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td class="font-bold">{{_('Nom_du_reseau')}}</td>
+                                                <td class="font-normal">{{ reseau_soin.nom|default_if_none:"" }}</td>
+                                            </tr>
+                                            <tr>
+                                                <td class="font-bold">{{_('Statut_de_reseau')}}</td>
+                                                <td class="font-normal">
+                                                    <div class="flex items justify-center" id="status" 
+                                                        style="background-color: {% if reseau_soin.status == 'True' %}#007500;color:#FFFFFF;font-weight: bold;
+                                                        {% elif reseau_soin.status == 'False' %}#DC3545;color:#FFFFFF;font-weight: bold;
+                                                        {% endif %}">
+                                                        {{ reseau_soin.status|default_if_none:"" }}
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-12 gap-6 mt-8">
+        <div class="col-span-12 2xl:col-span-12">
+            <div class="grid grid-cols-12 gap-6">
+                <div class="intro-y col-span-12 md:col-span-12 lg:col-span-12">
+                    <div class="box">
+                        <div class="flex items-start px-5 pt-5">
+                            <div class="w-full flex flex-col lg:flex-row items-center border-b border-gray-500">
+                                <h1 class="text-xl lg:text-lg font-medium mb-3 mr-5" id="title">
+                                    {{_('PRESTATAIRE_DU_RESEAU')}}
+                                </h1>
+                            </div>
+                        </div>
+                        <div class="intro-y col-span-12 overflow-auto lg:overflow-visible">
+                            <table class="table table-report -mt-2 datatable">
+                                <thead>
+                                    <tr>
+                                        <th class="whitespace-nowrap">{{_('Reference')}}</th>
+                                        <th class="whitespace-nowrap">{{_('Nom_Prenom')}}</th>
+                                        <th class="whitespace-nowrap">{{_('Ville')}}</th>
+                                        <th class="whitespace-nowrap">{{_('Pays')}}</th>
+                                        <th class="whitespace-nowrap">{{_('Statut')}}</th>
+                                        <th class="whitespace-nowrap">{{_('Actions')}}</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for prestataire in prestataires %}
+                                    <tr class="intro-x">
+                                        <td class="w-auto">{{ prestataire.code|default_if_none:"" }}</td>
+                                        <td class="w-auto"><a href="{% url 'grh.prestataire_medical' police.id formule.id reseau_soin.id prestataire.id %}" id="link">{{ prestataire.name|default_if_none:"" }}</a></td>
+                                        <td class="w-auto">{{ prestataire.ville|default_if_none:"" }}</td>
+                                        <td class="w-auto">{{ prestataire.pays|default_if_none:"" }}</td>
+                                        <td class="w-auto">
+                                            <div class="flex items justify-center" id="status" 
+                                                style="background-color: {% if prestataire.status == 'True' %}#007500;color:#FFFFFF;font-weight: bold;
+                                                {% elif prestataire.status == 'False' %}#DC3545;color:#FFFFFF;font-weight: bold;
+                                                {% endif %}">
+                                                {{ prestataire.status|default_if_none:"" }}
+                                            </div>
+                                        </td>
+                                        <td class="table-report__action w-5">
+                                            <div class="flex justify-center items-center">
+                                                <a href="{% url 'grh.prestataire_medical' police.id formule.id reseau_soin.id prestataire.id %}"><i data-feather="eye" id="title"></i></a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="intro-y col-span-12 md:col-span-12 lg:col-span-12">
+        <div class="box">
+            <div class="flex items-start px-5 pt-5">
+                <div class="w-full flex flex-col lg:flex-row items-center border-b border-gray-500">
+                    <h1 class="text-xl lg:text-lg font-medium mb-3 mr-5" id="title">
+                        {{_('PRESTATAIRE_EXCLUS_DU_RESEAU')}}
+                    </h1>
+                </div>
+            </div>
+            <div class="intro-y col-span-12 overflow-auto lg:overflow-visible">
+                <table class="table table-report -mt-2 datatable">
+                    <thead>
+                        <tr>
+                            <th class="whitespace-nowrap">{{_('Reference')}}</th>
+                            <th class="whitespace-nowrap">{{_('Nom_Prenom')}}</th>
+                            <th class="whitespace-nowrap">{{_('Ville')}}</th>
+                            <th class="whitespace-nowrap">{{_('Pays')}}</th>
+                            <th class="whitespace-nowrap">{{_('Statut')}}</th>
+                            <th class="whitespace-nowrap">{{_('Actions')}}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for prestataire in prestataires %}
+                            {% if prestataire.status == 'False' %}
+                                <tr class="intro-x">
+                                    <td class="w-40">{{ prestataire.code|default_if_none:"" }}</td>
+                                    <td class="w-40">
+                                        <a href="{% url 'grh.prestataire_medical' police.id formule.id reseau_soin.id prestataire.id %}" id="link">
+                                            {{ prestataire.name|default_if_none:"" }}
+                                        </a>
+                                    </td>
+                                    <td class="w-40">{{ prestataire.ville|default_if_none:"" }}</td>
+                                    <td class="w-40">{{ prestataire.pays|default_if_none:"" }}</td>
+                                    <td class="w-40">
+                                        <div class="flex items justify-center" id="status" style="background-color:#DC3545;color:#FFFFFF;font-weight: bold;">
+                                            {{ prestataire.status|default_if_none:"" }}
+                                        </div>
+                                    </td>
+                                    <td class="table-report__action w-5">
+                                        <div class="flex justify-center items-center">
+                                            <a href="{% url 'grh.prestataire_medical' police.id formule.id reseau_soin.id prestataire.id %}">
+                                                <i data-feather="eye" id="title"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endif %}
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

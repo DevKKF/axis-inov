@@ -1,0 +1,47 @@
+
+{% extends "registration/base_2fa.html" %}
+{% load static %}
+{% load i18n jazzmin %}
+{% get_jazzmin_settings request as jazzmin_settings %}
+{% get_jazzmin_ui_tweaks as jazzmin_ui %}
+
+{% block content %}
+<style>
+    body{
+        background-image: url("{% static 'admin_custom/bg/login.svg' %}");
+        background-color: #080710;
+        background-color: white;
+        {% comment %} background-color: #cccccc; {% endcomment %}
+      background-repeat: no-repeat;
+      background-size: cover;
+      background-position: left bottom;
+      background-color: rgba(8, 7, 16, 0.7);
+      background-color: rgba(43, 29, 24, 0.9);
+      background-color: white;
+    }
+
+    
+    .btn-submit {
+        display: block; 
+        margin-top: 10px; 
+        text-align: center;
+        
+    }
+
+</style>
+    <p class="login-box-msg"><img style="height:48px;" src="{% static jazzmin_settings.site_logo %}" alt="{{ jazzmin_settings.site_header }}"></p>
+    <!--<h2>Verification Code</h2>-->
+    <form method="post">
+        {% csrf_token %}
+        <label for="code">{{_('Enter_Verification_Code')}}</label>
+        <input type="text" id="code" name="code" required>
+     
+        <div class="col-8" style="display: block; margin-top: 10px; margin-left: 5rem; text-align: center;">
+            <button type="submit" class="btn {{ jazzmin_ui.button_classes.primary }} btn-block">
+                {{_('Verifier')}}
+            </button>
+        </div>
+        
+    </form>
+{% endblock %}
+

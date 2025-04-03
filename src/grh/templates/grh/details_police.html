@@ -1,0 +1,148 @@
+
+{% load static %}
+{% load custom_filters %}
+
+    <style>
+        #title {
+            color: #B7482B;
+        }
+        #link {
+            color: #0000FF;
+        }
+    </style>
+
+    <div class="grid grid-cols-12 gap-6">
+        <div class="intro-y col-span-12 md:col-span-12 lg:col-span-12">
+            <div class="box">
+                <div class="flex items-start px-5 pt-5">
+                    <div class="w-full flex flex-col lg:flex-row items-center border-b border-gray-500">
+                        <h1 class="text-xl lg:text-lg font-medium mb-3 mr-5" id="title">
+                            {{_('DETAILS_POLICE')}}
+                        </h1>
+                    </div>
+                </div>
+                <div class="mt-1">
+                    <div class="flex">
+                        <div class="w-1/2 p-2 mt-2 flex border-r border-gray-500">
+                            <div class="w-1/2 p-2 mt-2">
+                                <input type="text" class="mb-2 text-sm rounded-lg w-full font-bold border-transparent" value="N° Police cie" readonly />
+                                <input type="text" class="mb-2 text-sm rounded-lg w-full font-bold border-transparent" value="N° Police provisoire" readonly />
+                                <input type="text" class="mb-2 text-sm rounded-lg w-full font-bold border-transparent" value="Assureur" readonly />
+                            </div>
+                            <div class="w-1/2 p-2 mt-2">
+                                <input type="text" class="mb-2 text-sm mb-2 rounded-lg w-full" value="{{ police.numero|default_if_none:"" }}" readonly />
+                                <input type="text" class="mb-2 text-sm mb-2 rounded-lg w-full" value="{{ police.numero_provisoire|default_if_none:"" }}" readonly />
+                                <input type="text" class="mb-2 text-sm mb-2 rounded-lg w-full" value="{{ police.compagnie|default_if_none:"" }}" readonly />
+                            </div>
+                        </div>
+                        <div class="w-1/2 p-2 mt-2 flex">
+                            <div class="w-1/2 p-2 mt-2">
+                                <input type="text" class="mb-2 text-sm rounded-lg w-full font-bold border-transparent" value="Branche" readonly />
+                                <input type="text" class="mb-2 text-sm rounded-lg w-full font-bold border-transparent" value="Produit" readonly />
+                                <input type="text" class="mb-2 text-sm rounded-lg w-full font-bold border-transparent" value="Type de préfinancement" readonly />
+                                
+                            </div>
+                            <div class="w-1/2 p-2 mt-2">
+                                <input type="text" class="mb-2 text-sm rounded-lg w-full" value="{{ police.produit.branche|default_if_none:"" }}" readonly />
+                                <input type="text" class="mb-2 text-sm rounded-lg w-full" value="{{ police.produit|default_if_none:"" }}" readonly />
+                                <input type="text" class="mb-2 text-sm rounded-lg w-full" value="{{ police.type_prefinancement|default_if_none:"" }}" readonly />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex items-start px-5 pt-5">
+                    <div class="w-full flex flex-col lg:flex-row items-center border-b border-gray-500">
+                        <h1 class="text-xl lg:text-lg font-medium mb-3 mr-5" id="title">
+                            {{_('DATES')}}
+                        </h1>
+                    </div>
+                </div>
+                <div class="mt-1">
+                    <div class="flex">
+                        <div class="w-1/2 p-2 mt-2 flex border-r border-gray-500">
+                            <div class="w-1/2 p-2 mt-2">
+                                <input type="text" class="mb-2 text-sm rounded-lg w-full font-bold border-transparent" value="Date début effet" readonly />
+                                <input type="text" class="mb-2 text-sm rounded-lg w-full font-bold border-transparent" value="Date fin effet" readonly />
+                                <input type="text" class="mb-2 text-sm rounded-lg w-full font-bold border-transparent" value="Durée de la police" readonly />
+                            </div>
+                            <div class="w-1/2 p-2 mt-2">
+                                <input type="text" class="mb-2 text-sm rounded-lg w-full" value="{{ police.avenant_encours.date_effet|default_if_none:""|date:"d/m/Y" }}" readonly />
+                                <input type="text" class="mb-2 text-sm rounded-lg w-full" value="{{ police.avenant_encours.date_fin_periode_garantie|default_if_none:""|date:"d/m/Y" }}" readonly />
+                                <input type="text" class="mb-2 text-sm rounded-lg w-full" value="{{ duree_police|default_if_none:'' }} Mois" readonly />
+                            </div>
+                        </div>
+                        <div class="w-1/2 p-2 mt-2 flex">
+                            <div class="w-1/2 p-2 mt-2">
+                                <input type="text" class="mb-2 text-sm rounded-lg w-full font-bold border-transparent" value="Préavis de résiliation" readonly />
+                                <input type="text" class="mb-2 text-sm rounded-lg w-full font-bold border-transparent" value="Mode de renouvellement" readonly />
+                                <!--input type="text" class="mb-2 text-sm rounded-lg w-full font-bold border-transparent" value="Date fin police" readonly /-->
+                            </div>
+                            <div class="w-1/2 p-2 mt-2">
+                                <input type="text" class="mb-2 text-sm rounded-lg w-full" value="{{ police.preavis_de_resiliation|default_if_none:""|add_if_numeric_or_append_text:' MOIS' }}" readonly />
+                                <input type="text" class="mb-2 text-sm rounded-lg w-full" value="{{ police.mode_renouvellement|default_if_none:"" }}" readonly />
+                                <!--input type="text" class="mb-2 text-sm rounded-lg w-full" value="{{ police.date_fin_police|default_if_none:""|date:"d/m/Y" }}" readonly /-->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex items-start px-5 pt-5">
+                    <div class="w-full flex flex-col lg:flex-row items-center border-b border-gray-500">
+                        <h1 class="text-xl lg:text-lg font-medium mb-3 mr-5" id="title">
+                            {{_('FACTURATION')}}
+                        </h1>
+                    </div>
+                </div>
+                <div class="mt-1">
+                    <div class="flex">
+                        <div class="w-1/2 p-2 mt-2 flex border-r border-gray-500">
+                            <div class="w-1/2 p-2 mt-2">
+                                <input type="text" class="mb-2 text-sm rounded-lg w-full font-bold border-transparent" value="Devise" readonly />
+                                <input type="text" class="mb-2 text-sm rounded-lg w-full font-bold border-transparent" value="Fractionnement" readonly />
+                            </div>
+                            <div class="w-1/2 p-2 mt-2">
+                                <input type="text" class="mb-2 text-sm rounded-lg w-full" value="{{ police.bureau.pays.devise.code|default_if_none:"" }}" readonly />
+                                <input type="text" class="mb-2 text-sm rounded-lg w-full" value="{{ police.fractionnement|default_if_none:"" }}" readonly />
+                            </div>
+                        </div>
+                        <div class="w-1/2 p-2 mt-2 flex">
+                            <div class="w-1/2 p-2 mt-2">
+                                <input type="text" class="mb-2 text-sm rounded-lg w-full font-bold border-transparent" value="Mode de règlement" readonly />
+                                <input type="text" class="mb-2 text-sm rounded-lg w-full font-bold border-transparent" value="Prochaine date de facture" readonly />
+                            </div>
+                            <div class="w-1/2 p-2 mt-2">
+                                <input type="text" class="mb-2 text-sm rounded-lg w-full" value="{{ police.mode_reglement|default_if_none:'' }}" readonly />
+                                <input type="text" class="mb-2 text-sm rounded-lg w-full" value="{{ police.date_prochaine_facture|default_if_none:''|date:'d/m/Y' }}" readonly />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex items-start px-5 pt-5">
+                    <div class="w-full flex flex-col lg:flex-row items-center border-b border-gray-500">
+                        <h1 class="text-xl lg:text-lg font-medium mb-3 mr-5" id="title">
+                            {{_('LA_PRIME')}}                        
+                        </h1>
+                    </div>
+                </div>
+                <div class="mt-1">
+                    <div class="flex">
+                        <div class="w-1/2 p-2 mt-2 flex border-r border-gray-500">
+                            <div class="w-1/2 p-2 mt-2">
+                                <input type="text" class="mb-2 text-sm rounded-lg w-full font-bold border-transparent" value="Prime HT" readonly />
+                            </div>
+                            <div class="w-1/2 p-2 mt-2">
+                                <input type="text" class="mb-2 text-sm rounded-lg w-full" value="{{ police.prime_ht|default_if_none:""|format_amount }}" readonly />
+                            </div>
+                        </div>
+                        <div class="w-1/2 p-2 mt-2 flex">
+                            <div class="w-1/2 p-2 mt-2">
+                                <input type="text" class="mb-2 text-sm rounded-lg w-full font-bold border-transparent" value="Prime TTC" readonly />
+                            </div>
+                            <div class="w-1/2 p-2 mt-2">
+                                <input type="text" class="mb-2 text-sm rounded-lg w-full" value="{{ police.prime_ttc|default_if_none:""|format_amount }}" readonly />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>

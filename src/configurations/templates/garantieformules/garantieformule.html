@@ -1,0 +1,84 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+{% block extrastyle %} {% endblock %}
+{% block content_title %}
+    <div class="row mb-2">
+          <div class="col-sm-6">
+                <h1 class="m-0">Liste des garanties / formules</h1>
+          </div>
+          <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                      <li class="breadcrumb-item"><a href="{% url 'admin:index' %}">{% trans 'Home' %}</a></li>
+                      <li class="breadcrumb-item">Paramétrage</li>
+                      <li class="breadcrumb-item"><a href="{% url 'garantieformule' %}">Garanties / Formules</a></li>
+                </ol>
+          </div>
+    </div>
+{% endblock %}
+{% block content %}
+<div class="col-12 col-md-12 order-2 order-md-1">
+    <div class="card">
+    <div class="card-header">
+        <h3 class="card-title text-white">{{_("Garanties / Formules")}}</h3>
+    </div>
+    <div class="card-body">
+        <div class="button-link pull-right mb-2">
+          <a class="btn btn-sm btn-primary mb-1" data-toggle="modal"  data-target="#modal-garantieformule"><i class="fas fa-plus-circle"></i> {{_("Ajouter une garantie / formule")}}</a>
+        </div>
+
+      <div id="example1_wrapper" class="dataTables_wrapper dt-bootstrap4">
+        <div class="row">
+          <div class="col-12 col-md-12 col-sm-12">
+              <div class="table-responsive">
+              <table class="table table-bordered table-striped dataTable dtr-inline" id="table_garantieformules">
+                  <thead>
+                    <tr>
+                      <th class="d-none"></th>
+                      <th scope="col">{{_('Garantie')}}</th>
+                      <th scope="col">{{_('Formule')}}</th>
+                        <th scope="col">{{_("Date d'ajout et heure")}}</th>
+                        <th scope="col">{{_("Statut")}}</th>
+                      <th scope="col" class="text-center">{{_('Actions')}}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                  {% for garantieformule in garantieformules %}
+                    <tr>
+                        <td class="d-none"></td>
+                        <td>{{ garantieformule.garantie.nom|default_if_none:"" }}</td>
+                        <td>{{ garantieformule.formule.libelle|default_if_none:"" }}</td>
+                        <td>{{ garantieformule.created_at|date:"d/m/Y H:i" }}</td>
+                        <td>
+                            {% if garantieformule.status %}
+                                <span class="badge badge-success">Actif</span>
+                            {% else %}
+                                <span class="badge badge-danger">Inactif</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-center">
+                             <span style="cursor:pointer;" class="btn_modifier_garantieformule badge btn-sm btn-modifier rounded-pill text-center" data-garantieformule_id="{garantieformule.id}" data-model_name="garantieformule" data-modal_title="MODIFICATION D'UNE GARANTIE / FORMULE" data-href="{% url 'modifier_garantieformule' garantieformule.id %}"><i class="fas fa-edit"></i> {{_('Modifier')}}</span>
+                             <span class="badge badge-danger btn_supprimer_garantieformule" data-garantieformule_id="{{garantieformule.id}}" data-href="{% url 'supprimer_garantieformule' garantieformule.id %}" style="cursor:pointer;"><i class="fa fa-trash"></i></span>&nbsp;
+                        </td>
+                    </tr>
+                  {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extrajs %}
+<script>
+    $(document).ready(function() {
+        $('#garantieformule').removeClass('o-bg-primary');
+        $('#garantieformule').addClass('o-active');
+    } );
+</script>
+
+{% include 'garantieformules/modal_garantieformule.html' %}
+{% endblock %}

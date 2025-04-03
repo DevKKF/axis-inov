@@ -1,0 +1,286 @@
+{% extends "admin/base_site.html" %}
+{% load my_filters %}
+{% block extrastyle %}
+<style>
+    div.dataTables_processing>div:last-child>div {
+        background: rgb(187 65 38) !important;
+    }
+</style>
+{% endblock %}
+{% block content %}
+
+<div class="col-12 col-md-12 order-2 order-md-1">
+    <div class="card">
+      <div class="card-header o-bg-primary">
+          <h3 class="card-title"><b>{{_('LISTE_DES_FACTURES_ADHERENTS_ET_PRESTATAIRES_EN_ATTENTES')}}</b></h3>
+          <div class="card-tools">
+          </div>
+      </div>
+
+      <div style="display:none__;background:#CCCCCC;padding:10px;border-bottom:1px solid #eee;padding-bottom:10px;margin-bottom:10px;">
+        <form method="get"><label style="font-weight:normal;font-size:12px;display:none;"><i>{{_('Formulaire_de_recherche')}}</i></label>
+          {% csrf_token %}
+            <div class="row">
+                <div class="col-12 col-md-12 col-sm-12 row">
+                    <!--div class="col-md-2 row">
+                        <span class="col-sm-12 text-left" style="margin-top:5px;font-weight:bold;">Recherche</span>
+                    </div-->
+                    <div class="col-md-3">
+                        <span class="col text-right" style="margin-top:5px;">{{_('Type')}}: </span>
+                        <div class="col-sm-12">
+                            <select class="form-control tags-multiple" id="search_type_remboursement" name="search_type_remboursement" style="border:1px solid rgba(0, 0, 0, 0.3);">
+                                <option value="">{{_('Choisir')}}</option>
+                                {% for type_remboursement in type_remboursements %}
+                                    <option  value="{{type_remboursement.id}}">{{type_remboursement}}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <span class="col text-right" style="margin-top:5px;">{{_('Bordereau')}} : </span>
+                        <div class="col-sm-12">
+                            <input id="search_numero_bordereau" class="form-control" type="text" name="search_numero_bordereau" style="border-radius:3px;border:1px solid rgba(0, 0, 0, 0.3);text-transform:uppercase;">
+                        </div>
+                    </div>
+                    <div class="col-sm-3 remboursement-direct">
+                                <span class="col text-right" style="margin-top:5px;">{{_('Bénéficiaire de remboursement')}} <span class="required">*</span>: </span>
+                                <div class="col-sm-12">
+                                    <select class="form-control tags-multiple" id="search_type_benef_rd" style="border:1px solid rgba(0, 0, 0, 0.3);">
+                                        <option value="AD">ADHÉRENT</option>
+                                        <option  value="AS">ASSURÉ</option>
+                                    </select>
+                                </div>
+                    </div>
+                    <div class="col-md-3 search_benef">
+                        <span class="col text-right" style="margin-top:5px;" id="search_benef_libelle">{{_('Beneficiaire')}} : </span>
+                        <div class="col-sm-12">
+                            <select class="form-control tags-multiple " id="search_prestataire" style="border:1px solid rgba(0, 0, 0, 0.3);" name="search_prestataire">
+                                <option value="">Choisir</option>
+                                {% for prestataire in prestataires %}
+                                    <option  value="{{prestataire.id}}">{{prestataire.name|default_if_none:""}} ({{prestataire.code|default_if_none:""}})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3 search_assure">
+                        <span class="col text-right" style="margin-top:5px;">{{_('Beneficiaire')}} ({{_('Assuré')}}) : </span>
+                        <div class="col-sm-12">
+                            <select class="form-control tags-multiple" id="search_assure" style="border:1px solid rgba(0, 0, 0, 0.3);" name="search_assure">
+                                <option value="">Choisir</option>
+                                {% for assure in assures %}
+                                    <option  value="{{assure.id}}">{{assure.nom|default_if_none:""}} {{assure.prenoms|default_if_none:""}} ({{assure.code|default_if_none:""}})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3 px-2">
+                        <span class="col text-right" style="margin-top:5px;"> {{_('Periode')}} : </span>
+                        <div class="col-sm-12">
+                            <select class="form-control tags-multiple" id="search_periode_comptable" style="border:1px solid rgba(0, 0, 0, 0.3);" name="search_periode_comptable">
+                                <option value="">{{_('Choisir')}}</option>
+                                {% for periode in periodes_comptables %}
+                                    <option  value="{{periode.id}}">{{periode}}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <!--div class="col-md-3">
+                      <button type="submit" class="form-control btn btn-sm btn-default" style="background: #BB4127; color:white;">Filtrer</button>
+                    </div-->
+                </div>
+            </div>
+        </form>
+      </div>
+
+      <div class="card-body">
+        <div id="example1_wrapper" class="dataTables_wrapper dt-bootstrap4">
+          <div class="row">
+            <div class="col-12 col-md-12 col-sm-12">
+                 <!--div class="form-group row">
+                    <label class="offset-8 col-sm-2 col-form-label">Période comptable <span class="required"></span></label>
+                    <div class="col-sm-2">
+
+                    </div>
+                </div-->
+                <table class="table table-bordered table-striped dataTable_ dtr-inline table_v_middle" id="table_facture_prestataire">
+                    <thead>
+                      <tr>
+                        <th scope="col">{{_('Numero_Bordereau')}}</th>
+                        <th scope="col">{{_('Beneficiaire')}}</th>
+                        <th scope="col">{{_('Periode_comptable')}}</th>
+                        <th scope="col">{{_('Base_de_remboursement')}}</th>
+                        <th scope="col">{{_('Date_de_generation')}}</th>
+                        <th scope="col">{{_('Statut')}}</th>
+                        <th scope="col">{{_('Action')}}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+</div>
+
+
+{% endblock %}
+
+
+{% block extrajs %}
+<script> 
+    $(document).ready(function() {
+dataTable = $('#table_facture_prestataire').DataTable({
+            "language": {
+                "url": "https://cdn.datatables.net/plug-ins/9dcbecd42ad/i18n/French.json"
+            },
+            "deferLoading": 0, // empecher l'initialisation automatique
+            "serverSide": true,
+            "ajax": {
+                "url": "{% url 'facturesprestataires_datatable' %}",
+                "data": function (data) {
+                    data.page = data.start / data.length + 1;
+                    data.search_periode_comptable = $('#search_periode_comptable').val();
+                    data.search_prestataire = $('#search_prestataire').val();
+                    data.search_numero_bordereau = $('#search_numero_bordereau').val();
+                    data.search_type_remboursement = $('#search_type_remboursement').val();
+                    data.search_adherent_principal = $('#search_adherent_principal').val();
+                    data.search_assure = $('#search_assure').val();
+
+
+                },
+                "dataSrc": function (json) {
+
+                    return json.data;
+                }
+            },
+            "columns": [
+                {"data": "numero", "orderable": true},
+                {"data": "beneficiaire__name", "orderable": true},
+                {"data": "periode_comptable", "orderable": true},
+                {"data": "net_a_payer", "orderable": true},
+                {"data": "created_at", "orderable": true},
+                {"data": "statut", "orderable": true},
+                {"data": "actions", "orderable": false, "searchable": false},
+            ],
+            "paging": true,
+            "pageLength": 10,
+            "processing": true,  // Show the loading indicator
+            "searching": false,   // Enable the search feature
+            "search": {
+                "search": $('#table_dossiers_sinistres-table_filter input').val()
+            }
+        });
+
+
+        dataTable.on('xhr.dt', function (e, settings, json, xhr) {
+            // Hide the spinner when the data is loaded
+            $('.spinner-border').show();
+        });
+
+        // Show the spinner when the table is processing
+        dataTable.on('processing.dt', function (e, settings, processing) {
+            if (processing) {
+                $('.spinner-border').show();
+            }
+        });
+
+        // Add custom search functionality for code, name, and prenoms columns
+        $('#search_type_remboursement, #search_periode_comptable, #search_prestataire, #search_numero_bordereau, #search_adherent_principal, #search_assure, #search_type_benef_rd').on('keyup change', function() {
+            // on remet tout à plat
+            // dataTable.search('').draw(); // Clear existing search
+            dataTable.search(''); // Clear existing search
+            dataTable.clear(); // clear 
+            
+            let search_periode_comptable = $('#search_periode_comptable').val();
+            let search_prestataire = $('#search_prestataire').val();
+            let search_adherent_principal = $('#search_adherent_principal').val();
+            let search_assure = $('#search_assure').val();
+
+            let search_type_remboursement = $('#search_type_remboursement').val();
+            let search_numero_bordereau = $('#search_numero_bordereau').val();
+
+            // on verifie les selection pour redessiner le tableau ce qui implicitera reactivera ce devra l'etre depuis le traitement datatable
+            if(search_numero_bordereau != "" || (search_type_remboursement != "" && ((search_prestataire != "" && $('#search_prestataire').is(":visible")) || (search_adherent_principal != "" && $('#search_adherent_principal').is(":visible")) || (search_assure != "" && $('#search_assure').is(":visible"))) && search_periode_comptable != "")){
+                dataTable.draw(); // Trigger a new draw, which will include the updated search parameters
+            }
+        });
+    });
+
+    $(document).ready(function () {
+        // Attend que le document soit chargé
+        $(".search_assure").hide();
+        $(".remboursement-direct").hide();
+        $(".search_benef").hide();
+
+        // Gère le changement dans la liste déroulante du type de remboursement
+        $("#search_type_remboursement").change(function () {
+            var selectedType = $(this).val(); // Récupère la valeur sélectionnée
+
+            // Met à jour la deuxième liste déroulante en fonction du type sélectionné
+            if (selectedType == 1) {
+                // Si le type n'est pas 1, réinitialise l'ID et le contenu de la deuxième liste déroulante
+                $("#search_adherent_principal").attr("id", "search_prestataire");
+                $("#search_benef_libelle").html("Bénéficiaire :")
+                $(".search_assure").hide();
+                $(".remboursement-direct").hide();
+                $("#search_prestataire").html('<option value="">Choisir</option>{% for prestataire in prestataires %}<option value="{{prestataire.id}}">{{prestataire.name|default_if_none:""}} ({{prestataire.code|default_if_none:""}})</option>{% endfor %}');
+
+                $(".search_benef").show();
+             } else if(selectedType == 2){
+                // Si le type est 1, change l'ID de la deuxième liste déroulante
+                $("#search_prestataire").attr("id", "search_adherent_principal");
+                $("#search_benef_libelle").html("Bénéficiaire (Adhérent) :")
+                $(".remboursement-direct").show();
+
+                $("#search_adherent_principal").attr("name", "search_adherent_principal");
+                $("#search_adherent_principal").attr("data-select2-id", "select2-data-search_adherent_principal");
+
+                // Remplace dynamiquement le contenu de la deuxième liste déroulante
+                $("#search_adherent_principal").html('<option value="">Choisir</option>{% for adh in adherents %}<option value="{{adh.id}}">{{adh.nom|default_if_none:""}} {{adh.prenoms|default_if_none:""}} ({{adh.veos_numero_carte|default_if_none:""}})</option>{% endfor %}');
+
+                $(this).typeBenef($("#search_type_benef_rd").val());
+            }else{
+                $(".search_assure").hide();
+                $(".remboursement-direct").hide();
+                $(".search_benef").hide();
+
+                $("#search_adherent_principal").val('');
+                $("#search_assure").val('')
+                $('#search_prestataire').val('');
+            }
+        });
+
+        $("#search_type_benef_rd").change(function(){
+            var selectedType = $(this).val();
+            $(this).typeBenef(selectedType);
+        });
+
+        $.fn.typeBenef = function(selectedType) {
+            if(selectedType == 'AS'){
+                 $(".search_assure").show();
+                $(".search_benef").hide();
+
+                $("#search_adherent_principal").val('');
+            } else if(selectedType == 'AD') {
+                // Cacher les deux blocs si aucune option sélectionnée
+                $(".search_benef").show();
+                $(".search_assure").hide();
+                $("#search_assure").val('')
+
+            }
+        };
+
+    });
+
+    
+</script>
+
+
+
+
+{% endblock %}

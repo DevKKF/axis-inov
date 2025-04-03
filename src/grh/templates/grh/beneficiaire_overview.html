@@ -1,0 +1,438 @@
+{% extends "grh/layouts/base.html" %}
+{% load static %}
+{% block title %}{{_('BENEFICIAIRE_OVERVIEW')}}{% endblock %}
+
+{% block content %}
+
+    <style>
+        .zoomed {
+            transform: scale(0.8);
+            transition: transform 0.5s ease;
+        }
+        .custom-background:before {
+            background: #F8AF3C;
+            opacity: 0.5;
+        }
+        .custom-background a .box {
+            background: #F8AF3C;
+            color: #000000;
+        }
+        #title {
+            color: #B7482B;
+        }
+        #link {
+            color: #0000FF;
+        }
+        #status {
+            color: #FFFFFF;
+            padding: 5px;
+            border-radius: 5px;
+        }
+        .dataTables_length select {
+            width: auto;
+            display: inline-block;
+            padding: 6px 12px;
+            margin-bottom: 0;
+            font-size: 14px;
+            line-height: 1.42857143;
+            color: #555;
+            vertical-align: middle;
+            background-color: #fff;
+            background-image: none;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+            transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
+        }
+        .dataTables_info{
+            text-align: center;
+            padding-bottom: 10px;
+        }
+
+
+        .title{
+            color: #B7482B;
+        }
+        #link{
+            color: #0000FF;
+        }
+        #status{
+            padding: 5px;
+            border-radius: 5px;
+            color: #fff;
+        }
+
+        .status{
+            padding: 5px;
+            border-radius: 5px;
+            background-color: #6c757d;
+            color: #fff;
+        }
+        .status-inactif{
+            background-color: #DC3545;
+            color: #fff;
+        }
+        .status-suspendu{
+            background-color: #ffc107;
+            color: #fff;
+        }
+        .status-encours{
+            background-color: #F8AF3C;
+            color: #fff;
+        }
+        .status-actif{
+            background-color: #007500;
+            color: #fff;
+        }
+
+    </style>
+
+    <div class="grid grid-cols-12 gap-6 mt-8">
+        <div class="intro-y col-span-12 md:col-span-12 lg:col-span-12">
+            <div class="box">
+                <div class="flex items-start px-5 pt-5">
+                    <div class="w-full flex flex-col lg:flex-row items-center">
+                        <h1 class="text-xl lg:text-lg font-medium mb-3 mr-5" id="title">
+                            {{_('BENEFICIAIRE')}}
+                        </h1>
+                    </div>
+                </div>
+                <div class="text-center p-5 border-t border-slate-200/60 dark:border-darkmode-400">
+                    <div class="intro-y col-span-12 overflow-auto lg:overflow-visible">
+                        <table class="table table-report -mt-2">
+                            <thead>
+                                <tr>
+                                    <th class="whitespace-nowrap" style="width:8px;">{{_('Numero_Carte')}}</th>
+                                    <th class="whitespace-nowrap">{{_('Prenom')}}</th>
+                                    <th class="whitespace-nowrap">{{_('Nom')}}</th>
+                                    <th class="whitespace-nowrap">{{_('Numero_police')}}</th>
+                                    <th class="whitespace-nowrap">{{_('Client')}}</th>
+                                    <th class="whitespace-nowrap">{{_('Statut')}}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="intro-x">
+                                    <td>{{ beneficiaire.carte_active.numero|default_if_none:"" }}</td>
+                                    <td>{{ beneficiaire.prenoms|default_if_none:"" }}</td>
+                                    <td>{{ beneficiaire.nom|default_if_none:"" }}</td>
+                                    <td><a href="{% url 'grh.police_overview' police.id %}" id="link">{{ police.numero }}</a></td>
+                                    <td>{{ police.client.nom|default_if_none:"" }}</td>
+                                    <td class="w-40">
+                                        <div class="flex items justify-center status status-{{ beneficiaire.etat_beneficiaire.lower|default_if_none:'' }}">{{ beneficiaire.etat_beneficiaire|default_if_none:"" }}</div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-span-12 mt-2">
+            <div class="grid grid-cols-12 gap-6 mt-5">
+                <div class="col-span-12 sm:col-span-6 xl:col-span-2 intro-y">
+                    <div class="report-box zoomed" data-police-id="{{ police.id }}" data-beneficiaire-id="{{ beneficiaire.id }}" data-content-url="{% url 'grh.fiche_beneficiaire' police.id beneficiaire.id %}" id="fiche-beneficiaire-box">
+                        <a href="javascript:void(0);" onclick="loadContent('{% url 'grh.fiche_beneficiaire' police.id beneficiaire.id %}', 'content-container-id')">
+                            <div class="box p-5">
+                                <div class="flex items-center justify-center">
+                                    <div class="flex">
+                                        <i data-feather="clipboard" class="report-box__icon text-primary"></i>
+                                    </div>
+                                </div>
+                                <div class="flex items-center justify-center">
+                                    <div class="text-md-center font-medium leading-8 mt-8">{{_('FICHE')}}</div>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                </div>      
+                <div class="col-span-12 sm:col-span-6 xl:col-span-2 intro-y">
+                    <div class="report-box zoom-in" data-police-id="{{ police.id }}" data-beneficiaire-id="{{ beneficiaire.id }}" data-content-url="{% url 'grh.famille_beneficiaire' police.id beneficiaire.id %}" id="famille-beneficiaire-box">
+                        <a href="javascript:void(0);" onclick="loadContent('{% url 'grh.famille_beneficiaire' police.id beneficiaire.id %}', 'content-container-id')">
+                            <div class="box p-5">
+                                <div class="flex items-center justify-center">
+                                    <div class="flex">
+                                        <i data-feather="users" class="report-box__icon text-primary"></i>
+                                    </div>
+                                </div>
+                                <div class="flex items-center justify-center">
+                                    <div class="text-md-center font-medium leading-8 mt-8">{{_('FAMILLE')}}</div>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+                <div class="col-span-12 sm:col-span-6 xl:col-span-2 intro-y">
+                    <div class="report-box zoom-in" data-police-id="{{ police.id }}" data-beneficiaire-id="{{ beneficiaire.id }}" data-content-url="{% url 'grh.garanties_beneficiaire' police.id beneficiaire.id %}" id="garanties-beneficiaire-box">
+                        <a href="javascript:void(0);" onclick="loadContent('{% url 'grh.garanties_beneficiaire' police.id beneficiaire.id %}', 'content-container-id')">
+                            <div class="box p-5">
+                                <div class="flex items-center justify-center">
+                                    <div class="flex">
+                                        <i data-feather="shield" class="report-box__icon text-primary"></i>
+                                    </div>
+                                </div>
+                                <div class="flex items-center justify-center">
+                                    <div class="text-md-center font-medium leading-8 mt-8">{{_('GARANTIES')}}</div>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+
+
+                <div class="col-span-12 sm:col-span-6 xl:col-span-2 intro-y">
+                    <div class="report-box zoom-in" data-police-id="{{ police.id }}" data-beneficiaire-id="{{ beneficiaire.id }}" data-content-url="{% url 'grh.documents_beneficiaire' police.id beneficiaire.id %}" id="documents-beneficiaire-box">
+                        <a href="javascript:void(0);" onclick="loadContent('{% url 'grh.documents_beneficiaire' police.id beneficiaire.id %}', 'content-container-id')">
+                            <div class="box p-5">
+                                <div class="flex items-center justify-center">
+                                    <div class="flex">
+                                        <i data-feather="folder" class="report-box__icon text-primary"></i>
+                                    </div>
+                                </div>
+                                <div class="flex items-center justify-center">
+                                    <div class="text-md-center font-medium leading-8 mt-8">{{_('GED')}}</div>
+                                </div>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+
+
+                <div class="col-span-12 sm:col-span-6 xl:col-span-2 intro-y">
+                    <div class="report-box zoom-in" data-police-id="{{ police.id }}" data-beneficiaire-id="{{ beneficiaire.id }}" data-content-url="{% url 'grh.fiche_beneficiaire' police.id beneficiaire.id %}" id="import-photo-beneficiaire-box">
+                        {% if etat_police == "En cours" and beneficiaire.etat_beneficiaire == "ACTIF" %}
+                        <a href="{% url 'grh.importer_photo_beneficiaire' police.id beneficiaire.id %}">
+                            <div class="box p-5">
+                                <div class="flex items-center justify-center">
+                                    <div class="flex">
+                                        <i data-feather="image" class="report-box__icon text-primary"></i>
+                                    </div>
+                                </div>
+                                <div class="flex items-center justify-center">
+                                    <div class="text-md-center font-medium leading-8 mt-8">{{_('IMPORTER_UNE_PHOTO')}}</div>
+                                </div>
+                            </div>
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+                
+
+                <div class="col-span-12 sm:col-span-6 xl:col-span-2 intro-y">
+                    <div class="report-box zoom-in" data-police-id="{{ police.id }}" data-beneficiaire-id="{{ beneficiaire.id }}" data-content-url="{% url 'grh.fiche_beneficiaire' police.id beneficiaire.id %}" id="suspendre-beneficiaire-box">
+                        {% if etat_police == "En cours" and beneficiaire.etat_beneficiaire == "ACTIF" %}
+                        <a href="{% url 'grh.suspendre_beneficiaire' police.id beneficiaire.id %}">
+                            <div class="box p-5">
+                                <div class="flex items-center justify-center">
+                                    <div class="flex">
+                                        <i data-feather="user-minus" class="report-box__icon text-primary"></i>
+                                    </div>
+                                </div>
+                                <div class="flex items-center justify-center">
+                                    <div class="text-md-center font-medium leading-8 mt-8">{{_('DEMANDER_UNE_SUSPENSION')}}</div>
+                                </div>
+                            </div>
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+
+
+                <div class="col-span-12 sm:col-span-6 xl:col-span-2 intro-y">
+                    <div class="report-box zoom-in" data-police-id="{{ police.id }}" data-beneficiaire-id="{{ beneficiaire.id }}" data-content-url="{% url 'grh.fiche_beneficiaire' police.id beneficiaire.id %}" id="sortir-beneficiaire-box">
+                        {% if etat_police == "En cours" and beneficiaire.etat_beneficiaire == "ACTIF" %}
+                        <a href="{% url 'grh.sortir_beneficiaire' police.id beneficiaire.id %}">
+                            <div class="box p-5">
+                                <div class="flex items-center justify-center">
+                                    <div class="flex">
+                                        <i data-feather="user-x" class="report-box__icon text-primary"></i>
+                                    </div>
+                                </div>
+                                <div class="flex items-center justify-center">
+                                    <div class="text-md-center font-medium leading-8 mt-8">{{_('DEMANDER_UNE_SORTIE')}}</div>
+                                </div>
+                            </div>
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+                
+
+                <div class="col-span-12 sm:col-span-6 xl:col-span-2 intro-y">
+                    <div class="report-box zoom-in" data-police-id="{{ police.id }}" data-beneficiaire-id="{{ beneficiaire.id }}" data-content-url="{% url 'grh.fiche_beneficiaire' police.id beneficiaire.id %}" id="nouveau-beneficiaire-box">
+                        {% if etat_police == "En cours" and beneficiaire.etat_beneficiaire == "ACTIF" %}
+                        <a href="{% url 'grh.formulaire_ajouter_beneficiaire_famille' police.id beneficiaire.id %}">
+                            <div class="box p-5">
+                                <div class="flex items-center justify-center">
+                                    <div class="flex">
+                                        <i data-feather="user-plus" class="report-box__icon text-primary"></i>
+                                    </div>
+                                </div>
+                                <div class="flex items-center justify-center">
+                                    <div class="text-md-center font-medium leading-8 mt-8">{{_('DEMANDER_UN_AJOUT')}}</div>
+                                </div>
+                            </div>
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-12 gap-6">
+        <div class="col-span-12 2xl:col-span-12">
+            <div class="grid grid-cols-12 gap-6">
+                <div id="content-container-id" class="col-span-12 mt-12">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.23/css/dataTables.bootstrap4.min.css" />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.23/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.23/js/dataTables.bootstrap4.min.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            var reportBoxes = document.querySelectorAll('.report-box');
+            var defaultBox = document.getElementById('fiche-beneficiaire-box');
+            var storageKey = 'lastSelectedBeneficiaireCard';
+
+            function resetStyles() {
+                reportBoxes.forEach(function (otherBox) {
+                    otherBox.classList.remove('zoomed', 'custom-background');
+                    var otherIcon = otherBox.querySelector('.report-box__icon');
+                    otherIcon.style.color = '';
+                });
+            }
+
+            function loadDefaultContent(policeId, beneficiaireId) {
+                var defaultUrl = '{% url 'grh.fiche_beneficiaire' police_id beneficiaire_id %}';
+                var defaultContainerId = 'content-container-id';
+
+                loadContent(defaultUrl, defaultContainerId, policeId, beneficiaireId);
+
+                resetStyles();
+                defaultBox.classList.add('zoomed', 'custom-background');
+                var defaultIcon = defaultBox.querySelector('.report-box__icon');
+                defaultIcon.style.color = '#000000';
+            }
+
+            function saveLastSelectedBeneficiaireCard(cardId) {
+                localStorage.setItem(storageKey, cardId);
+            }
+
+            function getLastSelectedBeneficiaireCard() {
+                return localStorage.getItem(storageKey);
+            }
+
+            function isDefaultBeneficiaireCardSelected() {
+                var storedCardId = getLastSelectedBeneficiaireCard();
+                return !storedCardId || storedCardId === 'fiche-beneficiaire-box';
+            }
+
+            function clickAndLoadDefaultBeneficiaireCard() {
+                defaultBox.click();
+                var defaultPoliceId = '{{ police.id }}';
+                var defaultBeneficiaireId = '{{ beneficiaire.id }}';
+                loadDefaultContent(defaultPoliceId, defaultBeneficiaireId);
+            }
+
+            reportBoxes.forEach(function (box) {
+                box.addEventListener('click', function () {
+                    resetStyles();
+                    box.classList.add('zoomed', 'custom-background');
+                    var icon = box.querySelector('.report-box__icon');
+                    icon.style.color = '#000000';
+
+                    var beneficiaireId = box.getAttribute('data-beneficiaire-id');
+                    var contentUrl = box.getAttribute('data-content-url');
+                    var containerId = 'content-container-id';
+
+                    if (box.id === 'suspendre-beneficiaire-box' || box.id === 'sortir-beneficiaire-box' || box.id === 'import-photo-beneficiaire-box' || box.id === 'nouveau-beneficiaire-box') {
+                        document.getElementById(containerId).innerHTML = '';
+                    } else if (contentUrl) {
+                        loadContent(contentUrl, containerId, beneficiaireId);
+                        saveLastSelectedBeneficiaireCard(box.id);
+                    }
+                });
+            });
+
+            var isFirstAccess = getLastSelectedBeneficiaireCard() === null;
+
+            if (isFirstAccess || !isDefaultBeneficiaireCardSelected()) {
+                resetStyles();
+                var defaultIcon = defaultBox.querySelector('.report-box__icon');
+                defaultIcon.style.color = '';
+            }
+
+            if (isFirstAccess) {
+                clickAndLoadDefaultBeneficiaireCard();
+            } else {
+                var storedCardId = getLastSelectedBeneficiaireCard();
+                var storedCard = document.getElementById(storedCardId);
+                storedCard.classList.add('zoomed', 'custom-background');
+                var storedIcon = storedCard.querySelector('.report-box__icon');
+                storedIcon.style.color = '#000000';
+                var storedBeneficiaireId = storedCard.getAttribute('data-beneficiaire-id');
+                var storedContentUrl = storedCard.getAttribute('data-content-url');
+                if (storedContentUrl && storedCardId !== 'suspendre-beneficiaire-box' && storedCardId !== 'sortir-beneficiaire-box' && storedCardId !== 'import-photo-beneficiaire-box') {
+                    loadContent(storedContentUrl, 'content-container-id', storedBeneficiaireId);
+                }
+            }
+        });
+
+        async function loadContent(url, containerId, policeId, beneficiaireId) {
+            try {
+                const response = await fetch(url);
+                const data = await response.text();
+                const container = document.getElementById(containerId);
+                container.innerHTML = data;
+                feather.replace();
+                // DataTable - Plugin
+                const tables = document.querySelectorAll('.datatable');
+                tables.forEach(table => {
+                    if (!jQuery.fn.DataTable.isDataTable(table)) {
+                        jQuery(table).DataTable({
+                            pageLength: 10,
+                            lengthMenu: [10, 15, 25],
+                            language: {
+                                search: "",
+                                searchPlaceholder: "Rechercher...",
+                                processing:     "Chargement en cours...",
+                                lengthMenu:    "Afficher _MENU_ &eacute;l&eacute;ments",
+                                info:           "Affichage de _START_ &agrave; _END_ sur _TOTAL_ &eacute;l&eacute;ments",
+                                infoEmpty:      "Affichage de l'&eacute;lement 0 &agrave; 0 sur 0 &eacute;l&eacute;ments",
+                                loadingRecords: "Chargement en cours...",
+                                zeroRecords:    "Aucun &eacute;l&eacute;ment &agrave; afficher",
+                                paginate: {
+                                    first:      "Premier",
+                                    previous:   "Pr&eacute;c&eacute;dent",
+                                    next:       "Suivant",
+                                    last:       "Dernier"
+                                },
+                            },
+                            drawCallback: function(settings) {
+                            var info = jQuery(table).closest('.dataTables_wrapper').find('.dataTables_info');
+                            var lengthMenu = jQuery(table).closest('.dataTables_wrapper').find('.dataTables_length');
+                            var tableWrapper = jQuery(table).closest('.dataTables_wrapper');
+                            tableWrapper.find('.row:eq(0)').prepend(lengthMenu);
+                            tableWrapper.find('.row:eq(1)').prepend(info);
+                            lengthMenu.css('position', 'absolute').css('bottom', '0').css('left', '0');
+                            }
+                        });
+                    }
+                });
+                // DataTable - Plugin
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+    </script>
+
+
+
+
+{% endblock %}

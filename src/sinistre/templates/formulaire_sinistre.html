@@ -1,0 +1,335 @@
+<form id="form_add_sinistre_gestionnaire" action="{% url 'add_sinistre_gestionnaire' %}" method="post">
+  {% csrf_token %}
+
+  <div class="card">
+      <div class="card-header" style="background-color:var(--colorJauneOlea) important!">
+          <h3 class="card-title"><b>{{_("INFORMATIONS DU CLIENT ET DU CONTRAT")}}</b></h3>
+          <div class="card-tools"></div>
+      </div>
+
+      <div class="card-body">
+
+        <div class="col-md-12">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="form-group row">
+                        <label class="col-sm-5 col-form-label">{{_("Code assuré")}} </label>
+                        <div class="col-sm-7">
+                            <span class="form-control">{{ client.code|default:client.code_provisoire|default:"" }}</span>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-sm-5 col-form-label">{{_("N° Contrat")}}</label>
+                        <div class="col-sm-7">
+                            <span class="form-control">{{ police.numero|default:police.numero_provisoire|default:"" }}</span>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-sm-5 col-form-label">{{_("Branche")}} </label>
+                        <div class="col-sm-7">
+                            <span class="form-control" title="{{ police.produit.branche.nom|default_if_none:'' }}">{{ police.produit.branche.nom|default_if_none:""|slice:":35" }}</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="vl"></div>
+                <div class="col-md-5" style="border-left:0px;">
+                    <div class="form-group row">
+                        <label class="col-sm-5 col-form-label">{{_("Nom assuré")}} </label>
+                        <div class="col-sm-7">
+                            <span class="form-control">{{ client.nom|default_if_none:'' }} {{ client.prenoms|default_if_none:'' }}</span>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-sm-5 col-form-label">{{_("Compagnie")}} </label>
+                        <div class="col-sm-7">
+                            <input type="hidden" name="compagnie_id" id="compagnie_id" value="{{ assureur_police.compagnie_id }}" class="form-control">
+                            <span class="form-control">{{ assureur_police.compagnie.nom|default_if_none:"" }}</span>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-sm-5 col-form-label">{{_("Produit")}} </label>
+                        <div class="col-sm-7">
+                            <span class="form-control" title="{{ police.produit.nom|default_if_none:'' }}">{{ police.produit.nom|default_if_none:""|slice:":35" }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+      </div>
+
+  </div>
+
+  <div class="card ">
+      <div class="card-header">
+          <h3 class="card-title">
+              {{_("SAISIE DES INFORMATIONS DU SINISTRE")}}
+          </h3>
+          <div class="card-tools"><a style="cursor: pointer;color:white;" data-toggle="modal" data-target="#modal_choose_client"><i class="fa fa-refresh"></i> {{_("Cliquez pour changer de client")}}</a></b></div>
+      </div>
+
+      <div class="card-body">
+            <div class="modal-body" style="padding:0px;margin:0px;">
+                <div class="alert  alert-dismissible fade show hidden" role="alert">
+                    <span class="message">{{_("TRAITEMENT EN COURS")}}</span>
+                </div>
+                <div class="col-md-12 offset-0">
+                  <div class="card offset" style="padding:0px;margin:0px;border:none;">
+                    <div class="card-header" style="background:#639A88 !important">
+                      <h3 class="card-title text-white">Déclaration du sinistre</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-12 text-uppercase" style="margin-bottom:10px !important; border-top:2px solid #F16623; ">
+                                <h6><mark class="match">Evénement</mark></h6>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group row">
+                                    <label class="col-sm-5 col-form-label">{{_("Recherche risque")}} </label>
+                                    <div class="col-sm-7">
+                                        {% if police.produit.code == '10001' or police.produit.code == '10002' %}
+                                            <select class="form-control tags-multiple vehicule" name="vehicule_id" id="vehicule_id">
+                                                <option value=""></option>
+                                                {% for aliment in aliments %}
+                                                    <option value="{{ aliment.vehicule.id }}">{{ aliment.vehicule.marque|default_if_none:"" }}-{{ aliment.vehicule.numero_immatriculation|default_if_none:"" }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        {% elif police.produit.code == '50001' or police.produit.code == '50002' %}
+                                            <select class="form-control tags-multiple marchandise" name="marchandise_id" id="marchandise_id">
+                                                <option value=""></option>
+                                                {% for aliment in aliments %}
+                                                    <option value="{{ aliment.marchandise.id }}">{{ aliment.marchandise.num_certificat|default_if_none:"" }}</option>
+                                                {% endfor %}
+                                            </select>
+                                        {% else %}
+                                            <input type="text" class="form-control" readonly>
+                                            <input type="hidden" class="form-control" name="autre_risque_id" value="{{ aliment.autre_risque_id }}">
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label class="col-sm-5 col-form-label">{{_("Date survenance")}} <span class="required">*</span></label>
+                                    <div class="col-sm-7">
+                                        <input type="date" class="form-control" name="date_survenance" id="date_survenance" autocomplete="off" value="" required>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label class="col-sm-5 col-form-label">{{_("Date ouverture")}} <span class="required">*</span></label>
+                                    <div class="col-sm-7">
+                                        <input type="date" class="form-control" name="date_ouverture" id="date_ouverture" autocomplete="off" value="{{ today|date:'Y-m-d' }}" max="{{ today|date:'Y-m-d' }}" required>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label class="col-sm-5 col-form-label">{{_("Date clôture")}}</label>
+                                    <div class="col-sm-7">
+                                        <input type="date" class="form-control" name="date_cloture" id="date_cloture" autocomplete="off" value="">
+                                    </div>
+                                </div>
+                                <div class="form-group row d-none">
+                                    <label class="col-sm-5 col-form-label">{{_("Numéro sinistre")}}</label>
+                                    <div class="col-sm-7">
+                                        <input type="text" class="form-control" name="numero" autocomplete="off" value="" />
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="vl"></div>
+                            <div class="col-md-5" style="border-left:0px;">
+
+                                <div class="form-group row">
+                                    <label class="col-sm-5 col-form-label">{{_("Risque")}} <span class="required">*</span></label>
+                                    <div class="col-sm-7">
+                                        {% if police.produit.code == '10001' or police.produit.code == '10002' %}
+                                            <input type="text" class="form-control" name="risque" id="risque" readonly required>
+                                        {% elif police.produit.code == '50001' or police.produit.code == '50002' %}
+                                            <input type="text" class="form-control" name="risque" id="marchandise" value="{{ aliment.marchandise.num_certificat }}" required>
+                                        {% else %}
+                                            <input type="text" class="form-control" name="risque" id="risque" value="{{ aliment.autre_risque.libelle }}" required>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label class="col-sm-5 col-form-label">{{_("Date déclaration")}} <span class="required">*</span></label>
+                                    <div class="col-sm-7">
+                                        <input type="date" class="form-control" name="date_declaration" id="date_declaration" autocomplete="off" value="" required>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label class="col-sm-5 col-form-label">{{_("Date réouverture")}}</label>
+                                    <div class="col-sm-7">
+                                        <input type="date" class="form-control" name="date_reouverture" id="date_reouverture" autocomplete="off" value="">
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label class="col-sm-5 col-form-label">{{_("Sinistre avec recours")}} ? <span class="required">*</span></label>
+                                    <div class="col-sm-7" style="margin-top:10px">
+                                        <input type="radio" value="OUI" name="sinistre_recours" id="sinistre_recours_oui">
+                                        <label class="form-check-label" for="sinistre_recours_oui">OUI</label>
+
+                                        <input type="radio" value="NON" name="sinistre_recours" id="sinistre_recours_non" class="ml-3" checked>
+                                        <label class="form-check-label" for="sinistre_recours_non">NON</label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-12 text-uppercase" style="margin-bottom:10px !important; border-top:2px solid #F16623; ">
+                                <h6><mark class="match">Caractéristiques principales</mark></h6>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group row">
+                                    <label class="col-sm-5 col-form-label">{{_("Circonstance")}} <span class="required">*</span></label>
+                                    <div class="col-sm-7">
+                                        <select class="form-control" name="circonstance_id" id="circonstance_id" required>
+                                            <option value="">Choisir</option>
+                                            {% for circonstance in circonstances %}
+                                                <option value="{{ circonstance.id }}">{{ circonstance.libelle|default_if_none:"" }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label class="col-sm-5 col-form-label">{{_("Lieu de survenance")}}</label>
+                                    <div class="col-sm-7">
+                                        <input type="text" class="form-control" name="lieu_survenance" id="lieu_survenance" autocomplete="off" value="">
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label class="col-sm-5 col-form-label">{{_("TVA récupérée")}}</label>
+                                    <div class="col-sm-7">
+                                        <select class="form-control" name="tva_recuperee" id="tva_recuperee">
+                                            <option value="">Choisir</option>
+                                            <option value="OUI">OUI</option>
+                                            <option value="NON">NON</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="vl"></div>
+                            <div class="col-md-5" style="border-left:0px;">
+
+                                <div class="form-group row">
+                                    <label class="col-sm-5 col-form-label">{{_("Type sinistre")}} <span class="required">*</span></label>
+                                    <div class="col-sm-7">
+                                        <select class="form-control" name="type_sinistre_id" id="type_sinistre_id" required>
+                                            <option value="">Choisir</option>
+                                            {% for typesinistre in typesinistres %}
+                                                <option value="{{ typesinistre.id }}">{{ typesinistre.libelle|default_if_none:"" }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label class="col-sm-5 col-form-label">{{_("Franchise")}}</label>
+                                    <div class="col-sm-7">
+                                        <input type="text" class="form-control money_field" name="franchise" id="franchise" autocomplete="off" value="">
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label class="col-sm-5 col-form-label">{{_("Taux de responsabilité")}} <span class="required">*</span></label>
+                                    <div class="col-sm-7">
+                                        <select class="form-control" name="responsabilite_id" id="responsabilite_id" required>
+                                            <option value="">Choisir</option>
+                                            {% for responsabilite in responsabilites %}
+                                                <option value="{{ responsabilite.id }}">{{ responsabilite.libelle|default_if_none:"" }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-12 text-uppercase" style="margin-bottom:10px !important; border-top:2px solid #F16623; ">
+                                <h6><mark class="match">Description détaillée</mark></h6>
+                            </div>
+                            <div class="col-md-12">
+                                <div class="form-group row">
+                                    <label class="col-sm-12 col-form-label">{{_("Fait générateur")}} </label>
+                                    <div class="col-sm-12">
+                                        <textarea class="form-control" name="fait_generateur" id="fait_generateur" cols="3" rows="1"></textarea>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label class="col-sm-12 col-form-label">{{_("Point de choc")}} </label>
+                                    <div class="col-sm-12">
+                                        <textarea class="form-control" name="point_de_choc" id="point_de_choc" cols="3" rows="2"></textarea>
+                                    </div>
+                                </div>
+                                <div class="form-group row">
+                                    <label class="col-sm-12 col-form-label">{{_("Commentaire")}} </label>
+                                    <div class="col-sm-12">
+                                        <textarea class="form-control" name="commentaire" id="commentaire" cols="10" rows="5"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-md-12 text-uppercase" style="margin-bottom:10px !important; border-top:2px solid #F16623; ">
+                                <h6><mark class="match">Garanties mise en cause</mark></h6>
+                            </div>
+                            <div class="col-md-12" id="test_garantie_sinistre">
+                                <span class="btn btn-success mb-2" id="btn-ajout-garantie"><i class="fa fa-plus-circle"></i> Ajout de garantie</span>
+                                <table id="table_garantie_sinistre" style="width:100%;" class="table table-bordered table-striped dataTable_ dtr-inline">
+                                    <thead>
+                                        <tr>
+                                            <th style="width:5%"></th>
+                                            <th>{{_("Libellé")}}</th>
+                                            <th class="text-center" style="width:20%">{{_("Mouvement")}}</th>
+                                            <th class="text-center" style="width:20%;">{{_("Date")}}</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                  </div>
+                  <br>
+                  <div class="card offset" style="padding:0px;margin:0px;border:none;">
+                    <div class="card-header" style="background:#639A88 !important">
+                      <h3 class="card-title text-white">Intervenants</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-12" id="test_intervenant_sinistre">
+                                <span class="btn btn-success mb-2" data-toggle="modal" data-target="#modal-sinistre_intervenant"><i class="fa fa-plus-circle"></i> Ajout d'intervenant</span>
+                                <table id="table_intervenant_sinistre" style="width:100%;" class="table table-bordered table-striped dataTable_ dtr-inline">
+                                    <thead>
+                                        <tr>
+                                            <th></th>
+                                            <th>Nom</th>
+                                            <th>Prénoms</th>
+                                            <th>Catégorie</th>
+                                            <th>Portable</th>
+                                            <th>Email</th>
+                                            <th>Adresse</th>
+                                            <th>Ville</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                  </div>
+                  <div class="card offset" style="padding:0px;margin:0px;border:none;">
+                    <div class="card-header" style="background:#639A88 !important">
+                      <h3 class="card-title text-white">Provision</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-12 col-md-12 col-sm-12 table-responsive">
+                                <div class="garantie_null" id="garantie_null">
+                                    <h5 class="text-center text-italic">Sélectionnez des garanties...</h5>
+                                </div>
+                                <div class="garantie_existe" id="garantie_existe">
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                  </div>
+                </div>
+            </div>
+            <div class="modal-footer justify-content-between">
+                <img src="" id="loading">
+                <button type="button" id="btn_save_sinistre_gestionnaire" class="btn btn-info"><i class="fa fa-check-circle"></i> {{_('Enregistrer')}}</button>
+            </div>
+      </div>
+  </div>
+</form>

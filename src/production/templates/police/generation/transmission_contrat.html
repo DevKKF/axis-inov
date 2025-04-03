@@ -1,0 +1,91 @@
+{% load my_filters %}
+<!DOCTYPE html>
+<html lang="fr">
+    <head>
+        <meta charset="UTF-8">
+        <title>Transmission Contrat</title>
+        <style>
+            .table th {
+                padding-top: 4px;
+                padding-bottom: 2px;
+                font-size:14px;
+                font-weight:none;
+            }
+        </style>
+    </head>
+    <body>
+        <table class="table">
+            <tr>
+                <th style="vertical-align:left"><img src="{{site_logo_url}}" alt="AXIS" width="190"></th>
+                <th></th>
+                <th></th>
+            </tr>
+        </table>
+        <br><br>
+        <table class="table">
+            <tr>
+                <th></th>
+                <th></th>
+                <th style="text-align:left">
+                    <p>Abidjan le {{date_jour}}</p>
+                    <p><strong>{{nom_client}}</strong></p>
+                    <p><strong>{{adress_client}}</strong></p>
+                </th>
+            </tr>
+        </table>
+        <br><br>
+        <table class="table">
+            <tr>
+                <th style="text-align:left">{{code_client}}</th>
+                <th></th>
+                <th></th>
+            </tr>
+        </table>
+        <br><br>
+        <table class="table">
+            <tr>
+                <th style="text-align:left"><u>A L’ATTENTION DE</u>: {{nom_client}}, <br></th>
+                <th></th>
+                <th></th>
+            </tr>
+            <tr>
+                <th style="text-align:left">Objet : {{nom_courrier}}</th>
+                <th></th>
+                <th></th>
+            </tr>
+            <tr>
+                <th colspan="3" style="text-align:left; margin-left:47px">Police <b>{{numero_police}} - {{nom_produit}}</b><br><br></th>
+            </tr>
+            <tr>
+                <th style="text-align:left"><b>Madame, Monsieur,</b></th>
+                <th></th>
+                <th></th>
+            </tr>
+            <tr>
+                <th colspan="3" style="text-align:left">
+                     Nous vous transmettons ci-joint trois (3) exemplaires du contrat cité en objet. <br><br>
+                    Merci de nous faire retour des doubles dûment signés et cachetés par vos soins.
+                    <br><br>
+                    Vous en souhaitant bonne réception, <br><br>
+                    Recevez,<b>Madame, Monsieur</b>, nos meilleures salutations.
+                </th>
+            </tr>
+            <tr>
+                <th><br><br><br><br></th>
+                <th></th>
+                <th style="text-align:left; font-weight:bold; font-size:15px"><u>La responsable Production</u></th>
+            </tr>
+        </table>
+
+         <table class="table">
+            <tr style="border-top: 2px solid orangered;">
+                <br><br><br><br><br><br><br>
+                <th style="color:#000; font-size:11px;  line-height: 22.5px;">
+                  Société de Courtage en Assurance au capital social de 1 000 000 FCFA Agréé sous le N° 230/MEF/DGTCP/DA-DEMO du 04 Juillet 2017 <br>
+                  RCCM N° CI-ABJ-2016-B-25253 - C.C N° 1649296 N - Tél. : 27 22 23 68 83 - Cel. : 07 07 58 17 69 51 / 01 01 03 38 64 83
+                  infos@abidjanaise-assurances.net - www.abidjanaise-assurances.ci
+                </th>
+            </tr>
+        </table>
+    </body>
+</html>

@@ -1,0 +1,54 @@
+{% load my_filters %}
+{% load i18n static jazzmin admin_urls %}
+{% get_jazzmin_settings request as jazzmin_settings %}
+<div  class="modal fade"  id="modal-modification_autrerisque" data-backdrop="static" data-keyboard="false" aria-hidden="true"  style="display: nonehgff">
+	<div class="modal-dialog modal-xl">
+		<div class="modal-content">
+			<form id="form_update_autrerisque" action="{% url 'update_autrerisque' police.id autrerisque.id %}" method="post">
+			{% csrf_token %}
+			<div class="modal-header">
+				<h4 class="modal-title">{{_("MODIFICATION D'UN AUTRE RISQUE")}}</h4>
+				<button type="button"class="close"data-dismiss="modal"aria-label="Close">
+					<span aria-hidden="true">×</span>
+				</button>
+			</div>
+			<div class="modal-body">
+				<div class="alert  alert-dismissible fade show hidden" role="alert">
+				  <span class="message"> {{_("TRAITEMENT EN COURS")}}</span>
+				</div>
+				<div class="col-md-12 offset-0">
+					<ul class="nav nav-tabs" id="myTab" role="tablist">
+						<li class="nav-item"><a class="nav-link active" id="autrerisque-u-tab" data-toggle="tab" href="#autrerisque-u_modif" role="tab" aria-controls="autrerisque-u" aria-selected="true">{{_('AUTRE RISQUE')}}</a></li>
+					</ul>
+					<div class="tab-content" id="myTabContent">
+						<div class="tab-pane fade show active mt-3" id="autrerisque-u_modif" role="tabpanel" aria-labelledby="autrerisque-u-tab">
+							<div class="row">
+								<div class="col-md-12">
+									<div class="form-group row">
+										<label class="col-sm-12 col-form-label">{{_("Risque")}} <span class="text-danger">*</span></label>
+										<div class="col-sm-12">
+											<input type="text" class="form-control" name="libelle" id="libelle" value="{{ autrerisque.libelle|default_if_none:'' }}" required>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-12 col-form-label">{{_("Description")}}</label>
+										<div class="col-sm-12">
+                                            <textarea name="description" id="description" cols="30" rows="10" class="form-control">{{ autrerisque.description|default_if_none:'' }}</textarea>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+
+					</div>
+
+				</div>
+				<div class="modal-footer justify-content-between">
+					<button type="button" class="btn btn-danger" data-dismiss="modal"><i class="fa fa-remove"></i> {{_('Retour')}}</button>
+					<button type="button" id="btn_save_modification_autrerisque" class="btn btn-info"><i class="fa fa-check-circle"></i> {{_("Valider les modifications")}}</button>
+				</div>
+			</div>
+			</form>
+		</div>
+	</div>
+</div>

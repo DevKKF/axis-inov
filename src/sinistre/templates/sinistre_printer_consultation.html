@@ -1,0 +1,179 @@
+{% load my_filters %}
+<html>
+
+<head>
+
+<style>
+    @page {
+        size: a4 portrait;
+        @frame system_frame {           /* Static Frame */
+            -pdf-frame-content: system_content;
+            left: 100pt; width: 440pt; top: 84pt; height: 20pt;
+        }
+        @frame system_frame {           /* Static Frame */
+            -pdf-frame-content: centresoin_content;
+            left: 34pt; width: 526pt; top: 194pt; height: 40pt; 
+        }
+        @frame beneficiaire_frame {           /* Static Frame */
+            -pdf-frame-content: beneficiaire_content;
+            left: 34pt; width: 520pt; top: 239pt; height: 100pt;
+        }
+        @frame prestation_frame {           /* Static Frame */
+            -pdf-frame-content: prestation_content;
+            left: 40pt; width: 515pt; top: 378pt; height: 80pt; 
+        }
+        @frame plafond_atteint_frame {           /* Static Frame */
+            -pdf-frame-content: plafond_atteint_content;
+            left: 40pt; width: 515pt; top: 528pt; height: 70pt; 
+        }
+        @frame ticket_moderateur_frame {           /* Static Frame */
+            -pdf-frame-content: ticket_moderateur_content;
+            left: 480pt; width: 40pt; top: 598pt; height: 20pt; 
+        }
+        @frame non_garantie_frame {           /* Static Frame */
+            -pdf-frame-content: non_garantie_content;
+            left: 40pt; width: 515pt; top: 618pt; height: 20pt; 
+        }
+
+        table { -pdf-keep-with-next: true; }
+        p { margin: 0; -pdf-keep-with-next: true; }
+        p.separator { -pdf-keep-with-next: false; font-size: 100pt; height: 100pt; text-align: center; }
+        center.top { -pdf-keep-with-next: false; size: 12pt; text-align: center; }
+        center.footer { -pdf-keep-with-next: false; text-align: center; }
+    }
+    body {font-size: 12px;}
+    h1   {color: blue;}
+    p    {color: red;}
+    .topCenter {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    }
+    .footer{
+        font-size: 7pt;
+    }
+    td {
+        vertical-align: middle;
+        bottom: 0pt;
+        top:0pt;
+    }
+    .diagonal-text {
+        color:#ff0000;
+        transform: rotate(-45deg); /* Rotation de 45 degrés en sens antihoraire */
+        transform-origin: left bottom; /* Point de rotation au coin inférieur gauche */
+        position: fixed;
+        top: 0;
+        left: 0;
+        background-color: rgba(255, 255, 255, 0.8); /* Arrière-plan semi-transparent */
+        padding: 10px;
+        width: 100%;
+        text-align: center;
+        z-index: 999; /* Empilement au-dessus des autres éléments */
+    }
+</style>
+</head>
+
+</head>
+
+<body>
+    <!-- Content for Static Frame 'header_frame' -->
+
+    <div id="system_content">
+      <table style="width:100%;">
+          <tr style="text-align: center;">
+            <td style="width: 50%;">{{ dossier_sinistre.created_at|date:"d/m/Y H:i:s" }} (GMT)</td>
+            <td style="width-: %;"> {{ dossier_sinistre.created_by.last_name|default_if_none:""}} {{ dossier_sinistre.created_by.first_name|default_if_none:"" }}</td>
+          </tr>
+      </table>
+    </div>
+
+    <div id="centresoin_content">
+      <table>
+          <tr style="text-align: center;">
+            <td style="width: 33%;">{{dossier_sinistre.prestataire|default_if_none:""}}</td>
+            <td style="width: 33%;">{{dossier_sinistre.prestataire|default_if_none:""}}</td>
+            <td style="width: 33%;">{{dossier_sinistre.prescripteur|default_if_none:""}}</td>
+          </tr>
+      </table>
+    </div>
+
+    <div id="beneficiaire_content">
+      <table>
+          <tr style="text-align: left; line-height: 16pt;">
+            <td style="width: 7%;"></td>
+            <td style="width: 26%; text-align: left;">{{dossier_sinistre.police.client}}</td>
+            <td style="width: 7%;"></td>
+            <td style="width: 26%;">{{dossier_sinistre.police.numero}}</td>
+            <td style="width: 7%;"></td>
+            <td style="width: 27%;">{{dossier_sinistre.police.compagnie}}</td>
+          </tr>
+          <tr style="text-align: left; line-height: 16pt;">
+            <td></td>
+            <td colspan="3">{{dossier_sinistre.aliment}}</td>
+            <td style="width: 7%;"></td>
+            <td style="width: 27%;">{{dossier_sinistre.aliment.carte_active.numero|slice:"-1"}}</td>
+          </tr>
+          <tr style="text-align: left; line-height: 16pt;">
+            <td></td>
+            <td colspan="3">{{dossier_sinistre.aliment.adherent_principal}}</td>
+            <td style="width: 7%;"></td>
+            <td style="width: 27%;">{{dossier_sinistre.aliment.adherent_principal.carte_active.numero|slice:"-1"}}</td>
+          </tr>
+          <tr style="text-align: left; line-height: 16pt;">
+            <td style="width: 10%;"></td>
+            <td colspan="3"><span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>{{dossier_sinistre.aliment.date_naissance|date:"d/m/Y"}}</td>
+            <td style="width: 7%;"></td>
+            <td style="width: 27%;">{{dossier_sinistre.aliment.genre}}</td>
+          </tr>
+      </table>
+    </div>
+
+    <div id="prestation_content">
+      <table>
+      {% for sinistre in sinistres %}
+          <tr style="text-align: right; line-height: 16pt;">
+            <td style="text-align: left; width: 46%;">{{ sinistre.acte }} <span style="color:red;">{% if sinistre.tm_prefinanced and not request_user_is_prestataire %}(Dossier préfinancé){% endif %}</span></td>
+            <td style="width: 15%;">{{ sinistre.affection.code_cim_10 }}</td>
+            <td style="width: 17%;">{{ sinistre.total_frais_reel|money_field }}</td>
+            <td style="width: 17%;">{% if sinistre.tm_prefinanced and request_user_is_prestataire %} {{ sinistre.total_frais_reel|money_field }} {% else %} {{ sinistre.total_part_compagnie|money_field }} {% endif %}</td>
+            <td style="width: 5%;"></td>
+          </tr>
+      {% endfor %}
+          <tr style="text-align: right; line-height: 16pt;">
+            <td colspan="4">&nbsp;</td>
+          </tr>
+          <tr style="text-align: right; line-height: 16pt;">
+            <td style="text-align: left; width: 46%;"></td>
+            <td style="width: 15%;"></td>
+            <td style="width: 16%;"></td>
+            <td style="width: 18%;">
+                {% if request_user_is_prestataire %}
+                {{ dossier_sinistre.new_total_part_assure_prestataire|money_field|default_if_none:"0" }}
+                {% else %}
+                {{ dossier_sinistre.new_total_part_assure_gestionnaire|money_field|default_if_none:"0" }}
+                {% endif %}
+            </td>
+            <td style="width: 5%;"></td>
+          </tr>  
+      </table>
+    </div>
+
+    <div id="ticket_moderateur_content">
+        {% for sinistre in sinistres %}
+            {% if sinistre.tm_prefinanced and request_user_is_prestataire %} 0 {% else %} {{ ticket_moderateur_consultation }} {% endif %}
+        {% endfor %}
+    </div>
+
+    <div id="plafond_atteint_content">
+    {% if plafond_atteint == True %}
+      <center><img height="120px" src="data:image/png;base64,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"></center>
+      {% comment %} <p><span class="diagonal-text"><b>{{_('PLAFOND_ATTEINT_NE_PEUT_ETRE_UTILISE_EN_PHARMACIE')}}</b></span></p> {% endcomment %}
+    {% endif %}
+    </div>
+
+    <div id="non_garantie_content">
+        {{ garantis_pharmacie|default_if_none:"" }}
+    </div>
+</body>
+
+<html>

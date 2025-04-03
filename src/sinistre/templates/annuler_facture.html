@@ -1,0 +1,259 @@
+{% extends "admin/base_site.html" %}
+{% load my_filters %}
+{% load static %}
+{% block extrastyle %}
+
+<style>
+    div.dataTables_processing>div:last-child>div {
+        background: rgb(187 65 38) !important;
+    }
+</style>
+
+{% endblock %}
+{% block content %}
+
+ <!--div class="col-12 col-md-12 order-2 order-md-1">
+
+      <div class="card">
+          <div class="card-header">
+              <h3 class="card-title"><b>
+                  SAISIE DE DOSSIERS SINISTRES PHYSIQUES
+              </b></h3>
+              <div class="card-tools">
+              </div>
+          </div>
+
+          <div class="card-body" style="background-color:var(--colorJauneOlea)">
+            <div id="example_wrapper_" class="dataTables_wrapper dt-bootstrap4">
+              <div class="row ">
+
+                <div class="col-xl-4 col-sm-6">
+                  <a style="cursor: pointer;display: block;" data-toggle="modal" data-target="#modal-sinistre_consultation_gestionnaire" data-modal_title="DEMANDE DE PRISE EN CHARGE - CONSULTATION">
+                  <div class="card card-stats mb-4 mb-xl-0">
+                    <div class="card-body" style="min-height: 120px;">
+                      <div class="row">
+                        <div class="col">
+                          <h5 class="card-title text-muted mb-0"></h5> <br>
+                          <span class="h3 font-weight-bold mb-0" style="color: dblack">CONSULTATION</span>
+                        </div>
+                        <div class="col-auto">
+                          <div class="icon icon-shape text-white rounded-circle shadow" style="background: linear-gradient(45deg, #C11B0E, #BB4127);">
+                            <i class="fas fa-plus" style=""></i>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  </a>
+                </div>
+
+                <div class="col-xl-4 col-sm-6">
+                  <a style="cursor: pointer;display: block;" data-toggle="modal" data-target="#modal-sinistre-soins_ambulatoires_gestionnaire" data-modal_title="DEMANDE DE PRISE EN CHARGE - SOINS AMBULATOIRES">
+                  <div class="card card-stats mb-4 mb-xl-0">
+                    <div class="card-body" style="min-height: 120px;">
+                      <div class="row">
+                        <div class="col">
+                          <h5 class="card-title text-muted mb-0"></h5>
+                          <span class="h3 font-weight-bold mb-0" style="color: dblack">SOINS AMBULATOIRES</span>
+                        </div>
+                        <div class="col-auto">
+                          <div class="icon icon-shape text-white rounded-circle shadow" style="background: linear-gradient(45deg, #C11B0E, #BB4127);">
+                            <i class="fa fa-clock" style=""></i>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                      </a>
+                </div>
+
+                <div class="col-xl-4 col-sm-6">
+                  <a style="cursor: pointer;display: block;" data-toggle="modal" data-target="#modal-sinistre_hospitalisation_gestionnaire" data-modal_title="DEMANDE DE PRISE EN CHARGE - HOSPITALISATION">
+                  <div class="card card-stats mb-4 mb-xl-0">
+                    <div class="card-body" style="min-height: 120px;">
+                      <div class="row">
+                        <div class="col">
+                          <h5 class="card-title text-muted mb-0"></h5> <br>
+                          <span class="h3 font-weight-bold mb-0" style="color: dblack">HOSPITALISATION</span>
+                        </div>
+                        <div class="col-auto">
+                          <div class="icon icon-shape text-white rounded-circle shadow" style="background: linear-gradient(45deg, #C11B0E, #BB4127);">
+                            <i class="fa fa-bed" style=""></i>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  </a>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+      </div>
+
+ </div-->
+
+ <div class="col-12 col-md-12 order-2 order-md-1">
+
+      <div class="card">
+        <div class="card-header">
+            <h3 class="card-title"><b>
+                {{_('ANNULER_UNE_FACTURE')}}
+            </b></h3>
+            <div class="card-tools">
+            </div>
+        </div>
+
+      <div class="card-body">
+        <div id="example_wrapper" class="dataTables_wrapper dt-bootstrap4">
+            
+            <form autocomplete="off" id="form_recherche" name="form_recherche" method="POST" enctype="multipart/form-data">
+              {% csrf_token %}
+              <div class="row justify-content-center">
+                  <div class="col offset-md-3 form-group row">
+                      <span class="col col-form-label text-right">{{_('Numero_Bordereau')}} <span
+                              class="required">*</span>: </span>
+                      <div class="col-sm-6">
+                          <input type="text" class="form-control" name="code_bordereau" id="code_bordereau" value="{{ code_bordereau }}" required>
+                      </div>
+                  </div>
+                  <div class="col">
+                      <button id="recherche" name="recherche" value="rechercher" type="submit" class="btn btn-complement-rouge">{{_('Rechercher')}}
+                      </button>
+                      <img id="loader" src="{% static 'admin_custom/img/loader.gif' %}"
+                          style="width: 40px;display: none;"/>
+                  </div>
+              </div>
+            </form>
+          {% if facture and facture.statut is not "SUPPRIME" %}
+          
+          <div class="row dossier_facture">
+            <div class=" col-md-12">
+              <div class="card">
+                <div class="card-header">
+                  <div class="card-title">
+                    <h6>{{_('FACTURE')}}</h6>
+                  </div>
+                </div>
+                <div class="card-body">
+
+                  <div class="table-responsive">
+                    <table class="table table-bordered table-striped dataTable__ customDataTable__ dtr-inline" id="table_factures_gestionnaires" style="width: 100%;" data-orderby="0">
+
+                      <thead>
+                        <tr>
+                          <th scope="col">{{_('Numero_Bordereau')}}</th>
+                          <th scope="col">{{_('Beneficiaire')}}</th>
+                          <th scope="col">{{_('Periode_comptable')}}</th>
+                          <th scope="col">{{_('Base_de_remboursement')}}</th>
+                          <th scope="col">{{_('Date_de_generation')}}</th>
+                          <th scope="col">{{_('Statut')}}</th>
+                          <th scope="col">{{_('Actions')}}</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                            <td>{{facture.numero|default_if_none:""}}</td>
+                            <td>{{beneficiaire_de_reglement}}</td>
+                            <td>{% if facture.periode_comptable %}{{ facture.periode_comptable.libelle }}{% else %} {% endif %}</td>
+                            <td style="text-align:right">{{ facture.net_a_payer|money_field|default_if_none:"0" }}</td>
+                            <td style="text-align:right">{% if facture.created_at %}{{ facture.created_at|date:"d/m/Y H:m" }}{% endif %}</td>
+                            <td>
+                            {% if facture.statut == "REJETE" %}
+                            <span class="text-bold col-sm-12 badge badge-danger" style="font-size:10px;color:white;">{{facture.statut}}</span>
+                            {% else %}
+                            <span class="text-bold col-sm-12 badge badge-en-attente" style="font-size:10px;color:white;">{{facture.statut}}</span>
+                            {% endif %}
+                            </td>
+                            <td>
+                                <a href="#" onclick="annuleItem({{ facture.id }}, '{{facture.numero|default_if_none:""}}')"><span class="badge btn-sm btn-danger rounded-pill"><i class="fa fa-times"></i> {{_('Annuler')}}</span></a>
+                            </td>
+                        </tr>
+                      </tbody>
+
+                    </table>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          {% else %}
+          
+            {% if old_facture %}
+            <div class="dossier_facture text-danger text-center">{{_('La_facture')}} {{ 'old_facture' }} {{_('a_bien_ete_supprimee')}} !</div>
+            {% endif %}
+            {% if code_bordereau %}
+            <div class="dossier_facture text-danger text-center text-bold h4">{{_('Aucune_correspondance')}}</div>
+            {% endif %}
+
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+{% endblock %}
+
+
+{% block extrajs %}
+<script>
+
+        function annuleItem(id, text){
+          $("#id_item").val(id);
+          $("#modal_head").html("ÊTES-VOUS SÛR(E) DE VOULOIR SUPPRIMER CETTE FACTURE ?");
+          $("#modal_text").html(text);
+          $('#modal_annuler_facture').modal();
+        }
+
+        function reset(){
+          $("#id_item").val("");
+          $("#modal_head").html("");
+          $("#modal_head").html("");
+        }
+
+
+    $(document).ready(function() {
+
+        dataTable = $('#table_factures_gestionnaires').DataTable({
+            "language": {
+                "url": "https://cdn.datatables.net/plug-ins/9dcbecd42ad/i18n/French.json"
+            },
+            "paging": false,
+            // "pageLength": 400,
+            "processing": true,  // Show the loading indicator
+            "searching": false,   // Enable the search feature
+        });
+
+
+        var $form = $('#form_recherche'); 
+        origForm = $form.serialize();
+        $('#form_recherche :input').on('change input', function() {
+          // une modification a eu lieu dans le formulaire il faut allors reforme les calculs 
+          if($form.serialize() !== origForm){
+             $('.dossier_facture').fadeOut("slow");
+          }
+          else{
+             $('.dossier_facture').fadeIn("slow");
+          }
+        });
+
+        $('#garantie').removeClass('o-bg-primary');
+        $('#garantie').addClass('o-active');
+
+    });
+
+
+
+
+
+</script>
+
+
+{% include 'modal_annuler_facture.html' %}
+
+{% endblock %}

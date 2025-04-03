@@ -1,0 +1,161 @@
+{% extends "grh/layouts/base.html" %}
+{% load static %}
+{% block title %}{{_('POLICES')}}{% endblock %}
+
+{% block content %}
+    <style>
+        #title{
+            color: #B7482B;
+        }
+        #link{
+            color: #0000FF;
+        }
+        #status {
+            color: #FFFFFF;
+            padding: 5px;
+            border-radius: 5px;
+        }
+        #policesTab_length select {
+            width: auto;
+            display: inline-block;
+            padding: 6px 12px;
+            margin-bottom: 0;
+            font-size: 14px;
+            line-height: 1.42857143;
+            color: #555;
+            vertical-align: middle;
+            background-color: #fff;
+            background-image: none;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+            transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
+        }
+
+        .dataTables_info{
+
+            text-align: start;
+            margin-bottom: 5px;
+        }
+
+        .dataTables_filter{
+            margin-top: 2px;
+        }
+        
+    </style>
+
+    <div class="grid grid-cols-12 gap-6 pt-5">
+        <div class="col-span-12 2xl:col-span-12">
+            <div class="grid grid-cols-12 gap-6">
+                <div class="intro-y col-span-12 md:col-span-12 lg:col-span-12">
+                    <div class="box">
+                        <div class="flex items-start px-5 pt-5">
+                            <div class="w-full flex flex-col lg:flex-row items-center">
+                                <h1 class="text-xl lg:text-lg font-medium mb-3 mr-5" id="title">
+                                    {{_('POLICES')}}
+                                </h1>
+                            </div>
+                        </div>
+                        <div class="text-center p-5 border-t border-slate-200/60 dark:border-darkmode-400">
+                            <div class="intro-y col-span-12 overflow-auto lg:overflow-visible">
+                                {% if polices %}
+                                <table class="table table-report -mt-2" id="policesTab">
+                                    <thead>
+                                        <tr>
+                                    <th class="whitespace-nowrap">{{_('Nom_assure')}}</th>
+                                    <th class="whitespace-nowrap">{{_('Reference')}}</th>
+                                    <th class="whitespace-nowrap">{{_('Type')}}</th>
+                                    <th class="whitespace-nowrap">{{_('Produit')}}</th>
+                                    <th class="whitespace-nowrap">{{_('Compagnie')}}</th>
+                                    <th class="whitespace-nowrap">{{_('Date_d_effet')}}</th>
+                                    <th class="whitespace-nowrap">{{_('Date_de_fin')}}</th>
+                                    <th class="whitespace-nowrap">{{_('Statut')}}</th>
+                                    <th class="whitespace-nowrap text-center">{{_('Actions')}}</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for police in polices %}
+                                        <tr class="intro-x">
+                                            <td class="w-auto">{{ police.client.nom|default_if_none:"" }}</td>
+                                            <td class="w-auto">
+                                                <a href="{% url 'grh.police_overview' police.id %}" class="flex items justify" id="link">{{ police.numero|default_if_none:"" }}</a>
+                                            </td class="w-auto">
+                                            <td class="w-auto">{{ police.statut_contrat|default_if_none:"" }}</td>
+                                            <td class="w-auto">{{ police.produit|default_if_none:"" }}</td>
+                                            <td class="w-auto">{{ police.compagnie|default_if_none:"" }}</td>
+                                            <td class="w-auto">{{ police.date_debut_effet|default_if_none:""|date:"d/m/Y" }}</td>
+                                            <td class="w-auto">{{ police.date_fin_effet|default_if_none:""|date:"d/m/Y" }}</td>
+                                            <td class="w-auto">
+                                                <div class="flex items justify-center" id="status" style="background-color:
+                                                {% if  police.etat_police == 'En cours' %} #007500;color:#FFFFFF;font-weight: bold;
+                                                {% elif  police.etat_police == 'Résilié' %} #DC3545;color:#FFFFFF;font-weight: bold;
+                                                {% elif police.etat_police == 'Résilié' %} #C5C5C5;color:#000000;font-weight: bold;
+                                                {% endif %}">
+                                                {{ police.etat_police|default_if_none:"" }}
+                                            </div>
+                                            </td>
+                                            <td class="table-report__action w-auto">
+                                                <div class="flex justify-center items-center">
+                                                    <a class="link-external" href="{% url 'grh.police_overview' police.id %}"><i data-feather="eye" id="title"></i></a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                                {% else %}
+                                <div class="alert w-72 alert-primary-soft show flex items-center mb-5 mx-auto inline-block justify-center">
+                                    <i data-feather="info" class="mr-2"></i>
+                                    {{_('AUCUNE_DONNEE')}}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.23/css/dataTables.bootstrap4.min.css" />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.23/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.23/js/dataTables.bootstrap4.min.js"></script>
+
+    <script>
+        // DataTable - Plugin
+        if (!jQuery.fn.DataTable.isDataTable('#policesTab')) {
+            jQuery('#policesTab').DataTable({
+                pageLength: 5,
+                lengthMenu: [5, 10, 25],
+                language: {
+                    search: "",
+                    searchPlaceholder: "Rechercher...",
+                    processing:     "Chargement en cours...",
+                    lengthMenu:    "Afficher _MENU_ &eacute;l&eacute;ments",
+                    info:           "Affichage de _START_ &agrave; _END_ sur _TOTAL_ &eacute;l&eacute;ments",
+                    infoEmpty:      "Affichage de l'&eacute;lement 0 &agrave; 0 sur 0 &eacute;l&eacute;ments",
+                    loadingRecords: "Chargement en cours...",
+                    zeroRecords:    "Aucun &eacute;l&eacute;ment &agrave; afficher",
+                    paginate: {
+                        first:      "Premier",
+                        previous:   "Pr&eacute;c&eacute;dent",
+                        next:       "Suivant",
+                        last:       "Dernier"
+                    },
+                },
+                drawCallback: function(settings) {
+                    var info = jQuery('#policesTab_info');
+                    var lengthMenu = jQuery('#policesTab_length');
+                    var tableWrapper = jQuery('#policesTab_wrapper');
+                    tableWrapper.find('.row:eq(0)').prepend(lengthMenu);
+                    tableWrapper.find('.row:eq(1)').prepend(info);
+                    lengthMenu.css('position', 'absolute').css('bottom', '0').css('left', '0');
+                    feather.replace();
+                }
+            });
+        }
+        // DataTable - Plugin
+    </script>
+
+{% endblock %}

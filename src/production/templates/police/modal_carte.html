@@ -1,0 +1,66 @@
+<div  class="modal fade"  id="modal-carte" data-backdrop="static" data-keyboard="false" aria-hidden="true"  style="display: none">
+	<div class="modal-dialog modal-lg">
+		<div class="modal-content">
+			<form id="form_prin_carte" action="" method="post">
+				{% csrf_token %}
+				<div class="modal-header">
+					<h4 class="modal-title">{{_('CARTE_SANTE')}}</h4>
+					<button type="button"class="close"data-dismiss="modal"aria-label="Close">
+						<span aria-hidden="true">×</span>
+					</button>
+				</div>
+				<div class="modal-body">
+					<div class="alert  alert-dismissible fade show hidden" role="alert">
+						<span class="message"> {{_('TRAITEMENT_EN_COURS')}}</span>
+					</div>
+					<div class="col-md-12 offset-0">
+                      <div class="row">
+                      <!-- -->
+                      <div class="col-md-6">
+                        <div class="form-group row">
+                            <label class="col-sm-5 col-form-label">{{_('Mouvement')}} *</label>
+                            <div class="col-sm-7">
+                                <select class="form-control mouvement" name="mouvement" id="mouvement__" required>
+                                    <option value="">{{_('Choisir')}}</option>
+                                    {% for mouvement in mouvements %}
+                                    <option value="{{ mouvement.id }}">{{ mouvement.libelle }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label class="col-sm-5 col-form-label">{{_('Motif')}} *</label>
+                            <div class="col-sm-7">
+                                <select class="form-control" name="motif" id="motif" required>
+                                    <option value="">{{_('Choisir')}}</option>
+                                </select>
+                            </div>
+                        </div>
+                      </div>
+                      <div class="vl"></div>
+                      <div class="col-md-5" style="border-left:0px;">
+                          <div class="form-group row">
+                              <label class="col-sm-5 col-form-label">{{_('Date_d_effet')}} *</label>
+                              <div class="col-sm-7">
+                                  <input type="date" class="form-control" name="date_effet" value="" required/>
+                              </div>
+                          </div>
+                          <div class="form-group row">
+                              <label class="col-sm-5 col-form-label">{{_('Dernier_jour_nouvelle_periode_de_garantie')}} *</label>
+                              <div class="col-sm-7">
+                                  <input type="date" class="form-control" name="date_fin_periode_garantie" value="" required/>
+                              </div>
+                          </div>
+                      </div>
+                      <!-- -->
+                      </div>
+					</div>
+				</div>
+				<div class="modal-footer justify-content-between">
+					<button type="button" class="btn btn-default" data-dismiss="modal">{{_('Fermer')}}</button>
+					<button type="button" id="btn_print_carte" class="btn o-bg-primary">{{_('Imprimer')}}</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>

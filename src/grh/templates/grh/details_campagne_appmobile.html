@@ -1,0 +1,400 @@
+{% extends "grh/layouts/base.html" %}
+{% load static %}
+{% block title %}DÉTAILS CAMPAGNE D'ENRÔLEMENT{% endblock %}
+
+{% block content %}
+
+    <style>
+        #title {
+            color: #B7482B;
+        }
+        #link {
+            color: #0000FF;
+        }
+        #status {
+            padding: 5px;
+            border-radius: 5px;
+        }
+        #prospects_enatt_Tab_length select,
+        #prospects_soumis_Tab_length select,
+        #prospects_encours_Tab_length select {
+            width: auto;
+            display: inline-block;
+            padding: 6px 12px;
+            margin-bottom: 0;
+            font-size: 14px;
+            line-height: 1.42857143;
+            color: #555;
+            vertical-align: middle;
+            background-color: #fff;
+            background-image: none;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+            transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
+        }
+
+        .dataTables_filter{
+            margin-top: 2px;
+        }
+
+        .dataTables_info{
+
+            text-align: start;
+            margin-bottom: 5px;
+        }
+    </style>
+
+    <div class="flex items-start pt-5 intro-y">
+        <div class="w-full flex flex-col lg:flex-row items-center">
+            <a href="{% url 'grh.onboarding' %}">
+                <button class="btn btn-primary-soft flex items-center w-30 pd-5">
+                    <i data-feather="corner-up-left" class="report-box__icon text-primary mr-2"></i>
+                    RETOUR
+                </button>
+            </a>
+        </div>
+    </div>
+
+    <div class="intro-y col-span-12 md:col-span-12 lg:col-span-12 mt-8">
+        <div class="box">
+            <div class="flex items-start px-5 pt-5">
+                <div class="w-full flex flex-col lg:flex-row items-center">
+                    <h1 class="text-xl lg:text-lg font-medium mb-3 mr-5" id="title">
+                        ENRÔLEMENT APPLICATION MOBILE
+                    </h1>
+                </div>
+            </div>
+            <div class="text-center p-5 border-t border-slate-200/60 dark:border-darkmode-400">
+                <div class="intro-y col-span-12 overflow-auto lg:overflow-visible">
+                    <table class="table table-report -mt-2">
+                        <thead>
+                            <tr>
+                                <th class="whitespace-nowrap">Id</th>
+                                <th class="whitespace-nowrap">Date Début</th>
+                                <th class="whitespace-nowrap">Date Fin</th>
+                                <th class="whitespace-nowrap">Police</th>
+                                <th class="whitespace-nowrap">Formule de garantie</th>
+                                <th class="whitespace-nowrap">Statut</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="intro-x">
+                            <td class="w-auto">{{ campagne_appmobile.id|default_if_none:"" }}</td>
+                            <td class="w-auto">{{ campagne_appmobile.created_at|default_if_none:""|date:"d/m/Y" }}</td>
+                            <td class="w-auto">{{ campagne_appmobile.updated_at|default_if_none:""|date:"d/m/Y" }}</td>
+                            <td class="w-auto">{{ campagne_appmobile.police|default_if_none:"" }}</td>
+                            <td class="w-auto">{{ campagne_appmobile.formulegarantie|default_if_none:"" }}</td>
+                            <td class="w-auto">
+                                <div class="flex items justify-center" id="status" style="background-color:
+                                        {% if campagne_appmobile.statut == 'VALIDE' %}#007500;color:#FFFFFF;font-weight: bold;
+                                        {% elif campagne_appmobile.statut == 'SUPPRIME' %}#DC3545;color:#FFFFFF;font-weight: bold;
+                                        {% elif campagne_appmobile.statut == 'BROUILLON' %}#C5C5C5;color:#000000;font-weight: bold;
+                                        {% elif campagne_appmobile.statut == 'CLOTURE' %}#000000;color:#FFFFFF;font-weight: bold;
+                                        {% endif %}">
+                                        {{ campagne_appmobile.statut }}
+                                </div>
+                            </td>
+                        </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="intro-y col-span-12 md:col-span-12 lg:col-span-12 mt-8">
+        <div class="box">
+            <div class="flex items-start px-5 pt-5">
+                <div class="w-full flex flex-col lg:flex-row items-center">
+                    <h1 class="text-xl lg:text-lg font-medium mb-3 mr-5" id="title">
+                        LISTE DES ENRÔLÉS À VALIDER
+                    </h1>
+                </div>
+            </div>
+            <div class="text-center p-5 border-t border-slate-200/60 dark:border-darkmode-400">
+                <div class="intro-y col-span-12 overflow-auto lg:overflow-visible">
+                    {% if prospects_soumis %}
+                    <table class="table table-report -mt-2" id="prospects_soumis_Tab">
+                        <thead>
+                            <tr>
+                                <th class="whitespace-nowrap">Adhérent principal</th>
+                                <th class="whitespace-nowrap">Nom & Prénoms</th>
+                                <th class="whitespace-nowrap">Date Naissance</th>
+                                <th class="whitespace-nowrap">Sexe</th>
+                                <th class="whitespace-nowrap">Email</th>
+                                <th class="whitespace-nowrap">Qualité</th>
+                                <th class="whitespace-nowrap">Statut</th>
+                                <th class="whitespace-nowrap">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for prospect in prospects_soumis %}
+                            <tr class="intro-x">
+                                <td class="w-auto">{{ prospect.adherent_principal|default_if_none:"" }}</td>
+                                <td class="w-auto">{{ prospect.nom|default_if_none:"" }} {{ prospect.prenoms|default_if_none:"" }}</td>
+                                <td class="w-auto">{{ prospect.date_naissance|default_if_none:""|date:"d/m/Y" }}</td>
+                                <td class="w-auto">{{ prospect.genre|default_if_none:"" }}</td>
+                                <td class="w-auto">{{ prospect.email|default_if_none:"" }}</td>
+                                <td class="w-auto">{{ prospect.qualite_beneficiaire|default_if_none:"" }}</td>
+                                <td class="w-auto">
+                                    {% for campagne_prospect in prospect.campagneappmobileprospect_set.all %}
+                                        {% if campagne_prospect.statut_enrolement == 'SOUMIS' %}
+                                            <div class="flex items justify-center" id="status" style="background-color:#D18700;color:#FFFFFF;font-weight: bold;">
+                                                {{ campagne_prospect.statut_enrolement|default_if_none:"" }}
+                                            </div>
+                                        {% endif %}
+                                    {% endfor %}
+                                </td>
+                                <td class="table-report__action w-5">
+                                    <div class="flex justify-center items-center">
+                                        <a href="{% url 'grh.incorporations_prospect' campagne_appmobile.id prospect.id %}"><i data-feather="eye" id="title"></i></a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                    <div class="alert w-auto alert-primary-soft show flex items-center mx-auto inline-block justify-center">
+                        <i data-feather="alert-circle" class="report-box__icon text-primary mr-2"></i>
+                        AUCUNE DONNÉE
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="intro-y col-span-12 md:col-span-12 lg:col-span-12 mt-8">
+        <div class="box">
+            <div class="flex items-start px-5 pt-5">
+                <div class="w-full flex flex-col lg:flex-row items-center">
+                    <h1 class="text-xl lg:text-lg font-medium mb-3 mr-5" id="title">
+                        LISTE DES ENRÔLÉS EN ATTENTE
+                    </h1>
+                </div>
+            </div>
+            <div class="text-center p-5 border-t border-slate-200/60 dark:border-darkmode-400">
+                <div class="intro-y col-span-12 overflow-auto lg:overflow-visible">
+                    {% if prospects_en_attente %}
+                    <table class="table table-report -mt-2" id="prospects_enatt_Tab">
+                        <thead>
+                            <tr>
+                                <th class="whitespace-nowrap">Adhérent principal</th>
+                                <th class="whitespace-nowrap">Nom & Prénoms</th>
+                                <th class="whitespace-nowrap">Date Naissance</th>
+                                <th class="whitespace-nowrap">Sexe</th>
+                                <th class="whitespace-nowrap">Email</th>
+                                <th class="whitespace-nowrap">Qualité</th>
+                                <th class="whitespace-nowrap">Statut</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for prospect in prospects_en_attente %}
+                            <tr class="intro-x">
+                                <td class="w-auto">{{ prospect.aliment_adherent_principal|default_if_none:"" }}</td>
+                                <td class="w-auto">{{ prospect.nom|default_if_none:"" }} {{ prospect.prenoms|default_if_none:"" }}</td>
+                                <td class="w-auto">{{ prospect.date_naissance|default_if_none:""|date:"d/m/Y" }}</td>
+                                <td class="w-auto">{{ prospect.genre|default_if_none:"" }}</td>
+                                <td class="w-auto">{{ prospect.email|default_if_none:"" }}</td>
+                                <td class="w-auto">{{ prospect.qualite_beneficiaire|default_if_none:"" }}</td>
+                                <td class="w-auto">
+                                    {% for campagne_prospect in prospect.campagneappmobileprospect_set.all %}
+                                        {% if campagne_prospect.statut_enrolement == 'EN ATTENTE' %}
+                                            <div class="flex items justify-center" id="status" style="background-color:#C5C5C5;color:#000000;font-weight: bold;">
+                                                {{ campagne_prospect.statut_enrolement|default_if_none:"" }}
+                                            </div>
+                                        {% endif %}
+                                    {% endfor %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                    <div class=" mt-8 pb-5 alert alert-primary-soft show flex items-center mx-auto inline-block justify-center">
+                        <i data-feather="alert-circle" class="report-box__icon text-primary mr-2"></i>
+                        AUCUNE DONNÉE
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="intro-y col-span-12 md:col-span-12 lg:col-span-12 mt-8">
+        <div class="box">
+            <div class="flex items-start px-5 pt-5">
+                <div class="w-full flex flex-col lg:flex-row items-center">
+                    <h1 class="text-xl lg:text-lg font-medium mb-3 mr-5" id="title">
+                        LISTE DES ENRÔLÉS ACCEPTÉS
+                    </h1>
+                </div>
+            </div>
+            <div class="text-center p-5 border-t border-slate-200/60 dark:border-darkmode-400">
+                <div class="intro-y col-span-12 overflow-auto lg:overflow-visible">
+                    {% if prospects_encours %}
+                    <table class="table table-report -mt-2" id="prospects_encours_Tab">
+                        <thead>
+                            <tr>
+                                <th class="whitespace-nowrap">Adhérent principal</th>
+                                <th class="whitespace-nowrap">Nom & Prénoms</th>
+                                <th class="whitespace-nowrap">Date Naissance</th>
+                                <th class="whitespace-nowrap">Sexe</th>
+                                <th class="whitespace-nowrap">Email</th>
+                                <th class="whitespace-nowrap">Qualité</th>
+                                <th class="whitespace-nowrap">Statut</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for prospect in prospects_encours %}
+                            <tr class="intro-x">
+                                <td class="w-auto">{{ prospect.aliment_adherent_principal|default_if_none:"" }}</td>
+                                <td class="w-auto">{{   prospect.nom|default_if_none:"" }} {{ prospect.prenoms|default_if_none:"" }}</td>
+                                <td class="w-auto">{{ prospect.date_naissance|default_if_none:""|date:"d/m/Y" }}</td>
+                                <td class="w-auto">{{ prospect.genre|default_if_none:"" }}</td>
+                                <td class="w-auto">{{ prospect.email|default_if_none:"" }}</td>
+                                <td class="w-auto">{{ prospect.qualite_beneficiaire|default_if_none:"" }}</td>
+                                <td class="w-auto">
+                                    {% for campagne_prospect in prospect.campagneappmobileprospect_set.all %}
+                                        {% if campagne_prospect.statut_enrolement == 'EN COURS' %}
+                                            <div class="flex items justify-center" id="status" style="background-color:#007500;color:#FFFFFF;font-weight: bold;">
+                                                {{ campagne_prospect.statut_enrolement|default_if_none:"" }}
+                                            </div>
+                                        {% endif %}
+                                    {% endfor %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                    <div class=" mt-8 pb-5 alert alert-primary-soft show flex items-center mx-auto inline-block justify-center">
+                        <i data-feather="alert-circle" class="report-box__icon text-primary mr-2"></i>
+                        AUCUNE DONNÉE
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.23/css/dataTables.bootstrap4.min.css" />
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.23/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.23/js/dataTables.bootstrap4.min.js"></script>
+    <script>
+        // DataTable - Plugin
+        if (!jQuery.fn.DataTable.isDataTable('#prospects_enatt_Tab')) {
+            jQuery('#prospects_enatt_Tab').DataTable({
+                pageLength: 10,
+                lengthMenu: [10, 15, 25],
+                language: {
+                    search: "",
+                    searchPlaceholder: "Rechercher...",
+                    processing:     "Chargement en cours...",
+                    lengthMenu:    "Afficher _MENU_ &eacute;l&eacute;ments",
+                    info:           "Affichage de _START_ &agrave; _END_ sur _TOTAL_ &eacute;l&eacute;ments",
+                    infoEmpty:      "Affichage de l'&eacute;lement 0 &agrave; 0 sur 0 &eacute;l&eacute;ments",
+                    loadingRecords: "Chargement en cours...",
+                    zeroRecords:    "Aucun &eacute;l&eacute;ment &agrave; afficher",
+                    paginate: {
+                        first:      "Premier",
+                        previous:   "Pr&eacute;c&eacute;dent",
+                        next:       "Suivant",
+                        last:       "Dernier"
+                    },
+                },
+                drawCallback: function(settings) {
+                    //var info = jQuery('#prospects_enatt_Tab_info');
+                    var info = jQuery('.dataTables_info');
+                    var search = jQuery('.dataTables_filter');
+
+                    var lengthMenu = jQuery('#prospects_enatt_Tab_length');
+                    var tableWrapper = jQuery('#prospects_enatt_Tab_wrapper');
+                    tableWrapper.find('.row:eq(0)').prepend(lengthMenu);
+                    tableWrapper.find('.row:eq(1)').prepend(info);
+                    lengthMenu.css('position', 'absolute').css('bottom', '0').css('left', '0');
+                }
+            });
+        }
+        // DataTable - Plugin
+    </script>
+
+    <script>
+        // DataTable - Plugin
+        if (!jQuery.fn.DataTable.isDataTable('#prospects_soumis_Tab')) {
+            jQuery('#prospects_soumis_Tab').DataTable({
+                pageLength: 10,
+                lengthMenu: [10, 15, 25],
+                language: {
+                    search: "",
+                    searchPlaceholder: "Rechercher...",
+                    processing:     "Chargement en cours...",
+                    lengthMenu:    "Afficher _MENU_ &eacute;l&eacute;ments",
+                    info:           "Affichage de _START_ &agrave; _END_ sur _TOTAL_ &eacute;l&eacute;ments",
+                    infoEmpty:      "Affichage de l'&eacute;lement 0 &agrave; 0 sur 0 &eacute;l&eacute;ments",
+                    loadingRecords: "Chargement en cours...",
+                    zeroRecords:    "Aucun &eacute;l&eacute;ment &agrave; afficher",
+                    paginate: {
+                        first:      "Premier",
+                        previous:   "Pr&eacute;c&eacute;dent",
+                        next:       "Suivant",
+                        last:       "Dernier"
+                    },
+                },
+                drawCallback: function(settings) {
+                    var info = jQuery('#prospects_soumis_Tab_info');
+                    var lengthMenu = jQuery('#prospects_soumis_Tab_length');
+                    var tableWrapper = jQuery('#prospects_soumis_Tab_wrapper');
+                    var info = jQuery('.dataTables_info');
+                    var search = jQuery('.dataTables_filter');
+                    tableWrapper.find('.row:eq(0)').prepend(lengthMenu);
+                    tableWrapper.find('.row:eq(1)').prepend(info);
+                    lengthMenu.css('position', 'absolute').css('bottom', '0').css('left', '0');
+                    feather.replace();
+                }
+            });
+        }
+        // DataTable - Plugin
+    </script>
+
+    <script>
+        // DataTable - Plugin
+        if (!jQuery.fn.DataTable.isDataTable('#prospects_encours_Tab')) {
+            jQuery('#prospects_encours_Tab').DataTable({
+                pageLength: 10,
+                lengthMenu: [10, 15, 25],
+                language: {
+                    search: "",
+                    searchPlaceholder: "Rechercher...",
+                    processing:     "Chargement en cours...",
+                    lengthMenu:    "Afficher _MENU_ &eacute;l&eacute;ments",
+                    info:           "Affichage de _START_ &agrave; _END_ sur _TOTAL_ &eacute;l&eacute;ments",
+                    infoEmpty:      "Affichage de l'&eacute;lement 0 &agrave; 0 sur 0 &eacute;l&eacute;ments",
+                    loadingRecords: "Chargement en cours...",
+                    zeroRecords:    "Aucun &eacute;l&eacute;ment &agrave; afficher",
+                    paginate: {
+                        first:      "Premier",
+                        previous:   "Pr&eacute;c&eacute;dent",
+                        next:       "Suivant",
+                        last:       "Dernier"
+                    },
+                },
+                drawCallback: function(settings) {
+                    var info = jQuery('.dataTables_info');
+                    var search = jQuery('.dataTables_filter');
+                    var info = jQuery('#prospects_encours_Tab_info');
+                    var lengthMenu = jQuery('#prospects_encours_Tab_length');
+                    var tableWrapper = jQuery('#prospects_encours_Tab_wrapper');
+                    tableWrapper.find('.row:eq(0)').prepend(lengthMenu);
+                    tableWrapper.find('.row:eq(1)').prepend(info);
+                    lengthMenu.css('position', 'absolute').css('bottom', '0').css('left', '0');
+                }
+            });
+        }
+        // DataTable - Plugin
+    </script>
+
+{% endblock %}

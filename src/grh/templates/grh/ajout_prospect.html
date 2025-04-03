@@ -1,0 +1,70 @@
+{% load static %}
+
+    {% comment %} CSS {% endcomment %}
+    <style>
+        #title{
+            color: #B7482B;
+        }
+        #link{
+            color: #0000FF;
+        }
+        #status {
+            color: #FFFFFF;
+            padding: 5px;
+            border-radius: 5px;
+        }
+    </style>
+    {% comment %}{% endcomment %}
+
+    {% comment %}{% endcomment %}
+
+    <div class="intro-y col-span-12 md:col-span-12 lg:col-span-12 mt-5">
+        <div class="box">
+            <div class="flex items-start px-5 pt-5">
+                <div class="w-full flex flex-col lg:flex-row items-center border-b border-gray-500">
+                    <h1 class="text-xl lg:text-lg font-medium mb-3 mr-5" id="title">
+                        LISTE DEMANDE DES INCORPORATIONS
+                    </h1>
+                </div>
+            </div>
+            {% comment %}{% endcomment %}
+            <div class="grid grid-cols-12 gap-6 mt-1 p-8">
+                <div class="intro-y col-span-12 overflow-auto">
+                    {% if prospects %}
+                    <table class="table table-report -mt-2 datatable">
+                        <thead>
+                            <tr>
+                                <th class="whitespace-nowrap">Nom</th>
+                                <th class="whitespace-nowrap">Prenom</th>
+                                <th class="whitespace-nowrap">Genre</th>
+                                <th class="whitespace-nowrap">Date Naissance</th>
+                                <th class="whitespace-nowrap">Lien</th>
+                                <th class="whitespace-nowrap">Email</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for prospect in prospects %}
+                                    <tr class="intro-x">
+                                        <td class="w-auto">{{ prospect.nom|default_if_none:"" }}</td>
+                                        <td class="w-auto">{{ prospect.prenoms|default_if_none:""}}</td>
+                                        <td class="w-auto">{{ prospect.genre|default_if_none:""}}</td>
+                                        <td class="w-auto">{{ prospect.date_naissance|default_if_none:""|date:"d/m/Y" }}</td>
+                                        <td class="w-auto">{{ prospect.qualite_beneficiaire|default_if_none:""}}</td>
+                                        <td class="w-auto">{{ prospect.email|default_if_none:""}}</td>
+
+                                    </tr>
+                             
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                    <div class="alert alert-primary-soft show flex items-center mb-5 mx-auto inline-block justify-center">
+                        <i data-feather="info" class="mr-2"></i>
+                        AUCUNE DONNÉE
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% comment %}{% endcomment %}

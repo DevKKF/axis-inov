@@ -1,0 +1,331 @@
+{% extends "admin/base_site.html" %}
+{% load my_filters %}
+{% load static %}
+{% block extrastyle %}
+<style>
+    div.dataTables_processing>div:last-child>div {
+        background: rgb(187 65 38) !important;
+    }
+</style>
+{% endblock %}
+{% block content %}
+
+<div class="col-12 col-md-12 order-2 order-md-1">
+      <div class="card">
+        <div class="card-header o-bg-primary d-flex justify-content-between align-items-center">
+            <h3 class="card-title"><b>{{ _('LISTE_DES_BORDEREAUX_PAYES') }}</b></h3>
+            <div class="ml-auto d-flex align-items-center">
+                <button id="btn_export_beneficiaires_p" class="btn btn-sm btn-default">
+                    <i class="fa fa-file-o"></i> Exporter vers Excel
+                </button>
+                <a class="btn btn-sm btn-default" id="loader-btn_export_beneficiaires" style="width: 40px; display: none;">
+                    <img src="{% static 'admin_custom/img/loader.gif' %}" style="width: 20px;" />
+                </a>
+            </div>
+        </div>
+    </div>
+
+      <div style="display:none__;background:#CCCCCC;padding:10px;border-bottom:1px solid #eee;padding-bottom:10px;margin-bottom:10px;">
+        <form method="get"><label style="font-weight:normal;font-size:12px;display:none;"><i>{{ _('Formulaire de recherche') }}</i></label>
+          {% csrf_token %}
+            <div class="row">
+                <div class="col-12 col-md-12 col-sm-12 row">
+                    <!--div class="col-md-2 row">
+                        <span class="col-sm-12 text-left" style="margin-top:5px;font-weight:bold;">{{ _('Recherche') }}</span>
+                    </div-->
+
+                    <div class="col-md-2">
+                        <span class="col text-right" style="margin-top:5px;">{{ _('Type de remb') }} : </span>
+                        <div class="col-sm-12">
+                            <select class="form-control tags-multiple" id="search_type_remboursement" style="border:1px solid rgba(0, 0, 0, 0.3);" name="search_type_remboursement">
+                                <option value="">{{ _('Choisir') }}</option>
+                                {% for type_remboursement in type_remboursements %}
+                                    <option  value="{{type_remboursement.code}}">{{type_remboursement}}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="col-md-2">
+                        <span class="col text-right" style="margin-top:5px;">{{ _('Numero_Bordereau') }} : </span>
+                        <div class="col-sm-12">
+                            <input id="search_numero_bordereau" class="form-control" type="text" name="search_numero_bordereau" style="border-radius:3px;border:1px solid rgba(0, 0, 0, 0.3);text-transform:uppercase;">
+                        </div>
+                    </div>
+
+                    <div class="col-sm-2 remboursement-direct">
+                                <span class="col text-right" style="margin-top:5px;">{{_('Benef. de remb.') }} <span class="required">*</span>: </span>
+                                <div class="col-sm-12">
+                                    <select class="form-control tags-multiple" id="search_type_benef_rd" style="border:1px solid rgba(0, 0, 0, 0.3);">
+                                        <option value="AD">ADHÉRENT</option>
+                                        <option  value="AS">ASSURÉ</option>
+                                    </select>
+                                </div>
+                    </div>
+
+                    <div class="col-md-2" id="prestataire_div" style="display:none;">
+                        <span class="col text-right" style="margin-top:5px;">{{ _('Bénéficiaire') }} : </span>
+                        <div class="col-sm-12">
+                            <select class="form-control tags-multiple" id="search_prestataire" style="border:1px solid rgba(0, 0, 0, 0.3);" name="search_prestataire">
+                                <option value="">{{ _('Choisir') }}</option>
+                                {% for prestataire in prestataires %}
+                                    <option  value="{{prestataire.id}}">{{prestataire.name|default_if_none:""}} ({{prestataire.code|default_if_none:""}})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="col-md-2 search_assure">
+                        <span class="col text-right" style="margin-top:5px;">Bénéficiaire (Assuré) : </span>
+                        <div class="col-sm-12">
+                            <select class="form-control tags-multiple" id="search_assure" style="border:1px solid rgba(0, 0, 0, 0.3);" name="search_assure">
+                                <option value="">Choisir</option>
+                                {% for assure in assures %}
+                                    <option  value="{{assure.id}}">{{assure.nom|default_if_none:""}} {{assure.prenoms|default_if_none:""}} ({{assure.code|default_if_none:""}})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="col-md-2" id="adherent_div" style="display:none;">
+                        <span class="col text-right" style="margin-top:5px;">{{_('Beneficiaire') }} ({{_('Adherent') }}) : </span>
+                        <div class="col-sm-12">
+                            <select class="form-control tags-multiple" id="search_adherent_principal" style="border:1px solid rgba(0, 0, 0, 0.3);" name="search_adherent_principal">
+                                <option value="">{{ _('Choisir') }}</option>
+                                {% for adh in adhs %}
+                                    <option  value="{{adh.id}}">{{adh.nom|default_if_none:""}} {{adh.prenoms|default_if_none:""}} ({{adh.carte_active|default_if_none:""}})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="col-md-2">
+                        <span class="col text-right" style="margin-top:5px;">{{ _('Periode comptable') }} : </span>
+                        <div class="col-sm-12">
+                            <select class="form-control tags-multiple" id="search_periode_comptable" style="border:1px solid rgba(0, 0, 0, 0.3);" name="search_periode_comptable">
+                                <option value="">{{ _('Choisir') }}</option>
+                                {% for periode in periodes_comptables %}
+                                    <option  value="{{periode.id}}">{{periode}}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <!--div class="col-md-3">
+                      <button type="submit" class="form-control btn btn-sm btn-default" style="background: #BB4127; color:white;">{{ _('Filtrer') }}</button>
+                    </div-->
+                </div>
+            </div>
+        </form>
+
+      </div>
+
+      <div class="card-body">
+        <div id="example1_wrapper" class="dataTables_wrapper dt-bootstrap4">
+          <div class="row">
+            <div class="col-12 col-md-12 col-sm-12">
+                 <!--div class="form-group row">
+                    <label class="offset-8 col-sm-2 col-form-label">{{ _('Période comptable') }} <span class="required"></span></label>
+                    <div class="col-sm-2">
+
+                    </div>
+                </div-->
+                <table class="table table-bordered table-striped dataTable_ dtr-inline table_v_middle" id="table_bordereaux_ordannces">
+                    <thead>
+                      <tr>
+                        <th scope="col">{{_('Numero_Bordereau') }}</th>
+                        <th scope="col">{{_('Type') }}</th>
+                        <th scope="col">{{_('Beneficiaire') }}</th>
+                        <th scope="col">{{_('Periode_comptable') }}</th>
+                        <th scope="col">{{_('Base_remb') }}</th>
+                        <th scope="col">{{_('Rejet') }}</th>
+                        <th scope="col">{{_('Net_paye') }}</th>
+                        <th scope="col">{{_('Date_de_paiement') }}</th>
+                        <th scope="col">{{_('Action') }}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+</div>
+
+
+{% endblock %}
+
+
+{% block extrajs %}
+<script>
+    $(document).ready(function() {
+
+        $('#adherent_div').hide();
+        $('#prestataire_div').hide();
+        $(".search_assure").hide();
+        $(".remboursement-direct").hide();
+
+        dataTable = $('#table_bordereaux_ordannces').DataTable({
+            "language": {
+                "url": "https://cdn.datatables.net/plug-ins/9dcbecd42ad/i18n/French.json"
+            },
+            "serverSide": true,
+            "ajax": {
+                "url": "{% url 'bordereaux_payes_datatable' %}",
+                "data": function (data) {
+                    data.page = data.start / data.length + 1;
+                    data.search_periode_comptable = $('#search_periode_comptable').val();
+                    data.search_prestataire = $('#search_prestataire').val();
+                    data.search_numero_bordereau = $('#search_numero_bordereau').val();
+                    data.search_type_remboursement = $('#search_type_remboursement').val();
+                    data.search_adherent_principal = $('#search_adherent_principal').val();
+                    data.search_assure = $('#search_assure').val();
+
+                },
+                "dataSrc": function (json) {
+
+                    return json.data;
+                }
+            },
+            "columns": [
+                {"data": "numero", "orderable": true},
+                {"data": "type_remboursement", "orderable": true},
+                {"data": "prestataire__name", "orderable": true},
+                {"data": "periode_comptable", "orderable": true},
+                {"data": "net_a_payer", "orderable": true},
+                {"data": "rejet", "orderable": true},
+                {"data": "rembourse", "orderable": true},
+                {"data": "created_at", "orderable": true},
+                {"data": "actions", "orderable": false, "searchable": false},
+            ],
+            "paging": true,
+            "pageLength": 10,
+            "processing": true,  // Show the loading indicator
+            "searching": false,   // Enable the search feature
+            "search": {
+                "search": $('#table_dossiers_sinistres-table_filter input').val()
+            }
+        });
+
+
+        dataTable.on('xhr.dt', function (e, settings, json, xhr) {
+            // Hide the spinner when the data is loaded
+            $('.spinner-border').show();
+        });
+
+        // Show the spinner when the table is processing
+        dataTable.on('processing.dt', function (e, settings, processing) {
+            if (processing) {
+                $('.spinner-border').show();
+            }
+        });
+
+        // Add custom search functionality for code, name, and prenoms columns
+        $('#search_periode_comptable, #search_prestataire, #search_numero_bordereau, #search_type_remboursement, #search_adherent_principal, #search_assure, #search_type_benef_rd').on('keyup change', function() {
+            dataTable.search('').draw(); // Clear existing search
+            dataTable.draw(); // Trigger a new draw, which will include the updated search parameters
+        });
+
+
+
+        $('#search_type_remboursement').change(function() {
+            let type_remb = $(this).val();
+
+            $("#search_prestataire").trigger('change');
+            $("#search_prestataire").prop('selectedIndex',0);
+            $("#search_adherent_principal").trigger('change');
+            $("#search_adherent_principal").prop('selectedIndex',0);
+
+            if (type_remb == "RD") {
+                $('#prestataire_div').hide();
+                $(this).typeBenef($("#search_type_benef_rd").val());
+                $(".remboursement-direct").show();
+            } else if (type_remb == "TP") {
+                $('#prestataire_div').show();
+                $('#adherent_div').hide();
+                $(".search_assure").hide();
+                $(".remboursement-direct").hide();
+            }else{
+                $('#adherent_div').hide();
+                $('#prestataire_div').hide();
+                $(".search_assure").hide();
+                $(".remboursement-direct").hide();
+
+                $("#search_adherent_principal").val('');
+                $("#search_assure").val('')
+            }
+
+        });
+
+        $("#search_type_benef_rd").change(function(){
+            var selectedType = $(this).val();
+
+            $(this).typeBenef(selectedType);
+        });
+
+        $.fn.typeBenef = function(selectedType) {
+            if(selectedType == 'AS'){
+                 $("#adherent_div").hide();
+                $(".search_assure").show();
+                $("#search_adherent_principal").val('');
+            } else if(selectedType == 'AD') {
+                // Cacher les deux blocs si aucune option sélectionnée
+                $(".search_assure").hide();
+                $("#adherent_div").show();
+                $("#search_assure").val('')
+
+            }
+        };
+
+
+    });
+
+</script>
+
+
+<script>
+
+    // Add event listener for the export button click
+document.getElementById('btn_export_beneficiaires_p').addEventListener('click', function() {
+    // Show the loading spinner
+    document.getElementById('loader-btn_export_beneficiaires').style.display = 'inline';
+
+    // Make an AJAX request to trigger the Excel download
+    fetch("{% url 'export_bordereaux_ordonnances_paye' %}", {
+        method: 'GET',  // Using GET for the download
+    })
+    .then(response => {
+        if (response.ok) {
+            return response.blob(); // Get the blob data (Excel file)
+        } else {
+            throw new Error('Error downloading file');
+        }
+    })
+    .then(blob => {
+        // Hide the loading spinner
+        document.getElementById('loader-btn_export_beneficiaires').style.display = 'none';
+
+        // Create a URL for the Blob object and trigger the download
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = url;
+        a.download = 'LISTE_DES_BORDEREAUX_PAYES.xlsx';  // Set the file name
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);  // Clean up the URL after download
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        alert('An error occurred while exporting the file.');
+        // Hide the loading spinner in case of error
+        document.getElementById('loader-btn_export_beneficiaires').style.display = 'none';
+    });
+});
+
+</script>
+
+
+
+{% endblock %}

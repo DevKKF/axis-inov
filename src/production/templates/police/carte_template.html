@@ -1,0 +1,90 @@
+{% load i18n static jazzmin admin_urls %}
+{% get_current_language as LANGUAGE_CODE %}
+{% get_current_language_bidi as LANGUAGE_BIDI %}
+{% get_jazzmin_settings request as jazzmin_settings %}
+{% get_jazzmin_ui_tweaks as jazzmin_ui %}
+
+<!-- Bootswatch theme -->
+{% if jazzmin_ui.theme.name != 'default' %}
+    <link rel="stylesheet" href="{{ jazzmin_ui.theme.src }}" id="jazzmin-theme" />
+{% endif %}
+
+{% if jazzmin_ui.dark_mode_theme %}
+    <link rel="stylesheet" href="{{ jazzmin_ui.dark_mode_theme.src }}" id="jazzmin-dark-mode-theme" media="(prefers-color-scheme: dark)"/>
+{% endif %}
+
+<!-- Custom fixes for django -->
+<link rel="stylesheet" href="{% static "jazzmin/css/main.css" %}">
+
+{% if jazzmin_settings.custom_css %}
+<!-- Custom CSS -->
+<link rel="stylesheet" href="{% static jazzmin_settings.custom_css %}">
+{% endif %}
+
+<!-- Dropzone -->
+<link rel="stylesheet" href="{% static "admin_custom/css/dropzone.css" %}" type="text/css" />
+
+<!-- favicons -->
+<link rel="shortcut icon" href="{% static jazzmin_settings.site_icon %}" type="image/png">
+<link rel="icon" href="{% static jazzmin_settings.site_icon %}" sizes="32x32" type="image/png">
+
+{% if jazzmin_settings.use_google_fonts_cdn %}
+<!-- Google Font: Source Sans Pro -->
+<link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/country-select-js/2.1.0/css/countrySelect.min.css" rel="stylesheet">
+{% endif %}
+
+{% load my_filters %}
+{% load i18n static jazzmin admin_urls %}
+{% get_jazzmin_settings request as jazzmin_settings %}
+
+<div id="apercu_carte" style="margin:10px;border:1px solid #F9C577;box-shadow:1px 1px 3px #eee;border-radius:12px;width:400px;min-height:200px;height:200px;">
+    <div style="border-left:20px solid #B8725B;margin-left:10px;padding:5px;height:100%;">
+        <div class="row">
+            <div class="col-md-4">
+                <img src="{% static jazzmin_settings.site_logo %}" style="height:35.1px;"/>
+            </div>
+            <div class="col-md-5">
+                {{_('NUMERO_CARTE')}}: <span style="font-weight:bold;" id="apercu_carte_numero">{{ carte_active.numero|default_if_none:"" }}</span>
+                <span style="font-weight:bold;" id="apercu_carte_statut"></span>
+            </div>
+            <div class="col-md-3 text-center">
+                <form title="Cliquez pour changer la photo" id="carte" class="">
+                    {% csrf_token %}
+                </form>
+            </div>
+        </div>
+        <div class="col-md-12" style="font-size:12px;">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="">
+                        <span style="font-size:12px;border-left:5px solid #BA725B;padding-left:3px;">{{_('BENEFICIAIRE')}}</span>
+                        <div style="font-size:12px;"><b>{{ aliment.nom|default_if_none:"" }} {{ aliment.prenoms|default_if_none:"" }} </b></div>
+                        <div style="font-size:12px;">{{_('Date_de_naissance')}}: <b>{{ aliment.date_naissance|date:"d/m/Y"|default_if_none:"" }}</b></div>
+                        <div style="font-size:12px;">{{_('NUMERO_COUVERTURE_MALADIE_UNIVERSELLE')}}: <b>{{ aliment.numero_securite_sociale|default_if_none:"" }}</b> </div>
+                    </div>
+                    <div class="" style="margin-top:5px;">
+                        <span style="font-size:12px;border-left:5px solid #BA725B;padding-left:3px;">{{_('ADHERENT_PRINCIPAL')}}</span>
+                        <div style="font-size:12px;"><b>{{ aliment.nom|default_if_none:"" }} {{ aliment.prenoms|default_if_none:"" }}</b></div>
+                    </div>
+                    <div class="">
+                        <span>{{_('NUMERO_POLICE')}}: <b>{{ police.numero|default_if_none:"" }}</b></span>
+                    </div>
+                </div>
+            <div class="col-md-6">
+                    <img id="qrcode" src="{{ svg }}" style="border-radius:1px;width:50px;height:50px;position:absolute;bottom:0px;"/>
+                    <img id="cachet" src="{{ police.bureau.cachet.url|default_if_none:'' }}" style="border-radius:1px;width:60px;height:60px;position:absolute;bottom:0px;right:0px;"/>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<style type="text/css">
+#apercu_carte{
+    height: 200px;
+    width:300px;
+    border:1px solid red;
+}
+</style>

@@ -1,0 +1,41 @@
+
+<!-- Modal -->
+
+<div class="modal fade" id="modal_modifier_medicament" tabindex="-1" role="dialog" aria-labelledby="EditMedicationLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="EditMedicationLabel">{{_('Medicament')}}</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+        <div class="row">
+          <div class="col-sm-12">
+            <div class="form-group">
+              <label for="">{{_('MEDICAMENT')}}:</label>
+              <input type="text" name="" class="form-control"  value="PARACETAMOL" disabled id="">
+            </div>
+          </div>
+          <div class="col-sm-12">
+            <div class="form-group">
+              <label for="">{{_('QUANTITE')}}:</label>
+              <input type="number" min="1" max="3" value="2" name="qte" id="" class="form-control">
+            </div>
+          </div>
+          <div class="col-sm-12">
+            <div class="form-group">
+              <label for="">{{_('PRIX_UNITAIRE')}}:</label>
+              <input type="number" min="5" step="5" name="prix_unitaire" id="" class="form-control">
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer d-flex justify-content-between">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">{{_('Fermer')}}</button>
+        <button type="button" class="btn o-bg-primary">{{_('Valider')}}</button>
+      </div>
+    </div>
+  </div>
+</div>

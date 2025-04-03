@@ -1,0 +1,228 @@
+{% extends "admin/base_site.html" %}
+{% load my_filters %}
+{% block extrastyle %}
+
+<style>
+    div.dataTables_processing>div:last-child>div {
+        background: rgb(187 65 38) !important;
+    }
+    table td, table th {
+        vertical-align:middle !important;
+    }
+</style>
+
+{% endblock %}
+{% block content %}
+
+ <div class="col-12 col-md-12 order-2 order-md-1">
+
+      <div class="card">
+          <div class="card-header">
+              <h3 class="card-title"><b>
+                  LISTE DES DEMANDES D'ENTTENTE PRÉALABLE
+              </b></h3>
+              <div class="card-tools">
+              </div>
+          </div>
+      <div style="background:blanchedalmond;padding:10px;border-bottom:1px solid #eee;padding-bottom:10px;margin-bottom:10px;">
+            <form method="get"><label style="font-weight:normal;font-size:12px;display:none;"><i>Formulaire de recherche</i></label>
+                <div class="row">
+                    <div class="col-12 col-md-12 col-sm-12 row">
+                        <div class="col-md-1 row" style="margin-top:5px;display:none;">
+
+                        </div>
+                        <div class="col-sm-6 col-md-4 col-lg-2 mt-2">
+                            <span class="col-sm-3 text-right" style="margin-top:5px;">N° feuille de soins : </span>
+                            <div class="col-sm-9">
+                                <input autocomplete="off" class="form-control" type="text" id="num_feuille_soins" style="border-radius:3px;border:1px solid grey;text-transform:uppercase;">
+                            </div>
+                        </div>
+                        <div class="col-sm-6 col-md-4 col-lg-2 mt-2">
+                            <span class="col-sm-3 text-right" style="margin-top:5px;">N° Carte : </span>
+                            <div class="col-sm-9">
+                                <input autocomplete="off" class="form-control" type="text" id="num_assure" style="border-radius:3px;border:1px solid grey;text-transform:uppercase;">
+                            </div>
+                        </div>
+                        {% if not request.user.is_prestataire %}
+                        <div class="col-sm-6 col-md-4 col-lg-2 mt-2">
+                            <span class="col-sm-3 text-right" style="margin-top:5px;">Prestataire : </span>
+                            <div class="col-sm-9">
+                                <select class="form-control tags-multiple" id="prestataire" style="border:1px solid grey;">
+                                    <option  value="">Choisir</option>
+                                    {% for prestataire in prestataires %}
+                                        <option  value="{{prestataire.id}}">{{prestataire}}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        {% endif %}
+                        <!--div class="col-sm-6 col-md-4 col-lg-2 mt-2">
+                            <span class="col-sm-3 text-right" style="margin-top:5px;">Référence facture : </span>
+                            <div class="col-sm-9">
+                                <input autocomplete="off" class="form-control" type="text" id="reference_facture" value="" style="border-radius:3px;border:1px solid grey;text-transform:uppercase;">
+                            </div>
+                        </div>
+                        <div class="col-sm-6 col-md-4 col-lg-2 mt-2">
+                            <span class="col-sm-3 text-right" style="margin-top:5px;">Date recep. facture : </span>
+                            <div class="col-sm-9">
+                                <input autocomplete="off" class="form-control" type="date" id="date_reception_facture" value="" style="border-radius:3px;border:1px solid grey;text-transform:uppercase;">
+                            </div>
+                        </div-->
+                        <div class="col-sm-6 col-md-4 col-lg-2 mt-2">
+                            <span class="col-sm-3 text-right" style="margin-top:5px;">Date de soins: </span>
+                            <div class="col-sm-9">
+                                <input autocomplete="off" class="form-control" type="date" id="date_prestation" value="" style="border-radius:3px;border:1px solid grey;text-transform:uppercase;">
+                            </div>
+                        </div>
+                        <!--div class="col-sm-6 col-md-4 col-lg-2 mt-2">
+                            <span class="col-sm-3 text-right" style="margin-top:5px;">Statut : </span>
+                            <div class="col-sm-9">
+                                <select class="form-control tags-multiple" id="statut_pec" style="border:1px solid grey;">
+                                    <option  value="">CHOISIR</option>
+                                    <option  value="">TOUS</option>
+                                    <option  value="ACCORDE">ACCORDE</option>
+                                    <option  value="EN ATTENTE" {% if request.user.is_med %} selected {% endif %} >EN ATTENTE</option>
+                                    <option  value="REJETE">REJETE</option>
+                                </select>
+                            </div>
+                        </div-->
+                    </div>
+                </div>
+            </form>
+          </div>
+
+
+      <div class="card-body">
+        <div id="example_wrapper" class="dataTables_wrapper dt-bootstrap4">
+          <div class="row">
+            <div class="col-12 col-md-12 col-sm-12 ">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped dataTable__ customDataTable__ dtr-inline" id="table_dossiers_sinistres" style="width: 100%;" data-orderby="0">
+                    <thead>
+                      <tr>
+                        <th scope="col" style="display:none;">ID</th>
+                        <th scope="col">N° feuille de soins</th>
+                        {% if not request.user.is_prestataire %}
+                        <th scope="col">Centre prescripteur</th>
+                        <th scope="col">Centre exécutant</th>
+                        {% endif %}
+                        {% if not request.user.is_pharm %}
+                        <th scope="col">Type</th>
+                        {% endif %}
+                        {% if not request.user.is_med %}
+                        <th scope="col">N°Carte</th>
+                        {% endif %}
+                        <th scope="col">Nom {% if request.user.is_pres %} du patient{% else %} du bénéficiaire{% endif %}</th>
+                        <th scope="col">Frais réel</th>
+                        <th scope="col">Part assureur</th>
+                        <th scope="col">Part {% if request.user.is_pres %} patient{% else %} assuré{% endif %}</th>
+                        <th scope="col">Date prestation</th>
+                        <th scope="col">Statut</th>
+                        {% if request.user.is_med %}
+                        <th scope="col">Prorogation</th>
+                        {% endif %}
+                        <th scope="col">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+                </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+{% endblock %}
+
+
+{% block extrajs %}
+<script>
+    $(document).ready(function() {
+        $('#garantie').removeClass('o-bg-primary');
+        $('#garantie').addClass('o-active');
+
+
+  dataTable = $('#table_dossiers_sinistres').DataTable({
+            "language": {
+                "url": "https://cdn.datatables.net/plug-ins/9dcbecd42ad/i18n/French.json"
+            },
+            "serverSide": true,
+            "deferLoading": 0,
+            "ajax": {
+                "url": "{% url 'ententes_prealables_datatable' %}",
+                "data": function (data) {
+                    data.page = data.start / data.length + 1;
+                    data.num_feuille_soins = $('#num_feuille_soins').val();
+                    data.num_assure = $('#num_assure').val();
+                    data.date_prestation = $('#date_prestation').val();
+                    data.prestataire = $('#prestataire').val();
+                    data.reference_facture = $('#reference_facture').val();
+                    data.date_reception_facture = $('#date_reception_facture').val();
+                    data.statut_pec = $('#statut_pec').val();
+                },
+                "dataSrc": function (json) {
+                    return json.data;
+                }
+            },
+            "columns": [
+                {"data": "numero", "orderable": false},
+                {% if not request.user.is_prestataire %}
+                {"data": "centre_prescripteur", "orderable": false},
+                {"data": "pharmacie", "orderable": false},
+                {% endif %}
+                {% if not request.user.is_pharm %}
+                {"data": "type_or_numero_carte", "orderable": false},
+                {% endif %}
+                {% if not request.user.is_med %}
+                {"data": "numero_carte", "orderable": false},
+                {% endif %}
+                {"data": "nom", "orderable": false},
+                {"data": "total_frais_reel", "orderable": false},
+                {"data": "total_part_compagnie", "orderable": false},
+                {"data": "total_part_assure", "orderable": false},
+                {"data": "date_prestation", "orderable": false},
+                {"data": "statut", "orderable": false},
+                {% if request.user.is_med %}
+                {"data": "statut_prorogation", "orderable": false},
+                {% endif %}
+                {"data": "actions", "orderable": false, "searchable": false},
+            ],
+            "paging": true,
+            "pageLength": 10,
+            "processing": true,  // Show the loading indicator
+            "searching": false,   // Enable the search feature
+            "search": {
+                "search": $('#table_dossiers_sinistres-table_filter input').val()
+            }
+        });
+
+
+        dataTable.on('xhr.dt', function (e, settings, json, xhr) {
+            // Hide the spinner when the data is loaded
+            $('.spinner-border').show();
+        });
+
+        // Show the spinner when the table is processing
+        dataTable.on('processing.dt', function (e, settings, processing) {
+            if (processing) {
+                $('.spinner-border').show();
+            }
+        });
+
+        // Add custom search functionality
+        $('#num_feuille_soins, #num_assure, #date_prestation, #prestataire, #date_reception_facture, #reference_facture, #statut_pec').on('keyup change', function() {
+            dataTable.search('').draw();
+            dataTable.draw();
+        });
+
+        // Initialiser pour prendre en compte les valeurs par default des filtres
+        dataTable.ajax.reload();
+
+
+    });
+</script>
+
+{% endblock %}

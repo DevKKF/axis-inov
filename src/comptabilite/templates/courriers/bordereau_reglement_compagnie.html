@@ -1,0 +1,188 @@
+{% load my_filters %}
+<html>
+<head>
+<title>{{_('BORDEREAU_COMPAGNIE_DES_QUITTANCES_REGLEES')}}</title>
+<style>
+    @page {
+        size: a4 landscape;
+        
+        @frame content_frame {          /* Content Frame */
+            /* left: 50pt; */
+            margin: 1cm;
+            /* width: 768pt; */
+            top: 100pt; 
+            bottom: 35pt;
+            /* height: 632pt; */
+        }
+        @frame header_frame {           /* Another static Frame */
+            -pdf-frame-content: header_content;
+            top: -10pt;
+            margin: 1cm;
+            height: 200pt;
+        }
+        @frame footer_frame {           /* Another static Frame */
+            -pdf-frame-content: footer_content;
+            /* left: 450pt; width: 300pt; top: 672pt; height: 200pt; */
+            /* left:700pt; */
+            bottom: -40pt;
+            margin: 1cm;
+            height: 90pt;
+        }
+    }
+
+
+    body {
+			font-size: 9px;
+		}
+
+    .bold{
+        font-weight:bold
+    }
+    .left{
+    text-align:left;
+    }
+    .right{
+    text-align:right;
+    }
+    .center{
+    text-align:center;
+    }
+    table th, table td {
+        vertical-align: middle;
+    }
+    .table td {
+        padding-top: 6px;
+        padding-bottom: 2px;
+        text-align: center;
+        vertical-align: middle;
+        border: 1px solid #000;
+    }
+    .table th {
+        padding-top: 4px;
+        padding-bottom: 2px;
+        vertical-align: middle;
+        background-color:#DFF2FF;
+        border: 1px solid #000;
+    }       
+</style>
+</head>
+
+<body>
+    <div id="header_content">
+        
+        <table>
+            <tr>
+                <td class="left" width="15%">
+                    <div>
+                        <img width="100" src="{{ site_logo_url }}">
+                    </div>
+                </td>
+                <td width="70%" class="center bold" style="font-size: 14px;">
+                    
+                </td>
+                <td class="right" width="15%">
+                </td>
+            </tr>
+            <tr>
+            <td class="" width="20%">
+            <br/>{{ bureau.nom }} ({{ bureau.code }})<br>
+                {{ bureau.addresse|default:"" }}<br>
+                {% comment %}
+                Résidence élégance<br>
+                00225 ABIDJAN<br>
+                {% endcomment %}
+                Tel. : {{ bureau.telephone|default:"" }} Fax. : {{ bureau.fax|default:"" }}<br>
+                Mail : {{ bureau.email|default:"" }}
+                </td>
+                <td class="center" style="padding-bottom:0px; font-size: 14px; vertical-align: middle;" width="60%">
+                    <h3>BORDEREAU COMPAGNIE DES QUITTANCES REGLEES - {{ operation.devise.libelle|default:"" }} ({{ operation.devise.code|default:"" }}) <br> Au {{ operation.date_operation|date:'d/m/Y'|default_if_none:"" }}</h3>
+                    {% comment %} <div style="margin-top:-20px;">{{_('COMPAGNIE')}}: <b>{{ compagnie|default:"" }}</b></div> {% endcomment %}
+                </td>
+                <td width="20%" style="padding-left:20px;">
+                {{ compagnie.nom }}<br>
+                {{ compagnie.adresse|default:"" }}<br>
+                {% comment %} 01 BP 3832<br>
+                ABIDJAN 01<br> {% endcomment %}
+                </td>
+            </tr>
+            <tr>
+            <td>Code courtier : {{ bureau.code_courtier|default:"" }}</td>
+            <td>&nbsp;</td>
+            <td><span style="background-color:#DFF2FF;">{{_('NUMERO_BORDEREAU')}} :</span> {{ operation.numero|default:"" }}</td>
+            </tr>
+        </table>
+    </div>
+    {% comment %} {% with count=1 %} {% endcomment %} 
+    <div id="footer_content"  style="font-size: 14px;">
+    <table>
+    <tr>
+    <td>Edité le {{ operation.date_operation|date:'d/m/Y'|default_if_none:"" }}</td>
+    <td style="text-align:right">Page <pdf:pagenumber>/{{ nombre_pages }}</td>
+    </tr>
+    </table>
+    </div>
+
+        <table class="table" repeat="2">
+            <thead>
+                <tr>
+                  <th scope="col">{{_("Numero Reg client")}}</th>
+                  <th scope="col">{{_("Numero client")}}</th>
+                  <th scope="col">{{_("Nom Client")}}</th>
+                  <th scope="col">{{_("Numero Police")}}</th>
+                  <th scope="col">{{_("Numero Quittance")}}</th>
+                  <th scope="col">{{_("Emission")}}</th>
+                  <th scope="col">{{_("Mt Reg clt")}}</th>
+                  <th scope="col">{{_("Mt CIE")}}</th>
+                  <th scope="col">{{_("Com court")}}</th>
+                  <th scope="col">{{_("Com Apport")}}</th>
+                  <th scope="col">{{_("Date Reg clt")}}</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for option_reglement in option_reglements %}
+                <tr>
+                      <td>{{ option_reglement.reglement.numero|default_if_none:"" }}</td>
+                      <td>{{ option_reglement.reglement.quittance.police.client.code|default_if_none:"" }}</td>
+                      <td>{{ option_reglement.reglement.quittance.police.client.nom|default_if_none:"" }}</td>
+                      <td>{{ option_reglement.reglement.quittance.police.numero|default_if_none:"" }}</td>
+                      <td>{{ option_reglement.reglement.quittance.numero|default_if_none:"" }}</td>
+                      <td>{{ option_reglement.reglement.quittance.date_emission|date:'d/m/Y'|default_if_none:""  }}</td>
+                      <td class="text-right">{{ option_reglement.reglement.montant|money_field }}</td>
+                      <td class="text-right">{{ option_reglement.reglement.montant_compagnie|money_field }}</td>
+                      <td class="text-right">{{ option_reglement.reglement.montant_com_courtage|money_field }}</td>
+                      <td class="text-right">{{ option_reglement.reglement.montant_com_intermediaire|money_field }}</td>
+                      <td>{{ option_reglement.reglement.date_paiement|date:'d/m/Y'|default_if_none:"" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr>
+                <td scope="row" colspan="6"><b>Montant total</b></td>
+                <td><b>{{ operation.montant_total|money_field }}</b></td>
+                <td><b>{{ total_montant_compagnie|money_field }}</b></td>
+                <td><b>{{ total_montant_com_courtage|money_field }}</b></td>
+                <td><b>{{ total_montant_com_intermediaire|money_field }}</b></td>
+                </tr>
+            </tfoot>
+        </table>
+        
+{% comment %}          
+        <br/>
+        <br/>
+               
+        <table>
+            <tr>
+                <td width="5%" style="border:0px;"></td>
+                <td width="5%" style="border:0px;"></td>
+                <td width="40%" style="border:0px; text-align:left; font-size: 14px;"><br/><br/><br/></td>
+                <td width="40%" style="border:0px; text-align:right; font-size: 14px;">{{_('VISA_DIRECTION')}}<br/><br/><br/></td>
+                <td width="10%" style="border:0px;"></td>
+            </tr>
+            <tr>
+                <td style="border:0px; text-align:left; font-size: 14px;width:100%;">{{_('Montant_total')}} : <strong>{{operation.montant_total|money_field|default_if_none:0}} FCFA</strong> </td>
+            </tr>
+        </table>
+ {% endcomment %}
+
+</body>
+</html>

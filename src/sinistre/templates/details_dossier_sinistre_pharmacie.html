@@ -1,0 +1,222 @@
+{% extends "admin/base_site.html" %}
+{% load my_filters %}
+{% block extrastyle %} {% endblock %}
+{% block content %}
+<div class="col-12 col-md-12 order-2 order-md-1">
+  <div class="card">
+    <div class="card-header mx-auto">
+        <h3 class="card-title"><b>{{_('BON_DE_SOINS_NUMERO')}}{{ sinistre.numero }}</b></h3>
+    </div>
+  </div>
+  <div class="row">
+
+    <div class="col-sm-12">
+    <div class="row">
+      <div class="col-sm-2">
+        <div class="card-avatar mx-auto mb-4" >
+          <img src="{{sinistre.aliment.photo.url}}" class="img-fluid" style="width:130px;border:2px solid orange;border-radius:5px;">
+        </div>
+      </div>
+      <div class="col-sm-10">
+      <div class="">
+        <!--div class="card-header">
+          <h5 class="card-title">INFORMATIONS PERSONNELLES</h5>
+        </div-->
+        <div class="card-body mt-0 pt-0">
+          <div class="row">
+            <div class="col-sm-6">
+              <div class="form-groupn mb-2 row">
+                <div class="col-sm-4">{{_('Numero_Assure')}}: </div>
+                <div class="col-sm-8">
+                  <span class=" col-sm-12 text-bold">{{ carte.numero }}</span>
+                </div>
+              </div>
+              <div class="form-groupn mb-2 row">
+                <div class="col-sm-4">{{_('Nom')}}:</div>
+                <div class="col-sm-8">
+                  <span class="col-sm-12 text-bold">{{ sinistre.aliment.nom }}</span>
+                </div>
+              </div>
+              <div class="form-groupn mb-2 row">
+                <div class="col-sm-4">{{_('Prenoms')}}:<span class="required"></span></div>
+                <div class="col-sm-8">
+                  <span class="text-bold col-sm-12"> {{ sinistre.aliment.prenoms }}</span>
+                </div>
+              </div>
+              <div class="form-groupn mb-2 row">
+                <div class="col-sm-4">{{_('Date_de_naissance')}}: <span></span></div>
+                <div class="col-sm-8">
+                  <span class="text-bold col-sm-12" readonly="">{{ sinistre.aliment.date_naissance|date:"d/m/Y" }}</span>
+                </div>
+              </div>
+              <!--div class="form-groupn mb-2 row">
+                <div class="col-sm-4">Formule:</div>
+                <div class="col-sm-8">
+                  <span class="text-bold col-sm-12" readonly="">{{ sinistre.formule.libelle }}</span>
+                </div>
+              </div-->
+              <div class="form-groupn mb-2 row">
+                <div class="col-sm-4">{{_('Taux_de_couverture')}}:</div>
+                <div class="col-sm-8">
+                  <span class="text-bold col-sm-12" readonly="">{{ sinistre.formule.taux_couverture }} %</span>
+                </div>
+              </div>
+            </div>
+            {% comment %} <div class="vl"></div> {% endcomment %}
+            <div class="col-sm-6">
+
+              <div class="form-groupn mb-2 row">
+                <div class="col-sm-4">{{_('Date_du_dossier')}}:</div>
+                <div class="col-sm-8">
+                  <span class="col-sm-12 text-bold" readonly="">{{ sinistre.created_at|date:"d/m/Y \à H:i" }}</span>
+                </div>
+              </div>
+              <div class="form-groupn mb-2 row">
+                <div class="col-sm-4">{{_('Date_de_prestation')}}:</div>
+                <div class="col-sm-8">
+                  <span class="col-sm-12 text-bold" readonly="">{{ sinistre.date_survenance|date:"d/m/Y \à H:i" }}</span>
+                </div>
+              </div>
+              <div class="form-groupn mb-2 row">
+                <div class="col-sm-4">{{_('Prescripteur')}}: </div>
+                <div class="col-sm-8">
+                  <span class="text-bold col-sm-12" readonly="">{{ sinistre.prescripteur.nom}} {{sinistre.prescripteur.prenoms }}</span>
+                </div>
+              </div>
+
+              <div class="form-groupn mb-2 row">
+                <div class="col-sm-4">{{_('Prestataire')}}: </div>
+                <div class="col-sm-8">
+                  <span class="text-bold col-sm-12" readonly="">{{ sinistre.prestataire.name}}</span>
+                </div>
+              </div>
+
+              <div class="form-groupn mb-2 row">
+                <div class="col-sm-4">{{_('Cree_par')}}:</div>
+                <div class="col-sm-8">
+                  <span class="col-sm-12 text-bold">{{ sinistre.created_by.first_name }} {{sinistre.created_by.last_name}}</span>
+                </div>
+              </div>
+              <!--div class="form-groupn mb-2 row">
+                <div class="col-sm-4">Assureur:</div>
+                <div class="col-sm-8">
+                  <span class="col-sm-12 text-bold">{{ sinistre.police.compagnie.nom }}</span>
+                </div>
+              </div-->
+
+            </div>
+          </div>
+          <hr>
+          <div class="row">
+            <div class="col-sm-12">
+              <div class="form-groupn mb-2 row">
+                <div class="col-sm-3">{{_('Code_affection')}}: </div>
+                <div class="col-sm-">
+                  <span class="text-bold" style="font-weight:bold;">990</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-sm-12">
+              <div class="form-groupn mb-2 row">
+                <div class="col-sm-">{{_('Renseignement_clinique')}}: </div>
+                <div class="col-sm-12" style="padding:15px;border:1px solid #eee;border-radius:5px;">
+                  <span style="font-weight: bold;">{{_(Douleur_et_fievre)}}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <hr>
+          <div class="row">
+            <div class="col-sm-6">
+              <div class="form-groupn mb-2 row">
+                <div class="col-sm-4">{{_('Part_assureur')}}: </div>
+                <div class="col-sm-8">
+                  <span class="text-bold col-sm-6 badge badge-warning" style="font-size:18px;color:white;background:#F8AF3C;">{{ total_part_compagnie|money_field|default_if_none:"0" }}</span>
+                </div>
+              </div>
+            </div>
+            <div class="col-sm-6">
+              <div class="form-groupn mb-2 row">
+                <div class="col-sm-4">{{_('Part_assure')}}: </div>
+                <div class="col-sm-8">
+                  <span class="text-bold col-sm-6 badge badge-warning" style="font-size:18px;color:white;background:#F8AF3C;">{{ total_part_assure|money_field|default_if_none:"0" }}</span>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    </div>
+    </div>
+  </div>
+
+
+  <div class=" col-md-12">
+    <div class="card">
+    <div class="card-header">
+      <div class="card-title">
+        <h6>{{_('LISTE_DES_ACTES')}}</h6>
+      </div>
+      <div class="card-tools">
+        <button class="btn btn-sm btn-danger btnActionDesActes" id="btnRejeterActesSelectionnes" disabled data-reject_action_url="{% url 'rejeter_liste_acte' %}">{{_('Rejeter_la_selection')}}</button>
+        <button class="btn btn-sm btn-success btnActionDesActes" id="btnApprouverActesSelectionnes" disabled>{{_('Approuver_la_selection')}}</button>
+      </div>
+    </div>
+    <div class="card-body">
+      <form action="{% url 'statuer_liste_acte' %}" method="post" id="formulaire_liste_actes_selectionnes">
+        {% csrf_token %}
+        <table class="table table-bordered table-striped dataTable_ dtr-inline">
+            <thead>
+              <tr>
+                <th scope="col"><input type="checkbox" id="btnSelectAll"></th>
+                <th scope="col">{{_('Acte')}}</th>
+                <th scope="col">{{_('Nbre_demande')}}</th>
+                <th scope="col">{{_('Nbre_accorde')}}</th>
+                <th scope="col">{{_('Frais_reel')}}</th>
+                <th scope="col">{{_('Part_assureur')}}</th>
+                <th scope="col">{{_('TM')}}</th>
+                <th scope="col">{{_('Depas')}}.</th>
+                <th scope="col">{{_('Part_assure')}}</th>
+                <th scope="col">{{_('Statut')}}</th>
+                <th scope="col">{{_('Actions')}}</th>
+              </tr>
+            </thead>
+            <tbody>
+            {% for sinistre in sinistres %}
+              <tr>
+                  <td><input type="checkbox" name="acte_{{sinistre.id}}" data-sinistre_id="{{sinistre.id}}"  {% if sinistre.statut != 'EN ATTENTE' %} disabled  {% endif %} class ="select-row"></td>
+                  <td>{{sinistre.acte.libelle|default_if_none:""}} ({{ sinistre.acte.code|default_if_none:"" }})</td>
+                  <td style="text-align:right">{{ sinistre.display_nombre_demande }}</td>
+                  <td style="text-align:right">{{ sinistre.display_nombre_accorde }}</td>
+                  <td style="text-align:right">{{ sinistre.frais_reel|money_field|default_if_none:"0" }}</td>
+                  <td style="text-align:right">{{ sinistre.part_compagnie|money_field|default_if_none:"0" }}</td>
+                  <td style="text-align:right">{{ sinistre.ticket_moderateur|money_field|default_if_none:"0" }}</td>
+                  <td style="text-align:right">{{ sinistre.depassement|money_field|default_if_none:"0" }}</td>
+                  <td style="text-align:right">{{ sinistre.part_assure|money_field|default_if_none:"0" }}</td>
+                  <td>{{ sinistre.statut|default_if_none:"" }}</td>
+                  <td>
+                    <span data-href="{% url 'popup_details_sinistre' sinistre.id %}" class="btn btn-sm btn-details rounded-pill btn-popup_details_sinistre"><i class="fa fa-eye"></i> {{_(Voir_plus)}}</span></a>&nbsp;&nbsp;
+                  </td>
+              </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+      </form>
+  </div>
+  </div>
+  </div>
+
+
+</div>
+
+
+{% endblock %}
+
+
+{% block extrajs %}
+
+{% endblock %}

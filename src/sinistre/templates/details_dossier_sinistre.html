@@ -1,0 +1,895 @@
+{% extends "admin/base_site.html" %}
+{% load my_filters %}
+{% load static %}
+{% block extrastyle %} {% endblock %}
+{% block content %}
+
+<div class="col-12 col-md-12 order-2 order-md-1">
+  <div class="card">
+    <div class="card-header">
+        <h3 class="card-title">
+          <span class="back_icon">
+            {% if request.META.HTTP_REFERER %}
+            <a href="{{ request.META.HTTP_REFERER }}" class="badge btn-sm btn-default btn-retour" style="color:black;font-weight:normal;" title="Retour à la liste des prises en charges"><i class="fas fa-arrow-left"></i> {{_('Retour')}}</a>
+            {% endif %}
+          </span>
+          <span class="the_title" style="margin-left:10px;font-weight:bold;">
+            {{_('FEUILLE_DE_SOINS_NUMERO')}}{{ dossier_sinistre.numero }} -
+            {% if request.user.is_med and dossier_sinistre.type_priseencharge.code == "CONSULT" %}
+                {{_('PHARMACIE')}}
+            {% else %}
+                {{dossier_sinistre.type_priseencharge}}
+            {% endif %}
+
+          </span>
+        </h3>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col-sm-12">
+      <div class="row">
+        <div class="col-sm-2">
+          <div class="card-avatar mx-auto mb-4" >
+            <img src="{% if dossier_sinistre.aliment.photo %} {{dossier_sinistre.aliment.photo.url}} {% else %} {% static 'admin_custom/user.png' %} {% endif %}" class="img-fluid" style="width:130px;border:2px solid orange;border-radius:5px;">
+          </div>
+        </div>
+        <div class="col-sm-{% if dossier_sinistre.statut == "ACCORDE" and not request.user.is_med and not request.user.is_pharm %}9{% else %}10{% endif %} ">
+          <div class="">
+            <!--div class="card-header">
+              <h5 class="card-title">INFORMATIONS PERSONNELLES</h5>
+            </div-->
+            <div class="card-body mt-0 pt-0">
+              <div class="row">
+                <div class="col-sm-6">
+                  <div class="form-groupn mb-2 row col-sm-12">
+                    <div class="col-sm-4">{{_('Numero_Assure')}}: </div>
+                    <div class="col-sm-8">
+                      <span class=" col-sm-12 text-bold">{{ dossier_sinistre.aliment.carte_active.numero }}</span>
+                    </div>
+                  </div>
+                  <div class="form-groupn mb-2 row col-sm-12">
+                    <div class="col-sm-4">{{_('Nom')}}:</div>
+                    <div class="col-sm-8">
+                      <span class="col-sm-12 text-bold">{{ dossier_sinistre.aliment.nom }}</span>
+                    </div>
+                  </div>
+                  <div class="form-groupn mb-2 row col-sm-12">
+                    <div class="col-sm-4">{{_('Prenoms')}}:<span class="required"></span></div>
+                    <div class="col-sm-8">
+                      <span class="text-bold col-sm-12"> {{ dossier_sinistre.aliment.prenoms }}</span>
+                    </div>
+                  </div>
+                  <div class="form-groupn mb-2 row col-sm-12">
+                    <div class="col-sm-4">{{_('Date_naissance')}}: <span></span></div>
+                    <div class="col-sm-8">
+                      <span class="text-bold col-sm-12" readonly="">{{ dossier_sinistre.aliment.date_naissance|date:"d/m/Y" }}</span>
+                    </div>
+                  </div>
+                  <div class="form-groupn mb-2 row col-sm-12">
+                    <div class="col-sm-4">{{_('Statut')}}:</div>
+                    <div class="col-sm-8">
+                      <span class="text-bold col-sm-12" readonly="">{{ dossier_sinistre.aliment.qualite_beneficiaire }}</span>
+                    </div>
+                  </div>
+                  <div class="form-groupn mb-2 row col-sm-12">
+                    <div class="col-sm-4">{{_('Taux_couverture')}}:</div>
+                    <div class="col-sm-8">
+                      <span class="text-bold col-sm-12" readonly="">{% if dossier_sinistre.tm_prefinanced and request.user.is_prestataire %} 100 {% else %}{{ dossier_sinistre.formulegarantie.taux_couverture }} {% endif %}% <span style="color:white;"> : {{ dossier_sinistre.formulegarantie }}</span></span>
+                    </div>
+                  </div>
+
+                  <div class="form-groupn mb-2 row col-sm-12">
+                    <div class="col-sm-4">{{_('Garant')}}:</div>
+                    <div class="col-sm-8">
+                      <span class="text-bold col-sm-12" readonly="">{{ dossier_sinistre.compagnie.nom|default_if_none:""}}</span>
+                    </div>
+                  </div>
+
+                  <div class="form-groupn mb-2 row col-sm-12">
+                    <div class="col-sm-4">{{_('Souscripteur')}} :</div>
+                    <div class="col-sm-8">
+                      <span class="text-bold col-sm-12" readonly="">{{ dossier_sinistre.aliment.formule.police.client|default_if_none:""}}</span>
+                    </div>
+                  </div>
+
+                  {% if dossier_sinistre.type_priseencharge.code == "HOSPIT" %}
+                  <div class="form-groupn mb-2 row col-sm-12">
+                    <div class="col-sm-4">{{_('Plafond_chambre')}}: </div>
+                    <div class="col-sm-8">
+                      <span class="text-bold col-sm-12" readonly="">{{ dossier_sinistre.plafond_chambre|money_field|default_if_none:"0" }}</span>
+                    </div>
+                  </div>
+                  <div class="form-groupn mb-2 row col-sm-12">
+                    <div class="col-sm-4">{{_('Plafond_Hospit')}}.: </div>
+                    <div class="col-sm-8">
+                      <span class="text-bold col-sm-12" readonly="">{{ dossier_sinistre.plafond_hospit|money_field|default_if_none:"0" }}</span>
+                    </div>
+                  </div>
+                  <div class="form-groupn mb-2 row col-sm-12">
+                    <div class="col-sm-4">{{_('Plafond_accouch')}}.: </div>
+                    <div class="col-sm-8">
+                      <span class="text-bold col-sm-12" readonly="">{{ dossier_sinistre.plafond_accouchement|money_field|default_if_none:"0" }}</span>
+                    </div>
+                  </div>
+                  {% endif %}
+
+                </div>
+                {% comment %} <div class="vl"></div> {% endcomment %}
+                <div class="col-sm-6">
+
+                  <div class="form-groupn mb-2 row col-sm-12">
+                    <div class="col-sm-4">{{_('Date_du_dossier')}}:</div>
+                    <div class="col-sm-8">
+                      <span class="col-sm-12 text-bold" readonly="">{{ dossier_sinistre.created_at|date_heure_locale:dossier_sinistre.created_by.bureau.fuseau_horaire|date:"d/m/Y \à H:i" }}</span>
+                    </div>
+                  </div>
+                  <div class="form-groupn mb-2 row col-sm-12">
+                    <div class="col-sm-4">{{_('Date_de_prestation')}}:</div>
+                    <div class="col-sm-8">
+                      <span class="col-sm-12 text-bold" readonly=""></span>
+                    </div>
+                  </div>
+                  {% if dossier_sinistre.centre_prescripteur %}
+                  <div class="form-groupn mb-2 row col-sm-12">
+                    <div class="col-sm-4">{{_('Centre_presc')}}.: </div>
+                    <div class="col-sm-8">
+                      <span class="text-bold col-sm-12" readonly="">{{ dossier_sinistre.centre_prescripteur|default_if_none:"" }}</span>
+                    </div>
+                  </div>
+                  {% endif %}
+                  {% if dossier_sinistre.prescripteur %}
+                  <div class="form-groupn mb-2 row col-sm-12">
+                    <div class="col-sm-4">{{_('Prescripteur')}}: </div>
+                    <div class="col-sm-8">
+                      <span class="text-bold col-sm-12" readonly="">{{ dossier_sinistre.prescripteur.nom|default_if_none:"" }} {{dossier_sinistre.prescripteur.prenoms|default_if_none:"" }}</span>
+                    </div>
+                  </div>
+                  {% endif %}
+                  {% if dossier_sinistre.prescripteur %}
+                  <div class="form-groupn mb-2 row col-sm-12">
+                    <div class="col-sm-4">{{_('Prestataire_executant')}}: </div>
+                    <div class="col-sm-8">
+                      <span class="text-bold col-sm-12" readonly="">{{ dossier_sinistre.prestataire.name|default_if_none:"" }}</span>
+                    </div>
+                  </div>
+                  {% endif %}
+                  <div class="form-groupn mb-2 row col-sm-12">
+                    <div class="col-sm-4">{{_('Cree_par')}}:</div>
+                    <div class="col-sm-8">
+                      <span class="col-sm-12 text-bold">{{ dossier_sinistre.created_by.first_name }} {{dossier_sinistre.created_by.last_name}}</span>
+                    </div>
+                  </div>
+                  <div class="form-groupn mb-2 row col-sm-12">
+                    <div class="col-sm-4">{{_('Type_remb')}}: </div>
+                    <div class="col-sm-8">
+                      <span class="text-bold col-sm-12" readonly="">{{ dossier_sinistre.type_remboursement|default_if_none:"" }}</span>
+                    </div>
+                  </div>
+
+                  {% if request.user.is_pharm and dossier_sinistre.is_closed and request.user.bureau.code != "CI01" %}
+                  <div class="form-groupn mb-2 row col-sm-12">
+                    <div class="col-sm-12" style="text-align: center">
+                   <a href="{% url 'render_pdf_view_pharmacie' dossier_sinistre.id %}" target="_blank">
+                            <img src="{% static '../media/downloader-pdf.png' %}" class="img-fluid" style="width:64px;">
+                            <br><small><u>Télécharger attestation de PEC</u></small>
+                          </a>
+                      </div>
+                    </div>
+                  {% endif %}
+
+                </div>
+              </div>
+              {% if not request.user.is_labo and not request.user.is_optic and not request.user.is_imag and not request.user.is_dentiste %}
+                <hr>
+                <div class="col-sm-12">
+                  <div class="form-groupn mb-2 row">
+                    <div class="col-sm-2">{{_('Affection')}}: </div>
+                    <div class="col-sm-10 row">
+                      {% if dossier_sinistre.affection %}
+                      <div class="col-md-12">
+                        <span class="text-bold" style="font-weight:bold;">{{ dossier_sinistre.affection.code_cim_10 }} - {{ dossier_sinistre.affection.libelle }}</span>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                        {% if request.user.is_pharm or request.user.is_med %}
+                        <span class="text-primarys" style="cursor:pointer;color:var(--colorPrimary);" id="btn_show_form_update_affection"><i class="fa fa-edit text-warning_" style="color:var(--colorPrimary);"></i> {{_('Modifier')}}</span>
+                        {% endif %}
+                      </div>
+                      {% endif %}
+                      {% if request.user.is_pharm or request.user.is_med %}
+                      <div class="col-md-8">
+                        <form method="POST" action="{% url 'update_add_affection' dossier_sinistre.id %}" class="row" id="form_Add_affection_hopit" {% if dossier_sinistre.affection %}style="display:none;"{% endif %}>
+                          {% csrf_token %}
+                          <div class="col-sm-8">
+                            <select class="form-control" name="code_affection" id="code_affection_detail_ds">
+                              <option value="">{{_('Choisir')}}</option>
+                              {% for affection in affections %}
+                              <option value="{{ affection.id }}">{{ affection.code_cim_10 }} - {{ affection.libelle }}</option>
+                              {% endfor %}
+                            </select>
+                          </div>
+                          <div class="col-sm-4">
+                            <button type="button" id="btnAddAffectionToDossierSinistre" class="btn btn-complement-rouge">{{_('Enregistrer')}}</button>
+                          </div>
+                        </form>
+                      </div>
+                      {% endif %}
+
+                    </div>
+                  </div>
+                </div>
+              {% endif %}
+              {% if not request.user.is_pharm and not request.user.is_labo and not request.user.is_optic and not request.user.is_dentiste %}
+
+                {% if dossier_sinistre.renseignement_clinique %}
+                <div class="row_">
+                  <div class="col-sm-12">
+                    <div class="form-groupn mb-2">
+                      <div class="col-sm-">{{_('Renseignement_clinique')}}: </div>
+                      <div class="col-sm-12" style="padding:10px;border:1px solid #eee;border-radius:5px;">
+                        <span style="font-weight: bold;">{{ dossier_sinistre.renseignement_clinique|default_if_none:"" }}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                {% endif %}
+              {% endif %}
+            </div>
+          </div>
+        </div>
+        {% if dossier_sinistre.statut == "ACCORDE" and not request.user.is_med and not request.user.is_pharm %}
+        <div class="col-sm-1">
+          <div class="card-avatar mx-auto mb-4 pl-1 text-center" >
+              {% if request.user.bureau.code == "CM01" or request.user.bureau.code == "BN01" %}
+                {% if dossier_sinistre.type_priseencharge.code == "CONSULT" %}
+                  <a href="{% url 'render_pdf_view_general' dossier_sinistre.id %}" target="_blank">
+                    <img src="{% static '../media/downloader-pdf.png' %}" class="img-fluid" style="width:64px;">
+                    <br><small><u>{{_('Telecharger_le_bon')}}</u></small>
+                  </a>
+                {% else %}
+                  <a href="{% url 'render_pdf_view' dossier_sinistre.id %}" target="_blank">
+                    <img src="{% static '../media/downloader-pdf.png' %}" class="img-fluid" style="width:64px;">
+                    <br><small><u>{{_('Telecharger_le_bon')}}</u></small>
+                  </a>
+                {% endif %}
+              {% else %}
+              <a href="{% url 'render_pdf_view' dossier_sinistre.id %}" target="_blank">
+                <img src="{% static '../media/downloader-pdf.png' %}" class="img-fluid" style="width:64px;">
+                <br><small><u>{{_('Telecharger_le_bon')}}</u></small>
+              </a>
+              {% endif %}
+          </div>
+        </div>
+        {% endif %}
+
+      </div>
+    </div>
+  </div>
+  <hr>
+  <div class="col-md-12 mb-3">
+    <div class="row">
+      <div class="col-sm-4">
+        <div class="form-groupn mb-2 row">
+          <div class="col-sm-4">{{_('Frais_reel')}}: </div>
+          <div class="col-sm-8">
+            <span class="text-bold col-sm-6 badge badge-secondary" style="font-size:18px;color:white;background0:#F8AF3C;">
+              {% if request.user.is_pharm %}
+                {{ medicaments_total_frais_reel|money_field|default_if_none:"0" }}
+              {% else %}
+                {{ dossier_sinistre.new_total_frais_reel|money_field|default_if_none:"0" }}
+              {% endif %}
+            </span>
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-4">
+        <div class="form-groupn mb-2 row">
+          <div class="col-sm-4">{{_('Part_assureur')}}: </div>
+          <div class="col-sm-8">
+            <span class="text-bold col-sm-6 badge badge-success" style="font-size:18px;color:white;background:#F8AF3C;">
+              {% if request.user.is_pharm %}
+                {{ dossier_sinistre.new_total_part_compagnie_medicament_prestataire|money_field|default_if_none:"0" }}
+              {% else %}
+                {% if request.user.is_prestataire %}
+                {{ dossier_sinistre.new_total_part_compagnie_prestataire|money_field|default_if_none:"0" }}
+                {% else %}
+                {{ dossier_sinistre.new_total_part_compagnie_gestionnaire|money_field|default_if_none:"0" }}
+                {% endif %}
+              {% endif %}
+            </span>
+          </div>
+        </div>
+      </div>
+      <div class="col-sm-4">
+        <div class="form-groupn mb-2 row">
+          <div class="col-sm-4">{{_('Part_assure')}}: </div>
+          <div class="col-sm-8">
+            <span class="text-bold col-sm-6 badge badge-info" style="font-size:18px;color:white;background:#5FB7B1;">
+              {% if request.user.is_pharm %}
+                {{ dossier_sinistre.new_total_part_assure_medicament_prestataire|money_field|default_if_none:"0" }}
+              {% else %}
+                {% if request.user.is_prestataire %}
+                {{ dossier_sinistre.new_total_part_assure_prestataire|money_field|default_if_none:"0" }}
+                {% else %}
+                {{ dossier_sinistre.new_total_part_assure_gestionnaire|money_field|default_if_none:"0" }}
+                {% endif %}
+              {% endif %}
+            </span>
+            {% if dossier_sinistre.tm_prefinanced and not request.user.is_prestataire %} <span class="badge badge-danger" title="{{ dossier_sinistre.type_prefinancement }}">{{_('Prefinance')}}</span> {% endif %}
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+
+{% if not request.user.is_pharm %}
+<div class=" col-md-12">
+    <div class="card" id="card_liste_actes">
+	<div class="card-header">
+	  <div class="card-title">
+		<h6>{{_('LISTE_DES_ACTES')}}</h6>
+	  </div>
+	  <div class="card-tools">
+        {% if request.user.is_med %}
+        <button data-toggle="modal" data-target="#MOTIFREJET" class="btn btn-sm btn-secondary btnActionDesActes" disabled>{{_('Rejeter_la_selection')}}</button>
+        <button data-href="{% url 'approuver_liste_acte' %}" class="btn btn-sm btn-complement-rouge btnActionDesActes" id="btnApprouverActesSelectionnes" disabled>{{_('Approuver_la_selection')}}</button>
+        {% endif %}
+	  </div>
+	</div>
+    <div class="card-body">
+      <form action="" method="post" id="formulaire_liste_actes_selectionnes">
+        {% csrf_token %}
+        <input type="hidden" name="dossier_sinistre_id" value="{{ dossier_sinistre.id }}">
+        <div class="row table-responsive">
+        <table class="table table-bordered table-striped dataTable dtr-inline">
+            <thead>
+              <tr>
+                {% if request.user.is_med %}<th scope="col"><input type="checkbox" id="btnSelectAll"><span class="libelle_btnSelectAll" style="cursor:pointer;font-size:10px;"> {{_('Cocher_tout')}}</span></th>{% endif %}
+                <th scope="col">{{_('Acte')}}</th>
+                <th scope="col">{{_('Frais_reel')}}</th>
+                <th scope="col">{{_('Part_assureur')}}</th>
+                <th scope="col">{{_('TM')}}</th>
+                <th scope="col">{{_('Valeur_du_TM')}}</th>
+                <th scope="col">{{_('Depas')}}.</th>
+                <th scope="col">{{_('Part_assure')}}</th>
+                <th scope="col">{{_('Statut')}}</th>
+                {% if dossier_sinistre.has_prorogation %}<th scope="col">{{_('Prorogation')}}</th>{% endif %}
+                {% if dossier_sinistre.has_seances %}<th scope="col">{{_('Seance')}}</th>{% endif %}
+                <th scope="col">{{_('Actions')}}</th>
+              </tr>
+            </thead>
+            <tbody>
+            {% for sinistre in sinistres %}
+              {% if sinistre.acte.option_seance and sinistre.nombre_demande > 1 and sinistre.statut != "ACCORDE" %}
+              <tr>
+                  {% if request.user.is_med %}<td><input type="checkbox" name="acte_{{sinistre.id}}" data-sinistre_id="{{sinistre.id}}"  {% if sinistre.statut != 'EN ATTENTE' %} disabled  {% endif %} class ="select-row"></td>{% endif %}
+                  <td>{{sinistre.acte.libelle|default_if_none:""}} ({{ sinistre.numero|default_if_none:"" }})
+                    <span class="badge badge-danger">{{sinistre.nombre_demande}} {{_('seances')}}</span>
+                  </td>
+                  <td style="text-align:right">{{ sinistre.nombre_demande|multiply:sinistre.frais_reel|money_field|default_if_none:"0" }}</td>
+                  <td style="text-align:right">{% if sinistre.tm_prefinanced and request.user.is_prestataire %} {{ sinistre.nombre_demande|multiply:sinistre.frais_reel|money_field|default_if_none:"0" }} {% else %} {{ sinistre.nombre_demande|multiply:sinistre.part_compagnie|money_field|default_if_none:"0" }} {% endif %}</td>
+                  <td style="text-align:right">{% if sinistre.tm_prefinanced and request.user.is_prestataire %} 0 {% else %} {{ sinistre.taux_tm|money_field|default_if_none:"0" }} {% endif %}%</td>
+                  <td style="text-align:right">{% if sinistre.tm_prefinanced and request.user.is_prestataire %} 0 {% else %} {{ sinistre.nombre_demande|multiply:sinistre.ticket_moderateur|money_field|default_if_none:"0" }} {% endif %}</td>
+                  <td style="text-align:right">{% if sinistre.tm_prefinanced and request.user.is_prestataire %} 0 {% else %} {{ sinistre.nombre_demande|multiply:sinistre.depassement|money_field|default_if_none:"0" }} {% endif %}</td>
+                  <td style="text-align:right">{% if sinistre.tm_prefinanced and request.user.is_prestataire %} 0 {% else %} {{ sinistre.nombre_demande|multiply:sinistre.part_assure|money_field|default_if_none:"0" }} {% endif %}</td>
+                  <td><span class="badge badge-{{ sinistre.statut|default_if_none:''|slugify }}">{{ sinistre.statut|default_if_none:""}}</span></td>
+                  <td><span class="badge badge-{{ sinistre.statut_prestation|default_if_none:''|slugify }}">{{ sinistre.statut_prestation|default_if_none:""}}</span></td>
+                  <td>
+                    <span title="Détails de l'acte" data-href="{% url 'popup_details_sinistre' sinistre.id %}" class="btn badge btn-sm btn-details rounded-pill btn-popup_details_sinistre"><i class="fa fa-eye"></i>
+                      {% if request.user.is_pres %}{{_('Details')}} {% endif %}
+                      {% if not request.user.is_pres %}{{_('Details')}} {% endif %}
+                    </span></a>&nbsp;&nbsp;
+                    {% if sinistre.statut == "ACCORDE" and sinistre.statut_prestation == "NON EFFECTUE" %}
+                    <span title="Indiquer que la séance a été effectuée" data-href="{% url 'popup_seance_done' sinistre.id %}" class="btn badge btn-sm btn-warning rounded-pill btn-popup_seance_done"><i class="fa fa-check"></i> </span></a>&nbsp;&nbsp;
+                    {% endif %}
+                  </td>
+              </tr>
+              {% else %}
+              <tr>
+                  {% if request.user.is_med %}<td><input type="checkbox" name="acte_{{sinistre.id}}" data-sinistre_id="{{sinistre.id}}"  {% if sinistre.statut != 'EN ATTENTE' %} disabled  {% endif %} class ="select-row"></td>{% endif %}
+                  <td>{{sinistre.acte.libelle|default_if_none:""}} ({{ sinistre.numero|default_if_none:"" }})</td>
+                  <td style="text-align:right">{{ sinistre.frais_reel|money_field|default_if_none:"0" }}</td>
+                  <td style="text-align:right">{% if sinistre.tm_prefinanced and request.user.is_prestataire %} {{ sinistre.frais_reel|money_field|default_if_none:"0" }} {% else %} {{ sinistre.part_compagnie|money_field|default_if_none:"0" }} {% endif %}</td>
+                  <td style="text-align:right">{% if sinistre.tm_prefinanced and request.user.is_prestataire %} 0 {% else %} {{ sinistre.taux_tm|money_field|default_if_none:"0" }} {% endif %}%</td>
+                  <td style="text-align:right">{% if sinistre.tm_prefinanced and request.user.is_prestataire %} 0 {% else %} {{ sinistre.ticket_moderateur|money_field|default_if_none:"0" }} {% endif %}</td>
+                  <td style="text-align:right">{% if sinistre.tm_prefinanced and request.user.is_prestataire %} 0 {% else %} {{ sinistre.depassement|money_field|default_if_none:"0" }} {% endif %}</td>
+                  <td style="text-align:right">{% if sinistre.tm_prefinanced and request.user.is_prestataire %} 0 {% else %} {{ sinistre.part_assure|money_field|default_if_none:"0" }} {% endif %}</td>
+                  <td><span class="badge badge-{{ sinistre.statut|default_if_none:''|slugify }}">{{ sinistre.statut|default_if_none:""}}</span></td>
+                  {% if dossier_sinistre.has_prorogation %}<td><span class="badge badge-{{ sinistre.statut_prorogation|default_if_none:''|slugify }}">{{ sinistre.statut_prorogation|default_if_none:""}}</span></td>{% endif %}
+                  {% if dossier_sinistre.has_seances %}<td>{% if sinistre.acte.option_seance %}<span class="badge badge-{{ sinistre.statut_prestation|default_if_none:''|slugify }}">{{ sinistre.statut_prestation|default_if_none:""}}</span>{% endif %}</td>{% endif %}
+                  <td>
+                    <span title="Détails de l'acte" data-href="{% url 'popup_details_sinistre' sinistre.id %}" class="btn badge btn-sm btn-details rounded-pill btn-popup_details_sinistre"><i class="fa fa-eye"></i>
+                      {% if request.user.is_pres %}{{_('Details')}} {% endif %}
+                      {% if not request.user.is_pres %}{{_('Details')}} {% endif %}
+                    </span>&nbsp;&nbsp;
+                    {% if request.user.is_pres and sinistre.acte.option_seance and sinistre.statut_prestation == "NON EFFECTUE" %}
+                    <span title="Indiquer que la séance a été effectuée" data-href="{% url 'popup_seance_done' sinistre.id %}" class="btn badge btn-sm btn-warning rounded-pill btn-popup_seance_done"><i class="fa fa-check"></i> </span></a>&nbsp;&nbsp;
+                    {% endif %}
+                    {% if sinistre.dossier_sinistre.type_priseencharge.code == "HOSPIT" and request.user.is_pres %}
+                    <span data-toggle="modal" data-target="#modal_update_sinistre_hospitalisation"  title="Modifier le coût total de l'hospitalisation" data-id="{ sinistre.id }" class="btn badge btn-sm btn-warning rounded-pill btn-modifier"><i class="fa fa-money"></i> {{_('Modifier')}}</span></a>
+                    {% endif %}
+                  </td>
+              </tr>
+              {% endif %}
+            {% endfor %}
+            </tbody>
+        </table>
+        </div>
+      </form>
+
+  </div>
+</div>
+</div>
+{% endif %}
+
+{% if dossier_sinistre.type_priseencharge.code == "CONSULT" %}
+  <div class=" col-md-12">
+
+    <div class="card" id="card_liste_medicaments">
+      <div class="card-header m-bg-light" >
+        <div class="card-title">
+          <h6><strong>{{_('LISTE_DES_MEDICAMENTS')}}</strong></h6>
+        </div>
+        <div class="card-tools">
+            {% if request.user.is_pharm %}
+
+              {% if dossier_sinistre.is_closed %}
+
+          <button class="btn o-bg-top rounded-pill text-white" title="Cette feuille de soin est déjà utilisée !"><i class="fa fa-lock"></i></button>
+              {% else %}
+                <button class="btn btn-sm o-bg-top text-white mr-2" data-toggle="modal" data-target="#AddMedication">{{_('Ajouter_un_medicament')}}</button>
+                <button class="btn btn-sm bg-light text-white" id="CloseTheBs" data-close_dossier_sinistre_href="{% url 'close_dossier_medication' dossier_sinistre.id %}" data-dossier_sinistre_id="{{dossier_sinistre.id}}">{{_('Cloturer_ce_bon')}}</button>
+              {% endif %}
+            {% endif %}
+            {% if request.user.is_med %}
+            <button data-toggle="modal" data-target="#MOTIFREJET_medicament" class="btn btn-sm btn-secondary btnActionDesMedicaments" disabled>{{_('Rejeter_la_selection')}}</button>
+            <button data-href="{% url 'approuver_liste_acte' %}" class="btn btn-sm btn-complement-rouge btnActionDesMedicaments" id="btnApprouverMedicamentsSelectionnes" disabled>{{_('Approuver_la_selection')}}</button>
+            {% endif %}
+            {% if not request.user.is_prestataire %}
+              {% if request.user.is_ges %}
+                  <button class="btn btn-sm o-bg-top text-white mr-2" id="btn-popup_add_medicament_gestionnaire" data-href="{% url 'popup_add_medicament_gestionnaire' dossier_sinistre.id %}" data-toggle="modal">{{_('Ajouter_un_medicament')}}</button>
+              {% endif %}
+            {% endif %}
+        </div>
+      </div>
+      <div class="card-body">
+        <form action="" method="post" id="formulaire_liste_medicaments_selectionnes">
+        {% csrf_token %}
+        <input type="hidden" name="dossier_sinistre_id" value="{{ dossier_sinistre.id }}">
+        <div class="row table-responsive">
+        <table class="table table-bordered table-striped dataTable dtr-inline" id="medicament_table">
+          <thead>
+          <tr>
+            {% if request.user.is_med %}<th scope="col"><input type="checkbox" id="btnSelectAllMedicament"><span class="libelle_btnSelectAllMedicament" style="cursor:pointer;font-size:10px;"> {{_('Cocher_tout')}}</span></th>{% endif %}
+            <th scope="col">{{_('Nom_du_medicament')}}</th>
+            <!--th scope="col">Qté demandé</th-->
+            <th scope="col">{{_('Qte')}} <!--servie--></th>
+            {% if request.user.is_superuser %}
+            <th scope="col">{{_('Pharmacie')}}</th>
+            {% endif %}
+            <th scope="col">{{_('Prix_Unitaire')}}</th>
+            <th scope="col">{{_('Prix_Total')}}</th>
+            <th scope="col">{{_('Part_assureur')}}</th>
+            <th scope="col">{{_('Part_assure')}}</th>
+            {% if request.user.is_med %}
+            <th scope="col">{{_('Servi_par')}}</th>
+            {% endif %}
+            <th scope="col">{{_('Statut')}}</th>
+            <th scope="col">{{_('Actions')}}</th>
+          </tr>
+          </thead>
+          <tbody>
+          {% for medicament in medicaments %}
+          <tr>
+            {% if request.user.is_med %}<td><input type="checkbox" name="acte_{{medicament.id}}" data-sinistre_id="{{medicament.id}}"  {% if medicament.statut != 'EN ATTENTE' %} disabled  {% endif %} class ="select-row"></td>{% endif %}
+            <td>{{medicament.acte.libelle|default_if_none:""}}</td>
+            <!--td style="text-align:center">{{ medicament.nombre_demande|default_if_none:"" }}</td-->
+            <td style="text-align:center">{{ medicament.nombre_accorde|default_if_none:"0" }}</td>
+            {% if request.user.is_superuser %}
+            <td>{{medicament.prestataire}}</td>
+            {% endif %}
+            <td class="text-right" style="padding-right:20px;">{{ medicament.prix_unitaire|money_field|default_if_none:"0"}}</td>
+            <td class="text-right" style="padding-right:20px;">{{ medicament.frais_reel|money_field|default_if_none:"0" }}</td>
+            <td class="text-right" style="padding-right:20px;">{% if medicament.tm_prefinanced and request.user.is_prestataire %} {{ medicament.frais_reel|money_field|default_if_none:"0" }} {% else %} {{ medicament.part_compagnie|money_field|default_if_none:"" }} {% endif %}</td>
+            <td class="text-right" style="padding-right:20px;">{% if medicament.tm_prefinanced and request.user.is_prestataire %} 0 {% else %}{{ medicament.part_assure|money_field|default_if_none:"0" }}{% endif %}</td>
+            {% if request.user.is_med %}
+            <td style="text-align:center">{{ medicament.created_by.prestataire|default_if_none:""}}</td>
+            {% endif %}
+            <td><span class="badge badge-{{ medicament.statut|default_if_none:''|slugify }}">{{ medicament.statut|default_if_none:""}}</span>
+            <td class="text-center">
+              <span title="Détails du médicament" data-href="{% url 'popup_details_sinistre' medicament.id %}" class="btn badge btn-sm btn-details rounded-pill btn-popup_details_sinistre"><i class="fa fa-eye"></i>
+                  {% if request.user.is_pres %}{{_('Details')}} {% endif %}
+                  {% if not request.user.is_pres %}{{_('Details')}} {% endif %}
+                </span>&nbsp;&nbsp;
+              <!--span data-href="{% url 'popup_details_sinistre' medicament.id %}" class="btn btn-sm btn-details rounded-pill btn-popup_details_sinistre"><i class="fa fa-eye"></i> Détails</span></a>-->
+              {% if medicament.statut == "EN ATTENTE" %}
+                {% if medicament.created_by == request.user %}
+                  <a data-toggle="modal" data-target="#EditMedication-{{medicament.id}}" class="text-warning" style="cursor:pointer;"><i class="fas fa-edit"></i></a>&nbsp;&nbsp;&nbsp;&nbsp;
+                {% endif %}
+              {% else %}
+              <a  class="btn text-gray"><i class="fas fa-lock"></i></a>
+              {% endif %}
+              {% if not dossier_sinistre.is_closed %}
+                {% if medicament.created_by == request.user %}
+                <a class=" btn text-danger btn_supprimer_sinistre" title="Supprimer" data-href="{% url 'delete_sinistre_medicament' medicament.id %}" data-libelle="{{medicament.acte.libelle}}">
+                  <i class="fa fa-remove"></i>
+                </a>
+                {% endif %}
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+          </tbody>
+          {% if not request.user.is_pharm %}
+          <tfoot>
+            <tr>
+              <th scope="col" colspan="3">{{_('Total')}}</th>
+              {% if request.user.is_superuser %}
+              <th scope="col"></th>
+              {% endif %}
+              <th scope="col" class="text-right">
+                <span class="text-bold badge" style="font-size:18px;">
+                  {{ medicaments_total_frais_reel|money_field|default_if_none:"0" }}
+                </span>
+              </th>
+              <th scope="col" class="text-right">
+                <span class="text-bold badge" style="font-size:18px;">
+                  {{ medicaments_total_part_compagnie|money_field|default_if_none:"0" }}
+                </span>
+              </th>
+              <th scope="col" class="text-right">
+                <span class="text-bold badge" style="font-size:18px;">
+                  {{ medicaments_total_part_assure|money_field|default_if_none:"0" }}
+                </span>
+              </th>
+              {% if request.user.is_med %}
+              <th scope="col"></th>
+              {% endif %}
+              <th scope="col"></th>
+              <th scope="col"></th>
+            </tr>
+          </tfoot>
+          {% endif %}
+        </table>
+      </div>
+        </form>
+      </div>
+      <div class="card-footer">
+        <!--div class="col-md-12">
+          <div class="row">
+            <div class="col-sm-4">
+              <div class="form-groupn mb-2 row">
+                <div class="col-sm-4">Frais réel: </div>
+                <div class="col-sm-8">
+                  <span class="text-bold col-sm-6 badge badge-secondary" style="font-size:18px;color:white;background0:#F8AF3C;">
+                    {{ dossier_sinistre.total_frais_reel_medicament|money_field|default_if_none:"0" }}
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div class="col-sm-4">
+              <div class="form-groupn mb-2 row">
+                <div class="col-sm-4">Part assureur: </div>
+                <div class="col-sm-8">
+                  <span class="text-bold col-sm-6 badge badge-success" style="font-size:18px;color:white;background:#F8AF3C;">
+                    {{ dossier_sinistre.total_part_compagnie_medicament|money_field|default_if_none:"0" }}
+                  </span>
+                </div>
+              </div>
+            </div>
+            <div class="col-sm-4">
+              <div class="form-groupn mb-2 row">
+                <div class="col-sm-4">Part assuré: </div>
+                <div class="col-sm-8">
+                  <span class="text-bold col-sm-6 badge badge-info" style="font-size:18px;color:white;background:#F8AF3C;">
+                    {{ dossier_sinistre.total_part_assure_medicament|money_field|default_if_none:"0" }}
+                  </span>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div-->
+      </div>
+    </div>
+  </div>
+{% endif %}
+
+{% if not request.user.is_pharm %}
+  <div class=" col-md-12">
+    <div class="card">
+    <div class="card-header">
+      <div class="card-title">
+        <h6>{{_('DOCUMENTS_JUSTIFICATIFS')}}</h6>
+      </div>
+      <div class="card-tools">
+        <!--
+        {% if request.user.is_prestataire %}
+        <a class="btn btn-sm btn-default" data-toggle="modal" data-target="#modal-document"><i class="fas fa-plus"></i> {{_('Ajouter_document')}}</a>
+        {% endif %}
+        -->
+        <a class="btn btn-sm btn-default" data-toggle="modal" data-target="#modal-document"><i class="fas fa-plus"></i> Ajouter document</a>
+      </div>
+    </div>
+    <div class="card-body">
+        <div class="row table-responsive">
+             <table id="table_documents" class="table table-bordered table-striped dataTable dtr-inline" role="grid" aria-describedby="example1_info" style="width:100%;">
+                <thead>
+                    <tr role="row">
+                        <th class="sorting" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-label="Platform(s): activate to sort column ascending">
+                            {{_('Type_de_document')}}
+                        </th>
+                        <th class="sorting" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-label="Platform(s): activate to sort column ascending">
+                            {{_('Fichier')}}
+                        </th>
+                        <th class="sorting" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-label="Platform(s): activate to sort column ascending">
+                            {{_('Action')}}
+                        </th>%}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for document in documents %}
+                    <tr class="odd">
+                        <td class="">{{ document.type_document.libelle }}</td>
+                        <td class="text-center"><a href="{{ document.fichier.url }}" download style="color:#5FB7B1;"><i class="fa fa-download" title="Télécharger le document"></i> {{_('Telecharger')}}</a></td>
+                        <td class="">
+                            <span title="Supprimer" class="btn_delete_document_dossier_sinistre" data-document_id="{{ document.id }}" id="btn_delete_document_dossier_sinistre" style="cursor:pointer;"><i class="fa fa-remove text-danger"></i> </span><!--&nbsp;&nbsp;&nbsp;-->
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+             </table>
+        </div>
+
+  </div>
+  </div>
+  </div>
+{% endif %}
+
+
+{% endblock %}
+
+
+{% block extrajs %}
+
+
+{% if dossier_sinistre.type_priseencharge.code == "CONSULT" %}
+<!-- Modal -->
+<div class="modal fade" id="AddMedication" tabindex="-1" role="dialog" data-backdrop="static" aria-labelledby="AddMedicationLabel" aria-hidden="true">
+  <div class="modal-dialog" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title mx-auto" id="AddMedicationLabel"><strong>{{_('AJOUTER_UN_MEDICAMENT')}}</strong></h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <form action="{% url 'add_sinistre_medicament' dossier_sinistre.id %}" method="post" id="formSaveMedication">
+        {% csrf_token %}
+        <input type="hidden" name="dossier_sinistre_id" value="{{ dossier_sinistre.id }}">
+        <input type="hidden" name="prestataire_id" value="{{ request.user.prestataire_id }}">
+        <div class="modal-body">
+          <div class="row">
+            <div class="col-sm-12">
+              <div class="form-group">
+                <label for="">{{_('Medicament')}}:</label>
+                <div>
+                  <select class="form-control liste_medicament" name="medicament" id="medicament" required>
+                    <option value="">{{_('Choisir')}}</option>
+                    {% for medoc in liste_medicaments %}
+                    <option value="{{medoc.id}}">{{medoc.libelle}}</option>
+                    {% endfor %}
+                  </select>
+                  <!--input class="form-control" type="text" name="medicament" id="medicament_autocomplete"-->
+                </div>
+              </div>
+            </div>
+            <div class="col-sm-12">
+              <div class="form-group">
+                <label for="">{{_('Quantite')}}:</label>
+                <input min="1" 
+                name="qte" id="qte_medicament" class="form-control money_field" value="1" required>
+              </div>
+            </div>
+            <div class="col-sm-12">
+              <div class="form-group">
+                <label for="">{{_('Prix_unitaire')}}:</label>
+                <input name="prix_unitaire" id="prix_unitaire_medicament" class="form-control money_field" required>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer  d-flex justify-content-between">
+          <button type="button" class="btn btn-secondary closeModal" data-dismiss="modal">{{_('Fermer')}}</button>
+          <button type="button" class="btn o-bg-primary" id="btn_save_sinistre_medicament">{{_('Ajouter_le_medicament')}}</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+{% for medicament in medicaments %}
+
+  <!-- Edition Modal -->
+  <div class="modal fade" id="EditMedication-{{medicament.id}}" tabindex="-1" data-backdrop="static" role="dialog" aria-labelledby="EditMedication-{{medicament.id}}Label" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="EditMedication-{{medicament.id}}Label">{{_('Medicament')}}</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <form action="{% url 'update_medicament_sinistre' medicament.id %}" method="post">
+          {% csrf_token %}
+          <input type="hidden" name="dossier_sinistre_id" value="{{ dossier_sinistre.id }}">
+          <input type="hidden" name="prestataire_id" value="{{ request.user.prestataire_id }}">
+          <div class="modal-body">
+            <div class="row">
+              <div class="col-sm-12">
+                <div class="form-group">
+                  <label for="">{{_('Medicament')}}:</label>
+                  <input type="text" class="form-control"  value="{{medicament.acte}}" disabled>
+                  <input type="hidden" name="medicament" class="form-control"  value="{{medicament.acte.id}}">
+                </div>
+              </div>
+              <div class="col-sm-12">
+                <div class="form-group">
+                  <label for="">{{_('Quantite')}}:</label>
+                  <input type="text" value="{{medicament.nombre_demande}}" name="qte" id="" class="form-control money_field">
+                </div>
+              </div>
+              <div class="col-sm-12">
+                <div class="form-group">
+                  <label for="">{{_('Prix_Unitaire')}}:</label>
+                  <input type="text" name="prix_unitaire" id="" value="{{medicament.prix_unitaire}}" class="form-control money_field">
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer d-flex justify-content-between">
+            <button type="button" class="btn btn-secondary closeModal" data-dismiss="modal">{{_('Fermer')}}</button>
+            <button type="button" class="btn_update_medicament_sinistre btn o-bg-primary">{{_('Valider')}}</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+{% endfor %}
+{% endif %}
+<!-- Modal -->
+
+  <!-- Modal -->
+<div class="modal fade" id="MOTIFREJET" tabindex="-1" role="dialog" aria-labelledby="MOTIFREJETLabel" aria-hidden="true">
+	<div class="modal-dialog" role="document">
+	  <div class="modal-content">
+		<div class="modal-header">
+		  <h5 class="modal-title" id="MOTIFREJETLabel">{{_('MOTIF_DU_REJET')}} </h5>
+		  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+			<span aria-hidden="true">&times;</span>
+		  </button>
+		</div>
+		<div class="modal-body">
+			<div class="row">
+              <textarea id="motif_rejet_modal" name="motif_rejet_modal" class="motif_rejet_modal form-control" placeholder="Motif..." id="" style="width: 100%;" >{{ dossier_sinistre.motif_rejet|default_if_none:""}}</textarea>
+			</div>
+		</div>
+		<div class="modal-footer d-flex justify-content-between">
+		  	<button type="button" class="btn btn-default" data-dismiss="modal">{{_('Fermer')}}</button>
+			<button type="button" class="btn btn-danger" id="btnRejeterActesSelectionnes" data-reject_action_url="{% url 'rejeter_liste_acte' %}">{{_('Rejeter')}}</button>
+		</div>
+	  </div>
+	</div>
+</div>
+<!-- Modal -->
+
+  <!-- Modal -->
+<div class="modal fade" id="MOTIFREJET_medicament" tabindex="-1" role="dialog" aria-labelledby="MOTIFREJETLabel" aria-hidden="true">
+	<div class="modal-dialog" role="document">
+	  <div class="modal-content">
+		<div class="modal-header">
+		  <h5 class="modal-title" id="MOTIFREJETLabel_medicament">{{_('MOTIF_DU_REJET')}} </h5>
+		  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+			<span aria-hidden="true">&times;</span>
+		  </button>
+		</div>
+		<div class="modal-body">
+			<div class="row">
+              <textarea id="motif_rejet_modal_medicament" name="motif_rejet_modal" class="motif_rejet_modal form-control" placeholder="Motif..." id="" style="width: 100%;" >{{ dossier_sinistre.motif_rejet|default_if_none:""}}</textarea>
+			</div>
+		</div>
+		<div class="modal-footer d-flex justify-content-between">
+		  	<button type="button" class="btn btn-default" data-dismiss="modal">{{_('Fermer')}}</button>
+			<button type="button" class="btn btn-danger" id="btnRejeterMedicamentsSelectionnes" data-reject_action_url="{% url 'rejeter_liste_acte' %}">{{_('Rejeter')}}</button>
+		</div>
+	  </div>
+	</div>
+</div>
+<!-- Modal -->
+
+  <!-- Modal -->
+<div class="modal fade" id="modal_update_sinistre_hospitalisation" data-backdrop="static" data-keyboard="false" aria-hidden="true">
+	<div class="modal-dialog modal-m">
+	  <div class="modal-content">
+        <form id="form_update_sinistre_hospitalisation" action="{% url 'update_sinistre_hospitalisation' dossier_sinistre.id %}" method="post">
+          <div class="modal-header card-header_">
+            <h5 class="modal-title">{{_('COUT_DE_L_HOSPITALISATION')}}</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+              <div class="col-sm-12">
+                <!--div class="form-group row">
+                    <label class="col-sm-5 col-form-label">Nombre de jours effectifs<span class="required"></span></label>
+                    <div class="col-sm-7">
+                        <input type="text" class="form-control money_field" name="nombre_jours" id="nombre_jours" value="">
+                    </div>
+                </div-->
+                <div class="form-group row">
+                    <label class="col-sm-5 col-form-label">{{_('Cout_total')}}<span class="required"></span></label>
+                    <div class="col-sm-7">
+                        <input type="text" class="form-control money_field" name="cout_final_sinistre" id="cout_final_sinistre" value="{{ total_frais_reel }}" style="font-size:18px;">
+                    </div>
+                </div>
+                <hr/>
+                <div class="form-group row">
+                    <div class="col-sm-12">
+                      <u>{{_('NB')}}:</u> {{_('Le_cout_de_la_chambre_y_est_compris')}}.
+                    </div>
+                </div>
+              </div>
+          </div>
+          <div class="modal-footer d-flex justify-content-between">
+              <span class="btn btn-default" data-dismiss="modal">{{_('Fermer')}}</span>
+              <span class="btn o-bg-primary" id="btn_update_sinistre">{{_('Valider')}}</span>
+          </div>
+        </form>
+	  </div>
+	</div>
+</div>
+<!-- Modal -->
+
+<script src="https://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
+  <script>
+    $(document).ready(function(){
+
+      $("#medicament_autocomplete").autocomplete({
+        source: function(request, response) {
+          var $this = $(this);
+
+          //$.post("url", {
+          //  term: request.term
+          //})
+          //.done(function (data, status) {
+          //  response($.map(data, function (item) {
+          //      return {
+          //        data
+          //      }
+          //      return false; // Prevent the widget from inserting the value.
+          //    }));
+          //
+          //});
+
+          // Simulates some data returned from server
+          response([
+            { label: "Javascript", value: "js" },
+            { label: "CSharp", value: "cs" },
+            { label: "PHP", value: "php" }
+          ]);
+        },
+        response: function(event, ui) {
+          // Make your preferred selection here
+          var item = ui.content[0].label;
+
+          $(this).val(item).trigger('change');
+        }
+      });
+
+
+    });
+  </script>
+
+{% include 'modal_document.html' %}
+
+{% endblock %}

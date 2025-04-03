@@ -1,0 +1,519 @@
+{% extends "comptabilite/base.html" %}
+{% load my_filters %}
+{% load static %}
+{% block extrastyle %}
+<style>
+    div.dataTables_processing > div:last-child > div {
+        background: rgb(187 65 38) !important;
+    }
+</style>
+{% endblock %}
+{% block content %}
+
+<div class="col-12 col-md-12 order-2 order-md-1">
+    <div class="card">
+        <div class="card-header o-bg-primary">
+            <h3 class="card-title"><b>{{_('LISTE_DES_PAIEMENTS_REALISES_PAR_LETTRE_CHEQUE')}}</b></h3>
+            <div class="card-tools">
+            </div>
+        </div>
+
+        <div style="display:none__;background:#CCCCCC;padding:10px;border-bottom:1px solid #eee;padding-bottom:10px;margin-bottom:10px;display:none0;">
+            <form method="get"><label style="font-weight:normal;font-size:12px;display:none;"><i>{{_('Formulaire_de_recherche')}}</i></label>
+                {% csrf_token %}
+                <div class="row">
+                    <div class="col-12 col-md-12 col-sm-12 row">
+                        <!--div class="col-md-2 row">
+                            <span class="col-sm-12 text-left" style="margin-top:5px;font-weight:bold;">Recherche</span>
+                        </div-->
+
+                        <div class="col-sm-2">
+                            <span class="col-sm-12 text-right" style="margin-top:5px;">{{_('Type de remb')}} : </span>
+                            <div class="col-sm-12">
+                                <select class="form-control tags-multiple" id="search_type_remboursement"
+                                        style="border:1px solid rgba(0, 0, 0, 0.3);" name="search_type_remboursement">
+                                    <option value="">{{_('Choisir')}}</option>
+                                    {% for type_remboursement in type_remboursements %}
+                                    <option value="{{type_remboursement.code}}">{{type_remboursement}}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col-sm-2">
+                            <span class="col-sm-12 text-right" style="margin-top:5px;">{{_('Numero_Paiement')}}: </span>
+                            <div class="col-sm-12">
+                                <input id="search_numero_paiement_comptable" class="form-control" type="text"
+                                       name="search_numero_paiement_comptable"
+                                       style="border-radius:3px;border:1px solid rgba(0, 0, 0, 0.3);text-transform:uppercase;">
+                            </div>
+                        </div>
+
+                        <div class="col-sm-2">
+                            <span class="col-sm-12 text-right" style="margin-top:5px;">{{_('Numero_Bord_Ord.')}}: </span>
+                            <div class="col-sm-12">
+                                <input id="search_numero_bordereau_ord" class="form-control" type="text"
+                                       name="search_numero_bordereau_ord"
+                                       style="border-radius:3px;border:1px solid rgba(0, 0, 0, 0.3);text-transform:uppercase;">
+                            </div>
+                        </div>
+
+                        <div class="col-sm-2" id="prestataire_div" style="display:none;">
+                            <span class="col-sm-12 text-right" style="margin-top:5px;">{{_('Beneficiaire')}} : </span>
+                            <div class="col-sm-12">
+                                <select class="form-control tags-multiple" id="search_prestataire"
+                                        style="border:1px solid rgba(0, 0, 0, 0.3);" name="search_prestataire">
+                                    <option value="">{{_('Choisir')}}</option>
+                                    {% for prestataire in prestataires %}
+                                    <option value="{{prestataire.id}}">{{prestataire.name|default_if_none:""}}
+                                        ({{prestataire.code|default_if_none:""}})
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col-sm-2" id="adherent_div" style="display:none;">
+                            <span class="col-sm-12 text-right" style="margin-top:5px;">{{_('Beneficiaire')}} : </span>
+                            <div class="col-sm-12">
+                                <select class="form-control tags-multiple" id="search_adherent_principal"
+                                        style="border:1px solid rgba(0, 0, 0, 0.3);" name="search_adherent_principal">
+                                    <option value="">{{_('Choisir')}}</option>
+                                    {% for adh in adhs %}
+                                    <option value="{{adh.id}}">{{adh.nom|default_if_none:""}}
+                                        {{adh.prenoms|default_if_none:""}} ({{adh.carte_active|default_if_none:""}})
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col-md-3">
+                            <br>
+                            <button id="btn_edition_lettre_cheque2" class="btn btn-complement-rouge col-sm-12">
+                                {{_('Editer_la_selection')}}
+                            </button>
+                            <!--                            <a href="#" class="btn btn-complement-rouge col-sm-12" data-toggle="modal"-->
+                            <!--                               data-target="#modal-edition_lettre_cheque">-->
+                            <!--&lt;!&ndash;                                <i class="fas fa-cloud-upload-alt"></i>&ndash;&gt;-->
+                            <!--                                Editer la selection</a>-->
+                            <!--                            <img id="loader" src="{% static 'admin_custom/img/loader.gif' %}"-->
+                            <!--                                 style="width: 40px;display: none;"/>-->
+
+                        </div>
+                    </div>
+                </div>
+            </form>
+
+        </div>
+
+        <div class="card-body">
+            <div id="example1_wrapper" class="dataTables_wrapper dt-bootstrap4">
+                <div class="row">
+                    <div class="col-12 col-md-12 col-sm-12">
+                        <!--div class="form-group row">
+                           <label class="offset-8 col-sm-2 col-form-label">Période comptable <span class="required"></span></label>
+                           <div class="col-sm-2">
+
+                           </div>
+                       </div-->
+                        <table class="table table-bordered table-striped dataTable_ dtr-inline table_v_middle"
+                               id="table_paiements_comptables">
+                            <thead>
+                            <tr>
+                                <th><input type="checkbox" value="" id="selectAll"></th>
+                                <th scope="col">{{_('Numero_Paiement')}}</th>
+                                <th scope="col">{{_('Numero_Bordereau_ord')}}</th>
+                                <th scope="col">{{_('Beneficiaire')}}</th>
+                                <th scope="col">{{_('Garant')}}</th>
+                                <th scope="col">{{_('Net_paye')}}</th>
+                                <th scope="col">{{_('Date_paiement')}}</th>
+                                <th scope="col">{{_('Effectue_par')}}</th>
+                                <!--                                <th scope="col ">Action</th>-->
+                            </tr>
+                            </thead>
+                            <tbody>
+
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+{% endblock %}
+
+
+{% block extrajs %}
+<script>
+
+    var selectedItems = [];
+    var fistLoad = true;
+
+    $.fn.updateSelectedItemFunction = function () {
+        /*
+        var url = "{% url 'generation_bordereau_datatable' %}?all=true&search_periode_comptable=" + $('#search_periode_comptable').val() + "&search_type_remboursement=" + $('#search_type_remboursement').val()  {% if not request.user.prestataire %} + "&search_prestataire=" + $('#search_prestataire').val() {% endif %};
+                        $.ajax({
+                           url: url,  // Endpoint pour récupérer toutes les données
+                           type: "GET",
+                           dataType: "json",
+                           success: function(response) {
+                               // Mettre à jour le tableau des éléments sélectionnés
+                               console.log('response.data', response.data);
+                               selectedItems = response.data.map(function(item) {
+                                   return item;
+                               });
+
+                               // Cocher/décocher toutes les cases individuelles
+                               $('input[type="checkbox"]', dataTable.rows().nodes()).prop('checked', true);
+                           }
+                       });
+
+                       // Stocker les éléments sélectionnés dans le stockage local (si nécessaire)
+                        localStorage.setItem('selectedItems', JSON.stringify(selectedItems));
+        */
+    };
+
+    $(document).ready(function () {
+
+        $('#btn_edition_lettre_cheque').prop("disabled", true);
+
+        dataTable = $('#table_paiements_comptables').DataTable({
+            "language": {
+                "url": "https://cdn.datatables.net/plug-ins/9dcbecd42ad/i18n/French.json"
+            },
+            "serverSide": true,
+            "ajax": {
+                "url": "{% url 'edition_lettre_cheque_datatable' %}",
+                "data": function (data) {
+                    data.page = data.start / data.length + 1;
+                    data.search_periode_comptable = $('#search_periode_comptable').val();
+                    data.search_prestataire = $('#search_prestataire').val();
+                    data.search_numero_paiement_comptable = $('#search_numero_paiement_comptable').val();
+                    data.search_numero_bordereau_ord = $('#search_numero_bordereau_ord').val();
+                    data.search_type_remboursement = $('#search_type_remboursement').val();
+                    data.search_adherent_principal = $('#search_adherent_principal').val();
+
+
+                    $('#btn_edition_lettre_cheque').prop("disabled", true);
+
+                    if (fistLoad) {
+                        fistLoad = false;
+                        $(this).updateSelectedItemFunction();
+                    }
+
+                },
+                "dataSrc": function (json) {
+
+                    if (json.data.length == 0) {
+                        $('#btn_edition_lettre_cheque').prop("disabled", true);
+                    }
+                    // si on a de la data alors on peut activer le bouton d'action
+                    else {
+                        $('#btn_edition_lettre_cheque').prop("disabled", false);
+                    }
+                    return json.data;
+                }
+            },
+            "columns": [
+                {
+                    "data": null,
+                    "orderable": false,
+                    "searchable": false,
+                    "render": function (data, type, row) {
+                        var isChecked = selectedItems.indexOf(row.id) !== -1 ? 'checked' : '';
+                        return '<input type="checkbox" value="' + row.id + '" ' + isChecked + '>';
+                    }
+
+                },
+                {"data": "numero", "orderable": true},
+                {"data": "bordereau_ordonnancement__numero", "orderable": true},
+                {"data": "nom_beneficiaire", "orderable": true},
+                {"data": "compagnie__nom", "orderable": true},
+                {"data": "montant", "orderable": true},
+                {"data": "created_at", "orderable": true},
+                {"data": "created_by", "orderable": true},
+                // {"data": "actions", "orderable": false, "searchable": false},
+            ],
+            "paging": true,
+            "pageLength": 10,
+            "processing": true,  // Show the loading indicator
+            "searching": false,   // Enable the search feature
+            "search": {
+                "search": $('#table_dossiers_sinistres-table_filter input').val()
+            }
+        });
+
+        // Gérer le "Sélectionner tout"
+        $('#selectAll').on('change', function () {
+            // Mettre à jour le tableau des éléments sélectionnés
+            if (this.checked) {
+                // Effectuer une requête AJAX pour récupérer toutes les lignes du serveur
+                //$(this).updateSelectedItemFunction();
+
+
+                $('input[type="checkbox"]', dataTable.rows().nodes()).prop('checked', true);
+
+            } else {
+                // Désélectionner toutes les lignes
+                selectedItems = [];
+
+                // Cocher/décocher toutes les cases individuelles
+                $('input[type="checkbox"]', dataTable.rows().nodes()).prop('checked', false);
+            }
+
+            // Stocker les éléments sélectionnés dans le stockage local (si nécessaire)
+            localStorage.setItem('selectedItems', JSON.stringify(selectedItems));
+        });
+
+        // Gérer les changements de sélection
+        $('#table_paiements_comptables tbody').on('change', 'input[type="checkbox"]', function () {
+            var data = dataTable.row($(this).closest('tr')).data();
+            var itemId = data.id;
+            console.log('itemId', itemId);
+            // Mettre à jour le tableau des éléments sélectionnés
+            console.log('this.checked', this.checked);
+            if (this.checked) {
+                selectedItems.push(itemId);
+            } else {
+                var index = selectedItems.indexOf(itemId);
+                if (index !== -1) {
+                    selectedItems.splice(index, 1);
+                }
+            }
+
+            // Désélectionner "Sélectionner tout" si toutes les cases individuelles ne sont pas cochées
+            $('#selectAll').prop('checked', selectedItems.length === dataTable.rows().count());
+
+
+            // Stocker les éléments sélectionnés dans le stockage local
+            console.log('selectedItems', selectedItems);
+            localStorage.setItem('selectedItems', JSON.stringify(selectedItems));
+        });
+
+
+        dataTable.on('xhr.dt', function (e, settings, json, xhr) {
+            // Hide the spinner when the data is loaded
+            $('.spinner-border').show();
+        });
+
+        // Show the spinner when the table is processing
+        dataTable.on('processing.dt', function (e, settings, processing) {
+            if (processing) {
+                $('.spinner-border').show();
+            }
+        });
+
+        // Add custom search functionality for code, name, and prenoms columns
+        $('#search_numero_paiement_comptable, #search_periode_comptable, #search_prestataire, #search_numero_bordereau_ord, #search_type_remboursement, #search_adherent_principal').on('keyup change', function () {
+            dataTable.search('').draw(); // Clear existing search
+            dataTable.draw(); // Trigger a new draw, which will include the updated search parameters
+        });
+
+
+        $(document).on("click", "#btn_edition_lettre_cheque2", function (e) {
+            e.preventDefault();
+            var selected_bordereau_ids = [];
+            var checkedCheckboxes = $('input[type="checkbox"]:checked', dataTable.rows().nodes());
+
+            console.log("Nombre de lignes cochées : ", checkedCheckboxes.length);
+
+            checkedCheckboxes.each(function () {
+                selected_bordereau_id = $(this).val();
+                selected_bordereau_ids.push(selected_bordereau_id);
+
+                console.log("selected_bordereau_id : ", selected_bordereau_id);
+            });
+
+            if (checkedCheckboxes.length > 0) {
+
+                // open modal modal-edition_lettre_cheque
+                $('#modal-edition_lettre_cheque').modal('show');
+
+            } else {
+                notifyWarning("Veuillez sélectionner un bordereau à éditer");
+            }
+
+
+        });
+
+        $(document).on("click", "#btn_edition_lettre_cheque", function (e) {
+            e.preventDefault();
+            var selected_bordereau_ids = [];
+            var checkedCheckboxes = $('input[type="checkbox"]:checked', dataTable.rows().nodes());
+
+            console.log("Nombre de lignes cochées : ", checkedCheckboxes.length);
+
+            checkedCheckboxes.each(function () {
+                selected_bordereau_id = $(this).val();
+                selected_bordereau_ids.push(selected_bordereau_id);
+
+                console.log("selected_bordereau_id : ", selected_bordereau_id);
+            });
+
+            let formulaire = $('#form_edition_lettre_cheque');
+
+            $.validator.setDefaults({ ignore: [] });
+
+            if (formulaire.valid()) {
+                if (checkedCheckboxes.length > 0) {
+
+                    $.ajax({
+                        type: 'post',
+                        url: '/comptabilite/submit_edition_lettre_cheque',
+                        data: {
+                            "selectedItems": JSON.stringify(selected_bordereau_ids),
+                            "modelLettreCheque": $('#banque').val(),
+                        },
+                        beforeSend: function () {
+                            $('#btn_edition_lettre_cheque').hide();
+                            $('#loader').show();
+                        },
+                        success: function (response) {
+
+                            console.log(response);
+
+                            if (response.statut == 1) {
+
+                                $('#btn_edition_lettre_cheque').show();
+                                var link = response.lettreChequePdf;
+                                var a = document.createElement('a');
+                                a.href = link;
+                                a.download = link.substr(link.lastIndexOf('/') + 1);
+                                document.body.appendChild(a);
+                                a.click();
+                                document.body.removeChild(a);
+
+                                location.reload();
+
+                            } else {
+                                notifyWarning(response.message);
+                                $('#btn_edition_lettre_cheque').show();
+                                $('#loader').hide();
+                            }
+
+                        },
+                        error: function () {
+                            notifyWarning("Erreur lors de l'edition de lettre chèque");
+                            $('#btn_edition_lettre_cheque').show();
+                            $('#loader').hide();
+                        }
+
+                    });
+
+                } else {
+                    notifyWarning("Veuillez sélectionner un bordereau à éditer");
+                }
+            }else{
+                //btn_submit.removeAttr('disabled');
+
+                $('label.error').css({ display: 'none', height: '0px' }).removeClass('error').text('');
+
+                let validator = formulaire.validate();
+
+                $.each(validator.errorMap, function (index, value) {
+
+                    console.log('Id: ' + index + ' Message: ' + value);
+
+                });
+
+                notifyWarning('Veuillez renseigner tous les champs obligatoires');
+                }
+
+
+        });
+
+
+        $('#search_type_remboursement').change(function () {
+            let type_remb = $(this).val();
+
+            $("#search_prestataire").trigger('change');
+            $("#search_prestataire").prop('selectedIndex', 0);
+            $("#search_adherent_principal").trigger('change');
+            $("#search_adherent_principal").prop('selectedIndex', 0);
+
+            if (type_remb == "RD") {
+                $('#prestataire_div').hide();
+                $('#adherent_div').show();
+            } else {
+                $('#prestataire_div').show();
+                $('#adherent_div').hide();
+            }
+
+        });
+
+        var my_noty;//variale global pour pouvoir le fermer de popup de l'extérieur
+        function notifySuccess(message, fnCallback) {
+            my_noty = noty({
+                text: message,
+                type: 'success',
+                dismissQueue: true,
+                layout: 'center',
+                theme: 'defaultTheme',
+                buttons: [
+                    {
+                        addClass: 'btn btn-primary', text: 'OK', onClick: function ($noty) {
+
+                            if (typeof fnCallback === 'function') fnCallback();
+
+                            $noty.close();
+                        }
+                    }
+                ]
+            });
+        }
+
+        function notifyWarning(message, fnCallback) {
+            if (my_noty) {
+                my_noty.close();
+            }
+
+            my_noty = noty({
+                text: message,
+                type: 'warning',
+                dismissQueue: true,
+                layout: 'center',
+                theme: 'defaultTheme',
+                buttons: [
+                    {
+                        addClass: 'btn btn-primary', text: 'OK', onClick: function ($noty) {
+
+                            if (typeof fnCallback === 'function') fnCallback();
+
+                            $noty.close();
+                        }
+                    }
+                ]
+            });
+
+        }
+
+        function notifyError(message, fnCallback) {
+            my_noty = noty({
+                text: message,
+                type: 'error',
+                dismissQueue: true,
+                layout: 'center',
+                theme: 'defaultTheme',
+                buttons: [
+                    {
+                        addClass: 'btn btn-primary', text: 'OK', onClick: function ($noty) {
+
+                            if (typeof fnCallback === 'function') fnCallback();
+
+                            $noty.close();
+                        }
+                    }
+                ]
+            });
+        }
+
+
+    });
+
+</script>
+
+{% endblock %}

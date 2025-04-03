@@ -1,0 +1,138 @@
+<div  class="modal fade"  id="modal-modification_garantieformule" data-backdrop="static" data-keyboard="false" aria-hidden="trued"  style="display: noned">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<form id="form_update_garantieformule" action="{% url 'modifier_garantieformule' garantieformule.id %}" method="post">
+				{% csrf_token %}
+                <div class="modal-header">
+                    <h4 class="modal-title" id="mbu-title">{{_("MODIFICATION D'UNE GARANTIE / FORMULE")}}</h4>
+                    <button type="button"class="close"data-dismiss="modal"aria-label="Close">
+                        <span aria-hidden="true">×</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert  alert-dismissible fade show hidden" role="alert">
+                      <span class="message">{{_("TRAITEMENT EN COURS")}}</span>
+                    </div>
+                    <div class="col-md-12 offset-0">
+                        <ul class="nav nav-tabs" id="myTab" role="tablist">
+                            <li class="nav-item"><a class="nav-link active" id="identity_modification-tab" data-toggle="tab" href="#identity_modification" role="tab" aria-controls="identity_modification" aria-selected="true">{{_('GENERAL')}}</a></li>
+                            <li class="nav-item"><a class="nav-link" id="garantie_modification_tab-tab" data-toggle="tab" href="#garantie_modification_tab" role="tab" aria-controls="garantie_modification_tab" aria-selected="false">{{_('GARANTIES')}}</a></li>
+                        </ul>
+                        <div class="tab-content" id="myTabContent">
+
+                            <div class="tab-pane fade show active mt-3" id="identity_modification" role="tabpanel" aria-labelledby="identity_modification-tab">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-group row">
+                                            <label class="col-sm-5 col-form-label">{{_('Formule')}} <span class="required">*</span></label>
+                                            <div class="col-sm-7">
+                                                <select class="form-control" name="formule_id"  autocomplete="off" required>
+                                                    <option value="">{{_('Choisir')}}</option>
+                                                    {% for formule in formules %}
+                                                        <option value="{{ formule.id }}" {% if formule.id == garantieformule.formule_id %} selected {% endif %}>{{ formule.libelle }}</option>
+                                                    {% endfor %}
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="vl"></div>
+                                    <div class="col-md-5">
+                                        <div class="form-group row">
+                                            <label class="col-sm-5 col-form-label">{{_('Statut')}} <span class="required">*</span></label>
+                                            <div class="col-sm-7">
+                                                <select class="form-control" name="status"  autocomplete="off" required>
+                                                    <option value="">{{_('Choisir')}}</option>
+                                                    <option value="1" {% if 1 == garantieformule.status %} selected {% endif %}>ACTIF</option>
+                                                    <option value="0" {% if 0 == garantieformule.status %} selected {% endif %}>INACTIF</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="tab-pane fade mt-3" id="garantie_modification_tab" role="tabpanel" aria-labelledby="garantie_modification_tab-tab">
+                                <div class="row" style="max-height:550px;">
+                                    <div class="col-md-12" id="test">
+                                        <table id="table_garanties_modification" style="width:100%;" class="table table-bordered table-striped dataTable_ dtr-inline">
+                                            <thead>
+                                                <tr>
+                                                    <th style="width:;">{{_("Garantie")}}</th>
+                                                    <th style="width:"></th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr id="tr_initial_vide" style="display:none;">
+                                                    <td style="vertical-align:middle;">
+                                                        <div class="row" style="margin-right:5px;">
+                                                            <select class="form-control garantieformule_modification" name="garantieformules">
+                                                                <option value="">{{_('Choisir')}}</option>
+                                                                {% for garantie in garanties %}
+                                                                <option {% if garantie.id == garantieformule.garantie_id %} selected {% endif %} value="{{ garantie.id }}">{{ garantie.nom|default_if_none:"" }}</option>
+                                                                {% endfor %}
+                                                            </select>
+                                                        </div>
+                                                    </td>
+                                                    <td style="vertical-align:middle;padding:5px;"><span style="cursor:pointer;" class="btn btn-sm btn-danger btnSupprimerLigneGarantie_modification"><i class="fa fa-trash" style="font-size:12px;"></i></span></td>
+                                                </tr>
+                                                {% if formulegaranties|length > 0 %}
+                                                    {% for formulegarantie in formulegaranties %}
+                                                        <tr id="tr_{{formulegarantie.id}}">
+                                                            <td style="vertical-align:middle;">
+                                                                <div class="row" style="margin-right:5px;">
+                                                                    <select class="form-control garantieformule_modification" name="garantieformules">
+                                                                        <option value="">{{_('Choisir')}}</option>
+                                                                        {% for garantie in garanties %}
+                                                                            <option {% if formulegarantie.garantie_id == garantie.id %} selected {% endif %}  value="{{ garantie.id }}">{{ garantie.nom|default_if_none:"" }}</option>
+                                                                        {% endfor %}
+                                                                    </select>
+                                                                </div>
+                                                            </td>
+                                                            <td style="vertical-align:middle;padding:5px;"><span style="cursor:pointer;" class="btn btn-sm btn-danger btnSupprimerLigneGarantie_modification"><i class="fa fa-trash" style="font-size:12px;"></i></span></td>
+                                                        </tr>
+                                                    {% endfor %}
+                                                {% else %}
+                                                    <tr id="tr_0" style="">
+                                                        <td style="vertical-align:middle;">
+                                                            <div class="row" style="margin-right:5px;">
+                                                                <select class="form-control garantieformule_modification" name="garantieformules">
+                                                                    <option value="">{{_('Choisir')}}</option>
+                                                                    {% for garantie in garanties %}
+                                                                        <option {% if formulegarantie.garantie_id == garantie.id %} selected {% endif %}  value="{{ garantie.id }}">{{ garantie.nom|default_if_none:"" }}</option>
+                                                                    {% endfor %}
+                                                                </select>
+                                                            </div>
+                                                        </td>
+                                                        <td style="vertical-align:middle;padding:5px;"><span style="cursor:pointer;" class="btn btn-sm btn-danger btnSupprimerLigneGarantie_modification"><i class="fa fa-trash" style="font-size:12px;"></i></span></td>
+                                                    </tr>
+                                                {% endif %}
+                                            </tbody>
+                                            <tfoot>
+                                                <tr class="add-row"><td colspan="2"><span id="btnAddLigneGarantie_modification" style="cursor:pointer;" class="btn btn-sm btn-success float-right"><i class="fa fa-plus-circle" style="font-size:12px;"></i> {{_("Ajouter")}}</span></td></tr>
+                                            </tfoot>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                    <div class="modal-footer justify-content-between">
+                        <button type="button" class="btn btn-danger" data-dismiss="modal"><i class="fa fa-remove"></i> {{_('Retour')}}</button>
+                        <button type="button" id="btn_save_modification_garantieformule" class="btn btn-info"><i class="fa fa-check-circle"></i> {{_('Enregistrer')}}</button>
+                    </div>
+                </div>
+            </form>
+		</div>
+	</div>
+</div>
+<script>
+	$(document).ready(function () {
+        $(".tags-multiple").select2();
+        $(document).on('click','#formule_tiers_payant_update-tab', function(){
+
+            $(".select2-selection__choice__display").css("color", "#000");
+
+        });
+	});
+</script>

@@ -1,0 +1,133 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_urls static admin_list jazzmin %}
+
+{% block extrastyle %}
+    {{ block.super }}
+    <link rel="stylesheet" href="{% static 'vendor/select2/css/select2.min.css' %}">
+
+    {% if cl.formset or action_form %}
+        <script type="text/javascript" src="{% url 'admin:jsi18n' %}"></script>
+    {% endif %}
+    {{ media.css }}
+    {% if not actions_on_top and not actions_on_bottom %}
+        <style>
+            #changelist table thead th:first-child {width: inherit}
+        </style>
+    {% endif %}
+{% endblock %}
+
+{% block extrahead %}
+    {{ block.super }}
+    {{ media.js }}
+{% endblock %}
+
+{% block bodyclass %}{{ block.super }} {% endblock %}
+
+{% block content_title %} Adhérents {% endblock %}
+
+{% block coltype %}flex{% endblock %}
+
+{% block content %}
+    <div class="col-12">
+        <div class="card card-primary card-outline">
+            <div class="card-header">
+                <h4 class="card-title">Liste des adhérents</h4>
+                <div class="card-tools form-inline">
+                    {% block date_hierarchy %}{% if cl.date_hierarchy %}{% date_hierarchy cl %}{% endif %}{% endblock %}
+                    {% block search %}
+
+                    {% endblock %}
+                </div>
+            </div>
+
+            <div class="card-body">
+                <div id="example1_wrapper" class="dataTables_wrapper dt-bootstrap4">
+                    <div class="row">
+                        <div class="col-sm-7 col-md-7">
+                            <div class="dt-buttons btn-group flex-wrap">
+                                <button class="btn btn-secondary buttons-copy buttons-html5" tabindex="0" aria-controls="example1" type="button"><span>Copier</span></button>
+                                <button class="btn btn-secondary buttons-csv buttons-html5" tabindex="0" aria-controls="example1" type="button"><span>CSV</span></button>
+                                <button class="btn btn-secondary buttons-excel buttons-html5" tabindex="0" aria-controls="example1" type="button"><span>Excel</span></button>
+                                <button class="btn btn-secondary buttons-pdf buttons-html5" tabindex="0" aria-controls="example1" type="button"><span>PDF</span></button>
+                                <button class="btn btn-secondary buttons-print" tabindex="0" aria-controls="example1" type="button"><span>Imprimer</span></button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <table id="table_adherents" class="table table-bordered table-striped dataTable dtr-inline" role="grid" aria-describedby="example1_info">
+                                <thead>
+                                    <tr role="row">
+                                        <td></td>
+                                        <th class="sorting" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-label="Rendering engine: activate to sort column ascending">
+                                            Nom
+                                        </th>
+                                        <th class="sorting" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-label="Browser: activate to sort column ascending">
+                                            Prénoms
+                                        </th>
+                                        <th class="sorting" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-label="Platform(s): activate to sort column ascending">
+                                            Date naissance
+                                        </th>
+                                        <th class="sorting" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-label="Engine version: activate to sort column ascending">
+                                            Téléphone
+                                        </th>
+                                        <th class="sorting sorting_asc" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-label="CSS grade: activate to sort column descending" aria-sort="ascending">
+                                            E-mail
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for adherent in adherents %}
+                                    <tr class="odd">
+                                        <td></td>
+                                        <td class="dtr-control" tabindex="0">{{ adherent.nom }}</td>
+                                        <td class="">{{ adherent.prenoms }}</td>
+                                        <td>{{ adherent.date_naissance }}</td>
+                                        <td class="">{{ adherent.telephone_mobile }}</td>
+                                        <td class="sorting_1">{{ adherent.email }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <th rowspan="1" colspan="1">
+
+                                        </th>
+                                        <th rowspan="1" colspan="1">
+                                            Nom
+                                        </th>
+                                        <th rowspan="1" colspan="1">
+                                            Prénoms
+                                        </th>
+                                        <th rowspan="1" colspan="1">
+                                            Téléphone
+                                        </th>
+                                        <th rowspan="1" colspan="1">
+                                            E-mail
+                                        </th>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+        </div>
+        <br class="clear"/>
+    </div>
+{% endblock %}
+
+{% block extrajs %}
+    {{  block.super }}
+    <script type="text/javascript" src="{% static 'vendor/select2/js/select2.min.js' %}"></script>
+    <script>
+        {% comment %} set filterInputLength default and custom values {% endcomment %}
+        window.filterInputLengthDefault = 0;
+        window.filterInputLength = {
+            {% for k,v in cl.model_admin.filter_input_length.items %}
+                '{{ k }}': {{ v }},
+            {% endfor %}
+        }
+    </script>
+    <script type="text/javascript" src="{% static 'jazzmin/js/change_list.js' %}"></script>
+{% endblock %}

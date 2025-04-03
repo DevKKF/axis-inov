@@ -1,0 +1,180 @@
+{% extends "grh/layouts/base.html" %}
+{% load static %}
+{% block title %}{{_('DETAILS_ACTE')}}{% endblock %}
+
+{% block content %}
+
+    <style>
+        #title {
+            color: #B7482B;
+        }
+        #link {
+            color: #0000FF;
+        }
+        #status {
+            padding: 5px;
+            border-radius: 5px;
+        }
+    </style>
+
+    <div class="flex items-start pt-5 intro-y">
+        <div class="w-full flex flex-col lg:flex-row items-center">
+            <a href="{% url 'grh.details_formule_police' police.id formule.id  %}">
+                <button class="btn btn-primary-soft flex items-center w-30 pd-5">
+                    <i data-feather="corner-up-left" class="report-box__icon text-primary mr-2"></i>
+                    {{_('RETOUR')}}
+                </button>
+            </a>
+        </div>
+    </div>
+
+    <div class="intro-y grid grid-cols-12 gap-6 mt-8">
+        <div class="col-span-12 md:col-span-12 lg:col-span-12">
+            <div class="box">
+                <div class="flex items-start px-5 pt-5">
+                    <div class="w-full flex flex-col lg:flex-row items-center">
+                        <h1 class="text-xl lg:text-lg font-medium mb-3 mr-5" id="title">
+                            {{_('FORMULE_DE_LA_POLICE')}}
+                        </h1>
+                    </div>
+                </div>
+                <div class="p-5" id="striped-rows-table">
+                    <div class="preview">
+                        <div class="overflow-x-auto">
+                            <table class="table table-striped">
+                                <thead>
+                                    <tr>
+                                        <th class="whitespace-nowrap"></th>
+                                        <th class="whitespace-nowrap"></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td class="font-bold">{{_('Code_Formule')}}</td>
+                                        <td class="font-normal">{{ formule.code|default_if_none:"" }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="font-bold">{{_('Date_de_debut')}}</td>
+                                        <td class="font-normal">{{ formule.date_debut|default_if_none:""|date:"d/m/Y" }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="font-bold">{{_('Libelle_Formule')}}</td>
+                                        <td class="font-normal">{{ formule.libelle|default_if_none:"" }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="font-bold">{{_('Territorialite')}}</td>
+                                        <td class="font-normal">{{ formule.territorialite|default_if_none:"" }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td class="font-bold">{{_('Statut')}}</td>
+                                        <td class="font-normal">
+                                            <div class="flex items justify-center w-20" id="status" 
+                                            style="background-color: {% if formule.statut == 'ACTIF' %}#007500;color:#FFFFFF;font-weight: bold;
+                                            {% elif formule.statut == 'INACTIF' %}#DC3545;color:#FFFFFF;font-weight: bold;
+                                            {% endif %}">
+                                                {{ formule.statut|default_if_none:"" }}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-12 gap-6 mt-8">
+        <div class="col-span-12 2xl:col-span-12">
+            <div class="grid grid-cols-12 gap-6">
+                <div class="intro-y col-span-12 md:col-span-12 lg:col-span-12">
+                    <div class="box">
+                        <div class="flex items-start px-5 pt-5">
+                            <div class="w-full flex flex-col lg:flex-row items-center border-b border-gray-500">
+                                <h1 class="text-xl lg:text-lg font-medium mb-3 mr-5" id="title">
+                                    {{_('ACTE')}}
+                                </h1>
+                            </div>
+                        </div>
+                        <div class="mt-1">
+                            <div class="flex">
+                                <div class="w-1/2 p-2 mt-2 flex border-r border-gray-500">
+                                    <div class="w-1/2 p-2 mt-2">
+                                        <p class="font-bold">{{_('Acte')}}</p>
+                                    </div>
+                                    <div class="w-1/2 p-2 mt-2">
+                                        <p>{{ bareme.acte|default_if_none:"" }}</p>
+                                    </div>
+                                </div>
+                                <div class="w-1/2 p-2 mt-2 flex">
+                                    <div class="w-1/2 p-2 mt-2">
+                                        <p class="font-bold">{{_('Rubrique')}}</p>
+                                    </div>
+                                    <div class="w-1/2 p-2 mt-2">
+                                        <p>{{ bareme.rubrique.libelle|default_if_none:"" }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex items-start px-5 pt-5">
+                            <div class="w-full flex flex-col lg:flex-row items-center border-b border-gray-500">
+                                <h1 class="text-xl lg:text-lg font-medium mb-3 mr-5" id="title">
+                                    {{_('FRANCHISE')}} {{_('TICKET_MODERATEUR')}}
+                                </h1>
+                            </div>
+                        </div>
+                        <div class="mt-1">
+                            <div class="flex">
+                                <div class="w-1/2 p-2 mt-2 flex border-r border-gray-500">
+                                    <div class="w-1/2 p-2 mt-2">
+                                        <p class="font-bold">{{_('Type_de_franchise')}}</p>
+                                    </div>
+                                    <div class="w-1/2 p-2 mt-2">
+                                        <p>{{ police.ticket_moderateur|default_if_none:"" }}</p>
+                                    </div>
+                                </div>
+                                <div class="w-1/2 p-2 mt-2 flex">
+                                    <div class="w-1/2 p-2 mt-2">
+                                        <p class="font-bold">{{_('Franchise')}}</p>
+                                    </div>
+                                    <div class="w-1/2 p-2 mt-2">
+                                        <p>{{ police.calcul_tm|default_if_none:"" }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex items-start px-5 pt-5">
+                            <div class="w-full flex flex-col lg:flex-row items-center border-b border-gray-500">
+                                <h1 class="text-xl lg:text-lg font-medium mb-3 mr-5" style="color:#B7482B;">
+                                    {{_('PLAFONDS_PAR_PERIODE')}}
+                                </h1>
+                            </div>
+                        </div>
+                        <div class="mt-1">
+                            <div class="flex">
+                                <div class="w-1/2 p-2 mt-2 flex border-r border-gray-500">
+                                    <div class="w-1/2 p-2 mt-2">
+                                        <p class="font-bold">{{_('Unite_de_la_periode')}}</p>
+                                    </div>
+                                    <div class="w-1/2 p-2 mt-2">
+                                        <p>{{ police.fractionnement|default_if_none:"" }}</p>
+                                    </div>
+                                </div>
+                                <div class="w-1/2 p-2 mt-2 flex">
+                                    <div class="w-1/2 p-2 mt-2">
+                                        <p class="font-bold">{{_('Duree_de_la_periode')}}</p>
+                                    </div>
+                                    <div class="w-1/2 p-2 mt-2">
+                                        <p>{{ bareme.periodicite|default_if_none:"" }}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

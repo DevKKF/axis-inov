@@ -1,0 +1,289 @@
+{% extends "grh/layouts/base.html" %}
+{% load static %}
+{% block title %}INSCRIPTION À VALIDER{% endblock %}
+
+{% block content %}
+
+    {% comment %} CSS {% endcomment %}
+    <style>
+        #title {
+            color: #B7482B;
+        }
+        #link {
+            color: #0000FF;
+        }
+        #status {
+            color: #FFFFFF;
+            padding: 5px;
+            border-radius: 10px;
+        }
+    </style>
+    {% comment %}{% endcomment %}
+
+    {% comment %}{% endcomment %}
+    <div class="flex items-start pt-5">
+        <div class="w-full flex flex-col lg:flex-row items-center">
+            <a href="{% url 'grh.police_overview' police.id %}">
+                <button class="btn btn-primary-soft flex items-center w-30 pd-5">
+                    <i data-feather="corner-up-left" class="report-box__icon text-primary mr-2"></i>
+                    RETOUR
+                </button>
+            </a>
+        </div>
+    </div>
+    {% comment %}{% endcomment %}
+
+    <div class="grid grid-cols-12 gap-6 mt-5">
+        <div class="intro-y col-span-12 md:col-span-12 lg:col-span-12">
+            
+            {% comment %}{% endcomment %}
+            <div class="box">
+                <div class="flex items-start px-5 pt-5 border-b border-slate-200/60 dark:border-darkmode-400 text-center">
+                    <div class="w-full flex flex-col lg:flex-rowitems-center justify-center">
+                        <h1 class="text-xl lg:text-lg font-medium mb-3 mr-5" id="title">
+                            INSCRIPTION À VALIDER
+                        </h1>
+                    </div>
+                </div>
+                {% comment %}{% endcomment %}
+
+                <div class="container mx-auto">
+                    <div class="flex flex-wrap space-x-12">
+
+                        {% comment %}{% endcomment %}
+                        <div class="intro-y col-span-12 md:col-span-6 xl:col-span-4 box p-5 mx-auto">
+                            <div class="flex items-center justify-center border-b border-slate-200/60 dark:border-darkmode-400 px-5 py-4">
+                                <div class="mx-auto w-40 h-40 flex-none">
+                                    <img src="{% static 'grh/images/log2.jpg' %}" class="rounded-full w-full h-full">
+                                </div>
+                            </div>
+                            <div class="p-2 border-b border-slate-200/60 dark:border-darkmode-400 text-center">
+                                    <div class="block font-medium text-base mt-2 text-center">
+                                        ---------- <!--Nom&Prenom-->
+                                    </div>
+                            </div>
+                            <div class="p-2 border-b border-slate-200/60 dark:border-darkmode-400 text-center flex items-center">
+                                <div class="block font-medium text-sm mt-2 text-center">
+                                    Date d'entrée :
+                                </div>
+                                <div class="text-slate-600 dark:text-slate-500 mt-2 ml-1">
+                                    -- / -- / ---- <!--Date Entree-->
+                                </div>
+                            </div>
+                            <div class="p-2 border-b border-slate-200/60 dark:border-darkmode-400 text-center flex items-center">
+                                <div class="block font-medium text-sm mt-2 text-center">
+                                    Date de naissance :
+                                </div>
+                                <div class="text-slate-600 dark:text-slate-500 mt-2 ml-1">
+                                    -- / -- / ---- <!--Date Naissance-->
+                                </div>
+                            </div>
+                            <div class="p-2 border-b border-slate-200/60 dark:border-darkmode-400 text-center flex items-center">
+                                <div class="block font-medium text-sm mt-2 text-center">
+                                    Sexe :
+                                </div>
+                                <div class="text-slate-600 dark:text-slate-500 mt-2 ml-1">
+                                    ---- <!--Sexe-->
+                                </div>
+                            </div>
+                            <div class="p-2 border-b border-slate-200/60 dark:border-darkmode-400 text-center flex items-center">
+                                <div class="block font-medium text-sm mt-2 text-center">
+                                    Qualité :
+                                </div>
+                                <div class="text-slate-600 dark:text-slate-500 mt-2 ml-1">
+                                    ---- <!--Qualite-->
+                                </div>
+                            </div>
+                            <div class="p-2 border-b border-slate-200/60 dark:border-darkmode-400 text-center flex items-center">
+                                <div class="block font-medium text-sm mt-2 text-center">
+                                    Formule :
+                                </div>
+                                <div class="text-slate-600 dark:text-slate-500 mt-2 ml-1">
+                                    ---- <!--Formule-->
+                                </div>
+                            </div>
+                            <div class="intro-x mt-5 xl:mt-5 flex justify-center">
+                                <button type="submit" class="btn btn-primary inline-block py-3 px-4 w-full xl:w-32 mt-3 xl:mt-0 align-top mr-2">Valider</button>
+                                <button type="submit" class="btn btn-secondary inline-block py-3 px-4 w-full xl:w-32 mt-3 xl:mt-0 align-top ml-2">Rejeter</button>
+                            </div>
+                        </div>
+                        {% comment %}{% endcomment %}
+
+                        {% comment %}{% endcomment %}
+                        <div class="intro-y col-span-12 md:col-span-6 xl:col-span-4 box p-5 mx-auto">
+                            <div class="flex items-center justify-center border-b border-slate-200/60 dark:border-darkmode-400 px-5 py-4">
+                                <div class="mx-auto w-40 h-40 flex-none">
+                                    <img src="{% static 'grh/images/log2.jpg' %}" class="rounded-full w-full h-full">
+                                </div>
+                            </div>
+                            <div class="p-2 border-b border-slate-200/60 dark:border-darkmode-400 text-center">
+                                    <div class="block font-medium text-base mt-2 text-center">
+                                        ---------- <!--Nom&Prenom-->
+                                    </div>
+                            </div>
+                            <div class="p-2 border-b border-slate-200/60 dark:border-darkmode-400 text-center flex items-center">
+                                <div class="block font-medium text-sm mt-2 text-center">
+                                    Date d'entrée :
+                                </div>
+                                <div class="text-slate-600 dark:text-slate-500 mt-2 ml-1">
+                                    -- / -- / ---- <!--Date Entree-->
+                                </div>
+                            </div>
+                            <div class="p-2 border-b border-slate-200/60 dark:border-darkmode-400 text-center flex items-center">
+                                <div class="block font-medium text-sm mt-2 text-center">
+                                    Date de naissance :
+                                </div>
+                                <div class="text-slate-600 dark:text-slate-500 mt-2 ml-1">
+                                    -- / -- / ---- <!--Date Naissance-->
+                                </div>
+                            </div>
+                            <div class="p-2 border-b border-slate-200/60 dark:border-darkmode-400 text-center flex items-center">
+                                <div class="block font-medium text-sm mt-2 text-center">
+                                    Sexe :
+                                </div>
+                                <div class="text-slate-600 dark:text-slate-500 mt-2 ml-1">
+                                    ---- <!--Sexe-->
+                                </div>
+                            </div>
+                            <div class="p-2 border-b border-slate-200/60 dark:border-darkmode-400 text-center flex items-center">
+                                <div class="block font-medium text-sm mt-2 text-center">
+                                    Qualité :
+                                </div>
+                                <div class="text-slate-600 dark:text-slate-500 mt-2 ml-1">
+                                    ---- <!--Qualite-->
+                                </div>
+                            </div>
+                            <div class="p-2 border-b border-slate-200/60 dark:border-darkmode-400 text-center flex items-center">
+                                <div class="block font-medium text-sm mt-2 text-center">
+                                    Formule :
+                                </div>
+                                <div class="text-slate-600 dark:text-slate-500 mt-2 ml-1">
+                                    ---- <!--Formule-->
+                                </div>
+                            </div>
+                            <div class="intro-x mt-5 xl:mt-5 flex justify-center">
+                                <button type="submit" class="btn btn-primary inline-block py-3 px-4 w-full xl:w-32 mt-3 xl:mt-0 align-top mr-2">Valider</button>
+                                <button type="submit" class="btn btn-secondary inline-block py-3 px-4 w-full xl:w-32 mt-3 xl:mt-0 align-top ml-2">Rejeter</button>
+                            </div>
+                        </div>
+                        {% comment %}{% endcomment %}
+
+                        {% comment %}{% endcomment %}
+                        <div class="intro-y col-span-12 md:col-span-6 xl:col-span-4 box p-5 mx-auto">
+                            <div class="flex items-center justify-center border-b border-slate-200/60 dark:border-darkmode-400 px-5 py-4">
+                                <div class="mx-auto w-40 h-40 flex-none">
+                                    <img src="{% static 'grh/images/log2.jpg' %}" class="rounded-full w-full h-full">
+                                </div>
+                            </div>
+                            <div class="p-2 border-b border-slate-200/60 dark:border-darkmode-400 text-center">
+                                    <div class="block font-medium text-base mt-2 text-center">
+                                        ---------- <!--Nom&Prenom-->
+                                    </div>
+                            </div>
+                            <div class="p-2 border-b border-slate-200/60 dark:border-darkmode-400 text-center flex items-center">
+                                <div class="block font-medium text-sm mt-2 text-center">
+                                    Date d'entrée :
+                                </div>
+                                <div class="text-slate-600 dark:text-slate-500 mt-2 ml-1">
+                                    -- / -- / ---- <!--Date Entree-->
+                                </div>
+                            </div>
+                            <div class="p-2 border-b border-slate-200/60 dark:border-darkmode-400 text-center flex items-center">
+                                <div class="block font-medium text-sm mt-2 text-center">
+                                    Date de naissance :
+                                </div>
+                                <div class="text-slate-600 dark:text-slate-500 mt-2 ml-1">
+                                    -- / -- / ---- <!--Date Naissance-->
+                                </div>
+                            </div>
+                            <div class="p-2 border-b border-slate-200/60 dark:border-darkmode-400 text-center flex items-center">
+                                <div class="block font-medium text-sm mt-2 text-center">
+                                    Sexe :
+                                </div>
+                                <div class="text-slate-600 dark:text-slate-500 mt-2 ml-1">
+                                    ---- <!--Sexe-->
+                                </div>
+                            </div>
+                            <div class="p-2 border-b border-slate-200/60 dark:border-darkmode-400 text-center flex items-center">
+                                <div class="block font-medium text-sm mt-2 text-center">
+                                    Qualité :
+                                </div>
+                                <div class="text-slate-600 dark:text-slate-500 mt-2 ml-1">
+                                    ---- <!--Qualite-->
+                                </div>
+                            </div>
+                            <div class="p-2 border-b border-slate-200/60 dark:border-darkmode-400 text-center flex items-center">
+                                <div class="block font-medium text-sm mt-2 text-center">
+                                    Formule :
+                                </div>
+                                <div class="text-slate-600 dark:text-slate-500 mt-2 ml-1">
+                                    ---- <!--Formule-->
+                                </div>
+                            </div>
+                            <div class="intro-x mt-5 xl:mt-5 flex justify-center">
+                                <button type="submit" class="btn btn-primary inline-block py-3 px-4 w-full xl:w-32 mt-3 xl:mt-0 align-top mr-2">Valider</button>
+                                <button type="submit" class="btn btn-secondary inline-block py-3 px-4 w-full xl:w-32 mt-3 xl:mt-0 align-top ml-2">Rejeter</button>
+                            </div>
+                        </div>
+                        {% comment %}{% endcomment %}
+
+                    </div>
+                </div>
+            </div>
+            {% comment %}{% endcomment %}
+
+        </div>
+    </div>
+    {% comment %}{% endcomment %}
+
+    <div class="intro-y  mt-5">
+            <div id="programmatically-show-hide-modal" class="p-5">
+                <div class="preview">
+                    <div class="text-center"> 
+                        <button class="btn btn-primary w-48 mr-8">
+                            <a id="programmatically-show-modal" class="mr-2" href="javascript:;">
+                                Valider tous
+                            </a>
+                            <i data-feather="send"></i>
+                        </button>
+                    </div>
+                    {% comment %}{% endcomment %}
+                    <div id="programmatically-modal" class="modal" tabindex="-1" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <div class="modal-body p-10 text-center">
+                                    <div class="intro-y box">
+                                        <div class="flex flex-col items-center p-5 border-b border-slate-200/60 dark:border-darkmode-400">
+                                            <h2 class="font-medium text-base" id="title">
+                                                Êtes-vous sûr ?
+                                            </h2>
+                                        </div>              
+                                        <div class="intro-x mt-5 xl:mt-5 flex justify-center">
+                                            <button type="submit" class="btn btn-primary inline-block py-3 px-4 w-full xl:w-32 mt-3 xl:mt-0 align-top mr-2">Confirmer</button>
+                                            <button type="submit" class="btn btn-secondary inline-block py-3 px-4 w-full xl:w-32 mt-3 xl:mt-0 align-top ml-2">Annuler</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% comment %}{% endcomment %}
+                </div>
+            </div>
+        </div>
+        {% comment %}{% endcomment %}
+
+        {% comment %} JAVASCRIPT {% endcomment %}
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const showModalButton = document.getElementById('programmatically-show-modal');
+                const modal = document.getElementById('programmatically-modal');
+                //
+                showModalButton.addEventListener('click', function () {
+                    modal.setAttribute('aria-hidden', 'false');
+                });
+            });
+        </script>
+        {% comment %}{% endcomment %}
+
+{% endblock %}

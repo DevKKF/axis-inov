@@ -1,0 +1,118 @@
+{% load my_filters %}
+<table class="table table-bordered table-striped dataTable0 dtr-inline" id="table_reglements_reverses">
+  <thead>
+    <tr>
+      <th scope="col" width="2%"></th>
+      <th scope="col" width="10%">{{_("N° Reg client")}}</th>
+      <th scope="col" width="12%">{{_("N° Piece")}}</th>
+      {% if type == "courtage" %}
+      <th scope="col" width="10%">{{_("Com court")}}</th>
+      <th scope="col" width="14%">{{_("Com court enc")}}</th>
+      {% else %}
+      <th scope="col" width="10%">{{_("Com gest")}}</th>
+      <th scope="col" width="14%">{{_("Com gest enc")}}</th>
+      {% endif %}
+      <th scope="col" width="14%">{{_("Montant Restant")}}</th>
+      <th scope="col" width="12%">{{_("N° Quittance")}}</th>
+      <th scope="col" width="12%">{{_("Client")}}</th>
+      <th scope="col" width="12%">{{_("Mt Reg clt")}}</th>
+      <th scope="col" width="12%">{{_("Mt CIE")}}</th>
+      {% comment %} <th scope="col">{{_("Commission")}}</th> {% endcomment %}
+      {% comment %} <th scope="col">{{_("Retro Apport")}}</th> {% endcomment %}
+      {% comment %} <th scope="col">{{_("Date Reversement")}}</th> {% endcomment %}
+    </tr>
+  </thead>
+  <tbody>
+  {% for reglement in reglements_compagnies %}
+    {% if reglement.etat_encaisse_courtage == False and type == "courtage" or reglement.etat_encaisse_gestion == False and type == "gestion" %}
+    <tr>
+      <td><input type="checkbox" class="checkbox_quittance_a_encaisser_com_gest" name="reglement_selectionne" value="{{reglement.id}}" id="checkbox_quittance_a_encaisser_{{reglement.id}}" data-reglement_id="{{reglement.id}}" data-montant_com_solde="{{reglement.montant_com_solde}}" data-reglement_montant="{{reglement.montant}}" data-reglement_montant_com_courtage="{{reglement.montant_com_courtage_solde}}"  data-reglement_montant_com_gestion="{{reglement.montant_com_gestion_solde}}" data-reglement_montant_compagnie="{{reglement.montant_compagnie}}"/></td>
+      <td>{{ reglement.numero|default_if_none:"" }}</td>
+      <td>{{ reglement.numero_piece|default_if_none:"" }}</td>
+      {% if type == "courtage" %}
+      <td class="text-right">{{ reglement.montant_com_courtage_solde|money_field }}</td>
+      <td><input type="text" class="form-control montant_encaisse_court handle_calculer_montant_total_a_encaisser money_field" name="montant_encaisse_court{{reglement.id}}" value="0" readonly/></td>
+      {% else %}
+      <td class="text-right">{{ reglement.montant_com_gestion_solde|money_field }}</td>
+      <td><input type="text" class="form-control montant_encaisse_gest handle_calculer_montant_total_a_encaisser money_field" name="montant_encaisse_gest{{reglement.id}}" value="0" readonly/></td>
+      {% endif %}
+      {% if type == "courtage" %}
+      <td><input type="text" class="form-control restant_total money_field" name="restant_total{{reglement.id}}" id="restant_total" value="{{ reglement.montant_com_courtage_solde|money_field }}" readonly /></td>
+      {% else %}
+      <td><input type="text" class="form-control restant_total money_field" name="restant_total{{reglement.id}}" id="restant_total" value="{{ reglement.montant_com_gestion_solde|money_field }}" readonly /></td>
+      {% endif %}
+      <td>{{ reglement.quittance.numero|default_if_none:"" }}</td>
+      <td>{{ reglement.quittance.police.client.nom|default_if_none:"" }}</td>
+      <td class="text-right">{{ reglement.montant|money_field }}</td>
+      <td class="text-right">{{ reglement.montant_compagnie|money_field }}</td>
+      {% comment %} <td class="text-right">{{ reglement.montant_com_global|money_field }}</td> {% endcomment %}
+      {% comment %} <td class="text-right">{{ reglement.montant_com_intermediaire|money_field }}</td> {% endcomment %}
+      {% comment %} <td>{{ reglement.date_reversement_compagnie|date:'d/m/Y'|default_if_none:"" }}</td> {% endcomment %}
+    </tr>
+    {% endif %}
+  {% endfor %}
+  </tbody>
+</table>
+<script>
+function AppliquerMaskSaisie(){
+
+	//appliquer le mask de saisie sur les champs montant
+	Inputmask("currency", {
+		prefix: "",
+		groupSeparator: " ",//désactiver pour
+		alias: "numeric",
+		digits: 0,// nombre de caractère après la virgule    
+        onKeyDown: function(event) {
+        var key = event.keyCode || event.charCode;
+        // console.log(key);
+        // Empêcher la saisie du signe négatif
+        /*
+          if (key === 189 || key === 109 || key === 45) { // Les codes 189 et 109 correspondent au signe moins (-)
+              event.preventDefault();
+              return false;
+          }
+        */
+    }
+	}).mask('.money_field');
+
+    Inputmask("currency", {
+		prefix: "",
+		groupSeparator: " ",//désactiver pour
+		alias: "numeric",
+		digits: 0,// nombre de caractère après la virgule
+        onKeyDown: function(event) {
+        var key = event.keyCode || event.charCode;
+
+        // Empêcher la saisie du signe négatif
+        if (key === 189 || key === 109) { // Les codes 189 et 109 correspondent au signe moins (-)
+            event.preventDefault();
+            return false;
+        }
+    }
+    }).mask('.total_autres_taxes');
+
+
+    /*
+    new Cleave('.money_field', {
+        numeral: true,
+        numeralThousandsGroupStyle: 'thousand'
+        //delimiter: ' ',
+    });
+    alert("cleve init");
+
+
+    if ($('.money_field').length > 0) {
+
+       AutoNumeric.multiple('.money_field', {
+          currencySymbol: '',
+          digitGroupSeparator: ' ',
+          decimalCharacter: '.',
+          decimalPlaces: 0
+        });
+
+    }
+    */
+
+}
+AppliquerMaskSaisie();
+</script>

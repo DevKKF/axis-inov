@@ -1,0 +1,69 @@
+
+{% load static %}
+
+    <style>
+        #title {
+            color: #B7482B;
+        }
+        #link {
+            color: #0000FF;
+        }
+        #status {
+            padding: 5px;
+            border-radius: 5px;
+        }
+    </style>
+
+    <div class="mt-8 intro-y col-span-12 md:col-span-12 lg:col-span-12">
+        <div class="box">
+            <div class="flex items-start px-5 pt-5">
+                <div class="w-full flex flex-col lg:flex-row items-center border-b border-gray-500">
+                    <h1 class="text-xl lg:text-lg font-medium mb-3 mr-5" id="title">
+                        {{_('DOCUMENTS_DE_LA_POLICE')}}
+                    </h1>
+                </div>
+            </div>
+            <div class="grid grid-cols-12 gap-6 mt-2 p-8">
+                <div class="intro-y col-span-12 overflow-auto lg:overflow-visible">
+                    {% if documents %}
+                    <table class="table table-report -mt-2 datatable">
+                        <thead>
+                            <tr>
+                                <th class="whitespace-nowrap">{{_('Libelle')}}</th>
+                                <th class="whitespace-nowrap">{{_('Type_document')}}</th>
+                                <th class="whitespace-nowrap">{{_('Ajoute_le')}}</th>
+                                <th class="whitespace-nowrap">{{_('Commentaire')}}</th>
+                                <th class="whitespace-nowrap">{{_('Telecharger')}}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        {% for document in documents %}
+                        <tr class="intro-x">
+                            <td class="w-auto">{{ document.nom|default_if_none:"" }}</td>
+                            <td class="w-auto">{{ document.type_document.libelle|default_if_none:"" }}</td>
+                            <td class="w-auto">{{ document.created_at|default_if_none:""|date:"d/m/Y" }}</td>
+                            <td class="w-auto">{{ document.commentaire|default_if_none:"" }}</td>
+                            <td class="w-auto">
+                                <div class="flex justify-center items-center">
+                                    <a href="{{ document.fichier.url }}" download class="mr-10">
+                                        <i data-feather="corner-left-down" id="title"></i>
+                                    </a>
+                                    <a href="{{ document.fichier.url }}" class="ml-10">
+                                        <i data-feather="eye" id="title"></i>
+                                    </a>                           
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                    <div class="alert alert-primary-soft show flex items-center mx-auto inline-block justify-center">
+                        <i data-feather="info" class="mr-2"></i>
+                        {{_('AUCUNE_DONNEE')}}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>

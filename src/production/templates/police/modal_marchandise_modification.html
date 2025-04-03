@@ -1,0 +1,348 @@
+{% load my_filters %}
+{% load i18n static jazzmin admin_urls %}
+{% get_jazzmin_settings request as jazzmin_settings %}
+<div  class="modal fade"  id="modal-modification_marchandise" data-backdrop="static" data-keyboard="false" aria-hidden="true"  style="display: nonehgff">
+	<div class="modal-dialog modal-xl">
+		<div class="modal-content">
+			<form id="form_update_marchandise" action="{% url 'update_marchandise' police.id marchandise.id %}" method="post">
+			{% csrf_token %}
+			<div class="modal-header">
+				<h4 class="modal-title">{{_("MODIFICATION DU VEHICULE")}}</h4>
+				<button type="button"class="close"data-dismiss="modal"aria-label="Close">
+					<span aria-hidden="true">×</span>
+				</button>
+			</div>
+			<div class="modal-body">
+				<div class="alert  alert-dismissible fade show hidden" role="alert">
+				  <span class="message"> {{_("TRAITEMENT EN COURS")}}</span>
+				</div>
+				<div class="col-md-12 offset-0">
+					<ul class="nav nav-tabs" id="myTab" role="tablist">
+						<li class="nav-item"><a class="nav-link active" id="marchandise-u-tab" data-toggle="tab" href="#marchandise-u_modif" role="tab" aria-controls="marchandise-u" aria-selected="true">{{_('MARCHANDISE')}}</a></li>
+					</ul>
+					<div class="tab-content" id="myTabContent">
+						<div class="tab-pane fade show active mt-3" id="marchandise-u_modif" role="tabpanel" aria-labelledby="marchandise-u-tab">
+							<div class="row">
+								<div class="col-md-12 text-uppercase" style="margin-bottom:10px !important; border-top:2px solid #F16623">
+									<h6><mark class="match">Informations générales</mark></h6>
+								</div>
+								<div class="col-md-6">
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("N° de certificat")}}</label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control" name="num_certificat" id="num_certificat" value="{{ marchandise.num_certificat|default_if_none:"" }}">
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("N° Fact fournisseur")}}</label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control" name="num_fact_fournisseur" id="num_fact_fournisseur" value="{{ marchandise.num_fact_fournisseur|default_if_none:"" }}">
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Ref DAI")}}</label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control" name="ref_dai" id="ref_dai" value="{{ marchandise.ref_dai|default_if_none:"" }}">
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Date de commande")}}</label>
+										<div class="col-sm-7">
+											<input type="date" class="form-control" name="date_commande" id="date_commande" value="{{ marchandise.date_commande|date:'Y-m-d' }}">
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Nombre de colis")}}</label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control money_field" name="nombre_colis" id="nombre_colis" value="{{ marchandise.nombre_colis }}">
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Poids Brut")}}</label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control money_field" name="poids_brut" id="poids_brut" value="{{ marchandise.poids_brut }}">
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Plein de souscription")}}</label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control money_field" name="plein_souscription" id="plein_souscription" value="{{ marchandise.plein_souscription }}">
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Immatriculation")}}</label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control" name="immatriculation_march" id="immatriculation" value="{{ marchandise.immatriculation|default_if_none:"" }}">
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Pavillon, Cie, Prest.")}}</label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control" name="pavillon_cie_prest" id="pavillon_cie_prest" value="{{ marchandise.pavillon_cie_prest|default_if_none:"" }}">
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Destination")}}</label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control" name="destination" id="destination" value="{{ marchandise.destination|default_if_none:"" }}">
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Lieu de transit/transbordement")}}</label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control" name="lieu_transit_transbordement" id="lieu_transit_transbordement" value="{{ marchandise.lieu_transit_transbordement|default_if_none:"" }}">
+										</div>
+									</div>
+								</div>
+								<div class="vl"></div>
+								<div class="col-md-5" style="border-left:0px;">
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Date émission certificat")}} <span class="required">*</span></label>
+										<div class="col-sm-7">
+											<input type="date" class="form-control" name="date_emmision_certificat" id="date_emmision_certificat" value="{{ marchandise.date_emmision_certificat|date:'Y-m-d' }}" required>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Date de sortie")}}</label>
+										<div class="col-sm-7">
+											<input type="date" class="form-control" name="date_sortie_march" id="date_sortie_march" value="{{ marchandise.date_sortie|date:'Y-m-d' }}">
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("N° de commande")}}</label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control" name="num_commande" id="num_commande" value="{{ marchandise.num_commande|default_if_none:"" }}">
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Marchandises")}}</label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control" name="marchandises_description" id="marchandises_description" value="{{ marchandise.marchandises_description|default_if_none:"" }}">
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Poids Net")}}</label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control money_field" name="poids_net" id="poids_net" value="{{ marchandise.poids_net }}">
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Valeur assurée")}} <span class="required">*</span></label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control money_field aliment_champ_obligatoire calculs_marchandise_montant_police_modification" name="valeur_assuree" id="valeur_assuree_modification" value="{{ marchandise.valeur_assuree }}" required>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Moyen de transport")}}</label>
+										<div class="col-sm-7">
+											<select class="form-control tags-multiple" name="moyens_transport_id" id="moyens_transport_id" autocomplete="off">
+												<option value="">{{_('Choisir')}}</option>
+												{% for moyens_transport in moyens_transports %}
+													<option {% if marchandise.moyens_transport_id == moyens_transport.id %} selected {% endif %} value="{{ moyens_transport.id }}">{{ moyens_transport.libelle }}</option>
+												{% endfor %}
+											</select>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Marque, Modèle, Type")}}</label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control" name="marque_modele_type" id="marque_modele_type" value="{{ marchandise.marque_modele_type|default_if_none:"" }}">
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Début voyage")}}</label>
+										<div class="col-sm-7">
+											<input type="date" class="form-control" name="debut_voyage" id="debut_voyage" value="{{ marchandise.debut_voyage|date:'Y-m-d' }}">
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Lieu de départ")}}</label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control" name="lieu_depart" id="lieu_depart" value="{{ marchandise.lieu_depart|default_if_none:"" }}">
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Conditions d'assurance")}}</label>
+										<div class="col-sm-7">
+											<select class="form-control tags-multiple" name="conditions_assurance_id" id="conditions_assurance_id" autocomplete="off">
+												<option value="">{{_('Choisir')}}</option>
+												{% for conditions_assurance in conditions_assurances %}
+													<option {% if marchandise.conditions_assurance_id == conditions_assurance.id %} selected {% endif %} value="{{ conditions_assurance.id }}">{{ conditions_assurance.libelle }}</option>
+												{% endfor %}
+											</select>
+										</div>
+									</div>
+								</div>
+								<div class="col-md-12 text-uppercase" style="margin-bottom:10px !important; border-top:2px solid #F16623">
+									<h6><mark class="match">Commissaire d'avaries</mark></h6>
+								</div>
+								<div class="col-md-6">
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Nom")}}</label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control" value="{{ marchandise.nom_commissaire|default_if_none:"" }}" name="nom" id="nom">
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Code")}}</label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control" value="{{ marchandise.code_commissaire|default_if_none:"" }}" name="code" id="code">
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Adresse")}}</label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control" value="{{ marchandise.adresse_commissaire|default_if_none:"" }}" name="adresse" id="adresse">
+										</div>
+									</div>
+								</div>
+								<div class="vl"></div>
+								<div class="col-md-5" style="border-left:0px;">
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Téléphone")}}</label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control" value="{{ marchandise.telephone_commissaire|default_if_none:"" }}" name="telephone" id="telephone" onkeypress="isInputNumber(event)">
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Email")}}</label>
+										<div class="col-sm-7">
+											<input type="email" class="form-control" value="{{ marchandise.courriel_commissaire|default_if_none:"" }}" name="email" id="email">
+										</div>
+									</div>
+								</div>
+								<div class="col-md-12 text-uppercase" style="margin-bottom:10px !important; border-top:2px solid #F16623">
+									<h6><mark class="match">Calculs</mark></h6>
+								</div>
+								<div class="col-md-6">
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Taux risque ordinaire")}}</label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control money_field_avec_virgule calculs_marchandise_montant_police_modification" value="{{ marchandise.taux_risque_ordinaire|default_if_none:'' }}" name="taux_risque_ordinaire" id="taux_risque_ordinaire_modification">
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Taux risque guerre")}}</label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control money_field_avec_virgule calculs_marchandise_montant_police_modification" value="{{ marchandise.taux_risque_guerre|default_if_none:'' }}" name="taux_risque_guerre" id="taux_risque_guerre_modification">
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Taux supprime")}}</label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control money_field_avec_virgule calculs_marchandise_montant_police_modification" value="{{ marchandise.taux_supprime|default_if_none:'' }}" name="taux_supprime" id="taux_supprime_modification">
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Taux réduc. commerciale")}}</label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control money_field_avec_virgule calculs_marchandise_montant_police_modification" value="{{ marchandise.taux_reduction_commerciale|default_if_none:'' }}" name="taux_reduction_commerciale" id="taux_reduction_commerciale_modification">
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Taux de la taxe")}}</label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control money_field_avec_virgule calculs_marchandise_montant_police_modification" value="{{ marchandise.taux_taxe|default_if_none:'' }}" name="taux_taxe" id="taux_taxe_modification">
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Accessoires")}}</label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control calculs_marchandise_montant_police_modification" value="{{ marchandise.accessoires|money_format_mille|default_if_none:'' }}" name="accessoires" id="accessoires_modification" oninput="formatMontant(this)">
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Autres frais")}}</label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control calculs_marchandise_montant_police_modification" value="{{ marchandise.autres_frais|money_format_mille|default_if_none:'' }}" name="autres_frais" id="autres_frais_modification" oninput="formatMontant(this)">
+										</div>
+									</div>
+								</div>
+								<div class="vl"></div>
+								<div class="col-md-5" style="border-left:0px;">
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Prime risque ordinaire")}}</label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control money_field calculs_marchandise_montant_police_modification" value="{{ marchandise.prime_risque_ordinaire|default_if_none:'' }}" name="prime_risque_ordinaire" id="prime_risque_ordinaire_modification" readonly>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Prime risque guerre")}}</label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control money_field calculs_marchandise_montant_police_modification" value="{{ marchandise.prime_risque_guerre|default_if_none:'' }}" name="prime_risque_guerre" id="prime_risque_guerre_modification" readonly>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Prime supprime")}}</label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control money_field calculs_marchandise_montant_police_modification" value="{{ marchandise.prime_supprime|default_if_none:'' }}" name="prime_supprime" id="prime_supprime_modification" readonly>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Prime brut")}}</label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control money_field calculs_marchandise_montant_police_modification" value="{{ marchandise.prime_brut|default_if_none:'' }}" name="prime_brut" id="prime_brut_modification" readonly>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Prime de réduction")}}</label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control money_field calculs_marchandise_montant_police_modification" value="{{ marchandise.prime_reduction|default_if_none:'' }}" name="prime_reduction" id="prime_reduction_modification" readonly style="background: #f0dcc8; border: #f0dcc8">
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Total taxe")}}</label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control money_field calculs_marchandise_montant_police_modification" value="{{ marchandise.total_taxe|default_if_none:'' }}" name="total_taxe" id="total_taxe_modification" readonly>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Prime TTC")}}</label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control money_field calculs_marchandise_montant_police_modification" value="{{ marchandise.prime_ttc_mar|default_if_none:'' }}" name="prime_ttc_mar" id="prime_ttc_mar_modification" readonly>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+
+					</div>
+
+				</div>
+				<div class="modal-footer justify-content-between">
+					<button type="button" class="btn btn-danger" data-dismiss="modal"><i class="fa fa-remove"></i> {{_('Retour')}}</button>
+					<button type="button" id="btn_save_modification_marchandise" class="btn btn-info"><i class="fa fa-check-circle"></i> {{_("Valider les modifications")}}</button>
+				</div>
+			</div>
+			</form>
+		</div>
+	</div>
+</div>
+
+<script>
+    function isInputNumber(evt){
+
+        var ch = String.fromCharCode(evt.which);
+
+        if(!(/[0-9]/.test(ch))){
+            evt.preventDefault();
+        }
+    }
+
+    function formatMontant(input) {
+		// Supprimez d'abord tous les caractères non numériques
+		var montant = input.value.replace(/\D/g, '');
+
+		// Ajoutez un espace comme séparateur pour les milliers
+		montant = addSpacesForThousands(montant);
+
+		// Mettez à jour la valeur de l'input
+		input.value = montant;
+	}
+
+	// Fonction pour ajouter un espace comme séparateur pour les milliers
+	function addSpacesForThousands(x) {
+		return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+	}
+</script>
+

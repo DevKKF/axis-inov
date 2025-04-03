@@ -1,0 +1,162 @@
+{% extends "admin/base_site.html" %}
+{% block extrastyle %} {% endblock %}
+{% load i18n %}
+{% block content_title %}
+    <div class="row mb-2">
+          <div class="col-sm-6">
+                <h1 class="m-0">{% trans 'Liste des clients' %}</h1>
+          </div>
+          <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                      <li class="breadcrumb-item"><a href="{% url 'admin:index' %}">{% trans 'Home' %}</a></li>
+                      <li class="breadcrumb-item">{% trans 'Production' %}</li>
+                      <li class="breadcrumb-item active">{% trans 'Clients' %}</li>
+                </ol>
+          </div>
+    </div>
+{% endblock %}
+{% block content %}
+<div class="col-12 col-md-12 order-2 order-md-1">
+  <div class="card">
+    <div class="card-header">
+        <h3 class="card-title"><b>{% trans 'LISTE DES CLIENTS' %}</b></h3>
+    </div>
+
+    <div style="background:#CCCCCC;padding:10px;border-bottom:1px solid #eee;padding-bottom:10px;margin-bottom:10px;">
+    <form method="get"><label style="font-weight:normal;font-size:12px;display:none;"><i>{% trans 'Formulaire de recherche' %}</i></label>
+        <div class="row">
+            <div class="col-12 col-md-12 col-sm-12 row">
+                <div class="col-md-3">
+                    <span class="text-right" style="margin-top:5px;">{% trans 'Client' %} : </span>
+                    <input id="search_nom" class="form-control" type="text" name="nb" style="border-radius:3px;border:1px solid rgba(0, 0, 0, 0.3);text-transform:uppercase;" placeholder="{% trans 'Nom du client' %}">
+                </div>
+                <div class="col-md-3">
+                    <span class="text-right" style="margin-top:5px;">{% trans 'N° Police' %} : </span>
+                        <input id="search_numero_police" class="form-control" type="text" name="np" style="border-radius:3px;border:1px solid rgba(0, 0, 0, 0.3);text-transform:uppercase;" placeholder="N° police">
+                </div>
+                <div class="col-md-3">
+                    <span class="text-right" style="margin-top:5px;">{% trans 'Type de personne' %} : </span>
+                    <select class="form-control tags-multiple" id="search_type_personne" style="border:1px solid rgba(0, 0, 0, 0.3);">
+                        <option value="">{% trans 'Choisir' %}</option>
+                        {% for types_personne in types_personnes %}
+                            <option  value="{{types_personne.id}}">{{types_personne}}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-md-3">
+                    <span class="text-right" style="margin-top:5px;">{% trans 'Commercial' %} : </span>
+                    <select class="form-control tags-multiple" id="search_commercial" style="border:1px solid rgba(0, 0, 0, 0.3);">
+                        <option value="">{% trans 'Choisir' %}</option>
+                        {% for commercial in commercials %}
+                            <option  value="{{commercial.id}}">{{commercial.first_name}} {{commercial.last_name}}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+            </div>
+        </div>
+    </form>
+  </div>
+
+    <div class="card-body">
+      <div id="example1_wrapper" class="dataTables_wrapper dt-bootstrap4">
+        <div class="row">
+          <div class="col-12 col-md-12 col-sm-12 table-responsive">
+              {% if request.user.is_production %}
+                <a class="btn btn-sm btn-info pull-right mb-2" data-toggle="modal" data-target="#modal-client"><i class="fas fa-plus-circle"></i> {{_('Nouveau client')}}</a>
+              {% endif %}
+              <table class="table table-bordered table-striped dataTable__ customDataTable0 dtr-inline" id="table_clients">
+                  <thead>
+                    <tr>
+                      <th scope="col">{% trans 'Code client' %}</th>
+                      <th scope="col">{% trans 'Nom complet' %}</th>
+                      <th scope="col">{% trans 'N° Polices' %}</th>
+                      <th scope="col">{% trans 'Type personne' %}</th>
+                      <th scope="col">{% trans 'Type client' %}</th>
+                      <th scope="col">{% trans 'Business unit' %}</th>
+                      <th class="text-center" scope="col" width="150px">{% trans 'Actions' %}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                  </tbody>
+              </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+{% endblock %}
+
+
+{% block extrajs %}
+<script>
+    $(document).ready(function() {
+
+        dataTable = $('#table_clients').DataTable({
+            "language": {
+                "url": "https://cdn.datatables.net/plug-ins/9dcbecd42ad/i18n/French.json"
+            },
+            "serverSide": true,
+            "ajax": {
+                "url": "{% url 'clients_datatable' %}",
+                "data": function (data) {
+                    data.page = data.start / data.length + 1;
+                    data.search_nom = $('#search_nom').val();
+                    data.search_numero_police = $('#search_numero_police').val();
+                    data.search_type_personne = $('#search_type_personne').val();
+                    data.search_commercial = $('#search_commercial').val();
+                },
+                "dataSrc": function (json) {
+                    return json.data;
+                }
+            },
+            "columns": [
+                {"data": "code", "orderable": true},
+                {"data": "nom", "orderable": true},
+                {"data": "numero_police", "orderable": true},
+                {"data": "type_personne", "orderable": true},
+                {"data": "type_client", "orderable": true},
+                {"data": "business_unit", "orderable": true},
+                {"data": "actions", "orderable": false, "searchable": false},
+            ],
+            "paging": true,
+            "pageLength": 100,
+            "processing": false,  // Show the loading indicator
+            "searching": false,   // Enable the search feature
+            "search": {
+                "search": $('#table_clients-table_filter input').val()
+            },
+            "lengthMenu": [
+                [100, 250, 500, 1000, 5000, 10000],
+                [100, 250, 500, 1000, 5000, 10000]
+            ]
+        });
+
+        dataTable.on('xhr.dt', function (e, settings, json, xhr) {
+            // Hide the spinner when the data is loaded
+            $('.spinner-border').hide();
+        });
+
+        // Show the spinner when the table is processing
+        dataTable.on('processing.dt', function (e, settings, processing) {
+            if (processing) {
+                $('.spinner-border').show();
+            }
+        });
+
+        // Add custom search functionality for code, name, and prenoms columns
+        $('#search_nom, #search_type_personne, #search_numero_police, #search_commercial').on('keyup change', function() {
+            dataTable.search('').draw(); // Clear existing search
+            dataTable.draw(); // Trigger a new draw, which will include the updated search parameters
+        });
+
+    });
+</script>
+
+{% include 'client/modal_client.html' %}
+
+{% endblock %}

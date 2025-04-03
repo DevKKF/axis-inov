@@ -1,0 +1,116 @@
+{% load static %}
+{% load my_filters %}
+
+    <style>
+        #title {
+            color: #B7482B;
+        }
+        #link {
+            color: #0000FF;
+        }
+        #status {
+            color: #FFFFFF;
+            padding: 5px;
+            border-radius: 5px;
+        }
+        .status{
+            padding: 5px;
+            border-radius: 5px;
+            background-color: #6c757d;
+            color: #fff;
+        }
+        .status-inactif{
+            background-color: #DC3545;
+            color: #fff;
+        }
+        .status-suspendu{
+            background-color: #ffc107;
+            color: #fff;
+        }
+        .status-encours{
+            background-color: #F8AF3C;
+            color: #fff;
+        }
+        .status-actif{
+            background-color: #007500;
+            color: #fff;
+        }
+
+        .badge-sortie-en-cours{
+            background-color: #ffc107;
+            color: white;
+        }
+        .badge-entree-en-cours{
+            background-color: #6c757d; //007bff;
+            color: white;
+        }
+
+    </style>
+
+    <div class="intro-y col-span-12 md:col-span-12 lg:col-span-12 mt-8">
+        <div class="box">
+            <div class="flex flex-col lg:flex-row items-start justify-between px-5 pt-5">
+                <div class="w-full flex flex-col lg:flex-row items-start lg:items-center border-b border-gray-500">
+                    <h1 class="text-xl lg:text-lg font-medium mb-3 lg:mb-0 lg:mr-3" id="title">
+                        {{_('MEMBRES_DE_LA_FAMILLE')}}
+                    </h1>
+                </div>
+            </div>
+            
+            <div class="grid grid-cols-12 gap-6 mt-2 p-8">
+                <div class="intro-y col-span-12 overflow-auto lg:overflow-visible">
+                    {% if famille %}
+                    <table class="table table-report -mt-2 datatable">
+                        <thead>
+                            <tr>
+                                <th class="whitespace-nowrap">{{_('Numero_Carte')}}</th>
+                                <th class="whitespace-nowrap">{{_('Sexe')}}</th>
+                                <th class="whitespace-nowrap">{{_('Nom')}}</th>
+                                <th class="whitespace-nowrap">{{_('Prenoms')}}</th>
+                                <th class="whitespace-nowrap">{{_('Lien')}}</th>
+                                <th class="whitespace-nowrap">{{_('Date_naissance')}}</th>
+                                <th class="whitespace-nowrap">{{_('Entree')}}</th>
+                                <th class="whitespace-nowrap">{{_('Statut')}}</th>
+                                <th class="whitespace-nowrap text-center">{{_('Actions')}}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for beneficiaire in famille %}
+                            <tr class="intro-x">
+                                <td class="w-auto">{{ beneficiaire.carte_active|default_if_none:"-" }}</td>
+                                <td class="w-auto">{{ beneficiaire.genre|default_if_none:"" }}</td>
+                                <td class="w-auto">{{ beneficiaire.nom|default_if_none:"" }}</td>
+                                <td class="w-auto">{{ beneficiaire.prenoms|default_if_none:"" }}</td>
+                                <td class="w-auto">{{ beneficiaire.qualite_beneficiaire.libelle|default_if_none:"" }}</td>
+                                <td class="w-auto">{{ beneficiaire.date_naissance|default_if_none:""|date:"d/m/Y" }}</td>
+                                <td class="w-auto">{{ beneficiaire.date_affiliation|default_if_none:""|date:"d/m/Y" }}</td>
+                                <td class="w-auto"><div class="flex items justify-center status status-{{ beneficiaire.etat_beneficiaire|lower|replace_espace }} badge-{{ beneficiaire.etat_beneficiaire|lower|replace_espace }}">{{ beneficiaire.etat_beneficiaire|default_if_none:"" }}</div></td>
+                                <td class="table-report__action">
+                                    <div class="flex justify-center items-center">
+                                        <a href="{% url 'grh.beneficiaire_overview' police.id beneficiaire.id %}" ><i data-feather="eye" id="title"></i></a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                    <div class="alert alert-primary-soft show flex items-center mb-5 mx-auto inline-block justify-center">
+                        <i data-feather="info" class="mr-2"></i>
+                        {{_('AUCUNE_DONNEE')}}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function changeBeneficiaireId(newBeneficiaireId) {
+            fetch(`/change_beneficiaire_id/?new_beneficiaire_id=${newBeneficiaireId}`)
+                .then(response => {
+                    window.location.href = `/target_url/${newBeneficiaireId}/`;
+                })
+                .catch(error => console.error('Error:', error));
+        }
+    </script>

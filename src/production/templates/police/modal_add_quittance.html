@@ -1,0 +1,227 @@
+{% load my_filters %}
+<style>
+	.disabled-field {
+		background-color: #e9ecef !important;
+		cursor: not-allowed;
+		color: #6c757d;
+	}
+</style>
+<div  class="modal fade"  id="modal-quittance"  aria-hidden="true"  style="display: none">
+	<div class="modal-dialog modal-xl">
+		<div class="modal-content">
+			<form enctype="multipart/form-data" id="form_add_quittance" action="{% url 'add_quittance' police.id %}" method="post">
+			{% csrf_token %}
+			<div class="modal-header">
+				<h4 class="modal-title">{{_("CREATION D'UNE QUITTANCE DE LA POLICE")}} <b>{{_('N°')}} {{police.numero}}</b><!-- - CLIENT <b>{{police.client.nom}} --></b></h4>
+				<button type="button"class="close"data-dismiss="modal"aria-label="Close">
+					<span aria-hidden="true">×</span>
+				</button>
+			</div>
+			<div class="modal-body">
+				<div class="alert  alert-dismissible fade show hidden" role="alert">
+				  <span class="message"> {{_("TRAITEMENT EN COURS")}}</span>
+				</div>
+				<div class="col-md-12 offset-0">
+					<div class="row">
+						<div class="col-md-6">
+							<div class="form-group row" style="display:none0;">
+								<label class="col-sm-5 col-form-label">{{_('Nature')}} <span class="required">*</span></label>
+								<div class="col-sm-7">
+									<select class="form-control calculs_handler_police" name="nature_quittance" id="nature_quittance" required>
+										<option value="">{{_('Choisir')}}</option>
+										{% for nature_quittance in natures_quittances %}
+										<option value="{{ nature_quittance.id }}">{{ nature_quittance.libelle }}</option>
+										{% endfor %}
+									</select>
+								</div>
+							</div>
+							<div class="form-group row">
+								<label class="col-sm-5 col-form-label">{{_("Type de quittance")}} <span class="required">*</span></label>
+								<div class="col-sm-7">
+									<select class="form-control calculs_handler_police" name="type_quittance" id="type_quittance" required>
+										<option value="">{{_('Choisir')}}</option>
+										{% for type_quittance in types_quittances %}
+										<option value="{{ type_quittance.id }}" data-code="{{ type_quittance.code }}">{{ type_quittance.libelle }}</option>
+										{% endfor %}
+									</select>
+								</div>
+							</div>
+							<div class="form-group row">
+								<label class="col-sm-5 col-form-label">{{_("Date d'émission")}}</label>
+								<div class="col-sm-7">
+									<input type="date" class="form-control" name="date_emission" required value="{{ today|date:'Y-m-d' }}" readonly/>
+								</div>
+							</div>
+							<div class="form-group row">
+								<label class="col-sm-5 col-form-label">{{_("Date début")}}</label>
+								<div class="col-sm-7">
+									<input type="date" class="form-control" name="date_debut" id="date_debut" value="{{ police_dernier_mouvement.date_effet|date:'Y-m-d' }}" required/>
+								</div>
+							</div>
+							<div class="form-group row">
+								<label class="col-sm-5 col-form-label">{{_("Date fin")}}</label>
+								<div class="col-sm-7">
+									<input type="date" class="form-control" name="date_fin" id="date_fin" value="{{ police_dernier_mouvement.date_fin_periode_garantie|date:'Y-m-d' }}" required/>
+								</div>
+							</div>
+							<div class="form-group row">
+								<label class="col-sm-5 col-form-label">{{_("Montant HT")}}<span class="required"></span></label>
+								<div class="col-sm-7">
+									<input type="text" class="form-control money_field calculs_handler_police" name="prime_ht" id="prime_ht" value="{{ police.police_dernier_historique.prime_ht }}" />
+								</div>
+							</div>
+							<div class="form-group row">
+								<label class="col-sm-5 col-form-label">{{_("Coût police Cie")}} <span class="required"></span></label>
+								<div class="col-sm-7">
+									<input type="text" class="form-control money_field_negative calculs_handler_police" name="cout_police_compagnie" id="cout_police_compagnie" value="{{ police.police_dernier_historique.cout_police_compagnie }}" />
+								</div>
+							</div>
+						</div>
+						<div class="vl"></div>
+						<div class="col-md-5" style="border-left:0px;">
+
+							<div class="form-group row">
+								<label class="col-sm-5 col-form-label">{{_("Coût police courtier")}}<span class="required"></span></label>
+								<div class="col-sm-7">
+									<input type="text" class="form-control money_field_negative calculs_handler_police" name="cout_police_courtier" id="cout_police_courtier" value="{{ police.police_dernier_historique.cout_police_courtier }}" />
+								</div>
+							</div>
+							<div class="form-group row">
+								<label class="col-sm-5 col-form-label">{{_('Taxe')}} <span class="required"></span></label>
+								<div class="col-sm-7">
+									<input type="text" class="form-control money_field_negative calculs_handler_police" name="taxe" id="taxe" value="{{ police.police_dernier_historique.taxe }}" />
+								</div>
+							</div>
+							<div class="form-group row">
+								<label class="col-sm-5 col-form-label">{{_('Autres Taxes')}} <span class="required"></span></label>
+								<div class="col-sm-7">
+									<input type="text" class="form-control money_field_negative calculs_handler_police" name="autres_taxes" id="autres_taxes" value="{{ police.police_dernier_historique.autres_taxes }}" readonly>
+								</div>
+							</div>
+							<div class="form-group row d-none">
+								<label class="col-sm-5 col-form-label">{{_("Autres Taxes")}} <span class="required"></span></label>
+								<div class="col-sm-6" style="padding-right:0px;">
+									<input style="border-top-right-radius:0px;border-bottom-right-radius:0px;" type="text" class="form-control money_field calculs_handler_police" name="" id="" value="{{ police.police_dernier_historique.autres_taxes }}" readonly/>
+								</div>
+								<div class="col-sm-1" style="padding-left:0px;">
+									<span class="btn " style="background:gray;color:white;border-top-left-radius:0px;border-bottom-left-radius:0px;" data-toggle="modal" data-target="#modal-autres_taxes_quittance">+</span>
+								</div>
+							</div>
+							<div class="form-group row">
+								<label class="col-sm-5 col-form-label">{{_("Montant TTC")}} <span class="required"></span></label>
+								<div class="col-sm-7">
+									<input type="text" class="form-control money_field" name="prime_ttc" id="prime_ttc" value="{{ police.police_dernier_historique.prime_ttc }}" readonly/>
+								</div>
+							</div>
+							<div class="form-group row show_if_nature_quittance_comptant">
+								<label class="col-sm-5 col-form-label">Com Courtage <b>({{police.police_dernier_historique.taux_com_courtage|default_if_none:""}}%)</b><span class="required"></span></label>
+								<div class="col-sm-7">
+									<input type="hidden" class="form-control" name="taux_com_courtage" id="taux_com_courtage" value="{{police.police_dernier_historique.taux_com_courtage|default_if_none:''}}" readonly/>
+									<input type="text" class="form-control money_field_negative" name="commission_courtage" id="commission_courtage" value="{% if police.police_dernier_historique.taux_com_courtage %}{{ police.police_dernier_historique.taux_com_courtage|diviser:100|multiply:police.police_dernier_historique.prime_ht }}{% endif %}" data-value_from_police="{{ police.police_dernier_historique.commission_courtage }} " readonly/>
+								</div>
+							</div>
+
+							<div class="form-group row">
+								<label class="col-sm-5 col-form-label">{{_("Retrocession Apporteur")}}<span class="required"></span></label>
+								<div class="col-sm-7">
+									<input type="text" class="form-control money_field_negative" name="commission_intermediaire" id="total_commission_intermediaire" value="{{ police.police_dernier_historique.commission_intermediaires }}" readonly/>
+								</div>
+							</div>
+
+						</div>
+					</div>
+					<table id="table_apporteurs_police" style="width:100%;display:none" class="table table-bordered table-striped dataTable_ dtr-inline">
+						<thead>
+							<tr>
+								<th style="width:;">{{_('Apporteur')}}</th>
+								<th style="width:;">{{_("Base calcul")}}</th>
+								<th style="width:20%;">{{_("Tx Com AN")}}</th>
+								<th style="width:20%;">{{_("Tx Com Renouv")}}</th>
+							</tr>
+						</thead>
+						<tbody>
+							{% for ap in apporteurs_polices %}
+							<tr id="tr_initial">
+								<td style="vertical-align:middle;">
+									<div class="row" style="margin-right:5px;">
+										<input type="hidden" class="form-control calculs_handler_police intermediaire " name="intermediaires" id="intermediaires" value="{{ ap.apporteur.id }}"/>
+										{{ ap.apporteur.nom }} {{ ap.apporteur.prenoms }}
+									</div>
+								</td>
+								<td style="vertical-align:middle;padding:5px;">
+									<input type="hidden" class="form-control calculs_handler_police base_calcul_taux_retrocession not_select2" name="base_calcul_taux_retrocession" value="{{ ap.base_calcul.id }}"/>
+									{{ ap.base_calcul.libelle }}
+								</td>
+								<td style="vertical-align:middle;padding:5px;">
+									<input maxlength="2" type="text" class="form-control money_field calculs_handler_police taux_com_affaire_nouvelle" name="taux_com_affaire_nouvelle" id="taux_com_affaire_nouvelle" value="{{ap.taux_com_affaire_nouvelle}}" readonly/>
+								</td>
+								<td style="vertical-align:middle;padding:5px;">
+									<input maxlength="2" type="text" class="form-control money_field calculs_handler_police taux_com_renouvelement" name="taux_com_renouvelement" value="{{ap.taux_com_renouvellement}}" readonly/>
+								</td>
+							</tr>
+							{% endfor %}
+						</tbody>
+					</table>
+				</div>
+				<div class="modal-footer justify-content-between">
+					<button type="button" class="btn btn-danger" data-dismiss="modal"><i class="fa fa-remove"></i> {{_('Retour')}}</button>
+					<button type="button" id="btn_save_quittance" class="btn btn-info"><i class="fa fa-check-circle"></i> {{_('Valider')}}</button>
+				</div>
+			</div>
+			</form>
+		</div>
+	</div>
+
+</div>
+
+<!-- modal interne des autres taxes -->
+<div  class="modal fade modal_interne"  id="modal-autres_taxes_quittance"  aria-hidden="true"  style="display: none">
+	<div class="modal-dialog modal-None" style="width:;">
+		<div class="modal-content">
+			<form id="form_add_autres_taxes_quittance" action="" method="post">
+				{% csrf_token %}
+				<div class="modal-header">
+					<h4 class="modal-title">{{_("AJOUT DE TAXES")}}</h4>
+					<button type="button"class="close"data-dismiss="modal"aria-label="Close">
+						<span aria-hidden="true">×</span>
+					</button>
+				</div>
+				<div class="modal-body">
+					<div class="alert  alert-dismissible fade show hidden" role="alert">
+						<span class="message"> {{_("TRAITEMENT EN COURS")}}</span>
+					</div>
+					<div class="col-md-12 offset-0">
+						<div class="row">
+							<table style="width:100%;" class="table table-bordered table-striped dataTable_ dtr-inline">
+								<thead>
+									<tr>
+										<th style="width:70%;">{{_('Taxe')}}</th>
+										<th>{{_('Montant')}}</th>
+									</tr>
+								</thead>
+								<tbody>
+								{% for taxe_police in taxes_police %}
+									<tr>
+									<td style="vertical-align:middle;">
+										{{ taxe_police.taxe.libelle }} ({{ taxe_police.taxe.code|default_if_none:"" }})
+									</td>
+									<td style="padding:5px;">
+										<input data-taxe_id="{{ taxe_police.taxe.id }}" type="text" class="form-control money_field montant_taxe" name="montant_taxe_{{taxe_police.taxe.id}}" id="montant_taxe_{{taxe_police.taxe.id}}" value="{{ taxe_police.montant }}" required/>
+									</td>
+									</tr>
+								{% endfor %}
+								</tbody>
+							</table>
+						</div>
+					</div>
+				</div>
+				<div class="modal-footer justify-content-between">
+					<button type="button" class="btn btn-danger" data-dismiss="modal"><i class="fa fa-remove"></i> {{_('Fermer')}}</button>
+					<span>{{_("Montant Total")}}: <span class="badge badge-warning total_autres_taxes" style="padding:5px 10px;">0</span> {{police.client.pays.devise.code}}</span>
+					<button type="button" id="btn_save_taxe" class="btn o-bg-primary" data-dismiss="modal"><i class="fa fa-check-circle"></i> {{_('Valider')}}</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+<!-- fin modal interne des autres taxes -->

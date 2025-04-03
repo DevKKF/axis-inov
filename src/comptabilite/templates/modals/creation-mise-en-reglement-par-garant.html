@@ -1,0 +1,215 @@
+{% load my_filters %}
+{% load i18n static jazzmin admin_urls %}
+<div  class="modal fade"  id="modal-reglement_ordonnancement_par_garant"  aria-hidden="true"  style="display: none">
+	<div class="modal-dialog modal-xl">
+		<div class="modal-content">
+			<form enctype="multipart/form-data" id="form_add_reglement_ordonnancement_par_garant" action="{% url 'add_mise_en_reglement_ordonnancement_par_garant' %}" method="post">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h4 class="modal-title">{{_('EFFECTUER_UN_PAIEMENT')}}</b></h4>
+                    <button type="button"class="close"data-dismiss="modal"aria-label="Close">
+                        <span aria-hidden="true">×</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert  alert-dismissible fade show hidden" role="alert">
+                    <span class="message"> {{_('TRAITEMENT_EN_COURS')}}</span>
+                    </div>
+                   
+                    <div class="col-md-12 offset-0">
+                        <div class="row">
+
+                            <div class="col-md-6">
+
+                                <div class="form-group row" id="">
+                                    <label class="col-sm-6 col-form-label">{{_('Garant')}} :<span class="required">*</span></label>
+                                    <div class="col-sm-6">
+                                        <select id="garantSelect" name="compagnie_id_disabled" class="tags-multiple" onchange="updateMontantAccepteTotal()" autocomplete="off">
+                                            {% if garants_non_paye|length > 1 %}
+                                                <option value="">{{_('Tous')}}</option>
+                                                {% for garant in garants_non_paye %}
+                                                    <option value="{{ garant.id }}">{{ garant.nom }}</option>
+                                                {% endfor %}
+                                            {% else %}
+                                                {% for garant in garants_non_paye %}
+                                                    <option value="{{ garant.id }}" selected>{{ garant.nom }}</option>
+                                                {% endfor %}
+                                            {% endif %}
+                                        </select>
+                                        <input type="hidden" id="compagnie_id" name="compagnie_id" value="">
+                                    </div>
+                                </div>
+
+
+                                
+                                <div class="form-group row" id="moyen_de_paiement_bloc">
+                                    <label class="col-sm-6 col-form-label">{{_('Mode_de_paiement')}}<span class="required">*</span></label>
+                                    <div class="col-sm-6">
+                                        <select id="garant_moyens_paiements" name="garant_moyens_paiement_id" class="tags-multiple" onchange="toggleIbanBlock()" autocomplete="off" required>
+                                            <option value="">{{_('Choisir')}}</option>
+                                            {% for mr in modes_reglements %}
+                                                <option value="{{ mr.id }}">{{ mr.libelle }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="form-group row" id="numero_piece_bloc">
+                                    <label class="col-sm-6 col-form-label">{{_('Numero_pièce')}}<span class="required">*</span></label>
+                                    <div class="col-sm-6 w-100">
+                                        <input type="text" class="form-control alpha_num_input" id="numero_piece" name="numero_piece" placeholder="" autocomplete="off" required>
+                                    </div>
+                                </div>
+
+                                <div class="form-group row">
+                                    <label class="col-sm-6 col-form-label">{{_('Beneficiaire_du_paiement')}}<span class="required">*</span></label>
+                                    <div class="col-sm-6">
+                                        <span class="form-control">{{bordereau.ordre_de}}</span>
+                                    </div>
+                                </div>
+                                <div class="form-group row" id="garant_iban_bloc" style="display: none;">
+                                    <label class="col-sm-6 col-form-label">{{_('Numero_IBAN')}}<span class="required">*</span></label>
+                                    <div class="col-sm-6 w-100">
+                                        <input type="text" class="form-control" name="iban" placeholder="CI097 01111 111xxx91058 27" autocomplete="off">
+                                    </div>
+                                </div>
+
+
+                                <div class="form-group row">
+                                    <label class="col-sm-6 col-form-label">{{_('Date_de_paiement')}}<span class="required">*</span></label>
+                                    <div class="col-sm-6">
+                                        <input type="date" name="date_paiement" class="form-control" value="{% now 'Y-m-d' %}" min="{{ bordereau.created_at|date:'Y-m-d' }}" max="{% now 'Y-m-d' %}">
+                                    </div>
+                                </div>
+
+                            </div>
+
+                            <div class="vl"></div>
+                            
+                            <div class="col-md-6" style="border-left:0px;margin-left:-10px;padding-left:20px;">
+
+                                <div class="col-sm-12 row">
+                                    <div class="col-form-label col-sm-4">{{_('Periode')}} : </div>
+                                    <div class="form-group col-sm-8">
+                                        <div class="form-control" readonly><strong>{{bordereau.periode_comptable}}</strong></div>
+                                    </div>
+                                </div>
+
+                                <div class="col-sm-12 row">
+                                    <div class="col-form-label col-sm-4">{{_('Numero_Bordereau')}} :</div>
+                                    <div class="form-group col-sm-8">
+                                        <input type="text" name="numero" value="{{bordereau.numero}}" class="form-control" style="font-weight: bold;" readonly autocomplete="off">
+                                    </div>
+                                </div>
+
+                                <div class="col-sm-12 row">
+                                    <div class="col-form-label col-sm-4">{{_('Type_de_remb')}}: </div>
+                                    <div class="form-group col-sm-8">
+                                        <div class="form-control" readonly><strong>{{bordereau.type_remboursement}}</strong></div>
+                                    </div>
+                                </div>
+
+                                <div class="col-sm-12 row">
+                                    <div class="col-form-label col-sm-4">{{_('A_la_ordre_de')}} : </div>
+                                    <div class="form-group col-sm-8">
+                                        <input type="text" name="ordre_de" value="{{bordereau.ordre_de}}" class="form-control" style="font-weight: bold;" readonly>
+                                    </div>
+                                </div>
+
+                                <div class="col-sm-12 row">
+                                    <div class="col-form-label col-sm-4">{{_('Montant')}} :</div>
+                                    <div class="form-group col-sm-8">
+                                        <div class="form-control bg-success" id="montant_garant" readonly><strong>{{ montant_accepte_total|money_field }} FCFA</strong></div>
+                                        <input type="hidden" name="montant_a_regler" id="montant_a_regler" value="{{montant_accepte_total}}">
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <div class="modal-footer justify-content-between">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">{{_('Retour')}}</button>
+                        <span id="loading_gif_reglement_ordonnancement_par_garant" style="display:none;color:#BB4127;">{{_('Traitement_en_cours')}}... <img src="{% static 'admin_custom/ripple-loader.svg' %}" style="width:50px;"></span>
+                        <button type="button" id="btn_save_reglement_ordonnancement_par_garant" class="btn o-bg-primary">Valider</button>
+                    </div>
+                </div>
+                <div class="form_sinistre_overlay"><div style="margin:auto;padding:20px 0;color:white;text-align:center;">{{_('TRAITEMENT_EN_COURS')}} ...</div></div>
+			</form>
+		</div>
+	</div>
+
+</div>
+<script>
+    
+    document.addEventListener('DOMContentLoaded', function() {
+        var garantSelect = document.getElementById('garantSelect');
+        var garantsCount = {{ garants_non_paye|length }};
+
+        if (garantsCount == 1) {
+            // If there is only one guarantor, disable the select and set the hidden input value
+            garantSelect.disabled = true;
+            var selectedGarantId = garantSelect.value;
+            document.getElementById('compagnie_id').value = selectedGarantId;
+            updateMontantAccepteTotal();  // Call the function to update the montant accepted total on page load
+        } else {
+            // If there are multiple guarantors, allow selection and set the hidden input value based on selection
+            garantSelect.disabled = false;
+            document.getElementById('compagnie_id').value = garantSelect.value;
+        }
+
+
+        // Nommer le libellé Nº piéce en fonction du mode de reglement
+        // Mapping des champs
+        const modeLibelles = {
+            '1': 'Nº pièce',
+            '2': 'Nº chèque',
+            '3': 'RIB',
+            '4': 'Nº Mobile Money',
+            '5': 'Nº chèque',
+        };
+
+        function toggleIbanBlock() {
+            const select = document.getElementById('garant_moyens_paiements');
+            const selectedValue = select.value;
+
+            alert(selectedValue);
+            const numeroPieceLabel = document.querySelector('#numero_piece_bloc label');
+
+            if (modeLibelles[selectedValue]) {
+                numeroPieceLabel.textContent = modeLibelles[selectedValue] + ' *';
+            } else {
+                numeroPieceLabel.textContent = 'Nº pièce *';
+            }
+        }
+
+        document.getElementById('garant_moyens_paiements').addEventListener('change', toggleIbanBlock);
+
+
+    });
+
+    function updateMontantAccepteTotal() {
+        var garantSelect = document.getElementById('garantSelect');
+        var selectedGarantId = garantSelect.value;
+        var bordereauId = "{{ bordereau.id }}";
+
+        // Update hidden input value
+        document.getElementById('compagnie_id').value = selectedGarantId;
+
+        $.ajax({
+            url: '{% url "update_montant_accepte_total" %}',  // Utilisez la fonction de résolution d'URL de Django
+            method: 'GET',
+            data: {garant_id: selectedGarantId, bordereau_id: bordereauId},
+            success: function(data) {
+                var montantGarantDiv = document.getElementById('montant_garant');
+                montantGarantDiv.innerHTML = '<strong>' + data.montant_accepte_total + ' FCFA</strong>';
+                // Mettre à jour le champ caché
+                document.getElementById('montant_a_regler').value = data.montant_accepte_total.replace(/\s/g, '').replace(',', '.');
+            },
+            error: function() {
+                console.error('Erreur lors de la récupération des données.');
+            }
+        });
+    }    
+</script>

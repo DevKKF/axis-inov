@@ -1,0 +1,54 @@
+{% extends "grh/layouts/base.html" %}
+{% load static %}
+{% block title %}NOUVEAU BÉNÉFICIAIRE{% endblock %}
+
+{% block content %}
+
+    {% comment %}{% endcomment %}
+    <div class="grid grid-cols-12 gap-6 mt-5">
+        <div class="intro-y col-span-12 md:col-span-12 lg:col-span-12">
+            <div class="box">
+                <div class="flex items-start px-5 pt-5 border-b border-slate-200/60 dark:border-darkmode-400 text-center">
+                    <div class="w-full flex flex-col lg:flex-row items-center">
+                        <h1 class="text-xl lg:text-lg font-medium mb-3 mr-5" style="color:#B7482B;">
+                            DATE D'ENTRÉE
+                        </h1>
+                    </div>
+                </div>
+               {% comment %}{% endcomment %}
+                <div class="flex items-center justify-center h-full mt-5">
+                    <div class="flex flex-col items-center">
+                        <h1 class="text-sm lg:text-lg font-medium mb-3 mr-5">
+                            Saisissez la date d'entrée du bénéficiaire *
+                        </h1>
+                    </div>
+                </div>
+                {% comment %}{% endcomment %}
+                <div class="intro-y flex items-center justify-center mt-1">
+                    <div class="w-full lg:w-auto">
+                        <div id="input-group-datepicker" class="p-2">
+                            <div class="preview">
+                                <div class="relative mx-auto">
+                                    <div
+                                        class="absolute rounded-l w-10 h-full flex items-center justify-center bg-slate-100 border text-slate-500 dark:bg-darkmode-700 dark:border-darkmode-800 dark:text-slate-400">
+                                        <i data-feather="calendar" class="w-4 h-4"></i>
+                                    </div>
+                                    <input type="text" class="datepicker form-control pl-12" data-single-mode="true" required>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex justify-center items-center mt-0 p-8">
+                    <button class="btn btn-primary-soft">
+                        <a href="{% url 'grh.formulaire_ajouter_beneficiaire' %}" class="flex items-center">
+                            Nouveau bénéficiaire
+                        </a>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% comment %}{% endcomment %}
+
+{% endblock %}

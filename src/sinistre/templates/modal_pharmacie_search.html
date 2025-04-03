@@ -1,0 +1,60 @@
+{% load my_filters %}
+<style type="text/css">
+	tr.tr_totaux td
+	{
+		border:1px solid #dee2e6;
+	}
+
+	tr.tr_totaux td .money_field
+	{
+		border:none;
+		background:none;
+		font-weight:bold;
+		font-size:22px;
+	}
+
+	tr.tr_invisible td
+	{
+		border:0px solid red;
+		padding:0px;
+	}
+	.varAlimentSinistreAutre{
+		display:none;
+	}
+</style>
+<div class="modal fade" id="modal-pharmacie_search_client" data-backdrop="static" data-keyboard="false" aria-hidden="true"style="display: none" xmlns="http://www.w3.org/1999/html">
+	<div class="modal-dialog modal-md">
+		<div class="modal-content ">
+			<form enctype="multipart/form-data" id="form_search_assure" action="{% url 'search_assure_pharmacie' %}" method="post">
+				{% csrf_token %}
+				<div class="modal-header">
+					<h4 class="modal-title">{{_('RECHERCHER_UN_ASSURE')}}</h4>
+					<button type="button" class="close"data-dismiss="modal"aria-label="Close"><span aria-hidden="true">×</span></button>
+				</div>
+				<div class="modal-body">
+					<div class="alert  alert-dismissible fade show hidden" role="alert">
+						<span class="message">{{_('TRAITEMENT_EN_COURS')}}</span>
+					</div>
+					<div class="col-md-12 offset-0">
+						<div class="row">
+							<div class="form-group row">
+                                <label class="col-sm-5 col-form-label">{{_('Numero_de_carte')}} <span class="required">*</span></label>
+                                <div class="col-sm-6">
+                                    <input type="text" autocomplete="off" class="form-control" id="numero_carte_pharmacie" name="numero_carte" data-href="{% url 'search_assure' %}" style="border:2px solid var(--colorJauneOlea);"/>
+                                </div>
+                                <div class="col-sm-1" style="padding-left:0px;margin-top:3px;">
+                                    <span class="btn" id="btnSearchAssurePharmacie" style="background:gray;color:white;font-size:12px;" title="Rechercher"><i class="fa fa-search"></i></span>
+                                </div>
+                            </div>
+						</div>
+					</div>
+				</div>
+				<div class="modal-footer justify-content-between">
+					<button type="button" class="btn btn-default" data-dismiss="modal">{{_('Retour')}}</button>
+					<img src="" id="loading">
+				</div>
+			</form>
+			<div class="form_sinistre_overlay"><div style="margin:auto;padding:20px 0;color:white;text-align:center;">{{_('TRAITEMENT_EN_COURS')}} ...</div></div>
+		</div>
+	</div>
+</div>

@@ -1,0 +1,231 @@
+{% extends "admin/base_site.html" %}
+{% load my_filters %}
+{% load static %}
+{% block extrastyle %}
+<link type="text/css" href="//gyrocode.github.io/jquery-datatables-checkboxes/1.2.12/css/dataTables.checkboxes.css" rel="stylesheet" />
+<style>
+    div.dataTables_processing>div:last-child>div {
+        background: rgb(187 65 38) !important;
+    }
+</style>
+{% endblock %}
+{% block content %}
+
+<div class="col-12 col-md-12 order-2 order-md-1">
+    <div class="card">
+      <div class="card-header o-bg-primary">
+          <h3 class="card-title"><b>{{_('LISTE_DES_REMBOURSEMENTS_ACCEPTES')}}</b></h3>
+          <div class="card-tools">
+          </div>
+      </div>
+
+      <div style="display:none__;background:#CCCCCC;padding:10px;border-bottom:1px solid #eee;padding-bottom:10px;margin-bottom:10px;">
+        <form method="get"><label style="font-weight:normal;font-size:12px;display:none;"><i>{{_('Formulaire_de_recherche')}}</i></label>
+          {% csrf_token %}
+            <div class="row">
+                <div class="col-12 col-md-12 col-sm-12 row">
+                    <!--div class="col-md-2 row">
+                        <span class="col-sm-12 text-left" style="margin-top:5px;font-weight:bold;">Recherche</span>
+                    </div-->
+                    <div class="col">
+                        <span class="col-sm-5 text-right" style="margin-top:5px;">{{_('Numero_Bordereau')}} : </span>
+                        <div class="col-sm-7">
+                            <input id="search_numero_bordereau" class="form-control" type="text" name="search_numero_bordereau" style="border-radius:3px;border:1px solid rgba(0, 0, 0, 0.3);text-transform:uppercase;">
+                        </div>
+                    </div>
+                    <div class="col">
+                        <span class="col-sm-5 text-right" style="margin-top:5px;">{{_('Prestataire')}} : </span>
+                        <div class="col-sm-7">
+                            <select class="form-control tags-multiple" id="search_prestataire" style="border:1px solid rgba(0, 0, 0, 0.3);" name="search_prestataire">
+                                <option value="">{{_('Choisir')}}</option>
+                                {% for prestataire in prestataires %}
+                                    <option  value="{{prestataire.id}}">{{prestataire.name|default_if_none:""}} ({{prestataire.code|default_if_none:""}})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="col">
+                        <span class="col-sm-6 text-right" style="margin-top:5px;">{{_('Periode_comptable')}} : </span>
+                        <div class="col-sm-6">
+                            <select class="form-control tags-multiple" id="search_periode_comptable" style="border:1px solid rgba(0, 0, 0, 0.3);" name="search_periode_comptable">
+                                <option value="">{{_('Choisir')}}</option>
+                                {% for periode in periodes_comptables %}
+                                    <option  value="{{periode.id}}">{{periode}}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <br>
+                        <button class="btn btn-sm o-bg-primary" id="btn_bulk_traitement_remboursement" style="height: 40px;" disabled>{{_('Imprimer_le_bordereau_de_validation')}}</button>
+                        <button class="btn btn-sm btn-complement-rouge" id="btnValiderRemboursementsSelectionnes" style="height: 40px;" data-redirection="{{ request.META.HTTP_REFERER }}" data-href="#" {% if not is_all_processed %} disabled{% endif %}>{{_('Ordonnancer')}}</button>
+
+                      </div>
+                </div>
+            </div>
+        </form>
+      </div>
+      <div class="card-tools">
+        {% if not request.user.is_prestataire and not is_all_processed_validated %}
+        <a class="btn btn-sm btn-complement-rouge" href="{% url 'borderau_validation_pdf' %}" target="_blank" >{{_('Generer__le_bordereau')}}</a>
+          <button class="btn btn-sm btn-complement-rouge btnActionDesActes" id="btn_bulk_traitement_remboursement" disabled>{{_('Imprimer_le_bordereau_de_validation')}}</button>
+          <button class="btn btn-sm btn-complement-rouge btnActionDesActes" id="btnValiderRemboursementsSelectionnes" data-redirection="{{ request.META.HTTP_REFERER }}" data-href="#" {% if not is_all_processed %} disabled{% endif %}>{{_('Ordonnancer')}}</button>
+        {% endif %}
+      </div>
+    </div>
+    <div class="card-body">
+    <div class="table-responsive">
+    <table id="table_liste_remboursements" class="table table-bordered table-striped dataTable_ dtr-inline table_v_middle">
+        <thead>
+          <tr>
+<!--            <th>-->
+<!--            </th>-->
+            <th scope="col">{{_('Date_soin')}}</th>
+            <th scope="col">{{_('Numero_Sinistre')}}</th>
+            <th scope="col">{{_('Numero_Bon')}}</th>
+            <th scope="col">{{_('Prestataire')}}</th>
+            <th scope="col">{{_('Beneficiaire_du_soin')}}</th>
+            <th scope="col">{{_('Matricule')}}</th>
+            <th scope="col">{{_('Montant_facture')}}</th>
+            <th scope="col">{{_('Par_assure')}}</th>
+            <th scope="col">{{_('Base_remb')}}</th>
+            <th scope="col">{{_('Rejet')}}</th>
+            <th scope="col">{{_('Net_a_payer')}}</th>
+            <th scope="col">{{_('Statut')}}</th>
+<!--            <th scope="col">Action</th>-->
+          </tr>
+        </thead>
+        <tbody>
+      </tbody>
+  </table>
+
+                </div>
+            </div>
+          </div>
+        </div>
+      </div>
+        </form>
+    </div>
+</div>
+
+
+{% endblock %}
+
+
+{% block extrajs %}
+<script type="text/javascript" src="//gyrocode.github.io/jquery-datatables-checkboxes/1.2.12/js/dataTables.checkboxes.min.js"></script>
+<script>
+   $(document).ready(function() {
+         // Desactiver le submit du formulaire
+         $("form#selection_form").submit(function(e){
+            e.preventDefault(e);
+         });
+
+
+
+
+
+         dataTable = $('#table_liste_remboursements_accepte').DataTable({
+            "language": {
+                "url": "https://cdn.datatables.net/plug-ins/9dcbecd42ad/i18n/French.json"
+            },
+            "serverSide": true,
+            "ajax": {
+                "url": "{% url 'ordonnancement_datatable' %}",
+                "data": function (data) {
+                    data.page = data.start / data.length + 1;
+                    data.search_periode_comptable = $('#search_periode_comptable').val();
+                    data.search_prestataire = $('#search_prestataire').val();
+                    data.search_numero_bordereau = $('#search_numero_bordereau').val();
+
+                },
+                "dataSrc": function (json) {
+
+                    return json.data;
+                }
+            },
+            'select': {
+                  'style': 'multi'
+               },
+            "columns": [
+            /*
+                        {
+                  "data": null,
+                 'targets': 0,
+                 'checkboxes': {
+                    'selectRow': true
+                 }
+              },*/
+                {"data": "date_survenance", "orderable": false},
+                {"data": "numero", "orderable": false},
+                {"data": "dossier_sinistre__numero", "orderable": false},
+                {"data": "prestataire", "orderable": false},
+                {"data": "beneficiaire", "orderable": false},
+                {"data": "carte_active", "orderable": false},
+                {"data": "total_facture", "orderable": false},
+                {"data": "total_part_assure", "orderable": false},
+                {"data": "total_base_remb", "orderable": false},
+                {"data": "total_rejet", "orderable": false},
+                {"data": "total_net_payer", "orderable": false},
+                {"data": "statut", "orderable": false},
+
+            ],
+            "paging": true,
+            "pageLength": 10,
+            "processing": true,  // Show the loading indicator
+            "searching": false,   // Enable the search feature
+
+        });
+
+        $('#btn_bulk_traitement_remboursement').on('click', function(e){
+            var form = $('form#selection_form');
+
+            var rows_selected = dataTable.column(0).checkboxes.selected();
+
+              // Iterate over all selected checkboxes
+              $.each(rows_selected, function(index, rowId){
+                 // Create a hidden element
+                 $(form).append(
+                     $('<input>')
+                        .attr('type', 'hidden')
+                        .attr('name', 'id[]')
+                        .val(rowId)
+                 );
+
+                  });
+
+                  console.log('#example-console-rows', rows_selected);
+                  console.log('#example-console-form',$(form).serialize());
+
+
+                  // Remove added elements
+                  $('input[name="id\[\]"]', form).remove();
+                  // Prevent actual form submission
+                  e.preventDefault();
+
+            });
+
+
+        dataTable.on('xhr.dt', function (e, settings, json, xhr) {
+            // Hide the spinner when the data is loaded
+            $('.spinner-border').show();
+        });
+
+        // Show the spinner when the table is processing
+        dataTable.on('processing.dt', function (e, settings, processing) {
+            if (processing) {
+                $('.spinner-border').show();
+            }
+        });
+
+        // Add custom search functionality for code, name, and prenoms columns
+        $('#search_periode_comptable, #search_prestataire, #search_numero_bordereau').on('keyup change', function() {
+            dataTable.search('').draw(); // Clear existing search
+            dataTable.draw(); // Trigger a new draw, which will include the updated search parameters
+        });
+
+    });
+
+</script>
+{% endblock %}

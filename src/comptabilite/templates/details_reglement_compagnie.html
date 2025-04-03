@@ -1,0 +1,705 @@
+{% extends 'base.html' %}
+{% load my_filters %}
+{% block extrastyle %}
+  <style type="text/css">
+    .vl {
+       border-left: 2px solid var(--colorPrimary);
+       height: auto;
+    }
+    .o-primary {
+      color: var(--colorPrimary);
+    }
+
+    .o-bg-primary {
+      background-color: var(--colorPrimary);
+      color: #fff;
+    }
+
+    .info-box{
+        cursor:pointer;
+    }
+
+    .info-box .collapsed{
+        background: white;
+        color:var(--colorPrimary);
+    }
+
+    .info-box-icon{
+        background: var(--colorPrimary);
+        color:white;
+    }
+
+    .info-box .collapsed .info-box-icon{
+        background: var(--colorPrimary);
+        color:white;
+    }
+
+    .info-box .collapsed .info-box-icon i{
+        color:white;
+    }
+
+    .info-box:not(.collapsed) .info-box-icon{
+        background: var(--colorAccent);
+    }
+
+
+    .info-box.active .info-box-icon{
+        background: var(--colorAccent);
+    }
+
+    .tab-pane{
+        overflow-x: hidden;
+    }
+
+
+  </style>
+{% endblock %}
+{% block content %}
+<div class="col-md-12" class="accordion" id="accordionClient">
+  <div class="card offset">
+    <div class="card-header nobg">
+      <h3 class="card-title o-primary">{{_("FICHE DU CLIENT")}}</h3>
+      <div class="card-tools">
+        <span style="cursor:pointer;" class="btn btn-tool btn_modifier_client" data-client_id="{{ client.id }}" data-model_name="client" data-modal_title="MODIFICATION D'UN CLIENT" data-href="{% url 'modifier_client' client.id %}"><i class="fas fa-edit text-warning"></i></span>&nbsp;
+        <button
+          type="button"
+          class="btn btn-tool"
+          data-card-widget="collapse"
+          title="Collapse">
+          <i class="fas fa-minus"></i>
+        </button>
+        <!--button
+          type="button"
+          class="btn btn-tool"
+          data-card-widget="remove"
+          title="Remove">
+            <i class="fas fa-times"></i>
+        </button-->
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="row">
+        <div class="col-12 col-md-12 order-2 order-md-1">
+          <div class="callout">
+            <h5>{{_("CLIENT")}}</h5>
+            <div class="row invoice-info">
+              <div class="col-sm-3 invoice-col">
+                <strong>{{_("Assure")}}</strong><br />
+                <span class="">{{ client.nom|default_if_none:"" }} {{ client.prenoms|default_if_none:"" }}</span>
+              </div>
+
+              <div class="col-sm-3 invoice-col">
+                <b>{{_("Reference")}}</b><br />
+                <span class="">{{ client.id|default_if_none:""|stringformat:"06d" }} - {{ client.pays.code|default_if_none:"" }} </span>
+              </div>
+
+              <div class="col-sm-3 invoice-col">
+                <strong>{{_("Type")}}</strong><br />
+                <span class="">{{ client.type_client|default_if_none:"" }}</span>
+              </div>
+
+              <div class="col-sm-3 invoice-col">
+                <b>{{_("Ville")}}</b><br />
+                <span class="">{{ client.ville|default_if_none:"" }}</span>
+              </div>
+
+            </div>
+          </div>
+          <div class="row">
+
+            <div class="col-12 col-sm-4 col-md-2">
+
+                  <div class="info-box collapsed active" data-toggle="collapse0" id="btnInfosClient" href="#collapseInfosClient" aria-expanded="true">
+                      <span class="info-box-icon text-white elevation-1"><i class="fas fa-user-tag"></i></span></span>
+                      <div class="info-box-content">
+                        <span class="info-box-text">{{_("FICHE CLIENT")}}</span>
+                      </div>
+                  </div>
+
+            </div>
+
+            <div class="col-12 col-sm-4 col-md-2">
+
+                  <div class="info-box collapsed" data-toggle="collapse0" id="btnPolices" href="#collapsePolices">
+                      <span class="info-box-icon text-white elevation-1"><i class="fas fa-file-contract"></i></span></span>
+                      <div class="info-box-content">
+                        <span class="info-box-text">{{_("POLICES")}}</span>
+                      </div>
+                  </div>
+
+            </div>
+
+            <div class="col-12 col-sm-4 col-md-2">
+
+                  <div class="info-box collapsed" data-toggle="collapse0" id="btnQuittances" href="#collapseQuittances">
+                      <span class="info-box-icon text-white elevation-1"><i class="fas fa-file-invoice-dollar"></i></span></span>
+                      <div class="info-box-content">
+                        <span class="info-box-text">{{_("QUITTANCES")}}</span>
+                      </div>
+                  </div>
+
+            </div>
+
+            <div class="col-12 col-sm-4 col-md-2">
+
+                  <div class="info-box collapsed" data-toggle="collapse0" id="btnContacts" href="#collapseContacts">
+                      <span class="info-box-icon text-white elevation-1"><i class="fas fa-phone-alt"></i></span></span>
+                      <div class="info-box-content">
+                        <span class="info-box-text">{{_("CONTACTS")}}</span>
+                      </div>
+                  </div>
+
+            </div>
+
+            <div class="col-12 col-sm-4 col-md-2">
+
+                <div class="info-box collapsed" data-toggle="collapse0" id="btnFiliales" href="#collapseFiliales" aria-expanded="true">
+                    <span class="info-box-icon text-white elevation-1"><i class="fas fa-users"></i
+                    ></span>
+                    <div class="info-box-content">
+                      <span class="info-box-text">{{_("FILIALES")}}</span>
+                    </div>
+                  </div>
+
+            </div>
+
+
+            <div class="col-12 col-sm-4 col-md-2">
+
+                <div class="info-box collapsed" data-toggle="collapse0" id="btnGed" href="#collapseGed" aria-expanded="true">
+                    <span class="info-box-icon text-white elevation-1"><i class="far fa-file-alt"></i></span></span>
+                    <div class="info-box-content">
+                      <span class="info-box-text">{{_("GED")}}</span>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="col-12 col-sm-4 col-md-2">
+
+                  <div class="info-box collapsed" data-toggle="collapse0" id="btnAcomptes" href="#collapseAcomptes" aria-expanded="true">
+                      <span class="info-box-icon text-white elevation-1"><i class="fas fa-funnel-dollar"></i></span></span>
+                      <div class="info-box-content">
+                        <span class="info-box-text">{{_("ACOMPTES")}}</span>
+                      </div>
+                  </div>
+
+            </div>
+
+            <div class="clearfix hidden-md-up"></div>
+
+
+          </div>
+
+          <!-- INFORMATIONS CLIENT  -->
+          <div class="row collapse show" id="collapseInfosClient">
+            <div class="col-12 col-sm-6 col-md-12">
+              <h4></h4>
+              <div class="card shadow_OLD">
+                <div class="card-header">
+                    <h3 class="card-title text-white">{{_("FICHE CLIENT")}}</h3>
+                    <div class="card-tools">
+                        <button type="button" class="btn btn-tool" data-card-widget="collapse" title="Collapse"><i class="fas fa-minus"></i></button>
+                        <!--button type="button" class="btn btn-tool" data-card-widget="remove"><i class="fas fa-times"></i></button-->
+                    </div>
+                </div>
+
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <div class="form-group row">
+                                <label class="col-sm-5 col-form-label">{{_("Nom complet")}}</label>
+                                <div class="col-sm-7">
+                                <span class="form-control">{{ client.nom|default_if_none:"" }} {{ client.prenoms|default_if_none:"" }}</span>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="col-sm-5 col-form-label">{{_("Code client")}}</label>
+                                <div class="col-sm-7">
+                                <span class="form-control">{{ client.id|stringformat:"06d" }} - {{ client.pays.code }}</span>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="col-sm-5 col-form-label">{{_("Langue")}}</label>
+                                <div class="col-sm-7">
+                                <span class="form-control">{{ client.langue|default_if_none:"" }}</span>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="col-sm-5 col-form-label">{{_("Type personne")}}</label>
+                                <div class="col-sm-7">
+                                <span class="form-control">{{ client.type_personne|default_if_none:"" }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="vl"></div>
+                        <div class="col-md-5">
+                            <div class="form-group row">
+                                <label class="col-sm-5 col-form-label">{{_("Type")}}</label>
+                                <div class="col-sm-7">
+                                <span class="form-control">{{ client.type_client|default_if_none:""  }}</span>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="col-sm-5 col-form-label">{{_("Charge de clientelle")}}</label>
+                                <div class="col-sm-7">
+                                <span class="form-control">{{ client.gestionnaire|default_if_none:""  }}</span>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="col-sm-5 col-form-label">{{_("Referent")}}</label>
+                                <div class="col-sm-7">
+                                <span class="form-control">{{ client.referent|default_if_none:"" }}</span>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <label class="col-sm-5 col-form-label">{{_("Date d'enregistrement")}}</label>
+                                <div class="col-sm-7">
+                                <span class="form-control">{{ client.created_at|date:'d/m/Y à H:i:s'|default_if_none:""  }}</span>
+                                </div>
+                            </div>
+                        </div>
+                </div>
+                <h6 class="o-primary">{{_("COORDONNEES")}}</h6>
+                <hr>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group row">
+                            <label class="col-sm-5 col-form-label">{{_("Pays")}}</label>
+                            <div class="col-sm-7">
+                            <span class="form-control">{{ client.pays|default_if_none:"" }}</span>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label class="col-sm-5 col-form-label">{{_("Ville")}}</label>
+                            <div class="col-sm-7">
+                            <span class="form-control">{{ client.ville|default_if_none:"" }}</span>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label class="col-sm-5 col-form-label">{{_("Adresse")}}</label>
+                            <div class="col-sm-7">
+                            <span class="form-control">{{ client.adresse|default_if_none:"" }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="vl"></div>
+                    <div class="col-md-5">
+                        <div class="form-group row">
+                            <label class="col-sm-5 col-form-label">{{_("Telephone_fixe")}}</label>
+                            <div class="col-sm-7">
+                            <span class="form-control">{{ client.telephone_fixe|default_if_none:"" }}</span>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label class="col-sm-5 col-form-label">{{_("Telephone_mobile")}}</label>
+                            <div class="col-sm-7">
+                            <span class="form-control">{{ client.telephone_mobile|default_if_none:"" }}</span>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label class="col-sm-5 col-form-label">{{_("Email")}}</label>
+                            <div class="col-sm-7">
+                            <span class="form-control">{{ client.email|default_if_none:"" }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <h6 class="o-primary">{{_("RESEAUX SOCIAUX")}}</h6>
+                <hr>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group row">
+                            <label class="col-sm-5 col-form-label">{{_("Site web")}}</label>
+                            <div class="col-sm-7">
+                            <span class="form-control"><a href="https://{{client.site_web}}" target="_blank"> {{ client.site_web|default_if_none:"" }}</a></span>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label class="col-sm-5 col-form-label">{{_("Facebook")}}</label>
+                            <div class="col-sm-7">
+                            <span class="form-control"><a href="https://{{client.facebook}}" target="_blank">{{ client.facebook|default_if_none:"" }}</a></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="vl"></div>
+                    <div class="col-md-5">
+                        <div class="form-group row">
+                            <label class="col-sm-5 col-form-label">{{_("Twitter")}}</label>
+                            <div class="col-sm-7">
+                            <span class="form-control"><a href="https://{{client.twitter}}" target="_blank">{{ client.twitter|default_if_none:"" }}</a></span>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label class="col-sm-5 col-form-label">{{_("Instagram")}}</label>
+                            <div class="col-sm-7">
+                            <span class="form-control"><a href="https://{{client.instagram}}" target="_blank">{{ client.instagram|default_if_none:"" }}</a></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                </div>
+            </div>
+          </div>
+        </div>
+        <!-- FIN INFORMATIONS CLIENT  -->
+
+
+          <!-- CONTACTS DU CLIENT  -->
+          <div class="row collapse" id="collapseContacts">
+            <div class="col-12 col-sm-6 col-md-12">
+              <h4></h4>
+              <div class="card shadow_OLD">
+                <div class="card-header">
+                    <h3 class="card-title text-white">{{_("CONTACTS")}}</h3>
+                    <div class="card-tools">
+                        <a class="btn btn-sm btn-default" data-toggle="modal" data-target="#modal-contact"><i class="fas fa-plus"></i> {{_("Ajouter un contact")}}</a>
+                    </div>
+                </div>
+
+                <div class="card-body">
+                    <div class="row table-responsive">
+                         <table id="table_contacts" class="table table-bordered table-striped dataTable dtr-inline" role="grid" aria-describedby="example1_info" style="width:100%;">
+                            <thead>
+                                <tr role="row">
+                                    <th class="sorting" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-label="Browser: activate to sort column ascending">
+                                      {{_("Nom")}}
+                                    </th>
+                                    <th class="sorting" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-label="Platform(s): activate to sort column ascending">
+                                        {{_("Prénoms")}}
+                                    </th>
+                                    <th class="sorting" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-label="Platform(s): activate to sort column ascending">
+                                        {{_("Fonction")}}
+                                    </th>
+                                    <th class="sorting" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-label="Platform(s): activate to sort column ascending">
+                                        {{_("Téléphone")}}
+                                    </th>
+                                    <th class="sorting" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-label="Platform(s): activate to sort column ascending">
+                                      {{_("Email")}}
+                                    </th>
+                                    <th class="sorting" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-label="Platform(s): activate to sort column ascending">
+                                        {{_("Action")}}
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for contact in contacts %}
+                                <tr class="odd">
+                                    <td class="dtr-control" tabindex="0">{{ contact.nom|default_if_none:"" }}</td>
+                                    <td class="">{{ contact.prenoms|default_if_none:"" }}</td>
+                                    <td class="">{{ contact.fonction|default_if_none:"" }}</td>
+                                    <td class="">{{ contact.telephone|default_if_none:"" }}</td>
+                                    <td class="">{{ contact.email|default_if_none:"" }}</td>
+                                    <td class="">
+                                        <span class="btn_supprimer_contact" data-contact_id="{{ contact.id }}" onclick="supprimer_contact({{ contact.id }})" style="cursor:pointer;"><i class="fa fa-times text-danger"></i> </span>&nbsp;&nbsp;&nbsp;
+                                        <span class="btn_modifier_on_modal" data-model_name="contact" data-href="{% url 'modifier_contact' contact.id %}" data-modal_title="Modification d'un contact" title="Modifier" style="cursor:pointer;"><i class="fas fa-edit text-warning"></i></span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                         </table>
+                    </div>
+                </div>
+            </div>
+          </div>
+        </div>
+        <!-- FIN POLICES DU CLIENT  -->
+
+
+          <!-- CONTACTS DU CLIENT  -->
+          <div class="row collapse" id="collapseQuittances">
+            <div class="col-12 col-sm-6 col-md-12">
+              <h4></h4>
+              <div class="card shadow_OLD">
+                <div class="card-header">
+                    <h3 class="card-title text-white">{{_("LISTE DE SES QUITTANCES")}}</h3>
+                    <div class="card-tools">
+
+                    </div>
+                </div>
+
+                <div class="card-body">
+                    <div class="row table-responsive">
+                         <table id="table_quittances" class="table table-bordered table-striped dataTable dtr-inline" role="grid" aria-describedby="example1_info" style="width:100%;">
+                            <thead>
+                                <tr role="row">
+                                    <th scope="col">{{_("N° Quittance")}}</th>
+                                    <th scope="col">{{_("Type")}}</th>
+                                    <th scope="col">{{_("Date d'émission")}}</th>
+                                    <th scope="col">{{_("Debut periode")}}</th>
+                                    <th scope="col">{{_("Prime ttc")}}</th>
+                                    <th scope="col">{{_("Mt cie")}}</th>
+                                    <th scope="col">{{_("Com Courtage")}}</th>
+                                    <th scope="col">{{_("Devise")}}</th>
+                                    <th scope="col">{{_("Statut")}}</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for quittance in quittances %}
+                                <tr class="odd">
+                                    <td>{{ quittance.numero|default_if_none:"" }}</td>
+                                    <td>{{ quittance.type_quittance.libelle|date:'d-m-Y'|default_if_none:"" }}</td>
+                                    <td>{{ quittance.date_emission|date:'d-m-Y'|default_if_none:"" }}</td>
+                                    <td>{{ quittance.date_debut|date:'d-m-Y'|default_if_none:"" }}</td>
+                                    <td class="text-right">{{ quittance.prime_ttc|money_field }}</td>
+                                    <td class="text-right">{{ quittance.montant_cie|money_field }}</td>
+                                    <td class="text-right">{{ quittance.commission_courtage|money_field }}</td>
+                                    <td>{{ quittance.devise|default_if_none:"" }}</td>
+                                    <td class="">
+                                        <span class="btnOpenDialogDetailQuittance" data-href="{% url 'details_quittance' quittance.id %}"style="cursor:pointer;"><i class="fa fa-eye text-info"></i> </span>&nbsp;&nbsp;&nbsp;
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                         </table>
+                    </div>
+                </div>
+            </div>
+          </div>
+        </div>
+        <!-- FIN POLICES DU CLIENT  -->
+
+
+        <!-- POLICES DU CLIENT  -->
+          <div class="row collapse" id="collapsePolices">
+            <div class="col-12 col-sm-6 col-md-12">
+              <h4></h4>
+              <div class="card shadow_OLD">
+                <div class="card-header">
+                    <h3 class="card-title text-white">{{_("LISTE DE SES POLICES")}}</h3>
+                    <div class="card-tools">
+                        <a class="btn btn-sm btn-default" data-toggle="modal" data-target="#modal-police"><i class="fas fa-plus"></i> {{_("Créer une police")}}</a>
+                    </div>
+                </div>
+
+                <div class="card-body">
+                    <div class="row table-responsive">
+                         <table id="table_polices" class="table table-bordered table-striped dataTable dtr-inline" role="grid" aria-describedby="example1_info" style="width:100%;">
+                            <thead>
+                                <tr role="row">
+                                    <th class="sorting" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-label="Browser: activate to sort column ascending">
+                                        {{_("Numéro")}}
+                                    </th>
+                                    <th class="sorting" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-label="Browser: activate to sort column ascending">
+                                        {{_("Produit")}}
+                                    </th>
+                                    <th class="sorting" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-label="Platform(s): activate to sort column ascending">
+                                        {{_("Assureur")}}
+                                    </th>
+                                    <th class="sorting" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-label="Platform(s): activate to sort column ascending">
+                                        {{_("Prime HT")}}
+                                    </th>
+                                    <th class="sorting" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-label="Platform(s): activate to sort column ascending">
+                                      {{_("Prime TTC")}}
+                                    </th>
+                                    <th class="sorting" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-label="Platform(s): activate to sort column ascending">
+                                        {{_("Com gestion")}}
+                                    </th>
+                                    <th class="sorting" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-label="Platform(s): activate to sort column ascending">
+                                        {{_("Com courtage")}}
+                                    </th>
+                                    <th class="sorting" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-label="Engine version: activate to sort column ascending">
+                                       {{_("Date début")}}
+                                    </th>
+                                    <th class="sorting sorting_asc" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-label="CSS grade: activate to sort column descending" aria-sort="ascending">
+                                        {{_("Date échéance")}}
+                                    </th>
+                                    <th class="sorting sorting_asc" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-label="CSS grade: activate to sort column descending" aria-sort="ascending">
+                                        {{_("Actions")}}
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for police in polices %}
+                                <tr class="odd">
+                                    <td class="dtr-control" tabindex="0"><a href="{% url 'police.details' police.id %}">{{ police.numero }}</a></td>
+                                    <td class="">{{ police.produit|default_if_none:"" }}</td>
+                                    <td class="">{{ police.compagnie|default_if_none:"" }}</td>
+                                    <td class="text-right">{{ police.prime_ht|default_if_none:""|money_field }}</td>
+                                    <td class="text-right">{{ police.prime_ttc|default_if_none:""|money_field }}</td>
+                                    <td class="text-right">{{ police.commission_gestion|default_if_none:""|money_field }}</td>
+                                    <td class="text-right">{{ police.commission_courtage|default_if_none:""|money_field }}</td>
+                                    <td class="">{{ police.date_debut_effet|date:'d/m/Y'|default_if_none:"" }}</td>
+                                    <td class="">{{ police.date_fin_effet|date:'d/m/Y'|default_if_none:"" }}</td>
+                                    <td>
+                                        <a href="{% url 'police.details' police.id %}" style="cursor:pointer;"><i class="fa fa-eye text-info"></i></a>&nbsp;&nbsp;
+                                        <span class="btn_modifier_police" data-href="{% url 'modifier_police' police.id %}" style="cursor:pointer;"><i class="fa fa-edit text-warning"></i></span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                         </table>
+                    </div>
+                </div>
+            </div>
+          </div>
+        </div>
+        <!-- FIN POLICES DU CLIENT  -->
+
+
+        <!-- FILIALES DU CLIENT  -->
+          <div class="row collapse" id="collapseFiliales">
+            <div class="col-12 col-sm-6 col-md-12">
+              <h4></h4>
+              <div class="card shadow_OLD">
+                <div class="card-header">
+                    <h3 class="card-title text-white">{{_("FILIALES")}}</h3>
+                    <div class="card-tools">
+                        <a class="btn btn-sm btn-default" data-toggle="modal" data-target="#modal-filiale"><i class="fas fa-plus"></i>{{_("Ajouter une filiale")}}</a>
+                    </div>
+                </div>
+
+                <div class="card-body">
+                    <div class="row table-responsive">
+                         <table id="table_filiales" class="table table-bordered table-striped dataTable dtr-inline" role="grid" aria-describedby="example1_info" style="width:100%;">
+                            <thead>
+                                <tr role="row">
+                                    <th class="sorting" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-label="Browser: activate to sort column ascending">
+                                        {{_("Nom")}}
+                                    </th>
+                                    <th class="sorting" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-label="Platform(s): activate to sort column ascending">
+                                        {{_("Pays")}}
+                                    </th>
+                                    <th class="sorting" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-label="Platform(s): activate to sort column ascending">
+                                        {{_("Ville")}}
+                                    </th>
+                                    <th class="sorting" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-label="Platform(s): activate to sort column ascending">
+                                        {{_("Adresse")}}
+                                    </th>
+                                    <th class="sorting" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-label="Platform(s): activate to sort column ascending">
+                                        {{_("Action")}}
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for filiale in filiales %}
+                                <tr class="odd">
+                                    <td class="dtr-control" tabindex="0">{{ filiale.nom }}</td>
+                                    <td class="">{{ filiale.pays }}</td>
+                                    <td class="">{{ filiale.ville }}</td>
+                                    <td class="">{{ filiale.adresse }}</td>
+                                    <td class="">
+                                        <span class="btn_supprimer_filiale" data-filiale_id="{{ filiale.id }}" onclick="supprimer_filiale({{ filiale.id }})" style="cursor:pointer;"><i class="fa fa-times text-danger"></i> </span>&nbsp;&nbsp;&nbsp;&nbsp;
+                                        <span class="btn_modifier_on_modal" data-model_name="filiale" data-href="{% url 'modifier_filiale' filiale.id %}" data-modal_title="Modification d'une filiale" title="Modifier" style="cursor:pointer;"><i class="fas fa-edit text-warning"></i></span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                         </table>
+                    </div>
+                </div>
+            </div>
+          </div>
+        </div>
+        <!-- FIN FILIALES DU CLIENT  -->
+
+
+        <!-- GED DU CLIENT  -->
+          <div class="row collapse" id="collapseGed">
+            <div class="col-12 col-sm-6 col-md-12">
+              <h4></h4>
+              <div class="card shadow_OLD">
+                <div class="card-header">
+                    <h3 class="card-title text-white">{{_("GESTION ELECTRONIQUE DE DOCUMENTS")}}</h3>
+                    <div class="card-tools">
+                        <a class="btn btn-sm btn-default" data-toggle="modal" data-target="#modal-document"><i class="fas fa-plus"></i> {{_("Ajouter un document")}}</a>
+                    </div>
+                </div>
+
+                <div class="card-body">
+                    <div class="row table-responsive">
+                         <table id="table_documents" class="table table-bordered table-striped dataTable dtr-inline" role="grid" aria-describedby="example1_info" style="width:100%;">
+                            <thead>
+                                <tr role="row">
+                                    <th class="sorting" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-label="Platform(s): activate to sort column ascending">
+                                        {{_("Nom du document")}}
+                                    </th>
+                                    <th class="sorting" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-label="Platform(s): activate to sort column ascending">
+                                        {{_("Type de document")}}
+                                    </th>
+                                    <th class="sorting" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-label="Platform(s): activate to sort column ascending">
+                                        {{_("Fichier")}}
+                                    </th>
+                                    <th class="sorting" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-label="Platform(s): activate to sort column ascending">
+                                        {{_("Action")}}
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for document in documents %}
+                                <tr class="odd">
+                                    <td class="dtr-control" tabindex="0">{{ document.nom }}</td>
+                                    <td class="">{{ document.type_document.libelle }}</td>
+                                    <td class="text-center"><a href="{{ document.fichier.url }}"><i class="fa fa-file" title="Aperçu"></i> Afficher</a></td>
+                                    <td class="">
+                                        <span class="btn_supprimer_document" data-document_id="{{ document.id }}" onclick="supprimer_document({{ document.id }})" style="cursor:pointer;"><i class="fa fa-times text-danger"></i> </span>&nbsp;&nbsp;&nbsp;
+                                        <span class="btn_modifier_on_modal" data-model_name="document" data-href="{% url 'modifier_document' document.id %}" data-modal_title="Modification d'un document" title="Modifier" style="cursor:pointer;"><i class="fas fa-edit text-warning"></i></span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                         </table>
+                    </div>
+                </div>
+            </div>
+          </div>
+        </div>
+        <!-- FIN GED DU CLIENT  -->
+
+
+        <!-- ACOMPTES DU CLIENT  -->
+          <div class="row collapse" id="collapseAcomptes">
+            <div class="col-12 col-sm-6 col-md-12">
+              <h4></h4>
+              <div class="card shadow_OLD">
+                <div class="card-header">
+                    <h3 class="card-title text-white">{{_("ACOMPTES")}}</h3>
+                    <div class="card-tools">
+                        <a class="btn btn-sm btn-default" data-toggle="modal" data-target="#modal-acompte"><i class="fas fa-plus"></i> {{_("Ajouter_un_acompte")}}</a>
+                    </div>
+                </div>
+
+                <div class="card-body">
+                    <div class="row table-responsive">
+                         <table id="table_acomptes" class="table table-bordered table-striped dataTable dtr-inline" role="grid" aria-describedby="example1_info" style="width:100%;">
+                            <thead>
+                                <tr role="row">
+                                    <th class="sorting" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-label="Platform(s): activate to sort column ascending">
+                                       {{('Montant")}}
+                                    </th>
+                                    <th class="sorting sorting_asc" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-label="CSS grade: activate to sort column descending" aria-sort="ascending">
+                                        {{_("Date versement")}}
+                                    </th>
+                                    <th class="sorting sorting_asc" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-label="CSS grade: activate to sort column descending" aria-sort="ascending">
+                                        {{_("Action")}}
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for acompte in acomptes %}
+                                <tr class="odd">
+                                    <td class="dtr-control" tabindex="0">{{ acompte.montant }}</td>
+                                    <td class="">{{ acompte.date_versement }}</td>
+                                    <td class="">
+                                        <span class="btn_supprimer_acompte" data-contact_id="{{ acompte.id }}" onclick="supprimer_acompte({{ acompte.id }})" style="cursor:pointer;"><i class="fa fa-times text-danger"></i> </span>&nbsp;&nbsp;&nbsp;
+                                        <span class="btn_modifier_on_modal" data-model_name="acompte" data-href="{% url 'modifier_acompte' acompte.id %}" data-modal_title="Modification d'un acompte" title="Modifier" style="cursor:pointer;"><i class="fas fa-edit text-warning"></i></span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                         </table>
+                    </div>
+                </div>
+            </div>
+          </div>
+        </div>
+        <!-- FIN ACOMPTES DU CLIENT  -->
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<div id="dialogBox"></div>
+
+{% endblock %}

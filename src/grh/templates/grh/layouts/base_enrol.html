@@ -1,0 +1,33 @@
+
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en" class="light">
+
+    <head>
+        <meta charset="utf-8">
+        <link href="{% static 'grh/images/logo.png' %}" rel="shortcut icon">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="Tinker admin is super flexible, powerful, clean & modern responsive tailwind admin template with unlimited possibilities.">
+        <meta name="keywords" content="admin template, Tinker Admin Template, dashboard template, flat admin template, responsive admin template, web app">
+        <meta name="author" content="LEFT4CODE">
+        <title>{% block title %}{{ title }} | GRH {% endblock %}</title>
+        <link rel="stylesheet" href="{% static 'grh/css/_app.css' %}" />
+        {% block css %}{% endblock %}
+    </head>
+
+    <body class="py-5 md:py-0 bg-black/[0.15] dark:bg-transparent">
+        <div class="flex overflow-hidden">
+            <div class="content">
+                {% block content %}{% endblock %}
+            </div>
+        </div>
+
+        <script src="https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/markerclusterer.js"></script>
+        <script src="https://maps.googleapis.com/maps/api/js?key=["your-google-map-api"]&libraries=places"></script>
+        <script src="{% static 'grh/js/app.js' %}"></script>
+        <script src="{% static 'grh/js/custom_js_grh.js' %}"></script>
+        {% block js %}{% endblock %}
+
+    </body>
+</html>

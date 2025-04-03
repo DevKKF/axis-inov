@@ -1,0 +1,501 @@
+{% extends 'grh/layouts/base.html' %}
+{% load static %}
+{% block title %}{{_('TABLEAU_DE_BORD')}}{% endblock %}
+{% block content %}
+
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap">
+  <style>
+    #title{
+        color: #B7482B;
+    }
+    .highcharts-title,
+    .highcharts-credits,
+    .highcharts-tooltip,
+    .highcharts-legend,
+    .highcharts-data-labels,
+    .highcharts-contextbutton,
+    .highcharts-menu-item {
+      font-family: 'Roboto', sans-serif !important;
+    }
+    .highcharts-axis-title,
+    .highcharts-axis-labels,
+    .highcharts-series-label {
+      font-family: 'Roboto', sans-serif !important;
+    }
+    .highcharts-contextbutton,
+    .highcharts-menu-item {
+      font-family: 'Roboto', sans-serif !important;
+    }
+  </style>
+
+  <div class="grid grid-cols-12 gap-6">
+      <div class="col-span-12">
+        <div class="mt-2 w-auto">
+          <label for="police" id="title">
+            <div class="flex items-start px-5 pt-5">
+                <div class="w-full flex flex-col lg:flex-row items-center border-b border-gray-500">
+                    <h1 class="text-xl lg:text-lg font-medium mb-3 mr-5" id="title">
+                        POLICE
+                    </h1>
+                </div>
+            </div>
+          </label>
+          <select class="form-control mt-5 pl-5 pr-5" name="police" id="police-select">
+            <option value="" {% if not selected_police_id %}selected{% endif %}>{{_('SELECTIONNER_UNE_POLICE')}}</option>
+            {% for police in police_clients %}
+              <option value="{{ police.id }}" {% if selected_police_id == police.id %}selected{% endif %}>{{ police.numero }} - {{ police.etat_police }} ({{ police.date_debut_effet|date:"d/m/Y" }} à {{ police.date_fin_effet|date:"d/m/Y" }})</option>
+            {% endfor %}
+          </select>
+        </div>
+      </div>
+  </div>
+
+  <div class="grid grid-cols-12 gap-6">
+    <div class="col-span-12 2xl:col-span-12">
+      <div class="grid grid-cols-12 gap-6">
+        <div class="col-span-12 mt-8">
+          <div class="flex items-start px-5 pt-5">
+            <div class="w-full flex flex-col lg:flex-row items-center border-b border-gray-500">
+              <h1 class="text-xl lg:text-lg font-medium mb-3 mr-5" id="title">
+                {{_('STATISTIQUES')}}
+              </h1>
+            </div>
+          </div>
+          <div class="grid grid-cols-12 gap-6 mt-5">
+            {% comment %}{% endcomment %}
+            <div class="col-span-12 sm:col-span-6 xl:col-span-3 intro-y">
+              <div class="report-box zoom-in">
+                  <div class="box p-5">
+                      <div class="text-base text-black font-semibold mb-5">
+                        {{_('POPULATION_TOTALE')}}
+                      </div>
+                      <div class="flex">
+                          <i data-feather="users" class="report-box__icon text-primary"></i>
+                      </div>
+                      <div class="text-3xl font-medium leading-8 mt-6">
+                        {% if selected_police_id %}
+                            {{ selected_police.nombre_total_beneficiaires|default_if_none:"0" }}
+                        {% else %}
+                            {{ total_aliments_all_police|default_if_none:"" }}
+                        {% endif %}
+                      </div>
+                  </div>
+              </div>
+            </div>
+            {% comment %}{% endcomment %}
+            <div class="col-span-12 sm:col-span-6 xl:col-span-3 intro-y">
+              <div class="report-box zoom-in">
+                <div class="box p-5">
+                  <div class="text-base text-black font-semibold mb-5">
+                    POPULATION ACTIVE
+                  </div>
+                  <div class="flex">
+                    <i data-feather="user-check" class="report-box__icon text-primary"></i>
+                  </div>
+                  <div class="text-3xl font-medium leading-8 mt-6">
+                    {% if selected_police_id %}
+                    {% if selected_police.etat_police == "Résilié" %}
+                      0
+                    {% else %}
+                      {{ selected_police.nombre_beneficiaires_entres|default_if_none:"" }}
+                    {% endif %}
+                    {% else %}
+                      {{ total_aliments_entres_all_police|default_if_none:"" }}
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+            </div>
+            {% comment %}{% endcomment %}
+            <div class="col-span-12 sm:col-span-6 xl:col-span-3 intro-y">
+              <div class="report-box zoom-in">
+                <div class="box p-5">
+                  <div class="text-base text-black font-semibold mb-5">PRIME TOTALE</div>
+                  <div class="flex">
+                    <i data-feather="credit-card" class="report-box__icon text-primary"></i>
+                  </div>
+                  <div class="text-3xl font-medium leading-8 mt-6">
+                    {{ total_prime_ttc_all_polices|default_if_none:"" }}
+                  </div>
+                </div>
+              </div>
+            </div>
+            {% comment %}{% endcomment %}
+            {% comment %}
+            <div class="col-span-12 sm:col-span-6 xl:col-span-3 intro-y">
+              <div class="report-box zoom-in">
+                <div class="box p-5">
+                  <div class="text-base text-black font-semibold">
+                    SOLDE DU COMPTE
+                  </div>
+                  <div class="flex">
+                    <i data-feather="credit-card" class="report-box__icon text-primary"></i>
+                  </div>
+                  <div class="text-3xl font-medium leading-8 mt-6">?</div>
+                </div>
+              </div>
+            </div>
+            {% endcomment %}
+            <div class="col-span-12 sm:col-span-6 xl:col-span-3 intro-y">
+              <div class="report-box zoom-in">
+                <div class="box p-5">
+                  <div class=" flex items-center">
+                    <div class="text-base text-black font-semibold mb-5 mr-2">
+                        SOLDE DU CLIENT
+                    </div>
+                  </div>
+                    <div class="flex">
+                        <i data-feather="database" class="report-box__icon text-primary"></i>
+                    </div>
+                    <div class="text-3xl font-medium leading-8 mt-6">
+                      {% if selected_police_id %}
+                        {{ solde_police_client|default_if_none:"" }}
+                      {% else %}
+                        {{ solde_total_client|default_if_none:"" }}
+                      {% endif %}
+                    </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        {% comment %}{% endcomment %}
+      <div class="col-span-12 sm:col-span-6 lg:col-span-5 mt-8 w-75">
+        <div class="flex items-start px-5 pt-5">
+            <div class="w-full flex flex-col lg:flex-row items-center">
+                <h1 class="text-xl lg:text-lg font-medium mb-3 mr-5" id="title">
+                    CONSOMMATION PAR TYPE DE PERSONNE
+                </h1>
+            </div>
+        </div>
+        <div class="intro-y box p-5 mt-5">
+            <script src="https://code.highcharts.com/highcharts.js"></script>
+            <script src="https://code.highcharts.com/modules/exporting.js"></script>
+            <script src="https://code.highcharts.com/modules/accessibility.js"></script>
+            <div id="container"></div>
+        </div>
+      </div>
+      {% comment %}{% endcomment %}
+      <div class="col-span-12 sm:col-span-6 lg:col-span-5 mt-8 w-75">
+        <div class="flex items-start px-5 pt-5">
+          <div class="w-full flex flex-col lg:flex-row items-center">
+              <h1 class="text-xl lg:text-lg font-medium mb-3 mr-5" id="title">
+                ÉVOLUTION DE LA POPULATION
+              </h1>
+          </div>
+        </div>
+        <div class="intro-y box p-5 mt-5">
+          <div id="pop"></div>
+        </div>
+      </div>
+      {% comment %}{% endcomment %}
+      </div>
+    </div>
+  </div>
+
+  <script src="https://code.highcharts.com/highcharts.js"></script>
+  <script src="https://code.highcharts.com/modules/exporting.js"></script>
+  <script src="https://code.highcharts.com/modules/export-data.js"></script>
+  <script src="https://code.highcharts.com/modules/accessibility.js"></script>
+  <script src="https://code.highcharts.com/modules/series-label.js"></script>
+
+  {% comment %} TOTAL CONSOMMATION [ SINISTRES ] / PERSONNE {% endcomment %}
+
+  <script>
+    var sinistresByQualiteData;
+    {% if selected_police_id %}
+    sinistresByQualiteData = {{ total_sums_selected_police |safe }};
+    {% else %}
+    sinistresByQualiteData = {{ total_sums|safe }};
+    {% endif %}
+
+    var qualiteLabels = Object.keys(sinistresByQualiteData);
+    var qualiteValues = Object.values(sinistresByQualiteData);
+    var totalSum = qualiteValues.reduce((acc, val) => acc + val, 0);
+    var colors = ['#B44b2C', '#FCAF3C', '#F89434', '#666666'];
+
+    if (totalSum === null || totalSum === 0) {
+      document.getElementById('container').innerHTML = "<div class='alert alert-primary-soft show flex items-center mb-5 mx-auto inline-block justify-center'>AUCUNE DONNÉE</div>";
+    }
+    else {
+      Highcharts.chart('container', {
+        chart: {
+          type: 'pie',
+          plotShadow: true
+        },
+        exporting: {
+          enabled: true,
+          buttons: {
+            contextButton: {
+              menuItems: [
+                'printChart',
+                'separator',
+                'downloadPNG',
+                'downloadJPEG',
+                'downloadPDF',
+                'downloadSVG'
+              ]
+            }
+          },
+          menuItemDefinitions: {
+            printChart: {
+              text: 'Imprimer le graphique',
+              onclick: function() {
+                this.print();
+              }
+            },
+            downloadPNG: {
+              text: 'Télécharger en PNG',
+              onclick: function() {
+                this.exportChart({
+                  type: 'image/png'
+                });
+              }
+            },
+            downloadJPEG: {
+              text: 'Télécharger en JPEG',
+              onclick: function() {
+                this.exportChart({
+                  type: 'image/jpeg'
+                });
+              }
+            },
+            downloadPDF: {
+              text: 'Télécharger en PDF',
+              onclick: function() {
+                this.exportChart({
+                  type: 'application/pdf'
+                });
+              }
+            },
+            downloadSVG: {
+              text: 'Télécharger en SVG',
+              onclick: function() {
+                this.exportChart({
+                  type: 'image/svg+xml'
+                });
+              }
+            }
+          },
+          lang: {
+            contextButtonTitle: 'Options d\'export'
+          }
+        },
+        title: {
+          text: '',
+          style: {
+            fontFamily: 'Roboto, sans-serif'
+          }
+        },
+        credits: {
+          enabled: false
+        },
+        tooltip: {
+          pointFormat: '{series.name}: <b>{point.y}</b>',
+          style: {
+            fontFamily: 'Roboto, sans-serif'
+          }
+        },
+        plotOptions: {
+          pie: {
+            allowPointSelect: true,
+            cursor: 'pointer',
+            dataLabels: {
+              enabled: true,
+              format: '<b>{point.name}</b>: {point.percentage:.2f}%',
+              style: {
+                fontFamily: 'Roboto, sans-serif'
+              }
+            },
+            showInLegend: true
+          }
+        },
+        legend: {
+          itemStyle: {
+            fontFamily: 'Roboto, sans-serif',
+            fontWeight: 'normal'
+          }
+        },
+        series: [{
+          name: 'Montant des sinistres',
+          colorByPoint: true,
+          colors: colors,
+          data: qualiteLabels.map(function(label, index) {
+            return {
+              name: label,
+              y: qualiteValues[index],
+              sliced: false
+            };
+          })
+        }]
+      });
+    }
+  </script>
+
+  {% comment %} ÉVOLUTION DE LA POPULATION {% endcomment %}
+
+  <script>
+    var chartData = {% if selected_police_id %} {{ chart_data_json_filter|safe }} {% else %} {{ chart_data_json|safe }} {% endif %};
+    const monthNamesInFrench = [
+      'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
+      'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'
+    ];
+    var months = {% if selected_police_id %} {{ months_filter|safe }} {% else %} {{ months|safe }} {% endif %};
+    var monthsInFrench = months.map(function(month, index) {
+      return monthNamesInFrench[index];
+    });
+    var dataIsNull = true;
+    var allZeros = true;
+
+    for (var i = 0; i < chartData.length; i++) {
+      for (var j = 0; j < chartData[i].data.length; j++) {
+        if (chartData[i].data[j] !== null) {
+          dataIsNull = false;
+        }
+        if (chartData[i].data[j] !== 0) {
+          allZeros = false;
+        }
+      }
+    }
+
+    if (dataIsNull || allZeros) {
+      document.getElementById('pop').innerHTML = "<div class='alert alert-primary-soft show flex items-center mb-5 mx-auto inline-block justify-center'>AUCUNE DONNÉE</div>";
+    }
+    else {
+      Highcharts.chart('pop', {
+        chart: {
+          type: 'line',
+          plotShadow: true
+        },
+        exporting: {
+          enabled: true,
+          buttons: {
+            contextButton: {
+              menuItems: ["printChart", "separator", "downloadPNG", "downloadJPEG", "downloadPDF", "downloadSVG"]
+            }
+          },
+          menuItemDefinitions: {
+            printChart: {
+              text: "Imprimer le graphique",
+              onclick: function () {
+                this.print();
+              }
+            },
+            downloadPNG: {
+              text: "Télécharger en PNG",
+              onclick: function () {
+                this.exportChart({
+                  type: 'image/png'
+                });
+              }
+            },
+            downloadJPEG: {
+              text: "Télécharger en JPEG",
+              onclick: function () {
+                this.exportChart({
+                  type: 'image/jpeg'
+                });
+              }
+            },
+            downloadPDF: {
+              text: "Télécharger en PDF",
+              onclick: function () {
+                this.exportChart({
+                  type: 'application/pdf'
+                });
+              }
+            },
+            downloadSVG: {
+              text: "Télécharger en SVG",
+              onclick: function () {
+                this.exportChart({
+                  type: 'image/svg+xml'
+                });
+              }
+            }
+          }
+        },
+        lang: {
+          contextButtonTitle: "Options d'export"
+        },
+        title: {
+          text: '',
+          align: 'left',
+          style: {
+            fontFamily: 'Roboto, sans-serif'
+          }
+        },
+        credits: {
+          enabled: false
+        },
+        yAxis: {
+          title: {
+            text: 'Nombre de personnes',
+            style: {
+              fontFamily: 'Roboto, sans-serif'
+            }
+          },
+          labels: {
+            style: {
+              fontFamily: 'Roboto, sans-serif'
+            }
+          }
+        },
+        xAxis: {
+          categories: monthsInFrench,
+          title: {
+            text: null
+          },
+          labels: {
+            style: {
+              fontFamily: 'Roboto, sans-serif'
+            }
+          }
+        },
+        legend: {
+          layout: 'vertical',
+          align: 'right',
+          verticalAlign: 'middle',
+          itemStyle: {
+            fontFamily: 'Roboto, sans-serif',
+            fontWeight: 'normal'
+          }
+        },
+        plotOptions: {
+          series: {
+            label: {
+              connectorAllowed: false,
+              style: {
+                fontFamily: 'Roboto, sans-serif'
+              }
+            },
+            pointStart: 0,
+            pointInterval: 1,
+            color: '#b44b2c',
+            showInLegend: false
+          }
+        },
+        series: chartData.map(function(seriesData) {
+          return {
+            name: 'BÉNÉFICIAIRES',
+            data: seriesData.data
+          };
+        })
+      });
+    }
+  </script>
+
+  {% comment %} POLICE SELECTION {% endcomment %}
+
+  <script>
+      document.getElementById('police-select').addEventListener('change', function() {
+        var selectedPoliceId = this.value;
+        if (selectedPoliceId) {
+          window.location.href = "{% url 'grh.dashboard' %}" + selectedPoliceId + "/";
+        } else {
+          window.location.href = "{% url 'grh.dashboard' %}";
+        }
+      });
+  </script>
+
+{% endblock %}

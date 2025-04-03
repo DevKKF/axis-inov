@@ -1,0 +1,36 @@
+{% load static %}
+{% load custom_filters %}
+
+    <nav class="side-nav">
+        <a href="{% url 'grh.dashboard' %}" class="intro-x flex items-center pl-5 pt-4 mt-3">
+            <img alt="Tinker Tailwind HTML Admin Template" class="w-10" src="{% static 'grh/images/logo.png' %}">
+            <span class="hidden xl:block text-white text-lg ml-3">G R H</span>
+        </a>
+        <div class="side-nav__devider my-6"></div>
+        <ul>
+            <li>
+                <a href="{% url 'grh.dashboard' %}" class="side-menu {% if request.path == '/grh/' %}side-menu--active{% endif %}">
+                    <div class="side-menu__icon"> <i data-feather="home"></i> </div>
+                    <div class="side-menu__title">
+                        {{_('Tableau_de_bord')}}
+                    </div>
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'grh.polices' %}" class="side-menu {% if request.path|startswith:'/grh/polices' %}side-menu--active{% endif %}">
+                    <div class="side-menu__icon"> <i data-feather="layers"></i> </div>
+                    <div class="side-menu__title">
+                        {{_('Polices')}}
+                    </div>
+                </a>
+            </li>
+            <li>
+                <a href="{% url 'grh.onboarding' %}" class="side-menu {% if request.path|startswith:'/grh/onboarding' %}side-menu--active{% endif %}">
+                    <div class="side-menu__icon"> <i data-feather="users"></i> </div>
+                    <div class="side-menu__title">
+                        {{_('Enrolement')}}
+                    </div>
+                </a>
+            </li>
+        </ul>
+    </nav>

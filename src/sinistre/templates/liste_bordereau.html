@@ -1,0 +1,173 @@
+{% extends "admin/base_site.html" %}
+{% load my_filters %}
+{% block extrastyle %} {% endblock %}
+{% block content %}
+
+<div class="col-12 col-md-12 order-2 order-md-1">
+    <div class="card">
+      <div class="card-header o-bg-primary">
+          <h3 class="card-title"><b>{{_('LISTE_DES_FACTURES_EN_ATTENTE_DE_PAIEMENT')}}</b></h3>
+          <div class="card-tools">
+         </div>
+      </div>
+      <div class="card-body">
+        <div id="example1_wrapper" class="dataTables_wrapper dt-bootstrap4">
+          <div class="row">
+            <div class="col-12 col-md-12 col-sm-12">
+                <table class="table table-bordered table-striped dataTable_ dtr-inline table_v_middle">
+                    <thead>
+                      <tr>
+                        <th scope="col">{{_('Numero_Bordereau')}}</th>
+                        <th scope="col">{{_('Prestataire')}}</th>
+                        <th scope="col">{{_('Net_a_payer')}}</th>
+                        <th scope="col">{{_('Date_de_generation')}}</th>
+                        <th scope="col">{{_('Periode_comptable')}}</th>
+                        <th scope="col">{{_('Action')}}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                    {% for bordereau in factures_non_payees %}
+                      <tr>
+                          <td>{{ bordereau.numero }}</td>
+                          <td>{{ bordereau.prestataire|default_if_none:"" }}</td>
+                          <td style="text-align:right">{{ bordereau.net_a_payer|money_field|default_if_none:"0" }}</td>
+                          <td style="text-align:center">{{ bordereau.created_at|date:"d-m-Y H:i:s" }}</td>
+                          <td style="text-align:center">{{ bordereau.periode_comptable|default_if_none:"" }}</td>
+                          <td>
+                              <a href="{% url 'detail_facture' bordereau.id %}"><span class="btn btn-sm btn-details rounded-pill"><i class="fa fa-eye"></i> {{_('Detail')}}</span></a>&nbsp;&nbsp;
+                          </td>
+                      </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+</div>
+
+<div class="col-12 col-md-12 order-2 order-md-1">
+    <div class="card">
+      <div class="card-header o-bg-primary">
+          <h3 class="card-title"><b>{{_('LISTE_DES_FACTURES_REGLEES')}}</b></h3>
+          <div class="card-tools">
+          </div>
+      </div>
+      <div class="card-body">
+        <div id="example1_wrapper" class="dataTables_wrapper dt-bootstrap4">
+          <div class="row">
+            <div class="col-12 col-md-12 col-sm-12">
+            			<div class="form-group row">
+									<label class="offset-4 col-sm-1 col-form-label">{{_('Recherche')}} <span class="required"></span></label>
+									<div class="col-sm-2">
+										<input type="text" class="form-control" name="search" id="search">
+									</div>
+									<div class="col-sm-1">&nbsp;</div>
+                  <label class="col-sm-2 col-form-label">{{_('Annee_comptable')}} <span class="required"></span></label>
+									<div class="col-sm-2">
+										<select class="form-control" name="search_annee_comptable" id="search_annee_comptable" required>
+                      {% for annee in annees_comptables %}
+                          <option value="{{ annee }}">{{ annee }}</option>
+                      {% endfor %}
+										</select>
+									</div>
+								</div>
+                <table class="table table-bordered table-striped dataTable_ dtr-inline table_v_middle" id="table_clients">
+                    <thead>
+                      <tr>
+                        <th scope="col">{{_('Numero_Bordereau')}}</th>
+                        <th scope="col">{{_('Prestataire')}}</th>
+                        <th scope="col">{{_('Net_a_payer')}}</th>
+                        <th scope="col">{{_('Date_de_generation')}}</th>
+                        <th scope="col">{{_('Action')}}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                    {% comment %}                     
+                    {% for bordereau in factures_payees %}
+                      <tr>
+                          <td>{{ bordereau.numero }}</td>
+                          <td>{{ bordereau.prestataire }}</td>
+                          <td style="text-align:right">{{ bordereau.net_a_payer|money_field|default_if_none:"0" }}</td>
+                          <td style="text-align:center">{{ bordereau.created_at|date:"d-m-Y H:i:s" }}</td>
+                          <td>
+                              <a href="{% url 'detail_facture' bordereau.id %}"><span class="btn btn-sm btn-details rounded-pill"><i class="fa fa-eye"></i> Détail</span></a>&nbsp;&nbsp;
+                          </td>
+                      </tr>
+                    {% endfor %} 
+                    {% endcomment %}
+                    </tbody>
+                </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+</div>
+
+
+{% endblock %}
+
+
+{% block extrajs %}
+
+<script>
+    $(document).ready(function() {
+        dataTable = $('#table_clients').DataTable({
+            "language": {
+                    "url": "https://cdn.datatables.net/plug-ins/9dcbecd42ad/i18n/French.json"
+                },
+                "serverSide": true,
+                "ajax": {
+                    "url": "{% url 'liste_facture_datatable' %}",
+                    "data": function (data) {
+                        data.page = data.start / data.length + 1;
+                        data.search_annee_comptable = $('#search_annee_comptable').val();
+                        data.search = $('#search').val();
+
+                },
+                "dataSrc": function (json) {
+
+                    return json.data;
+                }
+            },
+            "columns": [
+                {"data": "numero", "orderable": true},
+                {"data": "prestataire", "orderable": true},
+                {"data": "net_a_payer", "orderable": true},
+                {"data": "created_at", "orderable": true},
+                {"data": "actions", "orderable": false, "searchable": false},
+            ],
+            "paging": true,
+            "pageLength": 10,
+            "processing": true,  // Show the loading indicator
+            "searching": false,   // Enable the search feature
+            "search": {
+                "search": $('#search').val()
+            }
+        });
+
+
+        dataTable.on('xhr.dt', function (e, settings, json, xhr) {
+            // Hide the spinner when the data is loaded
+            $('.spinner-border').show();
+        });
+
+        // Show the spinner when the table is processing
+        dataTable.on('processing.dt', function (e, settings, processing) {
+            if (processing) {
+                $('.spinner-border').show();
+            }
+        });
+
+        // Add custom search functionality for code, name, and prenoms columns
+        $('#search_annee_comptable, #search').on('keyup change', function() {
+            //dataTable.search('').draw(); // Clear existing search
+            dataTable.draw(); // Trigger a new draw, which will include the updated search parameters
+        });
+    });
+</script>
+
+{% endblock %}
+

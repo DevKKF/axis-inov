@@ -1,0 +1,152 @@
+{% load my_filters %}
+{% load i18n static jazzmin admin_urls %}
+<div  class="modal fade"  id="modal-reglement_factures_garant"  aria-hidden="true"  style="display: none">
+	<div class="modal-dialog modal-lg">
+		<div class="modal-content">
+            <form enctype="multipart/form-data" id="form_add_encaissement_commission" action="{% url 'add_encaissement_commission' %}" method="post">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h4 class="modal-title">{{_('REGLEMENT_DE_FACTURE_S_GARANT')}}</b></h4>
+                    <button type="button"class="close"data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">×</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert  alert-dismissible fade show hidden" role="alert">
+                    <span class="message"> {{_('TRAITEMENT_EN_COURS')}}</span>
+                    </div>
+                    <div class="col-md-12 offset-0">
+                        <div class="row">
+                            <div class="col-md-12">
+        
+                                <div class="form-group row">
+                                    <div class="col-sm-6 col-form-label">
+                                        <label class="col-form-label">{{_('Garant')}} <span class="required">*</span>:</label>
+                                    </div>
+                                    <div class="col-sm-6">
+                                        <select class="form-control tags-multiple" name="" id="compagnie_facturee_impayee" required>
+                                            <option value="" selected>Choisir</option>
+                                            {% for compagnie_impayees in compagnies_impayees %}
+                                            <option value="{{compagnie_impayees.id}}">{{compagnie_impayees}}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="form-group row">
+                                    <div class="col-sm-6 col-form-label">
+                                        <label class="col-form-label">{{_('Mode_de_reglement')}}<span class="required">*</span>:</label>
+                                    </div>
+                                    <div class="col-sm-6">
+                                        <select class="form-control tags-multiple" name="" id="" required>
+                                            <option value="">Choisir</option>
+                                            {% for mr in modes_reglements %}
+                                                <option value="{{ mr.id }}">{{ mr.libelle }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+                                                            
+                                <div class="form-group row">
+                                    <label class="col-sm-6 col-form-label">{{_('Montant_Total')}} <span class="text-danger">*</span>:</label>
+                                    <div class="col-sm-6">
+                                        <input type="text" class="form-control money_field" name="" id=""/>
+                                    </div>
+                                </div>
+        
+                            </div>
+                        </div>
+                        <div class="row table-responsive text-nowrap" style="border-top:1px solid #eee;"><span>Liste des factures garants</span>
+                            <div id="box_factures_a_regler">
+                                <!-- LISTE A CHARGER DYNAMIQUEMENT  -->
+                                <table class="table table-bordered table-striped dataTable0 dtr-inline" id="table_factures_a_regler">
+                                <thead>
+                                    <tr>
+                                        <th scope="col" width="10%">Nº Facture</th>
+                                        <th scope="col" width="10%">Garant</th>
+                                        <th scope="col" width="7%">Montant Total facture</th>
+                                        <th scope="col" width="10%">Payé</th>
+                                        <th scope="col" width="7%">Restant</th>
+                                        <th scope="col" width="10%">Pour régler</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td colspan="7" style="text-align:center;">Selectionner un garant pour charger la liste</td>
+                                    </tr>
+                                </tbody>
+                                </table>
+                            </div>
+                        </div>
+        
+                    </div>
+        
+                        <div class="row d-flex justify-content-end">
+                        </div>
+        
+        
+                    <div class="modal-footer justify-content-between">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">{{_('Retour')}}</button>
+                        <div>{{_('Restant_a_ajouter_sur_la_caution')}} : <input type="text" name="" class="money_field" value="0" readonly style="background:none;border:none;font-size:18px;width:150px;font-weight:bold;"/><span style="font-size:18px;width:150px;font-weight:bold;">FCFA</span></div>
+                        <button disabled type="button" id="btn_save_encaissement" class="btn o-bg-primary">{{_('Valider')}}</button>
+                    </div>
+        
+        
+                </div>
+            </form>
+        </div>
+	</div>
+
+</div>
+
+<script>
+$(document).ready(function() {
+    // Écoute du changement de sélection dans le menu déroulant
+    $('#compagnie_facturee_impayee').change(function() {
+        var compagnie_id = $(this).val(); // Récupérer l'ID de la compagnie sélectionnée
+
+        // Vérifier si une compagnie a été sélectionnée
+        if (compagnie_id !== '') {
+            var url = "{% url 'fetch_factures' %}"
+
+            // Requête AJAX pour récupérer les données des factures
+            $.ajax({
+                url: url, // URL où vous récupérez les données des factures
+                method: 'GET',
+                data: { compagnie_id: compagnie_id },
+                success: function(response) {
+                    // Mettre à jour le contenu du tableau avec les données récupérées
+                    var tbody = $('#table_factures_a_regler tbody');
+                    tbody.empty(); // Vider le contenu actuel du tableau
+
+                    if (response.length > 0) {
+                        // Si des données sont retournées, les ajouter au tableau
+                        $.each(response, function(index, facture) {
+                            var row = '<tr>' +
+                                      '<td>' + facture.numero + '</td>' +
+                                      '<td>' + facture.compagnie + '</td>' +
+                                      '<td>' + facture.montant_total + '</td>' +
+                                      '<td>' + facture.montant_regle + '</td>' +
+                                      '<td>' + facture.montant_restant + '</td>' +
+                                      '<td> <input type="text" name="'+facture.numero+'" id="'+facture.numero+'" class="money_field" readonly style="background-color: #e4e0e0;"></td>' +
+                                      '</tr>';
+                            tbody.append(row);
+                        });
+                    } else {
+                        // Si aucune donnée n'est retournée, afficher un message dans une ligne du tableau
+                        var emptyRow = '<tr><td colspan="7" style="text-align:center;">Aucune facture trouvée pour cette compagnie</td></tr>';
+                        tbody.append(emptyRow);
+                    }
+                },
+                error: function(error) {
+                    console.log('Erreur lors de la récupération des données : ' + error);
+                }
+            });
+        } else {
+            // Si aucune compagnie n'est sélectionnée, afficher un message dans une ligne du tableau
+            var emptyRow = '<tr><td colspan="7" style="text-align:center;" id="empty">Sélectionner un garant pour charger la liste</td></tr>';
+            $('#table_factures_a_regler tbody').html(emptyRow);
+        }
+    });
+});
+</script>

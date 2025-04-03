@@ -1,0 +1,133 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_urls static admin_modify jazzmin %}
+{% get_jazzmin_settings request as jazzmin_settings %}
+
+{% block extrastyle %}
+    {{ block.super }}
+    <link rel="stylesheet" href="{% static 'vendor/select2/css/select2.min.css' %}">
+{% endblock %}
+
+{% block extrahead %}
+    {{ block.super }}
+    <script type="text/javascript" src="{% url 'admin:jsi18n' %}"></script>
+    {{ media }}
+{% endblock %}
+
+{% block content %}
+
+    <div id="content-main" class="col-12">
+        <form action="{{ form_url }}" method="post" id="{{ opts.model_name }}_form" validate>
+            {% csrf_token %}
+            <div class="row">
+                {% if is_popup %}<input type="hidden" name="{{ is_popup_var }}" value="1">{% endif %}
+                {% if to_field %}<input type="hidden" name="{{ to_field_var }}" value="{{ to_field }}">{% endif %}
+
+                <div class="col-12 col-lg-9">
+                    <div class="card card-primary card-outline">
+                        <div class="card-header">
+                            <div class="card-title">
+                                Edition des cartes
+                            </div>
+                        </div>
+                        <div class="card-body">
+
+                            <div class="form-group field-numero">
+                                <div class="row">
+
+                                        <label class="text-left col-sm-4" for="plage_fin">
+                                            Option
+                                        </label>
+                                        <div class="field-numero col-sm-8">
+
+                                            <select name="option_edition" id="option_edition" style="width: 50%;" required>
+                                                <option value="1">Toutes les cartes</option>
+                                                <option value="2">Plage personalisée</option>
+                                            </select>
+
+                                            <div class="help-block red col-sm-8">
+
+                                            </div>
+
+                                            <div class="help-block text-red col-sm-8">
+
+                                            </div>
+                                        </div>
+
+                                </div>
+                            </div>
+
+                            <div id="box_plage_personnalisee">
+                                <div class="form-group field-numero">
+                                    <div class="row">
+
+                                            <label class="text-left col-sm-4" for="plage_fin">
+                                                De
+                                            </label>
+                                            <div class="field-numero col-sm-8">
+
+                                                <input type="number" name="plage_debut" value="1" class="vIntegerField" maxlength="50" id="plage_fin" style="width: 50%;" required>
+
+                                                <div class="help-block red col-sm-8">
+
+                                                </div>
+
+                                                <div class="help-block text-red col-sm-8">
+
+                                                </div>
+                                            </div>
+
+                                    </div>
+                                </div>
+
+                                <div class="form-group field-numero">
+                                    <div class="row">
+
+                                            <label class="text-left col-sm-4" for="plage_fin">
+                                                A
+                                            </label>
+                                            <div class="field-numero col-sm-8">
+
+                                                <input type="number" name="plage_fin" value="" class="vIntegerField" maxlength="50" id="plage_fin" style="width: 50%;" required>
+
+                                                <div class="help-block red col-sm-8">
+
+                                                </div>
+
+                                                <div class="help-block text-red col-sm-8">
+
+                                                </div>
+                                            </div>
+
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group field-numero">
+                                <div class="text-center col-sm-12">
+                                     <input type="submit" name="btn_edit_card" value="Imprimer les cartes" class="btn btn-outline-success form-control" maxlength="50" id="btn_edit_card" style="width: 50%;">
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </form>
+    </div>
+
+{% endblock %}
+
+
+<script src="{% static jazzmin_settings.custom_js %}"></script>
+
+
+{% block extrajs %}
+    {{  block.super }}
+    <script type="text/javascript" src="{% static 'vendor/select2/js/select2.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'jazzmin/js/change_form.js' %}"></script>
+    {% if jazzmin_settings.related_modal_active %}
+    <script type="text/javascript" src="{% static 'jazzmin/plugins/bootstrap-show-modal/bootstrap-show-modal.min.js' %}"></script>
+    <script type="text/javascript" src="{% static 'jazzmin/js/related-modal.js' %}"></script>
+    {% endif %}
+{% endblock %}

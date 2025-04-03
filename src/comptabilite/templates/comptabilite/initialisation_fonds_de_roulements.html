@@ -1,0 +1,172 @@
+{% extends "admin/base_site.html" %}
+{% load static %}
+{% block extrastyle %}
+    <style>
+        /* Style du loader */
+        .loader {
+          background: #dedede00;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+
+{% load my_filters %}
+<div class="col-12 col-md-12 order-2 order-md-1">
+
+  <div class="card mt-0 pt-0" style="background: bisque;display:none;">
+    <div class="card-body">
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-header">
+        <h3 class="card-title text-white">FONDS DE ROULEMENTS</h3>
+        <div class="card-tools">
+          <a id="btnOpenDialogInitialiserFDRGarant" class="btn btn-paiement_comptable mr-3" data-toggle="modal" data-href="{% url 'add_mise_en_reglement_ordonnancement_par_garant' %}"> <i class="fa fa-plus"></i> Initialiser FDR</a>
+        </div>
+    </div>
+    <div class="card-body" style="background:bisque;">
+      <div class="row">
+        <input type="hidden" id="search_etat" value="">
+        <div class="col-12 col-sm-4 col-md-4" style="cursor:pointer">
+          <a>
+            <div class="info-box">
+                <span class="info-box-icon elevation-1 bg-success"><i class="fas fa-landmark"></i></span></span>
+                <div class="info-box-content">
+                  <span class="info-box-text">Total caution</span>
+                </div>
+                <h1><span class="badge" style="background: bisque;margin-top:10px; font-size: 15px;" ><span class="loader"><img style="height:30px; width:30px;" src="{% static 'admin_custom/ripple-loader.svg' %}" alt=""></span><span id="total_caution"></span> {{ request.user.bureau.pays.devise.code }}</span></h1>
+                {% comment %} <h1><span class="badge" style="background: bisque;margin-top:10px; font-size: 15px;" >{{total_caution|money_field}} {{ request.user.bureau.pays.devise.code }}</span></h1> {% endcomment %}
+            </div>
+          </a>
+        </div>
+
+
+        <div class="col-12 col-sm-4 col-md-4" style="cursor:pointer">
+          <a>
+            <div class="info-box">
+                <span class="info-box-icon elevation-1 bg-primary"><i class="fas fa-receipt"></i></span></span>
+                <div class="info-box-content">
+                  <span class="info-box-text">En attente de réglément</span>
+                </div>
+                <h1><span class="badge" style="background: bisque;margin-top:10px; font-size: 15px;"><span class="loader"><img style="height:30px; width:30px;" src="{% static 'admin_custom/ripple-loader.svg' %}" alt=""></span><span id="total_en_attente_de_reglement"></span> {{ request.user.bureau.pays.devise.code }}</span></h1>
+                {% comment %} <h1><span class="badge" style="background: bisque;margin-top:10px; font-size: 15px;">{{total_en_attente_de_reglement|money_field}} {{ request.user.bureau.pays.devise.code }}</span></h1> {% endcomment %}
+            </div>
+          </a>
+        </div>
+
+
+        <div class="col-12 col-sm-4 col-md-4" style="cursor:pointer">
+          <a>
+            <div class="info-box">
+                <span class="info-box-icon elevation-1 bg-warning"><i class="fas fa-coins"></i></span></span>
+                <div class="info-box-content">
+                  <span class="info-box-text">À réfacturer</span>
+                </div>
+                <h1><span class="badge" style="background: bisque;margin-top:10px; font-size: 15px;"><span class="loader"><img style="height:30px; width:30px;" src="{% static 'admin_custom/ripple-loader.svg' %}" alt=""></span><span id="total_a_refacturer"></span> {{ request.user.bureau.pays.devise.code }}</span></h1>
+                {% comment %} <h1><span class="badge" style="background: bisque;margin-top:10px; font-size: 15px;">{{total_a_refacturer|money_field}} {{ request.user.bureau.pays.devise.code }}</span></h1> {% endcomment %}
+            </div>
+          </a>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="card-body">
+      <div id="example1_wrapper" class="dataTables_wrapper dt-bootstrap4">
+
+        <div class="row">
+          <div class="col-12 col-md-12 col-sm-12 table-responsive">
+            <div class="card">
+              <div class="card-body" sstyle="background-color: rgba(255,121,0,.08);">
+                <table class="table dataTable table-bordered table-striped dataTable_ dtr-inline table_v_middle">
+                    <thead>
+                      <tr style="text-weight: bold;">
+                        <th scope="col">Date </th>
+                        <th scope="col">Code </th>
+                        <th scope="col">Garant</th>
+                        <th scope="col">FDR</th>
+                        {% comment %} <th scope="col">En attente de règlement</th>
+                        <th scope="col">À facturer</th>
+                        <th scope="col">Solde</th>{% endcomment %}
+                         <th scope="col">Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {% for caution in cautions %}
+                        <tr>
+                            <td>{{caution.date_debut_effet|date:"d/m/Y"}}</td>
+                            <td>{{caution.compagnie.code}}</td>
+                            <td>{{caution.compagnie}}</td>
+                            <td>{{caution.montant|money_field}} {{ request.user.bureau.pays.devise.code }}</td>
+                            {% comment %} <td>{{compagnie.total_en_attente_de_reglement|money_field}} {{ request.user.bureau.pays.devise.code }}</td>
+                            <td>{{compagnie.total_a_refacturer|money_field}} {{ request.user.bureau.pays.devise.code }}</td>
+                            <td>{{compagnie.solde|money_field}} {{ request.user.bureau.pays.devise.code }}</td> {% endcomment %}
+                            <td>
+                                <a class="badge o-bg-primary p-2 text-white btn_editer_fdr_compagnie" style="cursor: pointer;" title="Éditer caution" data-compagnie_id="{{caution.compagnie.id}}" data-model_name="compagnie" data-modal_title="MODIFIER LA CAUTION {{caution.compagnie}}" data-href="{% url 'edition_caution_compagnie' caution.compagnie.id %}"><i class="fa fa-edit"></i> {{_('Modifier')}}</a>
+                                {% comment %} <a class="badge o-bg-primary p-2 text-white" title="Modifier caution" data-toggle="modal" data-href="#modal-update_fdr_garant"><i class="fa fa-edit"></i> Modifier caution</a> {% endcomment %}
+                                <a class="badge btn-warning p-2 text-white" title="Suivi de la trésorerie" href="{% url 'detail_suivi_treso' caution.compagnie.id %}" ><i class="fas fa-chart-pie"></i> Trésorerie </a>
+                                {% comment %} <a class="badge btn-warning disabled" data-toggle="modal" data-href="#modal-update_fdr_garant"><i class="fa fa-edit"></i> Modifier</a> {% endcomment %}
+                            </td>
+                        </tr>
+                      {% endfor %}
+                    </tbody>
+                </table>
+              </div>
+              {% comment %} <div class="card-footer">
+                <ul style="list-style-type: none;">
+                  <li class="mb-2"><b style="color: #cf584a;">En attente de règlement : </b> Total <i>montant restant à payer</i> des factures adressées au garant</li>
+                  <li class="mb-2"><b style="color: #cf584a;">À facturer : </b> Total des sinistres(montant de remboursement accepté) payés au centre de soins qui doit être réconstituer par le garant</li>
+                  <li class="mb-2"><b style="color: #cf584a;">Solde : </b> Solde = Caution - (Montant en attente de reglement + Montant total à facturer)</li>
+                </ul>
+
+                NB: <i>Il peut rester 500 000 {{request.user.bureau.pays.devise.code}} à payer sur une facture de 1 000 000 {{request.user.bureau.pays.devise.code}} et c'est le restant qui est utilisé dans le calcul du << En attente de reglement >> </i>
+              </div> {% endcomment %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+{% endblock %}
+
+{% block extrajs %}
+
+
+
+  {% include 'modals/initialisation-fdr-garant.html' %}
+  {% include 'modals/editer-fdr-garant.html' %}
+  {% include 'modals/modifier-fdr-garant.html' %}
+
+  <script>
+    $(document).ready(function() {
+        function fetchData() {
+            $('#loader').show();
+            $.ajax({
+                url: '{% url "get_fdr_data" %}',
+                type: 'GET',
+                dataType: 'json',
+                success: function(data) {
+                    // Mettre à jour les éléments avec les données récupérées
+                    $('#total_caution').text(data.total_global_caution);
+                    $('#total_en_attente_de_reglement').text(data.total_global_en_attente_de_reglement);
+                    $('#total_a_refacturer').text(data.total_global_a_refacturer);
+
+
+                },
+                complete: function() {
+                    $('.loader').hide();
+                }
+            });
+        }
+        fetchData();
+    });
+  </script>
+
+{% endblock %}
+

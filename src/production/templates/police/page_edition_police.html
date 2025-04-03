@@ -1,0 +1,675 @@
+{% extends 'police/base.html' %} {% block extrastyle %} {% endblock %} {% block content %}
+<div class="col-md-12">
+  <div class="card offset">
+    <div class="card-header">
+      <h3 class="card-title o-primary">{{_('MODIFIER_POLICE')}}</h3>
+    </div>
+    <div class="card-body">
+      <div class="row">
+        <div class="col-12 col-md-12 order-2 order-md-1">
+          <div class="row">
+            <div class="col-12 col-sm-6 col-md-12">
+              <h4></h4>
+              <div class="card shadow">
+                <div class="card-body">
+                  <div class="row mb-3">
+                    <div class="col-md-6">
+                      <div class="form-group row">
+                        <label for="inputEmail3" class="col-sm-6 col-form-label"
+                          >{{_('Numero_Police')}} *</label
+                        >
+                        <div class="col-sm-6">
+                          <input
+                            type="text"
+                            name="numpol"
+                            value="CI0121-AF001"
+                            class="form-control"
+                            placeholder="N° Police *"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <h6 class="o-primary">{{_('APPORTEUR_ET_PROGRAMME')}}</h6>
+                  <hr />
+                  <div class="row">
+                    <div class="col-md-6">
+                      <div class="form-group row">
+                        <label for="inputEmail3" class="col-sm-6 col-form-label"
+                          >{{_('Apporteur')}}</label
+                        >
+                        <div class="col-sm-6">
+                          <div class="form-group clearfix">
+                            <div class="icheck-danger d-inline">
+                              <input
+                                type="radio" value="OUI"
+                                name="r2"
+                                checked=""
+                                id="yes"
+                              />
+                              <label for="yes"> {{_('OUI')}} </label>
+                            </div>
+                            <div class="icheck-danger d-inline">
+                              <input type="radio" name="r2" id="no" value="NON"/>
+                              <label for="no">{{_('NON')}} </label>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="vl"></div>
+                    <div class="col-md-5">
+                      <div class="form-group row">
+                        <label for="inputEmail3" class="col-sm-6 col-form-label"
+                          >{{_('Programme_international')}}</label
+                        >
+                        <div class="col-sm-6">
+                            <div class="form-group clearfix">
+                                <div class="icheck-danger d-inline">
+                                  <input
+                                    type="radio" value="OUI"
+                                    name="r2"
+                                    checked=""
+                                    id="yes"
+                                  />
+                                  <label for="yes"> {{_('OUI')}} </label>
+                                </div>
+                                <div class="icheck-danger d-inline">
+                                  <input type="radio" name="r2" id="no" value="NON"/>
+                                  <label for="no">{{_('NON')}} </label>
+                                </div>
+                              </div>
+                        </div>
+                      </div>
+                      <div class="form-group row">
+                        <label for="inputEmail3" class="col-sm-6 col-form-label"
+                          >{{_('Placement_et_gestion')}}</label
+                        >
+                        <div class="col-sm-6">
+                            <select class="custom-select">
+                                <option>{{_('option')}} 1</option>
+                                <option>{{_('option')}} 2</option>
+                                <option>{{_('option')}} 3</option>
+                                <option>{{_('option')}} 4</option>
+                                <option>{{_('option')}} 5</option>
+                                </select>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <h6 class="o-primary">{{_('DATES')}}</h6>
+                  <hr />
+                  <div class="row">
+                    <div class="col-md-6">
+                      <div class="form-group row">
+                        <label for="inputEmail3" class="col-sm-6 col-form-label"
+                          >{{_('Date_d_effet')}}</label
+                        >
+                        <div class="col-sm-6">
+                            <input
+                            type="date"
+                            name="date_effet"
+                            value="10/09/2021"
+                            class="form-control"
+                            placeholder="Date d'effet"
+                          />
+                        </div>
+                      </div>
+                      <div class="form-group row">
+                        <label for="inputEmail3" class="col-sm-6 col-form-label"
+                          >{{_('Duree_de_la_police')}}</label
+                        >
+                        <div class="col-sm-6">
+                            <select class="custom-select">
+                                <option>{{_('option')}} 1</option>
+                                <option>{{_('option')}} 2</option>
+                                <option>{{_('option')}} 3</option>
+                                <option>{{_('option')}} 4</option>
+                                <option>{{_('option')}} 5</option>
+                                </select>
+                        </div>
+                      </div>
+                      <div class="form-group row">
+                        <label for="inputEmail3" class="col-sm-6 col-form-label"
+                          >{{_('Renouvellement')}}</label
+                        >
+                        <div class="col-sm-6">
+                            <select class="custom-select">
+                                <option>{{_('option')}} 1</option>
+                                <option>{{_('option')}} 2</option>
+                                <option>{{_('option')}} 3</option>
+                                <option>{{_('option')}} 4</option>
+                                <option>{{_('option')}} 5</option>
+                            </select>
+                        </div>
+                      </div>
+                      <div class="form-group row">
+                        <label for="inputEmail3" class="col-sm-6 col-form-label"
+                          >{{_('Prochaine_date_d_effet')}}</label
+                        >
+                        <div class="col-sm-6">
+                            <input
+                            type="date"
+                            name="date_effet"
+                            value="10/09/2021"
+                            class="form-control"
+                            placeholder="Date d'effet"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                    <div class="vl"></div>
+                    <div class="col-md-5">
+                      <div class="form-group row">
+                        <label for="inputEmail3" class="col-sm-6 col-form-label"
+                          >{{_('Preavis_de_resiliation')}}</label
+                        >
+                        <div class="col-sm-6">
+                            <select class="custom-select">
+                                <option>{{_('option')}} 1</option>
+                                <option>{{_('option')}} 2</option>
+                                <option>{{_('option')}} 3</option>
+                                <option>{{_('option')}} 4</option>
+                                <option>{{_('option')}} 5</option>
+                            </select>
+                        </div>
+                      </div>
+                      <div class="form-group row">
+                        <label for="inputEmail3" class="col-sm-6 col-form-label"
+                          >{{_('Dernier_jour_de_la_periode_de_garantie')}}  *</label
+                        >
+                        <div class="col-sm-6">
+                            <input
+                            type="date"
+                            name="date_effet"
+                            value="10/09/2021"
+                            class="form-control"
+                            placeholder="Date d'effet"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <h6 class="o-primary">{{_('FACTURATION')}}</h6>
+                  <hr />
+                  <div class="row">
+                    <div class="col-md-6">
+                      <div class="form-group row">
+                        <label for="inputEmail3" class="col-sm-6 col-form-label"
+                          >{{_('Devise_Police')}}</label
+                        >
+                        <div class="col-sm-6">
+                            <input
+                            type="text"
+                            name="devise"
+                            value="XOF"
+                            class="form-control"
+                            placeholder="Devise"
+                          />
+                        </div>
+                      </div>
+                      <div class="form-group row">
+                        <label for="inputEmail3" class="col-sm-6 col-form-label"
+                          >{{_('Fractionnement')}}</label
+                        >
+                        <div class="col-sm-6">
+                            <select class="custom-select">
+                                <option>{{_('option')}} 1</option>
+                                <option>{{_('option')}} 2</option>
+                                <option>{{_('option')}} 3</option>
+                                <option>{{_('option')}} 4</option>
+                                <option>{{_('option')}} 5</option>
+                            </select>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="vl"></div>
+                    <div class="col-md-5">
+                      <div class="form-group row">
+                        <label for="inputEmail3" class="col-sm-6 col-form-label"
+                          >{{_('Mode_de_reglement')}}</label
+                        >
+                        <div class="col-sm-6">
+                            <select class="custom-select">
+                                <option>{{_('option')}} 1</option>
+                                <option>{{_('option')}} 2</option>
+                                <option>{{_('option')}} 3</option>
+                                <option>{{_('option')}} 4</option>
+                                <option>{{_('option')}} 5</option>
+                                </select>
+                        </div>
+                      </div>
+                      <div class="form-group row">
+                        <label for="inputEmail3" class="col-sm-6 col-form-label"
+                          >{{_('Prochaine_date_de_facture')}}</label
+                        >
+                        <div class="col-sm-6">
+                            <input
+                            type="date"
+                            name="date_effet"
+                            value="10/09/2021"
+                            class="form-control"
+                            placeholder="Date d'effet"
+                          />
+                        </div>
+                      </div>
+                      <div class="form-group row">
+                        <label for="inputEmail3" class="col-sm-6 col-form-label"
+                          >{{_('Regularisation')}}</label
+                        >
+                        <div class="col-sm-6">
+                            <select class="custom-select">
+                                <option>{{_('option')}} 1</option>
+                                <option>{{_('option')}} 2</option>
+                                <option>{{_('option')}} 3</option>
+                                <option>{{_('option')}} 4</option>
+                                <option>{{_('option')}} 5</option>
+                            </select>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <h6 class="o-primary">{{_('COMMISSION')}}</h6>
+                  <hr />
+                  <div class="row">
+                    <div class="col-md-6">
+                      <div class="form-group row">
+                        <label for="inputEmail3" class="col-sm-6 col-form-label"
+                          >{{_('Taux_de_com_global')}}</label
+                        >
+                        <div class="col-sm-6">
+                            <input
+                            type="number"
+                            name="txcom"
+                            value="0"
+                            class="form-control"
+                            placeholder="Taux de com global"
+                            readonly
+                          />
+                        </div>
+                      </div>
+                      <div class="form-group row">
+                        <label for="inputEmail3" class="col-sm-6 col-form-label"
+                          >{{_('Dont_taux_de_com_d_apport')}}</label
+                        >
+                        <div class="col-sm-6">
+                            <input
+                            type="number"
+                            name="txcom"
+                            value="0"
+                            class="form-control"
+                            placeholder="Taux de com global"
+                            readonly
+                          />
+                        </div>
+                      </div>
+                      <div class="form-group row">
+                        <label for="inputEmail3" class="col-sm-6 col-form-label"
+                          >{{_('Dont_taux_com_de_gestion')}}</label
+                        >
+                        <div class="col-sm-6">
+                            <input
+                            type="number"
+                            name="txcom"
+                            value="0"
+                            class="form-control"
+                            placeholder="Taux de com global"
+                            readonly
+                          />
+                        </div>
+                      </div>
+                    </div>
+                    <div class="vl"></div>
+                    <div class="col-md-5">
+                      <div class="form-group row">
+                        <label for="inputEmail3" class="col-sm-6 col-form-label"
+                          >{{_('Participation')}}</label
+                        >
+                        <div class="col-sm-6">
+                            <div class="form-group clearfix">
+                                <div class="icheck-danger d-inline">
+                                  <input
+                                    type="radio" value="OUI"
+                                    name="r2"
+                                    checked=""
+                                    id="yes"
+                                  />
+                                  <label for="yes"> {{_('OUI')}} </label>
+                                </div>
+                                <div class="icheck-danger d-inline">
+                                  <input type="radio" name="r2" id="no" value="NON"/>
+                                  <label for="no">{{_('NON')}} </label>
+                                </div>
+                              </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <h6 class="o-primary">{{_('BUDGET_ANNUEL_ESTIMATIF')}}</h6>
+                  <hr />
+                  <div class="row">
+                    <div class="col-md-6">
+                      <div class="form-group row">
+                        <label for="inputEmail3" class="col-sm-6 col-form-label"
+                          >{{_('TTC')}}</label
+                        >
+                        <div class="col-sm-6">
+                            <input
+                            type="number"
+                            name="txcom"
+                            value="468 000 000 XOF"
+                            class="form-control"
+                            placeholder="TTC"
+                          />
+                        </div>
+                      </div>
+                      <div class="form-group row">
+                        <label for="inputEmail3" class="col-sm-6 col-form-label"
+                          >{{_('Com_Annuelle')}}</label
+                        >
+                        <div class="col-sm-6">
+                            <input
+                            type="number"
+                            name="com_annuel"
+                            value="0 XOF"
+                            class="form-control"
+                            placeholder="Com Annuelle"
+                          />
+                        </div>
+                      </div>
+                      <div class="form-group row">
+                        <label for="inputEmail3" class="col-sm-6 col-form-label"
+                          >{{_('Verif')}}</label
+                        >
+                        <div class="col-sm-6">
+                            <input
+                            type="number"
+                            name="com_annuel"
+                            value="0 XOF"
+                            class="form-control"
+                            placeholder="Com Annuelle"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                    <div class="vl"></div>
+                    <div class="col-md-5">
+                      <div class="form-group row">
+                        <label for="inputEmail3" class="col-sm-6 col-form-label"
+                          >{{_('Prime_nette')}}</label
+                        >
+                        <div class="col-sm-6">
+                            <input
+                            type="number"
+                            name="com_annuel"
+                            value="468 000 000 XOF XOF"
+                            class="form-control"
+                            placeholder="Com Annuelle"
+                          />
+                        </div>
+                      </div>
+                      <div class="form-group row">
+                        <label for="inputEmail3" class="col-sm-6 col-form-label"
+                          >{{_('Cout_de_police')}}</label
+                        >
+                        <div class="col-sm-6">
+                            <input
+                            type="number"
+                            name="com_annuel"
+                            value="0 XOF"
+                            class="form-control"
+                            placeholder="Coût de police"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <h6 class="o-primary">{{_('PARAMETRES_POLICE_SANTE')}}</h6>
+                  <hr />
+                  <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group row">
+                            <label for="inputEmail3" class="col-sm-6 col-form-label"
+                              >{{_('Ticket_Moderateur')}}</label
+                            >
+                            <div class="col-sm-6">
+                                <select class="custom-select">
+                                <option>{{_('option')}} 1</option>
+                                <option>{{_('option')}} 2</option>
+                                <option>{{_('option')}} 3</option>
+                                <option>{{_('option')}} 4</option>
+                                <option>{{_('option')}} 5</option>
+                                </select>
+                            </div>
+                          </div>
+                      
+                      <div class="form-group row">
+                        <label for="inputEmail3" class="col-sm-6 col-form-label"
+                          >{{_('Age_maximum_adulte')}}</label
+                        >
+                        <div class="col-sm-6">
+                            <input
+                            type="number"
+                            name="com_annuel"
+                            value="65"
+                            class="form-control"
+                            placeholder="Age maximum adulte"
+                          />
+                        </div>
+                      </div>
+                      <div class="form-group row">
+                        <label for="inputEmail3" class="col-sm-6 col-form-label"
+                          >{{_('Age_maximum_enfant')}}</label
+                        >
+                        <div class="col-sm-6">
+                            <input
+                            type="number"
+                            name="com_annuel"
+                            value="21"
+                            class="form-control"
+                            placeholder="Age maximum enfant"
+                          />
+                        </div>
+                      </div>
+                      <div class="form-group row">
+                        <label for="inputEmail3" class="col-sm-6 col-form-label"
+                          >{{_('Calcul_du_TM')}}</label
+                        >
+                        <div class="col-sm-6">
+                            <select class="custom-select">
+                                <option>{{_('option')}} 1</option>
+                                <option>{{_('option')}} 2</option>
+                                <option>{{_('option')}} 3</option>
+                                <option>{{_('option')}} 4</option>
+                                <option>{{_('option')}} 5</option>
+                            </select>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="vl"></div>
+                    <div class="col-md-5">
+                      <div class="form-group row">
+                        <label for="inputEmail3" class="col-sm-6 col-form-label"
+                          >{{_('Nb_d_enfants_max_par_famille')}}</label
+                        >
+                        <div class="col-sm-6">
+                            <input
+                            type="number"
+                            name="com_annuel"
+                            value="99"
+                            class="form-control"
+                            placeholder="Nb d'enfants max par famille"
+                          />
+                        </div>
+                      </div>
+                      <div class="form-group row">
+                        <label for="inputEmail3" class="col-sm-6 col-form-label"
+                          >{{_('Nb_de_personnes_max_par_famille')}}</label
+                        >
+                        <div class="col-sm-6">
+                            <input
+                            type="number"
+                            name="com_annuel"
+                            value="99"
+                            class="form-control"
+                            placeholder="Nb de personnes max par famille"
+                          />
+                        </div>
+                      </div>
+                      <div class="form-group row">
+                        <label for="inputEmail3" class="col-sm-6 col-form-label"
+                          >{{_('Autofinancement')}}</label
+                        >
+                        <div class="col-sm-6">
+                            <div class="form-group clearfix">
+                                <div class="icheck-danger d-inline">
+                                  <input
+                                    type="radio" value="OUI"
+                                    name="r2"
+                                    checked=""
+                                    id="yes"
+                                  />
+                                  <label for="yes"> {{_('OUI')}} </label>
+                                </div>
+                                <div class="icheck-danger d-inline">
+                                  <input type="radio" name="r2" id="no" value="NON"/>
+                                  <label for="no">{{_('NON')}} </label>
+                                </div>
+                              </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <h6 class="o-primary">{{_('GESTIONNAIRES')}}</h6>
+                  <hr />
+                  <div class="row">
+                    <div class="col-md-6">
+                      <div class="form-group row">
+                        <label for="inputEmail3" class="col-sm-6 col-form-label"
+                          >{{_('Gestionnaire_prod')}}</label
+                        >
+                        <div class="col-sm-6">
+                            <select class="custom-select">
+                                <option>{{_('option')}} 1</option>
+                                <option>{{_('option')}} 2</option>
+                                <option>{{_('option')}} 3</option>
+                                <option>{{_('option')}} 4</option>
+                                <option>{{_('option')}} 5</option>
+                            </select>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="vl"></div>
+                    <div class="col-md-5">
+                    <div class="form-group row">
+                        <label for="inputEmail3" class="col-sm-6 col-form-label"
+                            >{{_('Gestionnaire_sinistre')}}</label
+                        >
+                        <div class="col-sm-6">
+                            <select class="custom-select">
+                                <option>{{_('option')}} 1</option>
+                                <option>{{_('option')}} 2</option>
+                                <option>{{_('option')}} 3</option>
+                                <option>{{_('option')}} 4</option>
+                                <option>{{_('option')}} 5</option>
+                            </select>
+                        </div>
+                        </div>
+                    </div>
+                  </div>
+                  <h6 class="o-primary">{{_('COEFFICIENTS_STATS')}}</h6>
+                  <hr />
+                  <div class="row">
+                    <div class="col-md-6">
+                      <div class="form-group row">
+                        <label for="inputEmail3" class="col-sm-6 col-form-label"
+                          >{{_('Taux_charge_sur_prime_HT')}}</label
+                        >
+                        <div class="col-sm-6">
+                            <input
+                            type="number"
+                            name="com_annuel"
+                            value="0"
+                            class="form-control"
+                            placeholder="Taux charge sur prime HT"
+                          />
+                        </div>
+                      </div>
+                      <div class="form-group row">
+                        <label for="inputEmail3" class="col-sm-6 col-form-label"
+                          >{{_('Coefficient_N1')}}</label
+                        >
+                        <div class="col-sm-6">
+                            <input
+                            type="number"
+                            name="com_annuel"
+                            value="100"
+                            class="form-control"
+                            placeholder="Coefficient N1"
+                          />
+                        </div>
+                      </div>
+                      <div class="form-group row">
+                        <label for="inputEmail3" class="col-sm-6 col-form-label"
+                          >{{_('Coefficient_N3')}}</label
+                        >
+                        <div class="col-sm-6">
+                            <input
+                            type="number"
+                            name="com_annuel"
+                            value="100"
+                            class="form-control"
+                            placeholder="Coefficient N3"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                    <div class="vl"></div>
+                    <div class="col-md-5">
+                      <div class="form-group row">
+                        <label for="inputEmail3" class="col-sm-6 col-form-label"
+                          >{{_('Coefficient_N')}}</label
+                        >
+                        <div class="col-sm-6">
+                            <input
+                            type="number"
+                            name="com_annuel"
+                            value="100"
+                            class="form-control"
+                            placeholder="Coefficient N"
+                          />
+                        </div>
+                      </div>
+                      <div class="form-group row">
+                        <label for="inputEmail3" class="col-sm-6 col-form-label"
+                          >{{_('Coefficient_N2')}}</label
+                        >
+                        <div class="col-sm-6">
+                            <input
+                            type="number"
+                            name="com_annuel"
+                            value="100"
+                            class="form-control"
+                            placeholder="Coefficient N2"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endblock %} {% block extrajs %}
+  <script>
+    $(document).ready(function () {
+      $("#update").removeClass("o-bg-primary");
+      $("#update").addClass("o-active");
+    });
+  </script>
+  {% endblock %}
+</div>

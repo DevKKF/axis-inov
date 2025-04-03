@@ -1,0 +1,219 @@
+{% load static %}
+
+<div class="top-bar -mx-4 px-4 md:mx-0 md:px-0">
+    {% comment %}{% endcomment %}
+    {% block 'breadcrumb' %}
+    <nav aria-label="breadcrumb" class="-intro-x mr-auto hidden sm:flex">
+        <ol class="breadcrumb">
+            {% comment %}{% endcomment %}
+            <li class="breadcrumb-item"><a href="{% url 'grh.dashboard' %}">G R H</a></li>
+            {% if request.resolver_match.url_name %}
+            {% with url_name=request.resolver_match.url_name %}
+            <li class="breadcrumb-item active" aria-current="page">
+                {% if url_name == 'grh.dashboard' %}
+                <a href="{% url 'grh.dashboard' %}">Tableau De Bord</a>
+                {% comment %}{% endcomment %}
+                {% elif url_name == 'grh.onboarding' %}
+                <a href="{% url 'grh.onboarding' %}">Enrôlement</a>
+                {% comment %}{% endcomment %}
+                {% elif url_name == 'grh.details_campagne' %}
+                <a href="{% url 'grh.onboarding' %}">Enrôlement</a>
+            <li class="breadcrumb-item active" aria-current="page">
+                <a href="{% url 'grh.details_campagne' campagne.id %}">Détails campagne d'enrôlement</a>
+            </li>
+            {% comment %}{% endcomment %}
+            {% elif url_name == 'grh.incorporations_prospect' %}
+            <a href="{% url 'grh.onboarding' %}">Enrôlement</a>
+            <li class="breadcrumb-item active" aria-current="page">
+                <a href="{% url 'grh.details_campagne' campagne.id %}">Détails campagne d'enrôlement</a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">
+                <a href="{% url 'grh.incorporations_prospect' campagne.id prospect.id %}">Incorporations à valider</a>
+            </li>
+            {% comment %}{% endcomment %}
+            {% elif url_name == 'grh.polices' %}
+            <a href="{% url 'grh.polices' %}">Polices</a>
+            {% comment %}{% endcomment %}
+            {% elif url_name == 'grh.police_overview' %}
+            <a href="{% url 'grh.police_overview' police.id %}">Détails Police</a>
+            {% comment %}{% endcomment %}
+            {% elif url_name == 'grh.details_formule_police' %}
+            <a href="{% url 'grh.police_overview' police.id %}">Détails Police</a>
+            <li class="breadcrumb-item active" aria-current="page">
+                <a href="{% url 'grh.police_overview' police.id %}">Formules Police</a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">
+                <a href="{% url 'grh.details_formule_police' police.id formule.id %}">Détails Formule Police</a>
+            </li>
+            {% comment %}{% endcomment %}
+            {% elif url_name == 'grh.fiche_quittance' %}
+            <a href="{% url 'grh.police_overview' police.id %}">Détails Police</a>
+            <li class="breadcrumb-item active" aria-current="page">
+                <a href="{% url 'grh.police_overview' police.id %}">Quittances Police</a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">
+                <a href="{% url 'grh.fiche_quittance' police.id quittance.id %}">Fiche Quittance</a>
+            </li>
+            {% comment %}{% endcomment %}
+            {% elif url_name == 'grh.details_garantie_formule_police' %}
+            <a href="{% url 'grh.police_overview' police.id %}">Détails Police</a>
+            <li class="breadcrumb-item active" aria-current="page">
+                <a href="{% url 'grh.police_overview' police.id %}">Formules Police</a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">
+                <a href="{% url 'grh.details_formule_police' police.id formule.id %}">Détails Formule Police</a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">
+                <a href="{% url 'grh.details_garantie_formule_police' police.id formule.id bareme.id %}">Détails
+                    Acte</a>
+            </li>
+            {% comment %}{% endcomment %}
+            {% elif url_name == 'grh.reseau_de_soin' %}
+            <a href="{% url 'grh.police_overview' police.id %}">Détails Police</a>
+            <li class="breadcrumb-item active" aria-current="page">
+                <a href="{% url 'grh.police_overview' police.id %}">Formules Police</a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">
+                <a href="{% url 'grh.details_formule_police' police.id formule.id %}">Détails Formule Police</a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">
+                <a href="{% url 'grh.reseau_de_soin' police.id formule.id reseau_soin.id %}">Réseau De Soin</a>
+            </li>
+            {% comment %}{% endcomment %}
+            {% elif url_name == 'grh.prestataire_medical' %}
+            <a href="{% url 'grh.police_overview' police.id %}">Détails Police</a>
+            <li class="breadcrumb-item active" aria-current="page">
+                <a href="{% url 'grh.police_overview' police.id %}">Formules Police</a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">
+                <a href="{% url 'grh.details_formule_police' police.id formule.id %}">Détails Formule Police</a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">
+                <a href="{% url 'grh.reseau_de_soin' police.id formule.id reseau_soin.id %}">Réseau De Soin</a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">
+                <a href="{% url 'grh.prestataire_medical' police.id formule.id reseau_soin.id prestataire.id %}">Préstataire
+                    Médical</a>
+            </li>
+            {% comment %}{% endcomment %}
+            {% elif url_name == 'grh.beneficiaire_overview' %}
+            <a href="{% url 'grh.police_overview' police.id %}">Détails Police</a>
+            <li class="breadcrumb-item active" aria-current="page">
+                <a href="{% url 'grh.beneficiaire_overview' police.id beneficiaire.id %}">Fiche Bénéficiaire</a>
+            </li>
+            {% elif url_name == 'grh.formulaire_ajouter_beneficiaire' %}
+            <a href="{% url 'grh.beneficiaire_overview' police.id beneficiaire.id %}">Fiche Bénéficiaire</a>
+            <li class="breadcrumb-item active" aria-current="page">
+                <a href="{% url 'grh.beneficiaire_overview' beneficiaire.id %}">Famille Bénéficiaire</a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">
+                <a href="{% url 'grh.formulaire_ajouter_beneficiaire' police.id beneficiaire.id %}">Ajouter Un
+                    Bénéficiaire</a>
+            </li>
+            {% comment %}{% endcomment %}
+            {% elif url_name == 'grh.details_garantie_formule_beneficiaire' %}
+            <a href="{% url 'grh.beneficiaire_overview' police.id beneficiaire.id %}">Fiche Bénéficiaire</a>
+            <li class="breadcrumb-item active" aria-current="page">
+                <a href="{% url 'grh.beneficiaire_overview' police.id beneficiaire.id %}">Garanties Bénéficiaire</a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">
+                <a href="{% url 'grh.details_garantie_formule_beneficiaire' police.id beneficiaire.id formule.id bareme.id %}">Détails
+                    Acte</a>
+            </li>
+            {% comment %}{% endcomment %}
+            {% elif url_name == 'grh.ajouter_document_beneficiaire' %}
+            <a href="{% url 'grh.beneficiaire_overview' police.id beneficiaire.id %}">Fiche Bénéficiaire</a>
+            <li class="breadcrumb-item active" aria-current="page">
+                <a href="{% url 'grh.beneficiaire_overview' police.id beneficiaire.id %}">Documents Bénéficiaire</a>
+            </li>
+            <li class="breadcrumb-item active" aria-current="page">
+                <a href="{% url 'grh.ajouter_document_beneficiaire' police.id beneficiaire.id %}">Ajouter Un Document
+                    Bénéficiaire</a>
+            </li>
+            {% comment %}{% endcomment %}
+            {% elif url_name == 'grh.importer_photo_beneficiaire' %}
+            <a href="{% url 'grh.beneficiaire_overview' police.id beneficiaire.id %}">Fiche Bénéficiaire</a>
+            <li class="breadcrumb-item active" aria-current="page">
+                <a href="{% url 'grh.importer_photo_beneficiaire' police.id beneficiaire.id %}">Importer Une Photo
+                    Bénéficiaire</a>
+            </li>
+            {% comment %}{% endcomment %}
+            {% elif url_name == 'grh.sortir_beneficiaire' %}
+            <a href="{% url 'grh.beneficiaire_overview' police.id beneficiaire.id %}">Fiche Bénéficiaire</a>
+            <li class="breadcrumb-item active" aria-current="page">
+                <a href="{% url 'grh.sortir_beneficiaire' police.id beneficiaire.id %}">Sortir Un Bénéficiaire</a>
+            </li>
+            {% comment %}{% endcomment %}
+            {% elif url_name == 'grh.suspendre_beneficiaire' %}
+            <a href="{% url 'grh.beneficiaire_overview' police.id beneficiaire.id %}">Fiche Bénéficiaire</a>
+            <li class="breadcrumb-item active" aria-current="page">
+                <a href="{% url 'grh.suspendre_beneficiaire' police.id beneficiaire.id %}">Suspendre Un Bénéficiaire</a>
+            </li>
+            {% comment %}{% endcomment %}
+            {% endif %}
+            </li>
+            {% comment %}{% endcomment %}
+            {% endwith %}
+            {% endif %}
+        </ol>
+    </nav>
+    {% endblock %}
+
+    <div class="intro-x box dropdown p-2 mr-5">
+
+
+        <div class="dropdown-toggle overflow-hidden zoom-in" role="button"
+             aria-expanded="false" data-tw-toggle="dropdown">
+            <h1 class="text-xl lg:text-lg font-medium" id="title">{{ request.user.utilisateur_grh|default_if_none:""}}</h1>
+        </div>
+        <div class="dropdown-menu w-56">
+            <form action="/grh/set_client/" method="post">
+                {% csrf_token %}
+
+                <ul class="dropdown-content bg-white text-primary">
+                    {% for client in request.user.client_grh.all %}
+                    <li class="p-1">
+                        <button type="submit" name="client_id" value="{{client.id}}" class="dropdown-item" style="width: 100%;text-align: left;">
+                            {{client}}
+                        </button>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </form>
+        </div>
+    </div>
+
+    <div class="intro-x dropdown w-8 h-8">
+        <div class="dropdown-toggle w-8 h-8 rounded-full overflow-hidden shadow-lg image-fit zoom-in" role="button"
+             aria-expanded="false" data-tw-toggle="dropdown">
+            <img alt="profil" src="{% static 'grh/images/logo.png' %}">
+        </div>
+        <div class="dropdown-menu w-40">
+            <ul class="dropdown-content bg-primary text-white">
+                <li class="p-2" style="text-align: left">
+                    {% if user.is_authenticated %}
+                    <div class="font-medium">
+                        {{ user.first_name }} {{ user.last_name }}
+                    </div>
+                    <div class="text-xs text-white/70 mt-0.5 dark:text-slate-500">{{ user.email }}</div>
+                    {% endif %}
+                </li>
+                <li>
+                    <hr class="dropdown-divider border-white/[0.08]">
+                </li>
+                <li>
+                    <a href="{% url 'grh.password_reset' %}" class="dropdown-item hover:bg-white/5"> <i
+                            data-feather="lock" class="w-6 h-6 mr-2"></i>Réinitialiser le mot de passe</a>
+                </li>
+                <li>
+                    <hr class="dropdown-divider border-white/[0.08]">
+                </li>
+                <li>
+                    <a href="{% url 'grh.logout' %}" class="dropdown-item hover:bg-white/5"> <i data-feather="log-out"
+                                                                                                class="w-6 h-6 mr-2"></i>Déconnexion</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+</div>

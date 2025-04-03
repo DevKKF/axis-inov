@@ -1,0 +1,34 @@
+<table id="table_add_sinistre_garantie" style="width:100%;" class="table table-bordered table-striped dataTable_ dtr-inline">
+    <thead>
+        <tr>
+            <th style="width:5%"></th>
+            <th>{{_("Garantie")}}</th>
+            <th class="text-center" style="width:15%">{{_("Franchise")}}</th>
+            <th class="text-center" style="width:15%;">{{_("Capital")}}</th>
+            <th class="text-center" style="width:15%;">{{_("Prime nette")}}</th>
+            <th class="text-center" style="width:15%;">{{_("Prime TTC")}}</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for p_garantie in garanties %}
+            <tr>
+                <td style="vertical-align:middle;">
+                    <input type="checkbox" class="form-control sinistre_garantie_checkbox" name="garantie_{{p_garantie.id}}" value="{{p_garantie.id}}" style="width: 0.6qrem; height: 1.25rem;">
+                </td>
+                <td style="vertical-align:middle;">{{ p_garantie.nom }}</td>
+                <td style="vertical-align:middle;padding:5px;">
+                    <input type="text" class="form-control form-control-sm sinistre_franchise_input" name="franchise_{{p_garantie.id}}" value="" onkeypress="isInputNumber(event)" oninput="formatMontant(this)" disabled>
+                </td>
+                <td style="vertical-align:middle;padding:5px;">
+                    <input type="text" class="form-control form-control-sm sinistre_capital_input" name="capital_{{p_garantie.id}}" value="" onkeypress="isInputNumber(event)" oninput="formatMontant(this)" disabled>
+                </td>
+                <td style="vertical-align:middle;padding:5px;">
+                    <input type="text" class="form-control form-control-sm sinistre_prime_net_input" name="prime_net_{{p_garantie.id}}" value="" onkeypress="isInputNumber(event)" oninput="formatMontant(this)" disabled>
+                </td>
+                <td style="vertical-align:middle;padding:5px;">
+                    <input type="text" class="form-control form-control-sm sinistre_prime_ttc_input" name="prime_ttc_{{p_garantie.id}}" value="" onkeypress="isInputNumber(event)" oninput="formatMontant(this)" disabled>
+                </td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>

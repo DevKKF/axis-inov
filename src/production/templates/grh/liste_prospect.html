@@ -1,0 +1,234 @@
+{% extends "admin/base_site.html" %}
+{% load my_filters %}
+{% block extrastyle %}
+{% load static %}
+
+<style>
+    div.dataTables_processing>div:last-child>div {
+        background: rgb(187 65 38) !important;
+    }
+    table td, table th {
+        vertical-align:middle !important;
+    }
+</style>
+
+{% endblock %}
+{% block content %}
+
+ <div class="col-12 col-md-12 order-2 order-md-1">
+
+      <div class="card">
+          <div class="card-header">
+              <h3 class="card-title"><b>
+                  {{_('LISTE_DES_MOUVEMENTS_GRH_A_VALIDER')}}
+              </b></h3>
+              <div class="card-tools">
+                <button id="export_prospect" class="btn btn-sm btn-default"><i class="fa fa-file-o"></i> {{_('Exporter_vers_Excel')}}</button>
+                <a class="btn btn-sm btn-default" id="loader-btn_export_beneficiaires" style="width: 40px; display: none;">
+                    <img src="{% static 'admin_custom/img/loader.gif' %}" style="width: 20px;"/>
+                </a>
+              </div>
+          </div>
+      <div style="background:#CCCCCC;padding:10px;border-bottom:1px solid #eee;padding-bottom:10px;margin-bottom:10px;">
+            <form method="get"><label style="font-weight:normal;font-size:12px;display:none;"><i>{{_('Formulaire_de_recherche')}}</i></label>
+                <div class="row">
+                    <div class="col-12 col-md-12 col-sm-12 row">
+                        <div class="col-md-1 row" style="margin-top:5px;display:none;">
+
+                        </div>
+                        <div class="col-md-3 row">
+                            <span class="col-sm-6 text-right" style="margin-top:5px;">{{_('Client:')}}</span>
+                            <div class="col-sm-6">
+                                <select class="form-control tags-multiple" id="client" style="border:1px solid rgba(0, 0, 0, 0.3);" name="client">
+                                <option value="">{{_('Choisir')}}</option>
+                                {% for client in clients %}
+                                    <option  value="{{client.id}}">{{client.nom|default:""}} {{client.prenoms|default:""}}</option>
+                                {% endfor %}
+                            </select>
+
+                            </div>
+                        </div>
+                        <div class="col-md-3 row">
+                            <span class="col-sm-6 text-right" style="margin-top:5px;">{{_('Numero_Police')}}: </span>
+                            <div class="col-sm-6">
+                                <input autocomplete="off" class="form-control" type="text" id="num_police" style="border-radius:3px;border:1px solid brown;text-transform:uppercase;">
+                            </div>
+                        </div>
+                        <div class="col-md-3 row">
+                            <span class="col-sm-6 text-right" style="margin-top:5px;">{{_('Nom_beneficiaire')}}:</span>
+                            <div class="col-sm-6">
+                                 <input autocomplete="off" class="form-control" type="text" id="nom_benef" style="border-radius:3px;border:1px solid brown;text-transform:uppercase;">
+                            </div>
+                        </div>
+                        <div class="col-md-3 row">
+                            <span class="col-sm-6 text-right" style="margin-top:5px;">{{_('Date')}}: </span>
+                            <div class="col-sm-6">
+                                <input autocomplete="off" class="form-control" type="date" id="date" value="" style="border-radius:3px;border:1px solid brown;text-transform:uppercase;">
+                            </div>
+                        </div>
+                        <!--div class="col-md-2 row">
+                            <div class="col-sm-7 text-right">
+                                <button type="submit" class="btn btn-complement-rouge">Rechercher</button>
+                            </div>
+                            <div class="col-sm-5 text-right" style="padding-left:20px;">
+                                <a href="/sinistre/dossiersinistre" class="btn btn-secondary" title="Vider le formulaire de recherche">Rafraichir</a>
+                            </div>
+                        </div-->
+                    </div>
+                </div>
+            </form>
+          </div>
+
+
+      <div class="card-body">
+        <div id="example_wrapper" class="dataTables_wrapper dt-bootstrap4">
+          <div class="row">
+            <div class="col-12 col-md-12 col-sm-12 ">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped dataTable__ customDataTable__ dtr-inline" id="table_prospects" style="width: 100%;" data-orderby="0">
+                    <thead>
+                      <tr>
+                        <th scope="col" style="display:none;">{{_('ID')}}</th>
+                        <th scope="col">{{_('Date_mouvement')}}</th>
+                        <th scope="col">Date demande  mouvement </th>
+                        <th scope="col">{{_('Client')}}</th>
+                        <th scope="col">{{_('Police')}}</th>
+                        <th scope="col">{{_('Formule')}}</th>
+                        <th scope="col">{{_('Nom_du_beneficiaire')}}</th>
+                        <th scope="col">{{_('Prenoms_du_beneficiaire')}}</th>
+                        <th scope="col">{{_('Date_de_naissance')}}</th>
+                        <th scope="col">{{_('Sexe')}}</th>
+                        <th scope="col">{{_('Qualite')}}</th>
+                        <th scope="col">{{_('Etat')}}</th>
+                        <th scope="col">{{_('Actions')}}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+                </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+{% endblock %}
+
+
+{% block extrajs %}
+<script>
+    $(document).ready(function() {
+        $('#garantie').removeClass('o-bg-primary');
+        $('#garantie').addClass('o-active');
+
+
+  dataTable = $('#table_prospects').DataTable({
+            "language": {
+                "url": "https://cdn.datatables.net/plug-ins/9dcbecd42ad/i18n/French.json"
+            },
+            "serverSide": true,
+            "ajax": {
+                "url": "{% url 'prospect_grh_datatable' %}",
+                "data": function (data) {
+                    data.page = data.start / data.length + 1;
+                    data.client = $('#client').val();
+                    data.num_police = $('#num_police').val();
+                    data.date = $('#date').val();
+                    data.nom_benef = $('#nom_benef').val();
+                },
+                "dataSrc": function (json) {
+                    return json.data;
+                }
+            },
+            "columns": [
+                {"data": "date", "orderable": false},
+                {"data": "grh_movement_initiation", "orderable": false},
+                {"data": "client", "orderable": false},
+                {"data": "numero_police", "orderable": false},
+                {"data": "formule", "orderable": false},
+                {"data": "nom_prospect", "orderable": false},
+                {"data": "prenom_prospect", "orderable": false},
+                {"data": "date_naiss", "orderable": false},
+                {"data": "sexe", "orderable": false},
+                {"data": "qualite", "orderable": false},
+                {"data": "statut", "orderable": false},
+                {"data": "actions", "orderable": false, "searchable": false},
+            ],
+            "paging": true,
+            "pageLength": 10,
+            "processing": true,  // Show the loading indicator
+            "searching": false,   // Enable the search feature
+            "search": {
+                "search": $('#table_prospects-table_filter input').val()
+            }
+        });
+
+
+        dataTable.on('xhr.dt', function (e, settings, json, xhr) {
+            // Hide the spinner when the data is loaded
+            $('.spinner-border').show();
+        });
+
+        // Show the spinner when the table is processing
+        dataTable.on('processing.dt', function (e, settings, processing) {
+            if (processing) {
+                $('.spinner-border').show();
+            }
+        });
+
+        // Add custom search functionality
+        $('#client, #num_police, #date, #nom_benef').on('keyup change', function() {
+            dataTable.search('').draw();
+            dataTable.draw();
+        });
+
+
+    });
+</script>
+<script>
+    $(document).on('click', '#export_prospect', function () {
+      // Show the loader
+      $('#export_prospect').hide();
+      $('#loader-btn_export_beneficiaires').show();
+      
+      $.ajax({
+          url: "{% url 'export_prospect' %}",
+          type: 'GET',
+          xhrFields: {
+              responseType: 'blob'
+          },
+          success: function (data, status, xhr) {
+              var filename = "";
+              var disposition = xhr.getResponseHeader('Content-Disposition');
+              if (disposition && disposition.indexOf('attachment') !== -1) {
+                  var matches = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/.exec(disposition);
+                  if (matches != null && matches[1]) {
+                      filename = matches[1].replace(/['"]/g, '');
+                  }
+              }
+              var link = document.createElement('a');
+              link.href = window.URL.createObjectURL(data);
+              link.download = filename;
+              document.body.appendChild(link);
+              link.click();
+              document.body.removeChild(link);
+  
+              // Hide the loader and show the button again
+              $('#loader-btn_export_beneficiaires').hide();
+              $('#export_prospect').show();
+          },
+          error: function (xhr, status, error) {
+              alert('An error occurred while exporting the file');
+              // Hide the loader and show the button again
+              $('#loader-btn_export_beneficiaires').hide();
+              $('#export_prospect').show();
+          }
+      });
+  });
+  </script>
+  
+  
+
+{% endblock %}

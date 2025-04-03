@@ -1,0 +1,185 @@
+{% extends "admin/base_site.html" %}
+{% load my_filters %}
+{% load static %}
+{% block extrastyle %}
+
+<style>
+    div.dataTables_processing>div:last-child>div {
+        background: rgb(187 65 38) !important;
+    }
+</style>
+
+{% endblock %}
+{% block content %}
+
+ <div class="col-12 col-md-12 order-2 order-md-1">
+
+      <div class="card">
+        <div class="card-header">
+            <h3 class="card-title"><b>
+                ANNULATION D'UNE QUITTANCE
+            </b></h3>
+            <div class="card-tools">
+            </div>
+        </div>
+
+      <div class="card-body">
+        <div id="example_wrapper" class="dataTables_wrapper dt-bootstrap4">
+            <form autocomplete="off" id="form_recherche" name="form_recherche" method="POST" enctype="multipart/form-data">
+              {% csrf_token %}
+                <div class="col-md-12" style="border-left:0px;">
+                    <div class="form-group row">
+                        <label class="col-sm-4 col-form-label text-right">N° Quittance</label>
+                        <div class="col-sm-4">
+                            <input type="text" class="form-control" name="numero_quittance" id="numero_quittance" value="{{ numero_quittance }}" required>
+                        </div>
+                        <div class="col-sm-4">
+                            <button id="recherche" name="recherche" value="rechercher" type="submit" class="btn btn-complement-rouge">Rechercher
+                            <img id="loader" src="{% static 'admin_custom/img/loader.gif' %}" style="width: 40px;display: none;"/>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+            </form>
+          {% if quittance and quittance.statut_validite is not "SUPPRIME" %}
+          <div class="row dossier_quittance">
+            <div class=" col-md-12">
+              <div class="card">
+                <div class="card-header">
+                  <div class="card-title">
+                    <h6>Quittance</h6>
+                  </div>
+                </div>
+                <div class="card-body">
+
+                  <div class="table-responsive">
+                    <table class="table table-bordered table-striped dataTable__ customDataTable__ dtr-inline" id="table_quittances" style="width: 100%;" data-orderby="0">
+
+                      <thead>
+                        <tr>
+                          <th scope="col">N° Quittance</th>
+                          <th scope="col">Type Quittance</th>
+                          <th scope="col">Compagnie</th>
+                          <th scope="col">Solde</th>
+                          <th scope="col">Net à payer</th>
+                          <th scope="col">Date d'emission'</th>
+                          <th scope="col">Statut</th>
+                          <th scope="col">Etat</th>
+                          <th scope="col">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                            <td>{{quittance.numero|default_if_none:""}}</td>
+                            <td>{{quittance.type_quittance.code|default_if_none:""}}</td>
+                            <td>{{quittance.compagnie|default_if_none:""}}</td>
+                            <td style="text-align:right">{{ quittance.solde|money_field|default_if_none:"0" }}</td>
+                            <td style="text-align:right">{{ quittance.montant_regle|money_field|default_if_none:"0" }}</td>
+                            <td style="text-align:right">{{ quittance.created_at|date:"d/m/Y H:m" }}</td>
+                            <td>
+                            {% if quittance.statut == "IMPAYE" %}
+                            <span class="text-bold col-sm-12 badge badge-danger" style="font-size:10px;color:white;">{{quittance.statut}}</span>
+                            {% else %}
+                            <span class="text-bold col-sm-12 badge badge-success" style="font-size:10px;color:white;">{{quittance.statut}}</span>
+                            {% endif %}
+                            </td>
+                            <td>
+                              {% if quittance.statut_validite == "SUPPRIME" %}
+                              <span class="text-bold col-sm-12 badge badge-danger" style="font-size:10px;color:white;">{{quittance.statut_validite}}</span>
+                              {% else %}
+                              <span class="text-bold col-sm-12 badge badge-en-attente" style="font-size:10px;color:white;">{{quittance.statut_validite}}</span>
+                              {% endif %}
+                              </td>
+                            <td>
+                                <a href="#" onclick="annuleItem({{ quittance.id }}, '{{quittance.numero|default_if_none:""}}')"><span class="badge btn-sm btn-danger rounded-pill"><i class="fa fa-times"></i> Annuler</span></a>
+                            </td>
+                        </tr>
+                      </tbody>
+
+                    </table>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          {% else %}
+          
+            {% if old_quittance %}
+            <div class="dossier_quittance text-danger text-center">La quittance {{ old_quittance }} a bien été supprimée !</div>
+            {% endif %}
+            {% if numero_quittance %}
+            <div class="dossier_quittance text-danger text-center text-bold h4">Aucune correspondance</div>
+            {% endif %}
+            {% if reverse_reglement %}
+            <div class="dossier_quittance text-danger text-center text-bold h4">L'annulation ne peut s'effectuer car au moins un reglement associé est reversé compagnie</div>
+            {% endif %}
+
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+{% endblock %}
+
+
+{% block extrajs %}
+<script>
+
+        function annuleItem(id, text){
+          $("#id_item").val(id);
+          $("#modal_head").html("ÊTES-VOUS SÛR(E) DE VOULOIR SUPPRIMER CETTE QUITTANCE ?");
+          $("#modal_text").html(text);
+          $('#modal_annuler_quittance').modal();
+        }
+
+        function reset(){
+          $("#id_item").val("");
+          $("#modal_head").html("");
+          $("#modal_head").html("");
+        }
+
+
+    $(document).ready(function() {
+
+        dataTable = $('#table_quittances').DataTable({
+            "language": {
+                "url": "https://cdn.datatables.net/plug-ins/9dcbecd42ad/i18n/French.json"
+            },
+            "paging": false,
+            // "pageLength": 400,
+            "processing": true,  // Show the loading indicator
+            "searching": false,   // Enable the search feature
+        });
+
+
+        var $form = $('#form_recherche'); 
+        origForm = $form.serialize();
+        $('#form_recherche :input').on('change input', function() {
+          // une modification a eu lieu dans le formulaire il faut allors reforme les calculs 
+          if($form.serialize() !== origForm){
+             $('.dossier_quittance').fadeOut("slow");
+          }
+          else{
+             $('.dossier_quittance').fadeIn("slow");
+          }
+        });
+
+        $('#garantie').removeClass('o-bg-primary');
+        $('#garantie').addClass('o-active');
+
+    });
+
+
+
+
+
+</script>
+
+
+{% include 'modal_annuler_quittance.html' %}
+
+{% endblock %}

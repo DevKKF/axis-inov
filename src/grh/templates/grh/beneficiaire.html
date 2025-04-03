@@ -1,0 +1,226 @@
+{% load static %}
+{% load my_filters %}
+    <style>
+
+        .zoomed {
+            transform: scale(0.8);
+            transition: transform 0.5s ease;
+        }
+
+        .custom-background:before {
+            background: #F8AF3C;
+            opacity: 0.5;
+        }
+
+        .custom-background a .box {
+            background: #F8AF3C;
+            color: #000000;
+        }
+
+        #title {
+            color: #B7482B;
+        }
+
+        #link {
+            color: #0000FF;
+        }
+
+        #status {
+            color: #FFFFFF;
+            padding: 5px;
+            border-radius: 5px;
+        }
+
+        .dataTables_length select {
+            width: auto;
+            display: inline-block;
+            padding: 6px 12px;
+            margin-bottom: 0;
+            font-size: 14px;
+            line-height: 1.42857143;
+            color: #555;
+            vertical-align: middle;
+            background-color: #fff;
+            background-image: none;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-shadow: inset 0 1px 1px rgba(0,0,0,.075);
+            transition: border-color ease-in-out .15s,box-shadow ease-in-out .15s;
+        }
+
+        .dataTables_info{
+            text-align: center;
+            padding-bottom: 10px;
+        }
+
+        .title{
+            color: #B7482B;
+        }
+
+        #link{
+            color: #0000FF;
+        }
+
+        #status{
+            padding: 5px;
+            border-radius: 5px;
+            color: #fff;
+        }
+
+        .status{
+            padding: 5px;
+            border-radius: 5px;
+            background-color: #6c757d;
+            color: #fff;
+        }
+
+        .status-inactif{
+            background-color: #DC3545;
+            color: #fff;
+        }
+
+        .status-suspendu{
+            background-color: #ffc107;
+            color: #fff;
+        }
+
+        .status-encours{
+            background-color: #F8AF3C;
+            color: #fff;
+        }
+
+        .status-actif{
+            background-color: #007500;
+            color: #fff;
+        }
+
+        .status-suspension-en-cours {
+            background-color: #bb9b68;
+        }
+
+        .status-sortie-en-cours {
+            background-color: #e0969e;
+        }
+
+        .status-suspension {
+            background-color: #f9af3c;
+        }
+
+        .status-sorti {
+            background-color: #DC3545;
+        }
+
+        #stats {
+           justify-content: space-evenly;
+        }
+
+        #entree_en_cours:hover,
+        #sortie_en_cours:hover,
+        #entree:hover,
+        #sortie:hover {
+            cursor: pointer;
+        }
+
+        #badge{
+            color: #FFFFFF;
+            background: #B7482B;
+        }
+
+    </style>
+
+    <div class="grid grid-cols-12 gap-6">
+
+	    <div class="col-span-12 sm:col-span-6 lg:col-span-3">
+	        <div class="box p-8" id="entree_en_cours" data-etat="ENTREE EN COURS">
+	        <div class="flex w-full items-center" id="stats">
+	            <h5 class="text-sm mr-2 font-medium">{{_('ENTREE_EN_COURS')}}</h5>
+	            <span class="inline-flex items-center px-3 py-2 rounded-full" id="badge">
+	                {{ police.nombre_beneficiaires_entree_encours|default_if_none:"0" }}
+	            </span>
+	        </div>
+	        </div>
+	    </div>
+
+	    <div class="col-span-12 sm:col-span-6 lg:col-span-3">
+	        <div class="box p-8" id="entree" data-etat="ACTIF">
+	        <div class="flex w-full items-center" id="stats">
+	            <h5 class="text-sm mr-2 font-medium">{{_('ENTREE')}}</h5>
+	            <span class="inline-flex items-center px-3 py-2 rounded-full" id="badge">
+	                {{ police.nombre_beneficiaires_entres|default_if_none:"0" }}
+	            </span>
+	        </div>
+	        </div>
+	    </div>
+
+	    <div class="col-span-12 sm:col-span-6 lg:col-span-3">
+	        <div class="box p-8" id="sortie_en_cours" data-etat="SORTIE EN COURS">
+	        <div class="flex w-full items-center" id="stats">
+	            <h5 class="text-sm mr-2 font-medium">{{_('SORTIE_EN_COURS')}}</h5>
+	            <span class="inline-flex items-center px-3 py-2 rounded-full" id="badge">
+	                {{ police.nombre_beneficiaires_sortis_encours|default_if_none:"0" }}
+	            </span>
+	        </div>
+	        </div>
+	    </div>
+
+	    <div class="col-span-12 sm:col-span-6 lg:col-span-3">
+	        <div class="box p-8" id="sortie" data-etat="SORTI">
+	        <div class="flex w-full items-center" id="stats">
+	            <h5 class="text-sm mr-2 font-medium">{{_('SORTIE')}}</h5>
+	            <span class="inline-flex items-center px-3 py-2 rounded-full" id="badge">
+	                {{ police.nombre_beneficiaires_sortis|default_if_none:"0" }}
+	            </span>
+	        </div>
+	        </div>
+	    </div>
+
+    </div>
+
+    <div class="intro-y col-span-12 md:col-span-12 lg:col-span-12 mt-5">
+        <div class="box">
+                <div class="flex flex-col lg:flex-row items-start justify-between px-5 pt-5">
+                <div class="w-full flex flex-col lg:flex-row items-start lg:items-center border-b border-gray-500">
+                    <h1 class="text-xl lg:text-lg font-medium p-3" id="title">{{_('LISTE_DES_BENEFICIAIRES')}}</h1>
+                </div>
+   
+               <button class="btn btn-primary-soft w-auto lg:absolute lg:right-0 mt-8 lg:mt-0 mr-5">
+                    <i data-feather="paperclip" class="mr-2 mb-1"></i>
+                    <a href="{% url 'export_beneficiaire' police.id %}">
+                        {{_('EXPORTER_VERS_EXCEL')}}
+                    </a>
+                </button>
+
+            </div>            
+            <div class="grid grid-cols-12 gap-6 mt-2 p-8">
+                <div class="intro-y col-span-12 overflow-auto">
+                    {% if beneficiaires %}
+                    <table class="table table-report -mt-2 datatable_benef">
+                        <thead>
+                            <tr>
+                                <th class="whitespace-nowrap">{{_('Numero_Carte')}}</th>
+                                <th class="whitespace-nowrap">{{_('Ajoute_le')}}</th>
+                                <th class="whitespace-nowrap">{{_('Nom')}} & {{_('Prenoms')}}</th>
+                                <th class="whitespace-nowrap">{{_('Sexe')}}</th>
+                                <th class="whitespace-nowrap">{{_('Lien')}}</th>
+                                <th class="whitespace-nowrap">{{_('Entree_le')}}</th>
+                                <th class="whitespace-nowrap">{{_('Statut')}}</th>
+                                <th class="whitespace-nowrap">{{_('Motif')}}</th>
+                                <th class="whitespace-nowrap">{{_('Actions')}}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+
+                        </tbody>
+                    </table>
+                    {% else %}
+                    <div class="alert alert-primary-soft show flex items-center mb-5 mx-auto inline-block justify-center">
+                        <i data-feather="info" class="mr-2"></i>
+                        {{_('AUCUNE_DONNEE')}}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+<input type="hidden" id="search_etat">

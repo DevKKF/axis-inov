@@ -1,0 +1,245 @@
+{% load my_filters %}
+<style type="text/css">
+	tr.tr_totaux td
+	{
+		border:1px solid #dee2e6;
+	}
+
+	tr.tr_totaux td .money_field
+	{
+		border:none;
+		background:none;
+		font-weight:bold;
+		font-size:22px;
+	}
+
+	tr.tr_invisible td
+	{
+		border:0px solid red;
+		padding:0px;
+	}
+	.varAlimentSinistreAutre{
+		display:none;
+	}
+</style>
+<div class="modal modal-sinistre fade" id="modal-sinistre_hospitalisation" data-backdrop="static" data-keyboard="false" aria-hidden="true"style="display: none" xmlns="http://www.w3.org/1999/html">
+	<div class="modal-dialog modal-xl">
+		<div class="modal-content">
+			<form id="form_add_sinistre_hospitalisation" action="{% url 'add_sinistre' %}" method="post">
+				{% csrf_token %}
+				<div class="modal-header">
+					<h4 class="modal-title">{{_('DEMANDE_DE_PRISE_EN_CHARGE_HOSPITALISATION')}}</h4>
+					<button type="button" class="close"data-dismiss="modal"aria-label="Close"><span aria-hidden="true">×</span></button>
+				</div>
+				<div class="modal-body">
+					<div class="alert  alert-dismissible fade show hidden" role="alert">
+						<span class="message">{{_('TRAITEMENT_EN_COURS')}}</span>
+					</div>
+					<div class="col-md-12 offset-0">
+						<div class="row">
+							<div class="col-md-6">
+								<div class="col-md-12">
+									<div class="row">
+										<div class="col-sm-12">
+											<div class="form-group row">
+												<label class="col-sm-5 col-form-label">{{_('Numero_de_carte')}} <span class="required">*</span></label>
+												<div class="col-sm-6">
+													<input type="text" autocomplete="off" class="form-control numero_carte" name="numero_carte" data-href="{% url 'search_assure' %}" required style="border:2px solid var(--colorJauneOlea);"/>
+													<input type="hidden" class="form-control" name="current_searched_aliment_id" id="current_searched_aliment_id"/>
+													<input type="hidden" class="form-control" name="type_prise_en_charge" id="type_prise_en_charge" value="hospitalisation"/>
+													<input type="hidden" class="form-control" name="type_prise_en_charge_code" id="type_prise_en_charge_code" value="HOSPIT"/>
+													<input type="hidden" class="form-control type_prise_en_charge_id" name="type_prise_en_charge_id" value="3"/>
+												</div>
+												<div class="col-sm-1" style="padding-left:0px;margin-top:3px;">
+													<span class="btn btnSearchAlimentSinistreAutre" data-href="{% url 'search_assure' %}" style="background:gray;color:white;font-size:12px;" title="Rechercher"><i class="fa fa-search"></i></span>
+												</div>
+											</div>
+										</div>
+										<div class="col-md-12 offset-0 varAlimentSinistreAutre" style="padding:0px;margin:0px;">
+											<div class="row">
+												<div class="col-md-3">
+													<div class="">
+														<img style="width:100px;border-radius:5px;border:3px solid #dee2e6;" class="" id="photo" src=""/>
+													</div>
+												</div>
+												<div class="col-md-9">
+													<div class="form-group row" style="margin-bottom:10px;">
+														<span class="col-sm-4">{{_('Nom')}} : </span>
+														<div class="col-sm-8">
+															<span class="font-weight-bold" id="span-nom"></span>
+														</div>
+													</div>
+													<div class="form-group row" style="margin-bottom:10px;">
+														<span class="col-sm-4">{{_('Prenoms')}} : </span>
+														<div class="col-sm-8">
+															<span class="font-weight-bold" id="span-prenoms"></span>
+														</div>
+													</div>
+													<div class="form-group row" style="margin-bottom:10px;">
+														<span class="col-sm-4">{{_('Date_naissance')}} : </span>
+														<div class="col-sm-8">
+															<span class="font-weight-bold" id="span-date_naissance"></span> (<span class="font-weight-normal" id="span-age"></span> {{_('ans')}})
+														</div>
+													</div>
+													<!--div class="form-group row" style="margin-bottom:10px;">
+														<span class="col-sm-4">Assureur : </span>
+														<div class="col-sm-8">
+															<span class="font-weight-bold" id="span-assureur"></span>
+														</div>
+													</div-->
+													<div class="form-group row" style="margin-bottom:10px;">
+														<span class="col-sm-4">{{_('Statut')}} :</span>
+														<div class="col-sm-8">
+															<span class="font-weight-bold" id="span-qualite_beneficiaire"></span>
+														</div>
+													</div>
+													<div class="form-group row" style="margin-bottom:10px;">
+														<span class="col-sm-4">{{_('Type_de_contrat')}}</span>
+														<div class="col-sm-8">
+															<span class="font-weight-bold" id="span-formule"></span>
+														</div>
+													</div>
+													<div class="form-group row" style="margin-bottom:10px;">
+														<span class="col-sm-4">{{_('Couverture')}} : </span>
+														<div class="col-sm-8">
+															<span class="font-weight-bold" id="span-taux" style="color:#BB4127;font-weight:bold;"></span>
+														</div>
+													</div>
+													<div class="form-group row" style="margin-bottom:7px;display:none0;">
+														<span class="col-sm-4">{{_('Police')}} : </span>
+														<div class="col-sm-8">
+															<span class="font-weight-bold" id="span-police"></span>
+														</div>
+													</div>
+													<div class="form-group row" style="margin-bottom:10px;">
+														<span class="col-sm-4">{{_('Plafond_chambre')}} : </span>
+														<div class="col-sm-8">
+															<span class="font-weight-bold" id="span-plafond_chambre"></span>
+														</div>
+													</div>
+													<div class="form-group row" style="margin-bottom:10px;">
+														<span class="col-sm-4">{{_('Plafond_hospit')}}. : </span>
+														<div class="col-sm-8">
+															<span class="font-weight-bold" id="span-plafond_hospitalisation"></span>
+														</div>
+													</div>
+													<div class="form-group row" style="margin-bottom:10px;display:none;">
+														<span class="col-sm-4">{{_('Plafond_accouch')}}. : </span>
+														<div class="col-sm-8">
+															<span class="font-weight-bold" id="span-plafond_accouchement"></span>
+														</div>
+													</div>
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="vl"></div>
+							<div class="col-md-6 varAlimentSinistreAutre" style="border-left:0px;margin-left:-5px;padding-left:15px;">
+
+								<div class="form-group row" style="display:none;">
+									<label class="col-sm-4 col-form-label">{{_('Soins_a_l_etranger')}} <span class="required">*</span></label>
+									<div class="col-sm-8">
+										<select class="form-control tags-multiple" name="soins_a_l_entrange" id="soins_a_l_entrange" required>
+											<option value="0" selected>{{_('Non')}}</option>
+											<option value="1">{{_('Oui')}}</option>
+										</select>
+									</div>
+								</div>
+								
+								<div class="form-group row">
+									<label class="col-sm-4 col-form-label">{{_('Medecin')}} <span class="required">*</span></label>
+									<div class="col-sm-8">
+										<select class="form-control tags-multiple" name="prescripteur" required>
+											<option value="">{{_('Choisir')}}</option>
+											{% for prescripteur in prescripteurs %}
+											<option value="{{ prescripteur.id }}">{{ prescripteur.nom }} {{ prescripteur.prenoms }} ({{ prescripteur.specialite|default_if_none:'' }})</option>
+											{% endfor %}
+										</select>
+									</div>
+								</div>
+								<div class="form-group row" style="margin-top:px;">
+									<label class="col-sm-4 col-form-label">{{_('Acte')}} <span class="required">*</span></label>
+									<div class="col-sm-8">
+										<select class="form-control acte_prestation tags-multiple w-100 text-black" name="selected_actes[]" id="acte_hospitalisation" data-href_get_infos_selected_actes="{% url 'get_infos_selected_actes_hospitalisation' %}" required>
+											<option value="">{{_('Choisir')}}</option>
+											{% for acte in actes_hospitalisation %}
+											<option value="{{ acte.id }}">{{ acte.libelle }} - {{ acte.rubrique.libelle }}</option>
+											{% endfor %}
+										</select>
+									</div>
+								</div>
+								<div class="form-group row">
+									<label class="col-sm-4 col-form-label">{{_('Cout_de_l_acte')}}<span class="required"></span></label>
+									<div class="col-sm-8">
+										<input type="text" class="form-control money_field" name="cout_acte" id="cout_acte">
+									</div>
+								</div>
+								<div class="form-group row" style="margin-top:-15px;">
+									<label class="col-sm-12 col-form-label">{{_('Motif_de_l_admission')}} <span class="label_renseignement_clinique_required required">*</span></label>
+									<div class="col-sm-12">
+										<textarea class="form-control" name="renseignement_clinique" id="renseignement_clinique" rows="1" required></textarea>
+									</div>
+								</div>
+								<div class="form-group row">
+									<label class="col-sm-4 col-form-label">{{_('Affection')}}<span class="label_affection_required required"></span></label>
+									<div class="col-sm-8">
+										<select class="form-control tags-multiple tags-multiple_affection_hospit" name="affection" id="hospit_affection_id">
+											<option value="">{{_('Choisir')}}</option>
+											{% for affection in affections %}
+											<option value="{{ affection.id }}">{{ affection.code_cim_10 }} - {{ affection.libelle }}</option>
+											{% endfor %}
+										</select>
+									</div>
+								</div>
+								<div class="form-group row">
+									<div class="col-sm-4">
+										<label class="col-sm-12 col-form-label">{{_('Nombre_de_jours')}} <span class="required">*</span></label>
+										<div class="col-sm-12" class="form-control" style="text-align:right;font-weight:bold;">
+											<input type="text" max="100" min="1" value="0" class="form-control money_field" name="nombre_jours" id="nombre_jours" readonly0 style="background:white;">
+										</div>
+									</div>
+									<div class="col-sm-4">
+										<label class="col-sm-12 col-form-label">{{_('Date_d_entree')}} <span class="required">*</span></label>
+										<div class="col-sm-12">
+											<input type="date" class="form-control not_resetable" value="{{ today|date:'Y-m-d' }}" name="date_entree" readonly_0 id="date_entree" required>
+										</div>
+									</div>
+									<div class="col-sm-4">
+										<label class="col-sm-12 col-form-label">{{_('Date_de_sortie')}} <span class="required">*</span></label>
+										<div class="col-sm-12">
+											<input type="date" class="form-control" name="date_sortie" id="date_sortie" readonly required>
+										</div>
+									</div>
+								</div>
+
+							</div>
+							<div class="col-md-12 varAlimentSinistreAutre">
+								<div class="col-sm-12" id="loading_shimmer_box" style="display:none;">
+									<article>
+										<div class="line"></div>
+										<div class="line"></div>
+										<div class="line"></div>
+										<div class="shimmer"></div>
+									</article>
+								</div>
+								<div class="col-sm-12" style="padding-right:0px;padding:0px;" id="box_table_actes_selected">
+
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<div class="col-md-12 offset-0 error_box_aliment_not_found text-center text-red" style="display:none;font-weight: bold;font-size: 30px;"></div>
+				</div>
+				<div class="modal-footer justify-content-between">
+					<button type="button" class="btn btn-default" data-dismiss="modal">{{_('Retour')}}</button>
+					<img src="" id="loading">
+					<button type="button" class="btn btn_save_sinistre o-bg-primary" disabled>{{_('Valider')}}</button>
+				</div>
+			</form>
+			<div class="form_sinistre_overlay"><div style="margin:auto;padding:20px 0;color:white;text-align:center;">{{_('TRAITEMENT_EN_COURS')}} ...</div></div>
+		</div>
+	</div>
+</div>

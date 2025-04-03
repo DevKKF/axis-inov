@@ -1,0 +1,621 @@
+{% extends "admin/base_site.html" %}
+{% load my_filters %}
+{% load static %}
+{% block extrastyle %}
+<style>
+    div.dataTables_processing>div:last-child>div {
+        background: rgb(187 65 38) !important;
+    }
+    /* Style du loader */
+    .loader {
+        background: #dedede00;
+    }
+</style>
+{% endblock %}
+{% block content %}
+
+<div class="col-12 col-md-12 order-2 order-md-1">
+    <div class="card">
+      <div class="card-header o-bg-primary">
+          <h3 class="card-title"><b>RÉFACTURATION GARANTS</b></h3>
+          <div class="card-tools">
+            <div class="btn" style="background:#fff;">
+                <span><b>Total à réfacturer tous garants confondus : </b></span>
+                <span class="badge" style="background: bisque; font-size: 15px;"><span class="loader"><img style="height:30px; width:30px;" src="{% static 'admin_custom/ripple-loader.svg' %}" alt=""></span> <span class="total_global_a_refacturer"></span> {{ request.user.bureau.pays.devise.code }}</span>
+            </div>
+            <i class="fa fa-info-circle" title="Pour tous les garants"></i>
+          </div>
+      </div>
+
+      <div style="display:none__;background:bisque;padding:10px;border-bottom:1px solid #eee;padding-bottom:10px;margin-bottom:0px;">
+        <form method="get"><label style="font-weight:normal;font-size:12px;display:none;"><i>Formulaire de recherche</i></label>
+          {% csrf_token %}
+            <div class="row">
+                <div class="col-12 col-md-12 col-sm-12 row">
+
+                    <div class="col-md-3">
+                        <span class="col-sm-5 text-right" style="margin-top:5px;">Garant : </span>
+                        <div class="col-sm-7">
+                            <select class="form-control tags-multiple" id="search_garant" style="border:1px solid rgba(0, 0, 0, 0.3);" name="" autocomplete="off">
+                                <option value="">Choisir</option>
+                                {% for garant in garants %}
+                                    <option  value="{{garant.id}}">{{garant}} ({{garant.code}})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="col-md-3">
+                        <span class="col-sm-4 text-right" style="margin-top:5px;">Date début : </span>
+                        <div class="col-sm-8">
+                            <input type="date" id="search_date_debut_paiement" class="form-control"  style="border-radius:3px;border:1px solid rgba(0, 0, 0, 0.3);text-transform:uppercase;" autocomplete="off">
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <span class="col-sm-4 text-right" style="margin-top:5px;">Date fin : </span>
+                        <div class="col-sm-8">
+                            <input type="date" id="search_date_fin_paiement" class="form-control"  style="border-radius:3px;border:1px solid rgba(0, 0, 0, 0.3);text-transform:uppercase;" autocomplete="off">
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <span>&nbsp; <br></span>
+                      <button id="btn_generation_facture_compagnie" type="submit" class="btn btn-complement-rouge"><span class="loader"><img style="height:30px; width:30px;" src="{% static 'admin_custom/ripple-loader.svg' %}" alt=""></span> Générer facture</button>
+                    </div>
+                </div>
+            </div>
+        </form>
+      </div>
+      <div class="card-body" style="background:bisque;">
+        <div class="row d-flex justify-content-center">
+
+            <div class="col-12 col-sm-4 col-md-4" style="cursor:pointer; display:none;">
+              <a>
+                <div class="info-box">
+                    <span class="info-box-icon elevation-1 o-bg-primary"><i class="fas fa-flag"></i></span></span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">
+                            <b>{{_("Total_a_refacturer")}}</b>
+                            <br>
+                            <b style="color: #000">{{request.user.bureau.pays}}</b>
+                        </span>
+                    </div>
+                    <h1><span class="badge" style="background: bisque;margin-top:10px; font-size: 15px;"><span class="loader"><img style="height:30px; width:30px;" src="{% static 'admin_custom/ripple-loader.svg' %}" alt=""></span> <span class="total_global_a_refacturer"></span> {{ request.user.bureau.pays.devise.code }}</span></h1>
+                </div>
+              </a>
+            </div>
+
+            <div class="col-12 col-sm-5 col-md-5" style="cursor:pointer">
+              <a>
+                <div class="info-box">
+                    <span class="info-box-icon elevation-1 o-bg-top"><i class="fas fa-building text-white"></i></span></span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">
+                            Total en attente de réfacturation
+                            <br>
+                            <span id="compagnie_selectionnee_label" style="color: #000;">Garant sélectionné</span>
+                        </span>
+                    </div>
+                    <h1><span class="badge" style="background: bisque;margin-top:10px; font-size: 15px;"><span class="loader"><img style="height:30px; width:30px;" src="{% static 'admin_custom/ripple-loader.svg' %}" alt=""></span> <span id="a_refacturer_compagnie_selectionnee"></span> {{ request.user.bureau.pays.devise.code }}</span></h1>
+                </div>
+              </a>
+            </div>
+
+
+            <div class="col-12 col-sm-4 col-md-4" style="cursor:pointer">
+                <a>
+                <div class="info-box">
+                    <span class="info-box-icon elevation-1 bg-success"><i class="fas fa-receipt white"></i></span></span>
+                    <div class="info-box-content">
+                        <span class="info-box-text">
+                            Montant total <br>
+                            <span>à réfacturer</span>
+                        </span>
+                    </div>
+                    <h1><span class="badge" style="background: bisque;margin-top:10px; font-size: 15px;"><span id="montant_total_factures_selectionnees">0</span> {{ request.user.bureau.pays.devise.code }}</span></h1>
+                </div>
+                </a>
+            </div>
+
+        </div>
+      </div>
+
+      <div class="card-body">
+        <div id="example1_wrapper" class="dataTables_wrapper dt-bootstrap4">
+          <div class="row">
+            <div class="col-12 col-md-12 col-sm-12">
+
+                <table class="table table-bordered table-striped dataTable_ dtr-inline table_v_middle" id="table_generation_facture_compagnie">
+                    <thead>
+                      <tr>
+                        <th><input type="checkbox" style="display: none;" value="" id="selectAll" checked onclick="return false;"></th>
+                        <th scope="col">N˚ Sinistre</th>
+                        <th scope="col">Acte</th>
+                        <th scope="col">Bénéficiaire</th>
+                        <th scope="col">Date survénance</th>
+                        <th scope="col">Base remb.</th>
+                        <th scope="col">Rejet</th>
+                        <th scope="col">Net payé</th>
+                        <th scope="col">Date de paiement</th>
+                        <th scope="col">Action</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+</div>
+
+
+{% endblock %}
+
+
+{% block extrajs %}
+
+<script>
+
+    var selectedItems = [];
+    var fistLoad = true;
+
+    $.fn.updateSelectedItemFunction = function() {
+    };
+
+    $(document).ready(function() {
+
+        $('#btn_generation_facture_compagnie').prop("disabled",true); // givrer le bouton d'action de la selection pendant qu'on initialise
+        $('#btn_generation_facture_compagnie > .loader').hide(); //cachons le loader du bouton
+
+        dataTable = $('#table_generation_facture_compagnie').DataTable({
+            "language": {
+                "url": "https://cdn.datatables.net/plug-ins/9dcbecd42ad/i18n/French.json"
+            },
+            "serverSide": true,
+            "deferLoading": 0, // empecher l'initialisation automatique
+            "ajax": {
+                "url": "{% url 'generation_facture_assureur_datatable' %}",
+                "data": function (data) {
+                    data.page = data.start / data.length + 1;
+                    data.search_garant = $('#search_garant').val();
+                    data.search_date_debut_paiement = $('#search_date_debut_paiement').val();
+                    data.search_date_fin_paiement = $('#search_date_fin_paiement').val();
+
+                    $('#btn_generation_facture_compagnie').prop("disabled",true); // givrer le bouton d'action de la selection pendant qu'on vient faire le traitement
+
+                    if(fistLoad) {
+                        fistLoad = false;
+                        $(this).updateSelectedItemFunction();
+                    }
+
+                },
+                "dataSrc": function (json) {
+
+                    // Formater le montant total à refacturer
+                    var formattedTotalRefacturer = formatNumberWithSpaces(json.total_a_refacturer); // Format avec des virgules
+                    $('#montant_total_factures_selectionnees').text(formattedTotalRefacturer);
+
+                    // Mettre à jour le montant total dans le DOM
+                    if(json.data.length == 0){
+                        $('#btn_generation_facture_compagnie').prop("disabled",true);
+                    }
+                    // si on a de la data alors on peut activer le bouton d'action
+                    else{
+                        $('#btn_generation_facture_compagnie').prop("disabled",false);
+                    }
+                    return json.data;
+                }
+            },
+            "columns": [
+                {
+                  "data": null,
+                  "orderable": false,
+                  "searchable": false,
+                  "render": function (data, type, row) {
+                        var isChecked = selectedItems.indexOf(row.id) !== -1 ? 'checked' : '';
+                        return '<input style="display: none;" type="checkbox" checked onclick="return false;" value="' + row.id + '">';
+                        // return '<input type="checkbox" checked readonly value="' + row.id + '" ' + isChecked + '>';
+                    }
+                },
+                {"data": "numero_sinistre", "orderable": false},
+                {"data": "acte", "orderable": true},
+                {"data": "beneficiaire", "orderable": false},
+                {"data": "date_survenance", "orderable": false},
+                {"data": "total_part_compagnie", "orderable": false},
+                //{"data": "total_frais_reel", "orderable": false},
+                {"data": "rejete", "orderable": false},
+                {"data": "net_paye", "orderable": true},
+                {"data": "date_paiement", "orderable": false},
+                {"data": "statut", "orderable": false, "searchable": false},
+            ],
+            "paging": true,
+            "pageLength": 10000000,
+            "processing": true,  // Show the loading indicator
+            "searching": true,   // Enable the search feature
+            //"search": {
+            //    "search": $('#table_dossiers_sinistres-table_filter input').val()
+            //},
+            "bLengthChange" : false,
+            "lengthMenu": [
+                [100, 500, 1000],
+                [100, 500, 1000]
+            ]
+        });
+
+       // Gérer le "Sélectionner tout"
+        $('#selectAll').on('change', function() {
+            // Mettre à jour le tableau des éléments sélectionnés
+            if (this.checked) {
+                // Cocher toutes les cases individuelles
+                $('input[type="checkbox"]', dataTable.rows().nodes()).prop('checked', true);
+            } else {
+                // Désélectionner toutes les lignes
+                selectedItems = [];
+
+                // Décocher toutes les cases individuelles
+                $('input[type="checkbox"]', dataTable.rows().nodes()).prop('checked', false);
+            }
+
+            // Trigger manually the change event for each checkbox to update selectedItems
+            $('input[type="checkbox"]', dataTable.rows().nodes()).each(function() {
+                $(this).trigger('change');
+            });
+        });
+
+
+        // Gérer les changements de sélection
+        $('#table_generation_facture_compagnie tbody').on('change', 'input[type="checkbox"]', function () {
+            var data = dataTable.row($(this).closest('tr')).data();
+            var itemId = data.id;
+
+            if (this.checked) {
+                selectedItems.push(itemId);
+            } else {
+                var index = selectedItems.indexOf(itemId);
+                if (index !== -1) {
+                    selectedItems.splice(index, 1);
+                }
+            }
+
+            // Mettre à jour le montant total des factures sélectionnées
+            calculateMontantTotal(selectedItems);
+
+            // Désélectionner "Sélectionner tout" si toutes les cases individuelles ne sont pas cochées
+            $('#selectAll').prop('checked', selectedItems.length === dataTable.rows().count());
+
+            // Stocker les éléments sélectionnés dans le stockage local
+            localStorage.setItem('selectedItems', JSON.stringify(selectedItems));
+        });
+
+        dataTable.on('xhr.dt', function (e, settings, json, xhr) {
+            // Hide the spinner when the data is loaded
+            $('.spinner-border').show();
+        });
+
+        // Show the spinner when the table is processing
+        dataTable.on('processing.dt', function (e, settings, processing) {
+            if (processing) {
+                $('.spinner-border').show();
+            }
+        });
+
+        $('#search_garant').on('keyup change', function () {
+            let search_garant = $('#search_garant').val();
+            fetch_a_montant_garant_data(search_garant);
+        });
+
+        // Add custom search functionality for code, name, and prenoms columns
+        $('#search_garant, #search_date_debut_paiement, #search_date_fin_paiement').on('keyup change', function() {
+            // on remet tout à plat
+            // dataTable.search('').draw(); // Clear existing search
+            dataTable.search(''); // Clear existing search
+            dataTable.clear(); // clear table
+            $(this).updateSelectedItemFunction();
+            //$('#selectAll').prop('checked', true);
+
+            let search_garant = $('#search_garant').val();
+            let search_date_debut_paiement = $('#search_date_debut_paiement').val();
+            let search_date_fin_paiement = $('#search_date_fin_paiement').val();
+
+            if(search_garant == ''){
+                $('#btn_generation_facture_compagnie').prop("disabled",true);
+            }else{
+                $('#btn_generation_facture_compagnie').prop("disabled",false);
+            }
+
+            // on verifie les selection pour redessiner le tableau ce qui implicitera reactivera ce devra l'etre depuis le traitement datatable
+            if(search_garant != "" && search_date_debut_paiement != "" && search_date_fin_paiement != ""){
+                dataTable.draw(); // Trigger a new draw, which will include the updated search parameters
+            }
+            // on desactive le bouton d'action car selection incomplète
+            else{
+                $('#btn_generation_facture_compagnie').prop("disabled",true);
+            }
+        });
+
+
+
+
+
+        $(document).on("click", "#btn_generation_facture_compagnie" , function(e) {
+
+            $('#btn_generation_facture_compagnie > .loader').show(); //affichons loader du bouton
+            
+            var selected_sinistres_payes_ids = [];
+            var checkedCheckboxes = $('input[type="checkbox"]:checked', dataTable.rows().nodes());
+
+            console.log("Nombre de lignes cochées : ", checkedCheckboxes.length);
+
+            checkedCheckboxes.each(function() {
+                selected_sinistre_payes_id = $(this).val();
+                selected_sinistres_payes_ids.push(selected_sinistre_payes_id);
+
+                console.log("selected_sinistre_payes_id : ", selected_sinistre_payes_id);
+            });
+
+            if(checkedCheckboxes.length > 0){
+
+                 $.ajax({
+                    type:'post',
+                    url:'/comptabilite/submit_generate_facture_assureur',
+                    data: {'search_garant':$('#search_garant').val(),'search_date_debut_paiement':$('#search_date_debut_paiement').val(), 'search_date_fin_paiement':$('#search_date_fin_paiement').val(), "selectedItems": JSON.stringify(selected_sinistres_payes_ids)},
+                    beforeSend:function(){
+                         $('#btn_generation_facture_compagnie').prop('disabled', true);
+                         $('#loader').show();
+                         $('#btn_generation_facture_compagnie > .loader').show(); //affichons loader du bouton
+                    },
+                    success: function(response){
+
+                        console.log(response);
+
+                        if (response.statut == 1){
+
+                            $('#btn_generation_facture_compagnie').prop('disabled', false);
+                            $('#btn_generation_facture_compagnie > .loader').hide(); //cachons loader du bouton
+                            
+                            var link = response.facture_pdf;
+                            var a = document.createElement('a');
+                            a.href = link;
+                            a.download = link.substr(link.lastIndexOf('/') + 1);
+                            document.body.appendChild(a);
+                            a.click();
+                            document.body.removeChild(a);
+
+                            location.reload();
+
+                        }else{
+                            notifyWarning(response.message);
+                            $('#btn_generation_facture_compagnie').prop('disabled', false);
+                            $('#loader').hide();
+                            $('#btn_generation_facture_compagnie > .loader').hide(); //cachons loader du bouton
+                        }
+
+                    },
+                    error: function(){
+                        notifyWarning("Erreur lors de la génération de la facture");
+                        $('#loader').hide();
+                        $('#btn_generation_facture_compagnie > .loader').hide(); //cachons loader du bouton
+                    }
+
+                });
+
+            }else{
+                notifyWarning("Probleme rencontré de la sélection des sinistres payes");
+                $('#btn_generation_facture_compagnie > .loader').hide(); //cachons loader du bouton
+            }
+
+        });
+
+
+
+        // Fonction pour calculer le montant total des factures sélectionnées
+        function calculateMontantTotal(selectedItems) {
+            var montantTotal = 0;
+            var promises = []; // Array to store promises for each AJAX request
+
+            // Reset montantTotal to 0 before recalculating
+            montantTotal = 0;
+
+            // Parcourir les éléments sélectionnés et ajouter leur montant total au montant total
+            selectedItems.forEach(function(itemId) {
+                // Appel AJAX pour obtenir le montant total de chaque facture
+                var promise = $.ajax({
+                    url: '{% url 'obtenir_montant_sinistre' %}',
+                    method: 'GET',
+                    data: {'sinistre_id': itemId},
+                    success: function(response) {
+                        // Ajouter le montant récupéré au montant total
+                        montantTotal += response.montant_total;
+                        // Mettre à jour l'affichage du montant total
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Erreur lors de la récupération du montant total de la facture:', error);
+                    }
+                });
+                promises.push(promise);
+            });
+        }
+
+        function fetchData() {
+            $('#loader').show();
+            $.ajax({
+                url: '{% url "get_refacturation_assureur_data" %}',
+                type: 'GET',
+                dataType: 'json',
+                success: function(data) {
+                    // Mettre à jour les éléments avec les données récupérées
+                    $('.total_global_a_refacturer').text(data.total_global_a_refacturer);
+
+
+                },
+                complete: function() {
+                    $('.loader').hide();
+                }
+            });
+        }
+
+        function fetch_a_montant_garant_data(compagnie_id) {
+            $('#a_refacturer_compagnie_selectionnee_loader').show();
+            $.ajax({
+                url: '{% url "get_garant_selectionne_data" 0 %}'.replace('0', compagnie_id),
+                type: 'GET',
+                dataType: 'json',
+                success: function(data) {
+                    // Mettre à jour les éléments avec les données récupérées
+                    $('#compagnie_selectionnee_label').text(data.compagnie_name);
+                    $('#a_refacturer_compagnie_selectionnee').text(data.total_garant_selectionne_a_refacturer);
+
+
+                },
+                complete: function() {
+                    $('#a_refacturer_compagnie_selectionnee_loader').hide();
+                }
+            });
+        }
+
+
+        fetchData();
+
+        // Fonction pour calculer le montant total des factures sélectionnées
+            function calcudlateMontantTotal(selectedItems) {
+                var montantTotal = 0;
+                // Parcourir les éléments sélectionnés et ajouter leur montant total au montant total
+                selectedItems.forEach(function(itemId) {
+                    // Appel AJAX pour obtenir le montant total de chaque facture
+                    $.ajax({
+                        url: '{% url 'obtenir_montant_sinistre' %}',
+                        method: 'GET',
+                        data: {'sinistre_id': itemId},
+                        success: function(response) {
+                            // Ajouter le montant récupéré au montant total
+                            montantTotal += response.montant_total;
+                            // Mettre à jour l'affichage du montant total
+                            $('#montant_total_factures_selectionnees').text(montantTotal);
+                        },
+                        error: function(xhr, status, error) {
+                            console.error('Erreur lors de la récupération du montant total de la facture:', error);
+                        }
+                    });
+                });
+            }
+
+            function formatNumberWithSpaces(number) {
+
+                // Convertir en nombre flottant pour s'assurer que c'est un nombre
+                var floatNumber = parseFloat(number);
+
+                // Vérifier si la conversion a échoué
+                if (isNaN(floatNumber)) {
+                    return number; // Retourner la valeur originale si ce n'est pas un nombre valide
+                }
+
+                // Convertir le nombre en chaîne avec deux décimales
+                var numberWithTwoDecimals = floatNumber.toFixed(2);
+
+                // Diviser en partie entière et décimale
+                var parts = numberWithTwoDecimals.split('.');
+
+                // Ajouter des espaces comme séparateurs de milliers à la partie entière
+                parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+
+                // Si la partie décimale est "00", la supprimer
+                if (parts[1] === '00') {
+                    return parts[0]; // Retourner seulement la partie entière
+                }
+
+                // Réassembler les parties
+                return parts.join('.');
+            }
+
+
+
+            // Fonction factice pour obtenir le montant total d'une facture à partir de son ID
+            function getItemMontantTotal(itemId) {
+                $.ajax({
+                    url: '{% url 'obtenir_montant_sinistre' %}', // URL de l'API ou de la vue Django pour obtenir le montant total de la facture
+                    method: 'GET',
+                    data: {'sinistre_id': itemId}, // Envoyer l'ID de la facture comme paramètre de la requête
+                    success: function(response) {
+
+                        // Mettre à jour le montant total affiché avec le montant récupéré
+                        $('#montant_total_factures_selectionnees').text(response.montant_total);
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Erreur lors de la récupération du montant total de la facture:', error);
+                    }
+                });
+            }
+
+
+        var my_noty;//variale global pour pouvoir le fermer de popup de l'extérieur
+        function notifySuccess(message, fnCallback){
+            my_noty = noty(
+                {
+                    text        : message,
+                    type        : 'success',
+                    dismissQueue: true,
+                    layout      : 'center',
+                    theme       : 'defaultTheme',
+                    buttons     : [
+                        {
+                            addClass: 'btn btn-primary', text: 'OK', onClick: function ($noty) {
+                                if (typeof fnCallback === 'function') fnCallback();
+                                $noty.close();
+                            }
+                        }
+                    ]
+                }
+            );
+        }
+
+        function notifyWarning(message, fnCallback){
+
+            if (my_noty) {
+                my_noty.close();
+            }
+
+            my_noty = noty(
+                {
+                    text        : message,
+                    type        : 'warning',
+                    dismissQueue: true,
+                    layout      : 'center',
+                    theme       : 'defaultTheme',
+                    buttons     : [
+                        {
+                            addClass: 'btn btn-primary', text: 'OK', onClick: function ($noty) {
+                                if (typeof fnCallback === 'function') fnCallback();
+                                $noty.close();
+                            }
+                        }
+                    ]
+                }
+            );
+        }
+
+        function notifyError(message, fnCallback){
+            my_noty = noty(
+                {
+                    text        : message,
+                    type        : 'error',
+                    dismissQueue: true,
+                    layout      : 'center',
+                    theme       : 'defaultTheme',
+                    buttons     : [
+                        {
+                            addClass: 'btn btn-primary', text: 'OK', onClick: function ($noty) {
+                                if (typeof fnCallback === 'function') fnCallback();
+                                $noty.close();
+                            }
+                        }
+                    ]
+                }
+            );
+        }
+
+
+    });
+</script>
+
+{% endblock %}

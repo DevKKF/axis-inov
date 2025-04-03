@@ -1,0 +1,71 @@
+{% extends 'police/base_universelle.html' %} {% block extrastyle %} {% endblock %} 
+{% block content %}
+<div class="col-12 col-md-12 order-2 order-md-1">
+  {% comment %} {% include 'police/header.html' %} {% endcomment %}
+  <div class="card">
+    <div class="card-header">
+        <h3 class="card-title text-white">{{_("FORMULE_DE_GARANTIE_UNIVERSELLE")}}</h3>
+        <div class="card-tools">
+          {% if bureau.option_assurance_universelle %}
+          <a class="btn btn-sm btn-default btn-complement-rouge" data-toggle="modal"  data-target="#modal-formule"><i class="fas fa-plus"></i> {{ _("Creer_une_formule_de_garantie_universelle") }}</a>
+          {% endif %}
+        </div>
+    </div>
+    <div class="card-body">
+      <div id="example1_wrapper" class="dataTables_wrapper dt-bootstrap4">
+        <div class="row">
+          <div class="col-12 col-md-12 col-sm-12">
+              <div class="table-responsive">
+              <table class="table table-bordered table-striped dataTable dtr-inline" id="table_formules">
+                  <thead>
+                    <tr>
+                      <th scope="col">{{ _("Libelle") }}</th>
+                      <th scope="col">{{ _("Code") }}</th>
+                      <th scope="col">{{ _("Taux_de_ouverture") }}</th>
+                      <th scope="col">{{ _("Territorialite") }}</th>
+                      <th scope="col">{{ _("Type_tarif") }}</th>
+                      <th scope="col">{{ _("Reseau_de_soins") }}</th>
+                      <!--th scope="col">{{ _("Date fin") }}</th-->
+                      <th scope="col">{{ _("Statut") }}</th>
+                      <th scope="col">{{ _("Actions") }}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                  {% for formule in formules %}
+                    <tr>
+                        <td>{{ formule.libelle|default_if_none:"" }}</td>
+                        <td>{{ formule.code|default_if_none:"" }}</td>
+                        <td style="text-align:right;">{{ formule.taux_couverture|default_if_none:"" }} %</td>
+                        <td>{{ formule.territorialite|default_if_none:"" }}</td>
+                        <td>{{ formule.type_tarif|default_if_none:"" }}</td>
+                        <td>{% if formule.reseau_soin %}<a href="{% url 'detail_reseau_soin' formule.reseau_soin_id %}">{{ formule.reseau_soin|default_if_none:"" }}</a>{% endif %}</td>
+                        <!--td>{{ formule.date_fin|date:"d/m/Y" }}</td-->
+                        <td><span class="badge badge-{{formule.statut|default_if_none:''|slugify}}">{{ formule.statut|default_if_none:""}}</span></td>
+                        <td>
+                            <a href="{% url 'details_formule' formule.id %}" class="btn badge btn-sm btn-details rounded-pill"><i class="fa fa-eye"></i> {{_('Details')}}</a></a>
+                            {% if bareme.statut != 'INACTIF' %}
+                            <span class="btn badge btn-sm btn-complement-rouge rounded-pill btn-modal-modifier_formule_universelle" title="Modifier" data-href="{% url 'modifier_formule' formule.id %}" style="color:white;font-weight:normal;"><i class="fa fa-pencil"></i> {{_('Modifier')}}</span>&nbsp;&nbsp;
+                            <a class="btn badge btn-sm btn-danger rounded-pill btn-modal-formule-desactivate" title="Désactiver" data-href="{% url 'desactivate_formule' %}" data-type="delete" data-id="{{ formule.id }}" data-libelle="{{ formule.libelle }}" data-tauxcouverture="{{ formule.taux_couverture }}" data-territorialite="{{ formule.territorialite.id }}" data-datedebut="{{ formule.date_debut|date:'Y-m-d' }}" data-datefin="{{ formule.date_fin|date:'Y-m-d' }}" data-statut="{{ formule.statut }}" data-toggle="modal"  data-target="#modal-formule-desactivate"><i class="fa fa-trash"></i></a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                  {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div
+{% endblock %}
+
+{% block extrajs %}
+<script>
+    $(document).ready(function() {
+        $('#formule').removeClass('o-bg-primary');
+        $('#formule').addClass('o-active');
+    } );
+</script>
+{% endblock %}

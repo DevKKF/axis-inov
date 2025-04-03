@@ -1,0 +1,155 @@
+{% load my_filters %}
+<!-- Modal -->
+ {% if facture.id %}
+ <div class="modal fade" id="modal-regler_facture_compagnie_treso" data-backdrop="static" data-keyboard="false" aria-hidden="true"  style="display: none">
+     <div class="modal-dialog modal-lg" role="document">
+     <div class="modal-content">
+         <div class="modal-header">
+         <h5 class="modal-title" id="reglersimplefactureTitle">RÉGLEMENT DE FACTURE Nº {{facture.id}}</h5>
+         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+             <span aria-hidden="true">&times;</span>
+         </button>
+         </div>
+ 
+         <form action="{% url 'reglement_facture_simple' facture.id %}" method="post" id="form_regler_facture_unique">
+             {% csrf_token %}
+             <div class="modal-body">
+
+                <div class="alert  alert-dismissible fade show hidden" role="alert">
+                    <span class="message"> TRAITEMENT EN COURS</span>
+                </div>
+
+                <div class="col-md-12 offset-0">
+                    <div class="row">
+                        <div class="col-md-6">
+
+                            <div class="form-group row">
+                                <label class="col-sm-6 col-form-label">Garant <span class="required"></span></label>
+                                <div class="col-sm-6">
+                                    <input type="text" readonly class="form-control" value="{{facture.compagnie}}">
+                                </div>
+                            </div>
+
+                            <div class="form-group row">
+                                <label class="col-sm-6 col-form-label">Mode de réglement<span class="required">*</span></label>
+                                <div class="col-sm-6">
+                                    <select name="mode_reglement_id" class="form-control" id="" required>
+                                        {% for mode_reglement in modes_reglements %}
+                                        <option value="{{mode_reglement.id}}">{{mode_reglement}}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+
+                            {% comment %}
+                            <div class="form-group row">
+                                <label class="col-sm-6 col-form-label">Banque émettrice<span class="required" id="libelle_banque_required">*</span></label>
+                                <div class="col-sm-6">
+                                    <select class="form-control tags-multiple" name="banque_id" id="banque_id" required>
+                                        <option value="">Choisir</option>
+                                        {% for banque in banques %}
+                                        <option value="{{ banque.id }}">{{ banque.libelle }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            {% endcomment %}
+							<div class="form-group row">
+								<label class="col-sm-6 col-form-label">{{ _('Banque émettrice') }}</label>
+								<div class="col-sm-6">
+									<input type="text" class="form-control alpha_num_n_space_input" name="banque_id" id="banque_id"/>
+								</div>
+							</div>
+
+                            <div class="form-group row">
+                                <label class="col-sm-6 col-form-label">Numéro de pièce <span class="required" id="libelle_numero_piece_required"></span></label>
+                                <div class="col-sm-6">
+                                    <input type="text" class="form-control alpha_num_input" name="numero_piece" id="numero_piece" value=""/>
+                                </div>
+                            </div>
+                                
+                        </div>
+
+                        <div class="vl"></div>
+
+                        <div class="col-md-6" style="border-left:0px;margin-left:-10px;padding-left:20px;">
+
+                            <div class="form-group row">
+                                <label class="col-sm-6 col-form-label">Date de reglement<span class="required">*</span></label>
+                                <div class="col-sm-6">
+                                    <input type="date" class="form-control" name="date_reglement" value="{{now|date:"Y-m-d"}}" required>
+                                </div>
+                            </div>
+
+                            <div class="form-group row">
+                                <label class="col-sm-6 col-form-label">Compte Trésorerie<span class="required">*</span></label>
+                                <div class="col-sm-6">
+                                    <select class="form-control" name="compte_tresorerie_id" id="compte_tresorerie" required>
+										<option value="">Choisir</option>
+										{% for compte_tresorerie in comptes_tresoreries %}
+										<option value="{{ compte_tresorerie.id }}">{{ compte_tresorerie.libelle }}</option>
+										{% endfor %}
+									</select>
+                                </div>
+                            </div>
+
+                            <div class="form-group row">
+                                <label class="col-sm-6 col-form-label">Montant restant <span class="required"></span></label>
+                                <div class="col-sm-6">
+                                    <input type="text" readonly class="form-control" value="{{facture.montant_restant|money_field}} {{ request.user.bureau.pays.devise.code }}">
+                                </div>
+                            </div>
+
+                            <div class="form-group row">
+                                <label class="col-sm-6 col-form-label">Montant à régler <span class="required" id="libelle_numero_piece_required"></span></label>
+                                <div class="col-sm-6">
+                                    <input type="text" class="form-control money_field_only_positive" name="montant_a_regler" required value="">
+                                    <small id="error_message" class="form-text text-danger" style="display:none;">Le montant doit être entre 1 et {{ facture.montant_restant }}.</small>
+                                </div>
+                            </div>
+
+                        </div>
+
+                    </div>
+                </div>
+ 
+                
+             </div>
+             <div class="modal-footer">
+                 <button type="button" class="btn btn-secondary" data-dismiss="modal">Fermer</button>
+                 <button type="button" id="btn_save_reglement_facture_compagnie_treso" class="btn o-bg-primary">Valider</button>
+             </div>
+         </form>
+     </div>
+     </div>
+ </div>
+ {% endif %}
+
+<script>
+
+	function addInputAlphaNumWithSpaceValidation(inputSelector, errorId) {
+		var previousValue = ""; // Déclarer previousValue en dehors de la fonction
+		$(inputSelector).on("input", function () {
+			var inputValue = $(this).val();
+			// Modifier la regex pour inclure les espaces
+			var alphanumericRegex = /^[a-zA-Z0-9\/\-_ ]*$/; 
+			var errorMessage = $("#" + errorId);
+
+			if (!alphanumericRegex.test(inputValue)) {
+				errorMessage.css("display", "block");
+				$(this).val(previousValue); // Restaurer la valeur précédente
+				setTimeout(function () {
+					errorMessage.css("display", "none");
+				}, 5000); // Masquer le message d'erreur après 5 secondes
+			} else {
+				previousValue = inputValue; // Mettre à jour la valeur précédente
+				errorMessage.css("display", "none");
+			}
+		});
+	}
+
+	$(document).ready(function () {
+		addInputAlphaNumWithSpaceValidation(".alpha_num_n_space_input", "error-message");
+	});
+
+</script>

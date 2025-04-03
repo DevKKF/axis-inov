@@ -1,0 +1,74 @@
+<div class="modal fade" id="modal_importation_beneficiaires" data-backdrop="static" data-keyboard="false" aria-hidden="true" style="display: none">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+
+      <form method="post" action="" id="form_importation_beneficiaire" validate>
+      {% csrf_token %}
+      <input type="hidden" id="police_id" name="police_id" value="{{ police.id }}"/>
+      <div class="modal-header">
+        <h4 class="modal-title">{{_('IMPORTATION_DES_BENEFICIAIRES_D_UNE_ANCIENNE_FORMULE)')}}</h4>
+        <button
+          type="button"
+          class="close"
+          data-dismiss="modal"
+          aria-label="Close"
+        >
+          <span aria-hidden="true">×</span>
+        </button>
+      </div>
+       <div class="modal-body">
+       <div class="alert  alert-dismissible fade show hidden" role="alert">
+          <span class="message"> {{_('TRAITEMENT_EN_COURS')}}</span>
+        </div>
+        <div class="row">
+          <div class="col-md-12">
+              <div class="form-group row">
+                  <label class="col-sm-5 col-form-label">{{_('Ancienne_police_resiliee')}}</label>
+                  <div class="col-sm-7">
+                    <select name="police_id" id="police_sortante_id" class="form-control tags-multiple" data-href="{% url 'get_formules' 0 %}">
+                      <option value="">{{_('Choisir')}}</option>
+                      {% for police in polices_du_bureau_actif %}
+                      {% if police.etat_police == "résilié" %}
+                      <option value="{{police.id}}">{{police.client.nom}} - {{police.numero }}</option>
+                      {% endif %}
+                      {% endfor %}
+                    </select>
+                  </div>
+              </div>
+          </div>
+          <div class="col-md-12">
+              <div class="form-group row">
+                  <label class="col-sm-5 col-form-label">{{_('Ancienne_formule')}}<span class="text-danger">*</span></label>
+                  <div class="col-sm-7">
+                    <select name="formule_sortante_code" id="formule_sortante_code" class="form-control tags-multiple" >
+                    </select>
+                  </div>
+              </div>
+          </div>
+          <div class="col-md-12">
+              <div class="form-group row">
+                  <label class="col-sm-5 col-form-label">{{_('Nouvelle_formule')}}<span class="text-danger">*</span></label>
+                  <div class="col-sm-7">
+                    <select name="nouvelle_formule_code" id="" class="form-control tags-multiple">
+                      {% for formule in liste_des_formules %}
+                      <option value="{{formule.code}}">{{formule.libelle}}</option>
+                      {% endfor %}
+                    </select>
+                  </div>
+              </div>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer justify-content-between">
+        <button type="button" class="btn btn-default" data-dismiss="modal">
+          {{_('Retour')}}
+        </button>
+        <button type="button" id="btn_changement_formules" class="btn o-bg-primary" data-href="{% url 'importation_beneficiaire_from_ancienne_police' police.id %}">
+          {{_('Transferer')}}
+        </button>
+      </div>
+
+      </form>
+    </div>
+  </div>
+</div>

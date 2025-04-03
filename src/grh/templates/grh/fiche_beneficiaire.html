@@ -1,0 +1,174 @@
+
+{% load static %}
+
+    <style>
+        #title{
+            color: #B7482B;
+        }
+        img{
+            height: auto;
+            max-width: 40%;
+        }
+    </style>
+    <div class="grid grid-cols-12 gap-6">
+        <div class="intro-y col-span-12 md:col-span-12 lg:col-span-12">
+            <div class="box">
+                <div class="flex items-start px-5 pt-5">
+                    <div class="w-full flex flex-col lg:flex-row items-center justify-center border-b border-gray-500">
+                        <h1 class="text-xl lg:text-lg font-medium mb-3 mr-5" id="title">
+                            {{_('FICHE_D_IDENTITE')}}
+                        </h1>
+                    </div>
+                </div>
+                <div class="flex mt-2">
+                    <div class="w-full sm:w-1/2 md:w-1/3 p-2 mt-5 flex"></div>
+                    <div class="w-full sm:w-1/2 md:w-1/3 p-2 mt-5 flex justify-center">
+                        {% if photo_identite and photo_identite.url %}
+                            <img class="rounded-full" src="{{ photo_identite.url }}">
+                        {% else %}
+                            <div class="alert w-full alert-primary-soft show flex items-center mx-auto inline-block justify-center">
+                                <i data-feather="image" class="mr-2"></i>
+                                {{_('AUCUNE_PHOTO')}}
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="w-full sm:w-1/2 md:w-1/3 p-2 mt-5 flex"></div>
+                </div>
+                <div class="mt-1">
+                    <div class="flex">
+                        <div class="w-1/2 p-2 mt-2 flex border-r border-gray-500">
+                            <div class="w-1/2 p-2 mt-2">
+                                <input type="text" class="mb-2 text-sm rounded-lg w-full font-bold border-transparent" value="Nom" readonly />
+                                <input type="text" class="mb-2 text-sm rounded-lg w-full font-bold border-transparent" value="Prénoms" readonly />
+                                <input type="text" class="mb-2 text-sm rounded-lg w-full font-bold border-transparent" value="Sexe" readonly />
+                                <input type="text" class="mb-2 text-sm rounded-lg w-full font-bold border-transparent" value="Numéro de sécurité sociale" readonly /> <!-- Added field label -->
+                            </div>
+                            <div class="w-1/2 p-2 mt-2">
+                                <input type="text" class="mb-2 text-sm rounded-lg w-full" value="{{ beneficiaire.nom|default_if_none:"" }}" readonly />
+                                <input type="text" class="mb-2 text-sm rounded-lg w-full" value="{{ beneficiaire.prenoms|default_if_none:"" }}" readonly />
+                                <input type="text" class="mb-2 text-sm rounded-lg w-full" value="{% if beneficiaire.genre == 'M' %}HOMME{% else %}FEMME{% endif %}" readonly />
+                                <input type="text" class="mb-2 text-sm rounded-lg w-full" name="numero_securite_sociale" value="{{ beneficiaire.numero_securite_sociale|default_if_none:"" }}" readonly/> <!-- Input field for numero_securite_sociale -->
+                            </div>
+                        </div>
+                        
+                        
+                        <div class="w-1/2 p-2 mt-2 flex">
+                            <div class="w-1/2 p-2 mt-2">
+                                <input type="text" class="mb-2 text-sm rounded-lg w-full font-bold border-transparent" value="Date de naissance" readonly />
+                                <input type="text" class="mb-2 text-sm rounded-lg w-full font-bold border-transparent" value="Pays de naissance" readonly />
+                                <input type="text" class="mb-2 text-sm rounded-lg w-full font-bold border-transparent" value="N° CNI" readonly />
+
+
+                            </div>
+                            <div class="w-1/2 p-2 mt-2">
+                                <input type="text" class="mb-2 text-sm rounded-lg w-full" value="{{ beneficiaire.date_naissance|default_if_none:""|date:"d/m/Y" }}" readonly />
+                                <input type="text" class="mb-2 text-sm rounded-lg w-full" value="{{ beneficiaire.pays_naissance|default_if_none:"" }}" readonly />
+                                <input type="text" class="mb-2 text-sm rounded-lg w-full" value="{{ beneficiaire.numero_piece|default_if_none:"" }}" readonly />
+
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex items-start px-5 pt-5">
+                    <div class="w-full flex flex-col lg:flex-row items-center border-b border-gray-500">
+                        <h1 class="text-xl lg:text-lg font-medium mb-3 mr-5" id="title">
+                            {{_('ASSURANCE')}}
+                        </h1>
+                    </div>
+                </div>
+                <div class="mt-1">
+                    <div class="flex">
+                        <div class="w-1/2 p-2 mt-2 flex border-r border-gray-500">
+                            <div class="w-1/2 p-2 mt-2">
+                                <input type="text" class="mb-2 text-sm rounded-lg w-full font-bold border-transparent" value="Date d'entrée" readonly />
+                            </div>
+                            <div class="w-1/2 p-2 mt-2">
+                                <input type="text" class="mb-2 text-sm mb-2 text-sm rounded-lg w-full" value="{{ date_entree_police|default_if_none:""|date:"d/m/Y" }}" readonly />
+                            </div>
+                        </div>
+                        <div class="w-1/2 p-2 mt-2 flex">
+                            <div class="w-1/2 p-2 mt-2">
+                                <input type="text" class="mb-2 text-sm rounded-lg w-full font-bold border-transparent" value="Formule de garantie" readonly />
+                            </div>
+                            <div class="w-1/2 p-2 mt-2">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex items-start px-5 pt-5">
+                    <div class="w-full flex flex-col lg:flex-row items-center border-b border-gray-500">
+                        <h1 class="text-xl lg:text-lg font-medium mb-3 mr-5" id="title">
+                            {{_('ADHERENT_PRINCIPAL')}}
+                        </h1>
+                    </div>
+                </div>
+                <div class="mt-1">
+                    <div class="flex">
+                        <div class="w-1/2 p-2 mt-2 flex border-r border-gray-500">
+                            <div class="w-1/2 p-2 mt-2">
+                                <input type="text" class="mb-2 text-sm rounded-lg w-full font-bold border-transparent" value="Adhérent" readonly />
+                            </div>
+                            <div class="w-1/2 p-2 mt-2">
+                                <input type="text" class="mb-2 text-sm rounded-lg w-full" value="{{ beneficiaire.adherent_principal|default_if_none:"" }}" readonly />
+                            </div>
+                        </div>
+                        <div class="w-1/2 p-2 mt-2 flex">
+                            <div class="w-1/2 p-2 mt-2">
+                                <input type="text" class="mb-2 text-sm rounded-lg w-full font-bold border-transparent" value="Lien de parenté" readonly />
+                            </div>
+                            <div class="w-1/2 p-2 mt-2">
+                                <input type="text" class="mb-2 text-sm rounded-lg w-full" value="{{ beneficiaire.qualite_beneficiaire|default_if_none:"" }}" readonly />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex items-start px-5 pt-5">
+                    <div class="w-full flex flex-col lg:flex-row items-center border-b border-gray-500">
+                        <h1 class="text-xl lg:text-lg font-medium mb-3 mr-5" id="title">
+                            {{_('COORDONNEES')}}                        
+                        </h1>
+                    </div>
+                </div>
+                <div class="mt-1">
+                    <div class="flex">
+                        <div class="w-1/2 p-2 mt-2 flex border-r border-gray-500">
+                            <div class="w-1/2 p-2 mt-2">
+                                <input type="text" class="mb-2 text-sm rounded-lg w-full font-bold border-transparent" value="Téléphone mobile" readonly />
+                                <input type="text" class="mb-2 text-sm rounded-lg w-full font-bold border-transparent" value="Email" readonly />
+                                <input type="text" class="mb-2 text-sm rounded-lg w-full font-bold border-transparent" value="Code postal" readonly />
+                            </div>
+                            <div class="w-1/2 p-2 mt-2">
+                                <input type="text" class="mb-2 text-sm rounded-lg w-full" value="{{ beneficiaire.telephone_mobile|default_if_none:"" }}" readonly />
+                                <input type="text" class="mb-2 text-sm rounded-lg w-full" value="{{ beneficiaire.email|default_if_none:"" }}" readonly />
+                                <input type="text" class="mb-2 text-sm rounded-lg w-full" value="{{ beneficiaire.code_postal|default_if_none:"" }}" readonly />
+                            </div>
+                        </div>
+                        <div class="w-1/2 p-2 mt-2 flex border-r border-gray-500">
+                            <div class="w-1/2 p-2 mt-2">
+                                <input type="text" class="mb-2 text-sm rounded-lg w-full font-bold border-transparent" value="Pays de résidence" readonly />
+                                <input type="text" class="mb-2 text-sm rounded-lg w-full font-bold border-transparent" value="Ville" readonly />
+                                <input type="text" class="mb-2 text-sm rounded-lg w-full font-bold border-transparent" value="Adresse" readonly />
+                            </div>
+                            <div class="w-1/2 p-2 mt-2">
+                                <input type="text" class="mb-2  text-sm rounded-lg w-full" value="{{ beneficiaire.pays_residence|default_if_none:"" }}" readonly />
+                                <input type="text" class="mb-2 text-sm rounded-lg w-full" value="{{ beneficiaire.ville|default_if_none:"" }}" readonly />
+                                <input type="text" class="mb-2 text-sm rounded-lg w-full" value="{{ beneficiaire.adresse|default_if_none:"" }}" readonly />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="flex">
+                        <div class="w-1/2 p-2 mt-2 flex border-r border-gray-500">
+                            <div class="w-1/2 p-2 mt-2">
+                            </div>
+                            <div class="w-1/2 p-2 mt-2">
+                            </div>
+                        </div>
+                        <div class="w-1/2 p-2 mt-2 flex">
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>

@@ -1,0 +1,145 @@
+
+{% load static %}
+{% load custom_filters %}
+
+    <style>
+        #title {
+            color: #B7482B;
+        }
+        #link {
+            color: #0000FF;
+        }
+        #status {
+            padding: 5px;
+            border-radius: 5px;
+        }
+    </style>
+
+    <div class="intro-y col-span-12 md:col-span-12 lg:col-span-12 mt-8">
+        <div class="box">
+            <div class="flex items-start px-5 pt-5">
+                <div class="w-full flex flex-col lg:flex-row items-center border-b border-gray-500">
+                    <h1 class="text-xl lg:text-lg font-medium mb-3 mr-5" id="title">
+                        {{_('QUITTANCES_IMPAYEES')}}
+                    </h1>
+                </div>
+            </div>
+            <div class="grid grid-cols-12 gap-6 mt-2 p-8">
+                <div class="intro-y col-span-12 overflow-auto lg:overflow-visible">
+                    {% if quittances_impayees %}
+                    <table class="table table-report -mt-2 datatable">
+                        <thead>
+                            <tr>
+                                <th class="whitespace-nowrap">{{_('Numero_de_quittance')}}</th>
+                                <th class="whitespace-nowrap">{{_('Date_d_emission')}}</th>
+                                <th class="whitespace-nowrap">{{_('Debut_periode')}}</th>
+                                <th class="whitespace-nowrap">{{_('Fin_periode')}}</th>
+                                <th class="whitespace-nowrap">{{_('Prime_TTC')}}</th>
+                                <th class="whitespace-nowrap">{{_('Prime_nette')}}</th>
+                                <th class="whitespace-nowrap">{{_('Devise')}}</th>
+                                <th class="whitespace-nowrap">{{_('Statut')}}</th>
+                                <th class="whitespace-nowrap text-center">{{_('Actions')}}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for quittance in quittances_impayees %}
+                                <tr class="intro-x">
+                                    <td class="w-auto">{{ quittance.numero|default_if_none:"" }}</td>
+                                    <td class="w-auto">{{ quittance.date_emission|default_if_none:""|date:"d/m/Y" }}</td>
+                                    <td class="w-auto">{{ quittance.date_debut|default_if_none:""|date:"d/m/Y" }}</td>
+                                    <td class="w-auto">{{ quittance.date_fin|default_if_none:""|date:"d/m/Y" }}</td>
+                                    <td class="w-auto">{{ quittance.prime_ttc|default_if_none:""|format_amount }}</td>
+                                    <td class="w-auto">{{ quittance.prime_ht|default_if_none:""|format_amount }}</td>
+                                    <td class="w-auto">{{ quittance.devise.libelle|default_if_none:"" }}</td>
+                                    <td class="w-auto">
+                                        <div class="flex items justify-center" id="status" style="background-color:#DC3545;color:#FFFFFF;font-weight: bold;">
+                                            {{ quittance.statut|default_if_none:"" }}
+                                        </div>
+                                    </td>
+                                    <td class="table-report__action">
+                                        <div class="flex justify-center items-center">
+                                            <a href="{% url 'grh.fiche_quittance' police.id quittance.id %}">
+                                                <i data-feather="eye" id="title"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                        <div class="alert alert-primary-soft show flex items-center mx-auto inline-block justify-center">
+                            <i data-feather="info" class="mr-2"></i>
+                            {{_('AUCUNE_DONNEE')}}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="intro-y col-span-12 md:col-span-12 lg:col-span-12 mt-8">
+        <div class="box">
+            <div class="flex items-start px-5 pt-5">
+                <div class="w-full flex flex-col lg:flex-row items-center border-b border-gray-500">
+                    <h1 class="text-xl lg:text-lg font-medium mb-3 mr-5" id="title">
+                        {{_('LISTE_TOTALE_DES_QUITTANCES')}}
+                    </h1>
+                </div>
+            </div>
+            <div class="grid grid-cols-12 gap-6 mt-2 p-8">
+                <div class="intro-y col-span-12 overflow-auto lg:overflow-visible">
+                    {% if quittances %}
+                    <table class="table table-report -mt-2 datatable">
+                        <thead>
+                            <tr>
+                                <th class="whitespace-nowrap">{{_('Numero_de_quittance')}}</th>
+                                <th class="whitespace-nowrap">{{_('Date_d_emission')}}</th>
+                                <th class="whitespace-nowrap">{{_('Debut_periode')}}</th>
+                                <th class="whitespace-nowrap">{{_('Fin_periode')}}</th>
+                                <th class="whitespace-nowrap">{{_('Prime_TTC')}}</th>
+                                <th class="whitespace-nowrap">{{_('Prime_nette')}}</th>
+                                <th class="whitespace-nowrap">{{_('Devise')}}</th>
+                                <th class="whitespace-nowrap">{{_('Statut')}}</th>
+                                <th class="whitespace-nowrap text-center">{{_('Actions')}}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for quittance in quittances %}
+                            <tr class="intro-x">
+                                <td class="w-auto">{{ quittance.numero|default_if_none:"" }}</td>
+                                <td class="w-auto">{{ quittance.date_emission|default_if_none:""|date:"d/m/Y" }}</td>
+                                <td class="w-auto">{{ quittance.date_debut|default_if_none:""|date:"d/m/Y" }}</td>
+                                <td class="w-auto">{{ quittance.date_fin|default_if_none:""|date:"d/m/Y" }}</td>
+                                <td class="w-auto">{{ quittance.prime_ttc|default_if_none:""|format_amount }}</td>
+                                <td class="w-auto">{{ quittance.prime_ht|default_if_none:""|format_amount }}</td>
+                                <td class="w-auto">{{ quittance.devise.libelle|default_if_none:"" }}</td>
+                                <td class="w-auto">
+                                    <div class="flex items justify-center" id="status" 
+                                    style="background-color: {% if quittance.statut == 'PAYE' %}#007500;color:#FFFFFF;font-weight: bold;
+                                    {% elif quittance.statut == 'IMPAYE' %}#DC3545;color:#FFFFFF;font-weight: bold;
+                                    {% endif %}">
+                                        {{ quittance.statut|default_if_none:"" }}
+                                    </div>
+                                </td>
+                                <td class="table-report__action">
+                                    <div class="flex justify-center items-center">
+                                        <a href="{% url 'grh.fiche_quittance' police.id quittance.id %}">
+                                            <i data-feather="eye" id="title"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                    <div class="alert alert-primary-soft show flex items-center mx-auto inline-block justify-center">
+                        <i data-feather="info" class="mr-2"></i>
+                        {{_('AUCUNE_DONNEE')}}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>

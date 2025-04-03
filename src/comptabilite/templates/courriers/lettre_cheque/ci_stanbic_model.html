@@ -1,0 +1,107 @@
+{% load my_filters %}
+<html>
+<head>
+<title>BORDEREAU DES COMMISSIONS REGLEES</title>
+<style>
+    @page {
+        size: 17.5cm 8cm;  /* Define the cheque size in cm */
+
+        @frame content_frame {          /* Content Frame */
+            margin: 0.2cm;   /* Further reduced margin */
+            top: 10pt;       /* Adjusted top margin */
+            bottom: 10pt;    /* Adjusted bottom margin */
+        }
+        @frame header_frame {           /* Another static Frame */
+            -pdf-frame-content: header_content;
+            top: 0pt;
+            margin: 0.2cm;   /* Further reduced margin */
+            height: 0pt;
+        }
+        @frame footer_frame {           /* Another static Frame */
+            -pdf-frame-content: footer_content;
+            bottom: -10pt;
+            margin: 0.2cm;   /* Further reduced margin */
+            height: 40pt;    /* Adjusted footer height */
+        }
+    }
+
+    body {
+        font-size: 14px;     /* Further reduced font size */
+        font-weight: bold;
+        color: black;
+    }
+
+    .bold {
+        font-weight: bold;
+    }
+    .text-left {
+        text-align: left;
+    }
+    .right {
+        text-align: right;
+    }
+    .center {
+        text-align: center;
+    }
+    table th, table td {
+        vertical-align: middle;
+        padding: 1px;       /* Further reduced padding */
+    }
+    .table td {
+        border: 1px solid #000;
+    }
+    .table th {
+        padding-top: 1px;
+        padding-bottom: 1px;
+        vertical-align: middle;
+        background-color: #DFF2FF;
+        border: 1px solid #000;
+    }
+</style>
+</head>
+
+<body>
+    <div id="header_content">
+    </div>
+
+    {% for paiement in paiements %}
+        <table class="table2">
+            <tr>
+                <td colspan="4"></td>
+                <td style="padding-top: 13pt; padding-bottom: 0; padding-right: 20pt; text-align: right;" colspan="2">
+                    # {{paiement.montant_total|money_field}} #
+                </td>
+            </tr>
+            <tr>
+                <td style="padding-top: -4pt; padding-left: 55pt; height:28pt; text-align:left;" colspan="4">
+                    {{paiement.montant_total|nombre_en_lettre}} FCFA
+                </td>
+                <td colspan="2"></td>
+            </tr>
+
+            <tr>
+                <td style="padding-top: -2pt; padding-left: 45pt; text-align: left; height: 25pt;" colspan="5">
+                    {{paiement.nom_beneficiaire}}
+                </td>
+            </tr>
+
+            <tr>
+                <td colspan="4"></td>
+                <td style="padding-top: -8.5pt; padding-left: 2pt; text-align: left;" colspan="1">
+                    Abidjan
+                </td>
+                <td style="padding-top: -8.5pt; padding-right: 20pt; text-align: right;" colspan="1">
+                    {{date_edition}}
+                </td>
+            </tr>
+        </table>
+
+        {% if forloop.counter != paiements|length %}
+            <div style="page-break-before:always"></div>
+        {% endif %}
+    {% endfor %}
+
+    <div id="footer_content">
+    </div>
+</body>
+</html>

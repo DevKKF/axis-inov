@@ -1,0 +1,134 @@
+<div  class="modal fade"  id="modal_courrier_update" data-backdrop="static" data-keyboard="false" aria-hidden="true"  style="display: noned">
+	<div class="modal-dialog modal-xl">
+		<div class="modal-content">
+			<form id="form_update_courrier" action="{% url 'modifier_courrier' courrier.id %}" method="post">
+				{% csrf_token %}
+                <div class="modal-header">
+                    <h4 class="modal-title" id="mbu-title">{{_("MODIFICATION D'UN COURRIER")}}</h4>
+                    <button type="button"class="close"data-dismiss="modal"aria-label="Close">
+                        <span aria-hidden="true">×</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert  alert-dismissible fade show hidden" role="alert">
+                        <span class="message"> {{_("TRAITEMENT EN COURS")}} </span>
+                    </div>
+                    <div class="col-md-12 offset-0">
+                        <ul class="nav nav-tabs" id="myTab" role="tablist">
+                            <li class="nav-item"><a class="nav-link active" id="formule_general_update-tab" data-toggle="tab" href="#formule_general_update" role="tab" aria-controls="formule_general_update" aria-selected="true">{{_("COURRIER")}}</a></li>
+                            <li class="nav-item"><a class="nav-link" id="formule_tiers_payant_update-tab" data-toggle="tab" href="#formule_tiers_payant_update" role="tab" aria-controls="formule_tiers_payant_update" aria-selected="false">{{_("PARAMETRES")}}</a></li>
+                        </ul>
+                        <div class="tab-content" id="myFormuleTabContentUpdate">
+                            <div class="tab-pane fade mt-3 show active" id="formule_general_update" role="tabpanel" aria-labelledby="formule_general_update-tab">
+                                <div class="row">
+                                    <!-- -->
+                                    <div class="col-md-6">
+                                       <div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_('Designation')}} <span class="required">*</span></label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control" name="designation" id="designation" value="{{ courrier.designation|default_if_none:'' }}" autocomplete="off" required/>
+										</div>
+									</div>
+
+<!--                                           <div class="form-group row">-->
+<!--										<label class="col-sm-5 col-form-label">{{_('Lien du fichier')}} <span class="required">*</span></label>-->
+<!--										<div class="col-sm-7">-->
+<!--											<input type="text" class="form-control" name="lien_fichier" value="{{ courrier.lien_fichier }}" autocomplete="off" required/>-->
+<!--										</div>-->
+<!--									</div>-->
+
+                                        {% comment %}
+                                        <div class="form-group row">
+                                            <label class="col-sm-5 col-form-label">Date fin <span class="required"></span></label>
+                                            <div class="col-sm-7">
+                                                <input type="date" class="form-control" name="date_fin" value="{{ today|date:'Y-m-d' }}" id="mbu-date_fin"/>
+                                            </div>
+                                        </div>
+                                        {% endcomment %}
+                                    </div>
+                                    <!-- -->
+
+                                    <div class="vl"></div>
+
+                                    <div class="col-md-5">
+
+                                        <div class="form-group row">
+                                            <label class="col-sm-5 col-form-label">{{_("service")}} <span class="required">*</span></label>
+                                            <div class="col-sm-7">
+                                                <select class="form-control" name="service"  autocomplete="off" required>
+                                                    <option value="">{{_('Choisir')}}</option>
+                                                    <option value="Production" {% if courrier.service == "Production" %}selected{% endif %}>Production</option>
+                                                    <option value="Sinistre" {% if courrier.service == "Sinistre" %}selected{% endif %}>Sinistre</option>
+                                                    <option value="Comptabilite" {% if courrier.service == "Comptabilite" %}selected{% endif %}>Comptabilité</option>
+                                                </select>
+                                            </div>
+								        </div>
+
+<!--                                        <div class="form-group row">-->
+<!--										<label class="col-sm-5 col-form-label">{{_("Produit")}} <span></span></label>-->
+<!--										<div class="col-sm-7">-->
+<!--											<select class="form-control" name="produit"  id="produit" autocomplete="off" required>-->
+<!--												<option value="">{{_('Choisir')}}</option>-->
+<!--												{% for produit in produits %}-->
+<!--												<option value="{{ produit.id }}" {% if produit.id == courrier.produit.id %}selected{% endif %}>{{ produit.nom }}</option>-->
+<!--												{% endfor %}-->
+<!--											</select>-->
+<!--										</div>-->
+<!--									    </div>-->
+
+                                       <div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Statut")}} <span class="required">*</span></label>
+										<div class="col-sm-7">
+											<select class="form-control" name="statut"  autocomplete="off" required>
+												<option value="">{{_('Choisir')}}</option>
+												<option value="ACTIF" {% if courrier.status == "ACTIF" %}selected{% endif %}>Actif</option>
+                                                <option value="INACTIF" {% if courrier.status == "INACTIF" %}selected{% endif %}>Inactive</option>
+											</select>
+										</div>
+									</div>
+
+
+
+
+
+
+
+                                    </div>
+
+                                </div>
+                            </div>
+
+                            <div class="tab-pane fade mt-3" id="formule_tiers_payant_update" role="tabpanel" aria-labelledby="formule_tiers_payant_update-tab">
+                                <div class="row">
+                                    <div class="col-md-5">
+
+
+                                    </div>
+                                    <div class="vl"></div>
+                                    <div class="col-md-7" style="border-left:0px;margin-left:-10px;padding-left:20px;">
+
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer justify-content-between">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">{{_("Retour")}}</button>
+                    <button type="button" id="btn_update_courrier" class="btn o-bg-primary">{{_("Valider")}}</button>
+                </div>
+            </form>
+		</div>
+	</div>
+</div>
+<script>
+	$(document).ready(function () {
+        $(".tags-multiple").select2();
+        $(document).on('click','#formule_tiers_payant_update-tab', function(){
+
+            $(".select2-selection__choice__display").css("color", "#000");
+
+        });
+	});
+</script>

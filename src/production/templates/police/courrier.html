@@ -1,0 +1,78 @@
+{% extends 'police/menu_police.html' %}
+{% load i18n %}
+{% block extrastyle %} {% endblock %}
+{% block content_title %}
+    <div class="row mb-2">
+          <div class="col-sm-6">
+                <h1 class="m-0">Liste des courriers  </h1>
+          </div>
+          <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                      <li class="breadcrumb-item"><a href="{% url 'admin:index' %}">{% trans 'Home' %}</a></li>
+                      <li class="breadcrumb-item">Production</li>
+                      <li class="breadcrumb-item"><a href="{% url 'clients' %}">Clients</a></li>
+                      <li class="breadcrumb-item"><a href="{% url 'police.details' police.id %}">Police</a></li>
+                      <li class="breadcrumb-item active">Courrier</li>
+                </ol>
+          </div>
+    </div>
+{% endblock %}
+{% block content %}
+<div class="col-12 col-md-12 order-2 order-md-1">
+    <div class="card">
+    <div class="card-header">
+        <h3 class="card-title text-white">{{_('COURRIER')}}</h3>
+    </div>
+    <div class="card-body">
+<!--        <div class="button-link pull-right mb-2">-->
+<!--          <a class="btn btn-sm btn-primary mb-1" data-toggle="modal"  data-target="#modal-courrier"><i class="fas fa-plus"></i> {{_('Ajouter un courrier')}}</a>-->
+<!--        </div>-->
+
+      <div id="example1_wrapper" class="dataTables_wrapper dt-bootstrap4">
+        <div class="row">
+          <div class="col-12 col-md-12 col-sm-12">
+              <div class="table-responsive">
+              <table class="table table-bordered table-striped dataTable dtr-inline" id="table_formules">
+                  <thead>
+                    <tr>
+                      <th scope="col">{{_('Designation')}}</th>
+                      <th scope="col">{{_('Service')}}</th>
+                      <th scope="col">{{_('Statut')}}</th>
+                        <th scope="col">{{_("Date d'ajout")}}</th>
+                      <th scope="col">{{_('Actions')}}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                  {% for courrier in courriers %}
+                    {% if courrier.type_courrier.nom|lower != "appel de prime" %}
+                    <tr>
+                        <td>{{ courrier.designation|default_if_none:"" }} </td>
+                        <td>{{ courrier.service|escape}}</td>
+                        <td><span class="badge badge-green">{{ courrier.status|default_if_none:""}}</span></td>
+                         <td>{{ courrier.created_at|date:"d/m/Y" }}</td>
+                         <td>
+                              <a class="badge badge-primary btn_pdf_courrier" style="cursor:pointer;" target="_blank" href="{% url 'generer_pdf' police.id courrier.id %}"><i class="fa fa-file-pdf-o"></i> Télécharger PDF</a>&nbsp;
+                             <button type="button" data-option="aliment"  class="btn bg-info"><a style="cursor:pointer;"  href="{% url 'generer_word' police.id courrier.id%}?type_document={{ courrier.type_courrier.nom|lower|slugify }}"><i class="fa fa-print"></i> Imprimer</a>&nbsp;</button>
+                        </td>
+                    </tr>
+                   {% endif %}
+                  {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extrajs %}
+<script>
+    $(document).ready(function() {
+        $('#courrier').removeClass('o-bg-primary');
+        $('#courrier').addClass('o-active');
+    } );
+</script>
+{% endblock %}

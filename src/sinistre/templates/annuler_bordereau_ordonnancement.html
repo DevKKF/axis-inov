@@ -1,0 +1,178 @@
+{% extends "admin/base_site.html" %}
+{% load my_filters %}
+{% load static %}
+{% block extrastyle %}
+
+<style>
+    div.dataTables_processing>div:last-child>div {
+        background: rgb(187 65 38) !important;
+    }
+</style>
+
+{% endblock %}
+{% block content %}
+
+ <div class="col-12 col-md-12 order-2 order-md-1">
+
+      <div class="card">
+        <div class="card-header">
+            <h3 class="card-title"><b>
+                {{_('ANNULATION_D_UN_BORDEREAU_D_ORDONNANCEMENT')}}
+            </b></h3>
+            <div class="card-tools">
+            </div>
+        </div>
+
+      <div class="card-body">
+        <div id="example_wrapper" class="dataTables_wrapper dt-bootstrap4">
+            <form autocomplete="off" id="form_recherche" name="form_recherche" method="POST" enctype="multipart/form-data">
+              {% csrf_token %}
+                <div class="col-md-12" style="border-left:0px;">
+                    <div class="form-group row">
+                        <label class="col-sm-4 col-form-label text-right">{{_('Numero_Bordereau_d_ordonnancement')}}</label>
+                        <div class="col-sm-4">
+                            <input type="text" class="form-control" name="code_bordereau" id="code_bordereau" value="{{ code_bordereau }}" required>
+                        </div>
+                        <div class="col-sm-4">
+                            <button id="recherche" name="recherche" value="rechercher" type="submit" class="btn btn-complement-rouge">{{_('Rechercher')}}
+                            <img id="loader" src="{% static 'admin_custom/img/loader.gif' %}" style="width: 40px;display: none;"/>
+                      </button>
+                    </div>
+                  </div>
+                </div>
+            </form>
+          {% if bordereau_ordonnancement and bordereau_ordonnancement.statut_validite is not "SUPPRIME" %}
+          <div class="row dossier_facture">
+            <div class=" col-md-12">
+              <div class="card">
+                <div class="card-header">
+                  <div class="card-title">
+                    <h6>{{_('BORDEREAU_D_ORDONNANCEMENT')}}</h6>
+                  </div>
+                </div>
+                <div class="card-body">
+
+                  <div class="table-responsive">
+                    <table class="table table-bordered table-striped dataTable__ customDataTable__ dtr-inline" id="table_factures_gestionnaires" style="width: 100%;" data-orderby="0">
+
+                      <thead>
+                        <tr>
+                          <th scope="col">{{_('Numero_Bordereau')}}</th>
+                          <th scope="col">{{_('Type')}}</th>
+                          <th scope="col">{{_('Beneficiaire')}}</th>
+                          <th scope="col">{{_('Periode_comptable')}}</th>
+                          <th scope="col">{{_('Base_remb')}}</th>
+                          <th scope="col">{{_('Rejet')}}</th>
+                          <th scope="col">{{_('Net_a_payer')}}</th>
+                          <th scope="col">{{_('Date_de_generation')}}</th>
+                          <th scope="col">{{_('Statut')}}</th>
+                          <th scope="col">{{_('Actions')}}</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        <tr>
+                            <td>{{bordereau_ordonnancement.numero|default_if_none:""}}</td>
+                            <td>{{bordereau_ordonnancement.type_remboursement.code|default_if_none:""}}</td>
+                            <td>{{bordereau_ordonnancement.prestataire|default_if_none:""}} {{bordereau_ordonnancement.adherent_principal|default_if_none:""}}</td>
+                            <td>{{ bordereau_ordonnancement.periode_comptable.libelle }}</td>
+                            <td style="text-align:right">{{ bordereau_ordonnancement.montant_remb_total|money_field|default_if_none:"0" }}</td>
+                            <td style="text-align:right">{{ bordereau_ordonnancement.montant_rejet_total|money_field|default_if_none:"0" }}</td>
+                            <td style="text-align:right">{{ bordereau_ordonnancement.montant_accepte_total|money_field|default_if_none:"0" }}</td>
+                            <td style="text-align:right">{{ bordereau_ordonnancement.created_at|date:"d/m/Y H:m" }}</td>
+                            <td>
+                            {% if bordereau_ordonnancement.statut_validite == "REJETE" %}
+                            <span class="text-bold col-sm-12 badge badge-danger" style="font-size:10px;color:white;">{{bordereau_ordonnancement.statut_paiement}}</span>
+                            {% else %}
+                            <span class="text-bold col-sm-12 badge badge-en-attente" style="font-size:10px;color:white;">{{bordereau_ordonnancement.statut_paiement}}</span>
+                            {% endif %}
+                            </td>
+                            <td>
+                                <a href="#" onclick="annuleItem({{ bordereau_ordonnancement.id }}, '{{bordereau_ordonnancement.numero|default_if_none:""}}')"><span class="badge btn-sm btn-danger rounded-pill"><i class="fa fa-times"></i> {{_(Annuler)}}</span></a>
+                            </td>
+                        </tr>
+                      </tbody>
+
+                    </table>
+                  </div>
+
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          {% else %}
+          
+            {% if old_facture %}
+            <div class="dossier_facture text-danger text-center">{{_('Le_bordereau_d_ordonnancement')}} {{ 'old_facture' }} {{_('a_bien_ete_supprimee')}} !</div>
+            {% endif %}
+            {% if code_bordereau %}
+            <div class="dossier_facture text-danger text-center text-bold h4">{{_('Aucune_correspondance')}}</div>
+            {% endif %}
+
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+
+{% endblock %}
+
+
+{% block extrajs %}
+<script>
+
+        function annuleItem(id, text){
+          $("#id_item").val(id);
+          $("#modal_head").html("ÊTES-VOUS SÛR(E) DE VOULOIR SUPPRIMER CE BORDEREAU D'ORDONNANCEMENT ?");
+          $("#modal_text").html(text);
+          $('#modal_annuler_bordereau_ordonnancement').modal();
+        }
+
+        function reset(){
+          $("#id_item").val("");
+          $("#modal_head").html("");
+          $("#modal_head").html("");
+        }
+
+
+    $(document).ready(function() {
+
+        dataTable = $('#table_factures_gestionnaires').DataTable({
+            "language": {
+                "url": "https://cdn.datatables.net/plug-ins/9dcbecd42ad/i18n/French.json"
+            },
+            "paging": false,
+            // "pageLength": 400,
+            "processing": true,  // Show the loading indicator
+            "searching": false,   // Enable the search feature
+        });
+
+
+        var $form = $('#form_recherche'); 
+        origForm = $form.serialize();
+        $('#form_recherche :input').on('change input', function() {
+          // une modification a eu lieu dans le formulaire il faut allors reforme les calculs 
+          if($form.serialize() !== origForm){
+             $('.dossier_facture').fadeOut("slow");
+          }
+          else{
+             $('.dossier_facture').fadeIn("slow");
+          }
+        });
+
+        $('#garantie').removeClass('o-bg-primary');
+        $('#garantie').addClass('o-active');
+
+    });
+
+
+
+
+
+</script>
+
+
+{% include 'modal_annuler_bordereau_ordonnancement.html' %}
+
+{% endblock %}

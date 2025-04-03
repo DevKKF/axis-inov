@@ -1,0 +1,106 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en" class="light">
+
+<head>
+    <meta charset="utf-8">
+    <link href="{% static 'grh/images/logo.png' %}" rel="shortcut icon">
+    <title>{{_('CONNEXION')}}</title>
+    <link rel="stylesheet" href="{% static 'grh/css/app.css' %}" />
+    <link rel="stylesheet" href="{% static 'grh/css/_app.css' %}" />
+    <style>
+        #title {
+            color: #B7482B;
+        }
+
+        #link {
+            color: #0000FF;
+        }
+
+        #status {
+            color: #FFFFFF;
+            border-radius: 10px;
+        }
+
+        .login:after {
+            background-image: url('{% static "grh/images/log.jpg" %}');
+            background-size: cover;
+            background-position: center;
+        }
+    </style>
+</head>
+
+<body class="login">
+    <div class="container sm:px-10">
+        <div class="block xl:grid grid-cols-2 gap-4">
+            <div class="hidden xl:flex flex-col min-h-screen"></div>
+            <div class="h-screen xl:h-auto flex py-5 xl:py-0 my-10 xl:my-0">
+                <div class="my-auto mx-auto xl:ml-20 bg-white dark:bg-darkmode-600 xl:bg-transparent px-5 sm:px-8 py-8 xl:p-0 rounded-md shadow-md xl:shadow-none w-full sm:w-3/4 lg:w-2/4 xl:w-auto">
+                    <h2 class="title intro-x font-bold text-2xl xl:text-3xl text-center xl:text-left" id="title">
+                       {{_('CONNEXION')}}
+                    </h2>
+                    <div class="intro-x mt-8">
+                        <form method="post" action="{% url 'grh.login' %}">
+                            {% csrf_token %}
+                            {% if error %}
+                            <div class="alert alert-primary-soft show flex items-center mb-5">
+                                <i class="mr-3" data-feather="alert-triangle"></i>
+                                {{ error }}
+                            </div>
+                            {% endif %}
+                            {% if request.session.error %}
+                            <div class="alert alert-primary-soft show flex items-center mb-5">
+                                <i class="mr-3" data-feather="alert-triangle"></i>
+                                {{ request.session.error }}
+                            </div>
+                            {% endif %}
+                            <input type="text" name="email" class="intro-x login__input form-control py-3 px-4 block" placeholder="Login" required>
+                            <div class="relative">
+                                <input type="password" name="password" id="password" class="intro-x login__input form-control py-3 px-4 block mt-4" placeholder="Mot de passe" required>
+                                <i class="absolute right-0 top-0 mr-4 mt-5 cursor-pointer toggle-password" id="togglePassword" data-feather="eye"></i>
+                            </div>
+                            <div class="intro-x flex text-slate-600 dark:text-slate-500 text-xs sm:text-sm mt-8">
+                                <div class="flex items-center mr-auto">
+                                    <input id="remember-me" type="checkbox" class="form-check-input border mr-2">
+                                    <label class="cursor-pointer select-none" for="remember-me">{{_('Souvenez_vous_de_moi')}}</label>
+                                </div>
+                                <a href="{% url 'grh.password_reset' %}" id="title">{{_('Mot_de_passe_oublie')}}</a>
+                            </div>
+                            <div class="intro-x mt-8 text-center xl:text-left">
+                                <button type="submit" name="login" class="btn btn-primary p-4">
+                                    {{_('SE_CONNECTER')}}
+                                    <i data-feather="log-in" class="ml-2 mb-2"></i>
+                                </button>
+<!--                                <a href="#" name="register" class="btn btn-secondary p-4 ml-8">-->
+<!--                                    S'ENREGISTRER-->
+<!--                                    <i data-feather="save" class="ml-2 mb-2"></i>-->
+<!--                                </a>-->
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="{% static 'grh/js/app.js' %}"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const togglePassword = document.getElementById("togglePassword");
+            const password = document.getElementById("password");
+    
+            togglePassword.addEventListener("click", function() {
+                if (password.type === "password") {
+                    password.type = "text";
+                    togglePassword.dataset.feather = "eye-off";
+                } else {
+                    password.type = "password";
+                    togglePassword.dataset.feather = "eye";
+                }
+            });
+        });
+    </script>
+</body>
+
+</html>

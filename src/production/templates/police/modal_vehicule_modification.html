@@ -1,0 +1,182 @@
+<div  class="modal fade"  id="modal-modification_vehicule" data-backdrop="static" data-keyboard="false" aria-hidden="true"  style="display: nonehgff">
+	<div class="modal-dialog modal-xl">
+		<div class="modal-content">
+			<form id="form_update_vehicule" action="{% url 'update_vehicule' police.id alimentpolice.id %}" method="post">
+			{% csrf_token %}
+			<div class="modal-header">
+				<h4 class="modal-title">{{_("MODIFICATION DU VEHICULE")}}</h4>
+				<button type="button"class="close"data-dismiss="modal"aria-label="Close">
+					<span aria-hidden="true">×</span>
+				</button>
+			</div>
+			<div class="modal-body">
+				<div class="alert  alert-dismissible fade show hidden" role="alert">
+				  <span class="message"> {{_("TRAITEMENT EN COURS")}}</span>
+				</div>
+				<div class="col-md-12 offset-0">
+					<ul class="nav nav-tabs" id="myTab" role="tablist">
+						<li class="nav-item"><a class="nav-link active" id="vehicule-u-tab" data-toggle="tab" href="#vehicule-u_modif" role="tab" aria-controls="vehicule-u" aria-selected="true">{{_('VEHICULE')}}</a></li>
+					</ul>
+					<div class="tab-content" id="myTabContent">
+						<div class="tab-pane fade show active mt-3" id="vehicule-u_modif" role="tabpanel" aria-labelledby="vehicule-u-tab">
+							<div class="row">
+								<div class="col-md-6">
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("N° immat")}} <span class="required">*</span></label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control" name="immatriculation" value="{{ alimentpolice.vehicule.numero_immatriculation|default_if_none:'' }}" required readonly>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("N° série")}} <span class="required">*</span></label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control" name="num_serie" value="{{ alimentpolice.vehicule.numero_serie|default_if_none:'' }}" required readonly>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_('Marque')}} <span class="required">*</span></label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control" name="marque" value="{{ alimentpolice.vehicule.marque|default_if_none:'' }}" required readonly>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Modèle")}}</label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control" name="modele" value="{{ alimentpolice.vehicule.modele|default_if_none:'' }}" readonly>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_('Energie')}} <span class="required">*</span></label>
+										<div class="col-sm-7">
+											<input type="hidden" class="form-control" name="carburant_id" value="{{ alimentpolice.vehicule.carburant_id|default_if_none:'' }}">
+											<input type="text" class="form-control" name="" value="{{ alimentpolice.vehicule.carburant.libelle|default_if_none:'' }}" readonly>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Date de sortie")}} </label>
+										<div class="col-sm-7">
+											<input type="date" class="form-control" name="date_sortie" value="{{alimentpolice.date_sortie|date:'Y-m-d'|default_if_none:''}}">
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_('Place')}}</label>
+										<div class="col-sm-7">
+											<input type="text" min="1" max="100" class="form-control money_field" name="places_assises" value="{{alimentpolice.vehicule.places_assises|default_if_none:''}}">
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_('Parc')}}</label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control" name="num_parc" value="{{alimentpolice.numero_parc|default_if_none:''}}">
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Valeur neuve")}}</label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control money_field" name="valeur_neuve" value="{{alimentpolice.vehicule.valeur_neuve|default_if_none:''}}" readonly>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Poid T.A.C")}}</label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control money_field" name="poid_tac" value="{{alimentpolice.vehicule.poids_a_charge|default_if_none:''}}" readonly>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_('Conducteur')}}</label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control" name="conducteur" value="{{alimentpolice.conducteur|default_if_none:''}}"/>
+										</div>
+									</div>
+								</div>
+								<div class="vl"></div>
+								<div class="col-md-5" style="border-left:0px;">
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("N° immat provi.")}}</label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control" name="immatriculation_provisioire" value="{{ alimentpolice.vehicule.numero_immat_provisoire|default_if_none:'' }}" readonly>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Catégorie véhicule")}} <span class="required">*</span></label>
+										<div class="col-sm-7">
+											<input type="hidden" class="form-control" name="categorie_id" value="{{ alimentpolice.vehicule.categorie_vehicule_id|default_if_none:'' }}">
+											<input type="text" class="form-control" name="" value="{{ alimentpolice.vehicule.categorie_vehicule.libelle|default_if_none:'' }}" readonly>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Usage")}} <span class="required">*</span></label>
+										<div class="col-sm-7">
+											<select class="form-control tags-multiple" name="usage_id" id="usage_id" autocomplete="off" required>
+												<option value="">{{_('Choisir')}}</option>
+												{% for u in usages %}
+													<option value="{{ u.id }}" {% if u.id == alimentpolice.usage_id %} selected {% endif %}>{{ u.libelle }}</option>
+												{% endfor %}
+											</select>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_('Carrosserie')}}</label>
+										<div class="col-sm-7">
+											<input type="hidden" class="form-control" name="carosserie_id" value="{{ alimentpolice.vehicule.carosserie_id }}">
+											<input type="text" class="form-control" name="" value="{{ alimentpolice.vehicule.carosserie.libelle|default_if_none:'' }}" readonly>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Date d'entrée")}} <span class="required">*</span></label>
+										<div class="col-sm-7">
+											<input type="date" class="form-control" name="date_entree"value="{{ alimentpolice.date_entree|date:'Y-m-d'|default_if_none:'' }}" required readonly>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Mise en circulation")}} <span class="required">*</span></label>
+										<div class="col-sm-7">
+											<input type="date" class="form-control" name="date_mise_circulation" value="{{ alimentpolice.date_mis_en_circulation|date:'Y-m-d'|default_if_none:'' }}" required readonly>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_('Puissance')}} <span class="required">*</span></label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control money_field" name="puissance_fiscale" value="{{  alimentpolice.vehicule.puissance|default_if_none:'' }}" required readonly>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Valeur actuelle")}}</label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control money_field" name="valeur_actuelle" value="{{  alimentpolice.valeur_actuelle|default_if_none:'' }}">
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Poids à vide")}}</label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control money_field" name="poids_a_vide" value="{{ alimentpolice.vehicule.poids_a_vide|default_if_none:'' }}" readonly>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Propriétaire")}} <span class="required">*</span></label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control" name="proprietaire" value="{{  alimentpolice.proprietaire|default_if_none:'' }}" required>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Commentaire")}}</label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control" name="commentaire" value="{{  alimentpolice.commentaire|default_if_none:'' }}">
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+
+					</div>
+
+				</div>
+				<div class="modal-footer justify-content-between">
+					<button type="button" class="btn btn-danger" data-dismiss="modal"><i class="fa fa-remove"></i> {{_('Retour')}}</button>
+					<button type="button" id="btn_save_modification_vehicule" class="btn btn-info"><i class="fa fa-check-circle"></i> {{_("Valider les modifications")}}</button>
+				</div>
+			</div>
+			</form>
+		</div>
+	</div>
+</div>

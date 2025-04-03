@@ -1,0 +1,188 @@
+<div  class="modal fade"  id="modal-quittance"  aria-hidden="true"  style="display: none">
+	<div class="modal-dialog modal-xl">
+		<div class="modal-content">
+			<form enctype="multipart/form-data" id="form_add_quittance" action="{% url 'add_quittance' police.id %}" method="post">
+			{% csrf_token %}
+			<div class="modal-header">
+				<h4 class="modal-title">{{_('CREATION_D_UNE_QUITTANCE')}} - {{_('POLICE')}} <b>{{_('NUMERO')}} {{police.numero}}</b> - {{_('CLIENT')}} <b>{{police.client.nom}}</b></h4>
+				<button type="button"class="close"data-dismiss="modal"aria-label="Close">
+					<span aria-hidden="true">×</span>
+				</button>
+			</div>
+			<div class="modal-body">
+				<div class="alert  alert-dismissible fade show hidden" role="alert">
+				  <span class="message"> {{_('TRAITEMENT_EN_COURS')}}</span>
+				</div>
+				<div class="col-md-12 offset-0">
+					<div class="row">
+						<div class="col-md-6">
+							<div class="form-group row">
+								<label class="col-sm-5 col-form-label">{{_('Nature')}} *</label>
+								<div class="col-sm-7">
+									<select class="form-control" name="nature" required>
+										<option value="">{{_('Choisir')}}</option>
+										{% for nature_quittance in natures_quittances %}
+										<option value="{{ nature_quittance.id }}">{{ nature_quittance.libelle }}</option>
+										{% endfor %}
+									</select>
+								</div>
+							</div>
+							<div class="form-group row">
+								<label class="col-sm-5 col-form-label">{{_('Type_de_quittance')}} *</label>
+								<div class="col-sm-7">
+									<select class="form-control" name="type_quittance" required>
+										<option value="">{{_('Choisir')}}</option>
+										{% for type_quittance in types_quittances %}
+										<option value="{{ type_quittance.id }}">{{ type_quittance.libelle }}</option>
+										{% endfor %}
+									</select>
+								</div>
+							</div>
+							<div class="form-group row">
+								<label class="col-sm-5 col-form-label">{{_('Date_d_emission')}}</label>
+								<div class="col-sm-7">
+									<input type="date" class="form-control" name="date_emission" required/>
+								</div>
+							</div>
+							<div class="form-group row">
+								<label class="col-sm-5 col-form-label">{{_('Date_debut')}}</label>
+								<div class="col-sm-7">
+									<input type="date" class="form-control" name="date_debut" required/>
+								</div>
+							</div>
+							<div class="form-group row">
+								<label class="col-sm-5 col-form-label">{{_('Date_fin')}}</label>
+								<div class="col-sm-7">
+									<input type="date" class="form-control" name="date_fin" required/>
+								</div>
+							</div>
+							<div class="form-group row">
+								<label class="col-sm-5 col-form-label">{{_('Prime_Hors_Taxes')}} <span class="required"></span></label>
+								<div class="col-sm-7">
+									<input type="text" class="form-control money_field calculs_handler_police" name="prime_ht" id="prime_ht" value="0" />
+								</div>
+							</div>
+							<div class="form-group row">
+								<label class="col-sm-5 col-form-label">{{_('Cout_police_Compagnie')}} <span class="required"></span></label>
+								<div class="col-sm-7">
+									<input type="text" class="form-control money_field calculs_handler_police" name="cout_police_compagnie" id="cout_police_compagnie" value="0" />
+								</div>
+							</div>
+						</div>
+						<div class="vl"></div>
+						<div class="col-md-5" style="border-left:0px;">
+
+							<div class="form-group row">
+								<label class="col-sm-5 col-form-label">{{_('Cout_police_courtier')}} <span class="required"></span></label>
+								<div class="col-sm-7">
+									<input type="text" class="form-control money_field calculs_handler_police" name="cout_police_courtier" id="cout_police_courtier" value="0" />
+								</div>
+							</div>
+							<div class="form-group row">
+								<label class="col-sm-5 col-form-label">{{_('Taxe')}} <span class="required"></span></label>
+								<div class="col-sm-7">
+									<input type="text" class="form-control money_field calculs_handler_police" name="taxe" id="taxe" value="0" />
+								</div>
+							</div>
+							<div class="form-group row">
+								<label class="col-sm-5 col-form-label">{{_('Autres_Taxes')}} <span class="required"></span></label>
+								<div class="col-sm-6" style="padding-right:0px;">
+									<input style="border-top-right-radius:0px;border-bottom-right-radius:0px;" type="text" class="form-control money_field calculs_handler_police" name="autres_taxes" id="autres_taxes" value="0" readonly/>
+								</div>
+								<div class="col-sm-1" style="padding-left:0px;">
+									<span class="btn " style="background:gray;color:white;border-top-left-radius:0px;border-bottom-left-radius:0px;" data-toggle="modal" data-target="#modal-autres_taxes_quittance">+</span>
+								</div>
+							</div>
+							<div class="form-group row">
+								<label class="col-sm-5 col-form-label">{{_('Prime_Toutes_Taxes_Comprises')}} <span class="required"></span></label>
+								<div class="col-sm-7">
+									<input type="text" class="form-control money_field" name="prime_ttc" id="prime_ttc" value="0" />
+								</div>
+							</div>
+							<div class="form-group row">
+								<label class="col-sm-5 col-form-label">{{_('Commission_de_Courtage')}} ({{police.taux_com_courtage}})%<span class="required"></span></label>
+								<div class="col-sm-7">
+									<input type="hidden" class="form-control" name="taux_com_courtage" id="taux_com_courtage" value="{{police.taux_com_courtage}}"/>
+									<input type="text" class="form-control money_field" name="commission_courtage" id="commission_courtage" value="0"/>
+								</div>
+							</div>
+							<div class="form-group row">
+								<label class="col-sm-5 col-form-label">{{_('Commission_de_Gestion')}} ({{police.taux_com_gestion}})%<span class="required"></span></label>
+								<div class="col-sm-7">
+									<input type="hidden" class="form-control" name="taux_com_gestion" id="taux_com_gestion" value="{{police.taux_com_gestion}}"/>
+									<input type="text" class="form-control money_field" name="commission_gestion" id="commission_gestion" value="0"/>
+								</div>
+							</div>
+							<div class="form-group row">
+								<label class="col-sm-5 col-form-label">{{_('Commission_Intermediaire')}} <span class="required"></span></label>
+								<div class="col-sm-7">
+									<input type="text" class="form-control money_field" name="commission_intermediaire" id="total_commission_intermediaire" value="0"/>
+								</div>
+							</div>
+						</div>
+					</div>
+
+
+				</div>
+				<div class="modal-footer justify-content-between">
+					<button type="button" class="btn btn-default" data-dismiss="modal">{{_('Retour')}}</button>
+					<button type="button" id="btn_save_quittance" class="btn o-bg-primary">{{_('Valider')}}</button>
+				</div>
+			</div>
+			</form>
+		</div>
+	</div>
+
+</div>
+
+<!-- modal interne des autres taxes -->
+<div  class="modal fade"  id="modal-autres_taxes_quittance"  aria-hidden="true"  style="display: none">
+	<div class="modal-dialog modal-None" style="width:;">
+		<div class="modal-content">
+			<form id="form_add_autres_taxes_quittance" action="" method="post">
+				{% csrf_token %}
+				<div class="modal-header">
+					<h4 class="modal-title">{{_('AJOUT_DE_TAXES')}}</h4>
+					<button type="button"class="close"data-dismiss="modal"aria-label="Close">
+						<span aria-hidden="true">×</span>
+					</button>
+				</div>
+				<div class="modal-body">
+					<div class="alert  alert-dismissible fade show hidden" role="alert">
+						<span class="message"> {{_('TRAITEMENT_EN_COURS')}}</span>
+					</div>
+					<div class="col-md-12 offset-0">
+						<div class="row">
+							<table style="width:100%;" class="table table-bordered table-striped dataTable_ dtr-inline">
+								<thead>
+									<tr>
+										<th style="width:70%;">{{_('Taxe')}}</th>
+										<th>{{_('Montant')}}</th>
+									</tr>
+								</thead>
+								<tbody>
+								{% for bureau_taxe in bureau_taxes %}
+									<tr>
+									<td style="vertical-align:middle;">
+										{{ bureau_taxe.taxe.libelle }} ({{ bureau_taxe.taxe.code|default_if_none:"" }})
+									</td>
+									<td style="padding:5px;">
+										<input data-taxe_id="{{ bureau_taxe.taxe.id }}" type="text" class="form-control money_field montant_taxe" name="montant_taxe_{{bureau_taxe.taxe.id}}" id="montant_taxe_{{bureau_taxe.taxe.id}}" value="" required/>
+									</td>
+									</tr>
+								{% endfor %}
+								</tbody>
+							</table>
+						</div>
+					</div>
+				</div>
+				<div class="modal-footer justify-content-between">
+					<button type="button" class="btn btn-default" data-dismiss="modal">{{_('Fermer')}}</button>
+					<span>{{_('Montant_Total')}}: <span class="badge badge-warning total_autres_taxes" style="padding:5px 10px;">0</span> {{police.devise}}</span>
+					<button type="button" id="btn_save_taxe" class="btn o-bg-primary" data-dismiss="modal">{{_('Enregistrer')}}</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>
+<!-- fin modal interne des autres taxes -->

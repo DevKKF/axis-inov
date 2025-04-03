@@ -1,0 +1,134 @@
+{% extends "grh/layouts/base.html" %}
+{% load static %}
+{% block title %}INSCRIPTION(S) À VALIDER{% endblock %}
+
+{% block content %}
+
+    {% comment %} CSS {% endcomment %}
+    <style>
+        #title {
+            color: #B7482B;
+        }
+        #link {
+            color: #0000FF;
+        }
+        #status {
+            color: #FFFFFF;
+            padding: 5px;
+            border-radius: 5px;
+        }
+        #IncorpTab_info{
+            text-align: center;
+        }
+    </style>
+    {% comment %}{% endcomment %}
+
+    {% comment %}{% endcomment %}
+    <div class="flex items-start pt-5 intro-y">
+        <div class="w-full flex flex-col lg:flex-row items-center">
+            <a href="{% url 'grh.details_campagne' campagne.id %}">
+                <button class="btn btn-primary-soft flex items-center w-30 pd-5">
+                    <i data-feather="corner-up-left" class="report-box__icon text-primary mr-2"></i>
+                    RETOUR
+                </button>
+            </a>
+        </div>
+    </div>
+    {% comment %}{% endcomment %}
+
+    <div class="grid grid-cols-12 gap-6 mt-8">
+        <div class="intro-y col-span-12 md:col-span-12 lg:col-span-12">
+            <div class="box">
+                {% comment %} TITLE {% endcomment %}
+                <div class="flex items-start px-5 pt-5">
+                    <div class="w-full flex flex-col lg:flex-row items-center justify-center border-b border-gray-500">
+                        <h1 class="text-xl lg:text-lg font-medium mb-3 mr-5" id="title">
+                            INCORPORATIONS À VALIDER
+                        </h1>
+                    </div>
+                </div>
+                {% comment %} INCORPORATIONS {% endcomment %}
+                <div class="flex flex-wrap -mx-1 mb-6 ">
+                    {% if incorporations %}
+                        <form method="post" enctype="multipart/form-data" action="#" class="preview" id="form_incorp">
+                            {% csrf_token %}
+                            <div class="flex flex-wrap -mx-1 mb-6 mt-5">
+                                {% for i in incorporations %}
+                                <div class="w-full sm:w-1/2 md:w-1/2 lg:w-1/2 xl:w-1/2 px-4 mb-6">
+                                    <div class="box border border-slate-200/60 dark:border-darkmode-400">
+                                        <div class="flex items-center justify-center border-b border-slate-200/60 dark:border-darkmode-400 px-5 py-4">
+                                            {% if i.prospect.photo %}
+                                            <div class="mx-auto w-20 h-20 flex-none">
+                                                <img src="{{ MEDIA_URL }}{{ i.prospect.photo }}" class="rounded-full w-full h-full" alt="Prospect Photo">
+                                            </div>
+                                            {% else %}
+                                            <div class="alert w-full alert-primary-soft show flex items-center mb-5 mx-auto inline-block justify-center">
+                                                <i data-feather="alert-circle" class="report-box__icon text-primary mr-2"></i>
+                                                AUCUNE PHOTO
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                        <div class="mt-1">
+                                            <div class="flex">
+                                                <div class="w-1/2 p-2 mt-2 flex border-r border-gray-500">
+                                                    <div class="w-1/2 p-2 mt-2">
+                                                        <input type="text" class="mb-2 text-sm font-bold border-transparent" value="Nom & Prénoms" readonly />
+                                                        <input type="text" class="mb-2 text-sm font-bold border-transparent" value="Date de naissance" readonly />
+                                                        <input type="text" class="mb-2 text-sm font-bold border-transparent" value="Sexe" readonly />
+                                                    </div>
+                                                    <div class="w-1/2 p-2 mt-2">
+                                                        <input type="text" class="mb-2 text-sm mb-2 rounded-lg w-full" value="{{ i.prospect.nom|default_if_none:"" }} {{ i.prospect.prenoms|default_if_none:"" }}" readonly />
+                                                        <input type="text" class="mb-2 text-sm mb-2 rounded-lg w-full" value="{{ i.prospect.date_naissance|default_if_none:""|date:"d/m/Y" }}" readonly />
+                                                        <input type="text" class="mb-2 text-sm mb-2 rounded-lg w-full" value="{{ i.prospect.genre|default_if_none:"" }}" readonly />
+                                                    </div>
+                                                </div>
+                                                <div class="w-1/2 p-2 mt-2 flex">
+                                                    <div class="w-1/2 p-2 mt-2">
+                                                        <input type="text" class="mb-2 text-sm font-bold border-transparent" value="Email" readonly />
+                                                        <input type="text" class="mb-2 text-sm font-bold border-transparent" value="Qualité bénéficiaire" readonly />
+                                                        <input type="text" class="mb-2 text-sm font-bold border-transparent" value="Adhérent principal" readonly />
+                                                    </div>
+                                                    <div class="w-1/2 p-2 mt-2">
+                                                        <input type="text" class="mb-2 text-sm rounded-lg w-full" value="{{ i.prospect.email|default_if_none:" -" }}"
+                                                            readonly />
+                                                        <input type="text" class="mb-2 text-sm rounded-lg w-full"
+                                                            value="{{ i.prospect.qualite_beneficiaire|default_if_none:"" }}" readonly />
+                                                        <input type="text" class="mb-2 text-sm rounded-lg w-full"
+                                                            value="{{ i.prospect.adherent_principal|default_if_none:"" }}" readonly />
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="text-center p-5 border-t border-slate-200/60 dark:border-darkmode-400">
+                                                <button class="btn btn-primary py-1 px-2 mr-2" name="valider_{{ i.prospect.id }}">VALIDER<i data-feather="plus-circle" class="ml-3"></i></button>
+                                                <button class="btn btn-outline-secondary py-1 px-2" name="rejeter_{{ i.prospect.id }}">REJETER<i data-feather="slash" class="ml-3"></i></button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                {% if forloop.counter|divisibleby:2 %}
+                                </div><div class="flex flex-wrap -mx-2 mb-6">
+                                {% endif %}
+                                {% endfor %}
+                            </div>
+                            {% if incorporations|length > 1 %}
+                            <div class="mt-5 text-center pb-4">
+                                <button type="submit" name="valider_tous" class="btn btn-primary w-48 mx-auto">
+                                    VALIDER TOUS
+                                    <i data-feather="users" class="ml-3 mb-3"></i>
+                                    <i data-feather="plus-circle" class="ml-3 mb-3"></i>
+                                </button>
+                            </div>
+                            {% endif %}
+                        </form>
+                    {% else %}
+                        <div class="alert w-auto alert-primary-soft show flex items-center mt-10 mb-10 mx-auto inline-block justify-center">
+                            <i data-feather="alert-circle" class="report-box__icon text-primary mr-2"></i>
+                            AUCUNE DEMANDE D'INCORPORATIONS
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

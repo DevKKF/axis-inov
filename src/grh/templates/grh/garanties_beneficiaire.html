@@ -1,0 +1,94 @@
+
+{% load static %}
+
+    <style>
+        #title {
+            color: #B7482B;
+        }
+        #link {
+            color: #0000FF;
+        }
+        #status {
+            padding: 5px;
+            border-radius: 5px;
+        }
+    </style>
+
+    <div class="intro-y col-span-12 md:col-span-12 lg:col-span-12">
+        <div class="box">
+            <div class="flex items-start px-5 pt-5">
+                <div class="w-full flex flex-col lg:flex-row items-center border-b border-gray-500">
+                    <h1 class="text-xl lg:text-lg font-medium mb-3 mr-5" id="title">
+                        {{_('SPECIFICITES_DU_BAREME')}}
+                    </h1>
+                </div>
+            </div>
+            <div class="grid grid-cols-12 gap-6 mt-2 p-8">
+                <div class="intro-y col-span-12 overflow-auto">
+                    {% if baremes %}
+                    <table class="table table-report overflow-x-auto datatable">
+                        <thead>
+                            <tr>
+                                <th class="whitespace-nowrap">{{_('Rubrique')}}</th>
+                                <th class="whitespace-nowrap">{{_('Sous_rubrique')}}</th>
+                                <th class="whitespace-nowrap">{{_('Regroupement_Acte')}}</th>
+                                <th class="whitespace-nowrap">{{_('Acte')}}</th>
+                                <th class="whitespace-nowrap">{{_('Lien_Parente')}}</th>
+                                <th class="whitespace-nowrap">{{_('Age_Min')}}.</th>
+                                <th class="whitespace-nowrap">{{_('Age_Max')}}.</th>
+                                <th class="whitespace-nowrap">{{_('Garantie_Exclu')}}</th>
+                                <th class="whitespace-nowrap">{{_('Couverture')}}</th>
+                                <th class="whitespace-nowrap">{{_('Plafond_Sous_Rubrique')}}</th>
+                                <th class="whitespace-nowrap">{{_('Plafond_Regroupement')}}</th>
+                                <th class="whitespace-nowrap">{{_('Plafond_Acte')}}</th>
+                                <th class="whitespace-nowrap">{{_('Periodicite')}}</th>
+                                <th class="whitespace-nowrap">{{_('Actions')}}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for bareme in baremes %}
+                            {% load custom_filters %}
+                                <tr class="intro-x">
+                                    <td class="w-auto">{{ bareme.rubrique|default_if_none:"" }}</td>
+                                    <td class="w-auto">{{ bareme.sous_rubrique|default_if_none:"" }}</td>
+                                    <td class="w-auto">{{ bareme.regroupement_acte|default_if_none:"" }}</td>
+                                    <td class="w-auto">{{ bareme.acte.libelle|default_if_none:"" }}</td>
+                                    <td class="w-auto">{{ bareme.qualite_beneficiaire.libelle|default_if_none:"" }}</td>
+                                    <td class="w-auto">{{ bareme.age_minimum|default_if_none:"" }}</td>
+                                    <td class="w-auto">{{ bareme.age_maximum|default_if_none:"" }}</td>
+                                    <td class="w-auto">
+                                        <div class="flex items justify-center" id="status" 
+                                            style="background-color: {% if bareme.is_garanti %}#007500;color:#FFFFFF;font-weight: bold;
+                                                    {% else %}#DC3545;color:#FFFFFF;font-weight: bold;
+                                                    {% endif %}">
+                                            {% if bareme.is_garanti %}
+                                                {{_('Garantie')}}
+                                            {% else %}
+                                                {{_('Exclu')}}
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                    <td class="w-auto">{{ bareme.taux_couverture|default_if_none:"" }} %</td>
+                                    <td class="w-auto">{{ bareme.plafond_sous_rubrique|default_if_none:"" }}</td>
+                                    <td class="w-auto">{{ bareme.plafond_regroupement_acte|default_if_none:"" }}</td>
+                                    <td class="w-auto">{{ bareme.plafond_acte|default_if_none:""|format_amount }}</td>
+                                    <td class="w-auto">{{ bareme.periodicite|default_if_none:"" }}</td>
+                                    <td class="table-report__action">
+                                        <div class="flex justify-center items-center">
+                                            <a href="{% url 'grh.details_garantie_formule_beneficiaire' police.id beneficiaire.id formule.id bareme.id %}"><i data-feather="eye" id="title"></i></a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                    <div class="alert alert-primary-soft show flex items-center mb-5 mx-auto inline-block justify-center">
+                        <i data-feather="info" class="mr-2"></i>
+                        {{_('AUCUNE_DONNEE')}}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>

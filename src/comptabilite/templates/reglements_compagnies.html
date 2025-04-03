@@ -1,0 +1,58 @@
+{% extends "admin/base_site.html" %}
+{% block extrastyle %} {% endblock %}
+{% block content %}
+{% load my_filters %}
+<div class="col-12 col-md-12 order-2 order-md-1">
+  <div class="card">
+    <div class="card-header">
+        <h3 class="card-title"><b>{{_("REGLEMENTS ASSUREURS")}}</b></h3>
+        <div class="card-tools">
+          <!--a class="btn btn-sm btn-default" data-toggle="modal"  data-target="#modal-client"><i class="fas fa-plus"></i> Nouveau règlement CIE</-->
+        <span id="btnOpenDialogAddReglementCompagnie" class="btn btn-sm btn-default" data-toggle="modal" data-href="{% url 'add_reglement_compagnie' %}"><i class="fas fa-money-bill"></i> Règler un assureur</span>
+        </div>
+    </div>
+    <div class="card-body">
+      <div id="example1_wrapper" class="dataTables_wrapper dt-bootstrap4">
+        <div class="row">
+          <div class="col-12 col-md-12 col-sm-12">
+              <table class="table table-bordered table-striped dataTable dtr-inline" id="table_reglements_compagnies">
+                  <thead>
+                      <tr>
+                        <th scope="col">{{_("Assureur")}}</th>
+                        <th scope="col">{{_("Total à réverser")}}</th>
+                        <th scope="col">{{_("Commissions")}}</th>
+                        <th scope="col">{{_("Nbre lignes")}}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                    {% for compagnie in compagnies %}
+                      <tr>
+                        <td>{{ compagnie.nom|default_if_none:"" }}</td>
+                        <td class="text-right">{{ compagnie.sum_reglements_a_reverser_cie|money_field }}</td>
+                        <td class="text-right">{{ compagnie.sum_commissions_a_reverser_cie|money_field }}</td>
+                        <td>{{ compagnie.nombre_reglements_a_reverser_cie|default_if_none:"" }}</td>
+                      </tr>
+                    {% endfor %}
+                    </tbody>
+              </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+
+{% block extrajs %}
+<script>
+    $(document).ready(function() {
+        $('#garantie').removeClass('o-bg-primary');
+        $('#garantie').addClass('o-active');
+    } );
+</script>
+
+{% include 'modal_add_reglement_compagnie.html' %}
+
+{% endblock %}

@@ -1,0 +1,47 @@
+{% load i18n static jazzmin admin_urls %}
+{% load my_filters %}
+<table class="table table-bordered table-striped dataTable dtr-inline" id="table_polices_compagnie">
+    <thead>
+        <tr>
+            <th>{{_("Client")}}</th>
+            <th>{{_("Numero")}}</th>
+            <th width="10%">{{_("Date échéance")}}</th>
+            <th width="7%">{{_("Statut")}}</th>
+            <th width="10%">{{_("Date création")}}</th>
+            <th width="12%">{{_("Date résiliation")}}</th>
+            <th>{{_("Prime HT")}}</th>
+            <th>{{_("Com Courtage")}}</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for compagnie, details in polices_par_compagnie.items %}
+            <tr>
+                <td colspan="5" class="fw-bold text-primary">{{ compagnie }}</td>
+                <td class="fw-bold text-inov_green">TOTAL</td>
+                <td class="fw-bold text-inov_green">{{ details.compagnie_total_ht|money_field }}</td>
+                <td class="fw-bold text-inov_green">{{ details.compagnie_com_courtage|money_field }}</td>
+            </tr>
+            {% for police in details.polices %}
+                <tr>
+                    <td>{{ police.nom }} {{ police.prenoms }}</td>
+                    <td>{{ police.numero|safe }}</td>
+                    <td>{{ police.date_fin_effet|date:"d/m/Y" }}</td>
+                    <td><span class="badge {{ police.badge_class }}">{{ police.statut }}</span></td>
+                    <td>{{ police.date_creation|date:"d/m/Y" }}</td>
+                    <td>{{ police.date_resiliation|date:"d/m/Y" }}</td>
+                    <td>{{ police.prime_ht|money_field }}</td>
+                    <td>{{ police.commission_courtage|money_field }}</td>
+                </tr>
+            {% endfor %}
+        {% endfor %}
+    </tbody>
+    <tfoot>
+        <tr>
+            <td colspan="6" class="text-right f-bold">TOTAL GENERAL :</td>
+            <td class="f-bold"><span class="form-control money_field readonly" id="total_ht" style="background: rgb(240, 220, 200); border: rgb(240, 220, 200); text-align: right; color:#000; font-weight:bold">{{ total_ht|money_field }}</span></td>
+            <td class="f-bold"><span class="form-control money_field readonly" id="total_com_courtage" style="background: rgb(240, 220, 200); border: rgb(240, 220, 200); text-align: right; color:#000; font-weight:bold">{{ total_com_courtage|money_field }}</span></td>
+        </tr>
+    </tfoot>
+</table>
+
+

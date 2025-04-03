@@ -1,0 +1,66 @@
+{% extends "admin/base_site.html" %}
+{% block extrastyle %} {% endblock %}
+{% block content %}
+{% load my_filters %}
+<div class="col-12 col-md-12 order-2 order-md-1">
+  <div class="card">
+    <div class="card-header">
+        <h3 class="card-title"><b>{{_("ENCAISSEMENT DE COMMISSIONS") }}</b></h3>
+        <div class="card-tools">
+            <span id="btnOpenDialogAddEncaissementCommision" class="btn btn-sm btn-default" data-toggle="modal" data-href="{% url 'add_encaissement_commission' %}"><i class="fas fa-money-bill"></i> {{_("Encaisser des commissions") }}</span>
+        </div>
+    </div>
+    <div class="card-body">
+      <div id="example1_wrapper" class="dataTables_wrapper dt-bootstrap4">
+        <div class="row">
+          <div class="col-12 col-md-12 col-sm-12">
+              <table class="table table-bordered table-striped dataTable dtr-inline" id="table_reglements_compagnies">
+                  <thead>
+                      <tr>
+                        <th scope="col">{{_("Assureur") }}</th>
+                        <th scope="col">{{_("Montant total reglé client") }}</th>
+                        <th scope="col">{{_("Total com courtage") }}</th>
+                        <th scope="col">{{_("Restant com courtage") }}</th>
+                        <th scope="col">{{_("Total com gestion") }}</th>
+                        <th scope="col">{{_("Restant com gestion") }}</th>
+                        <th scope="col">{{_("Nbre lignes") }}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                    {% for compagnie in compagnies %}
+                      <tr class="btnOpenDialogDetailCompagnieEncaissement" data-compagnie="{{compagnie.id}}">
+                        <td>{{ compagnie.nom|default_if_none:"" }}</td>
+                        <td class="text-right">{{ compagnie.sum_reglements|money_field }}</td>
+                        <td class="text-right">{{ compagnie.total_montant_com_courtage|money_field }}</td>
+                        <td class="text-right">{{ compagnie.solde_montant_com_courtage|money_field }}</td>
+                        <td class="text-right">{{ compagnie.total_montant_com_gestion|money_field }}</td>
+                        <td class="text-right">{{ compagnie.solde_montant_com_gestion|money_field }}</td>
+                        <td class="text-center">{{ compagnie.nombre_reglements_a_recevoir_com|money_field }}</td>
+                      </tr>
+                    {% endfor %}
+                    </tbody>
+              </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+
+{% endblock %}
+
+
+{% block extrajs %}
+<script>
+    $(document).ready(function() {
+        $('#garantie').removeClass('o-bg-primary');
+        $('#garantie').addClass('o-active');
+    } );
+</script>
+
+{% include 'modal_add_encaissement_commission.html' %}
+
+{% endblock %}

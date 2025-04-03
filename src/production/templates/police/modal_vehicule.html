@@ -1,0 +1,183 @@
+<div  class="modal fade"  id="modal-vehicule" data-backdrop="static" data-keyboard="false" aria-hidden="true"  style="display: none">
+	<div class="modal-dialog modal-xl">
+		<div class="modal-content">
+			<form enctype="multipart/form-data" id="form_add_vehicule" action="{% url 'add_vehicule' police.id %}" method="post">
+				<input type="hidden" value="{{ police.produit.id }}" data-produit_id="{{ police.produit.branche.id }}" data-branche_code="{{ police.produit.branche.code }}" data-typeproduit_id="{{ police.produit.type_produit.id }}">
+				{% csrf_token %}
+				<div class="modal-header">
+					<h4 class="modal-title">{{_("AJOUT D'UN VEHICULE")}} <span class="text-white">{{ police.id }}</span></h4>
+					<button type="button" class="close"data-dismiss="modal"aria-label="Close">
+						<span aria-hidden="true">×</span>
+					</button>
+				</div>
+				<div class="modal-body">
+				<div class="alert  alert-dismissible fade show hidden" role="alert">
+				  <span class="message">{{_("TRAITEMENT EN COURS")}}</span>
+				</div>
+				<div class="col-md-12 offset-0">
+					<ul class="nav nav-tabs" id="myTab" role="tablist">
+						<li class="nav-item"><a class="nav-link active" id="generalinformations-tab" data-toggle="tab" href="#generalinformations" role="tab" aria-controls="generalinformations" aria-selected="true">{{_("INFORMATIONS GENERALES")}}</a></li>
+					</ul>
+					<div class="tab-content" id="myTabContent">
+
+						<div class="tab-pane fade show active mt-3" id="generalinformations" role="tabpanel" aria-labelledby="generalinformations-tab">
+							<div class="row">
+								<div class="col-md-6">
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("N° immat")}} <span class="required">*</span></label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control" name="immatriculation" required/>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("N° série")}}</label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control" name="num_serie" value="">
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_('Marque')}} <span class="required">*</span></label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control" name="marque" required>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Modèle")}}</label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control" name="modele" value="">
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_('Energie')}} <span class="required">*</span></label>
+										<div class="col-sm-7">
+											<select class="form-control tags-multiple" name="carburant_id" id="carburant_id" autocomplete="off">
+												<option value="">{{_('Choisir')}}</option>
+												{% for cab in carburants %}
+													<option value="{{ cab.id }}">{{ cab.libelle }}</option>
+												{% endfor %}
+											</select>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_('Place')}}</label>
+										<div class="col-sm-7">
+											<input type="text" min="1" max="100" class="form-control money_field" name="places_assises"/>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Valeur neuve")}}</label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control money_field" name="valeur_neuve" value="" />
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Valeur actuelle")}}</label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control money_field" name="valeur_actuelle" value=""/>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_('Conducteur')}}</label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control" name="conducteur" value=""/>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Propriétaire")}} <span class="required">*</span></label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control" name="proprietaire" value="" required>
+										</div>
+									</div>
+								</div>
+								<div class="vl"></div>
+								<div class="col-md-5" style="border-left:0px;">
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("N° immat provi.")}}</label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control" name="immatriculation_provisioire"/>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Catégorie véhicule")}} <span class="required">*</span></label>
+										<div class="col-sm-7">
+											<select class="form-control tags-multiple" name="categorie_id" id="categorie_id" autocomplete="off">
+												<option value="">{{_('Choisir')}}</option>
+												{% for cat in catgories %}
+													<option value="{{ cat.id }}">{{ cat.libelle }}</option>
+												{% endfor %}
+											</select>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Usage")}} <span class="required">*</span></label>
+										<div class="col-sm-7">
+											<select class="form-control tags-multiple" name="usage_id" id="usage_id" autocomplete="off" required>
+												<option value="">{{_('Choisir')}}</option>
+												{% for u in usages %}
+													<option value="{{ u.id }}">{{ u.libelle }}</option>
+												{% endfor %}
+											</select>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_('Carrosserie')}}</label>
+										<div class="col-sm-7">
+											<select class="form-control tags-multiple" name="carosserie_id" id="carosserie_id" autocomplete="off">
+												<option value="">{{_('Choisir')}}</option>
+												{% for car in carosseries %}
+													<option value="{{ car.id }}">{{ car.libelle }}</option>
+												{% endfor %}
+											</select>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Date d'entrée")}}</label>
+										<div class="col-sm-7">
+											<input type="date" class="form-control" name="date_entree" value="">
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Mise en circulation")}} <span class="required">*</span></label>
+										<div class="col-sm-7">
+											<input type="date" class="form-control" name="date_mise_circulation" value="" required>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_('Puissance')}} <span class="required">*</span></label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control money_field" name="puissance_fiscale" required>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Poids à vide")}}</label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control money_field" name="poids_a_vide" value=""/>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Poid T.A.C")}}</label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control money_field" name="poid_tac" value=""/>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Commentaire")}}</label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control" name="commentaire" value="">
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+
+				</div>
+				<div class="modal-footer justify-content-between">
+					<button type="button" class="btn btn-danger" data-dismiss="modal"><i class="fa fa-remove"></i> {{_('Retour')}}</button>
+					<button type="button" id="btn_save_vehicule" class="btn btn-info"><i class="fa fa-check-circle"></i> {{_('Valider')}}</button>
+				</div>
+			</div>
+			</form>
+		</div>
+	</div>
+</div>

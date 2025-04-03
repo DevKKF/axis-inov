@@ -1,0 +1,50 @@
+<div  class="modal fade"  id="modal-autrerisque_add" data-backdrop="static" data-keyboard="false" aria-hidden="true"  style="display: none">
+	<div class="modal-dialog modal-xl">
+		<div class="modal-content">
+			<form enctype="multipart/form-data" id="form_add_autrerisque" action="{% url 'add_autrerisque' police.id %}" method="post">
+				{% csrf_token %}
+				<div class="modal-header">
+					<h4 class="modal-title">{{_("AJOUT D'UN AUTRE RISQUE")}} <span class="text-white">{{ police.id }}</span></h4>
+					<button type="button" class="close"data-dismiss="modal"aria-label="Close">
+						<span aria-hidden="true">×</span>
+					</button>
+				</div>
+				<div class="modal-body">
+				<div class="alert alert-dismissible fade show hidden" role="alert">
+				  <span class="message">{{_("TRAITEMENT EN COURS")}}</span>
+				</div>
+				<div class="col-md-12 offset-0">
+					<ul class="nav nav-tabs" id="myTab" role="tablist">
+						<li class="nav-item"><a class="nav-link active" id="generalinformations-tab" data-toggle="tab" href="#generalinformations" role="tab" aria-controls="generalinformations" aria-selected="true">{{_("AUTRE RISQUE")}}</a></li>
+					</ul>
+					<div class="tab-content" id="myTabContent">
+						<div class="tab-pane fade show active mt-3" id="generalinformations" role="tabpanel" aria-labelledby="generalinformations-tab">
+                            <div class="row" style="max-height:550px;">
+								<div class="col-md-12">
+									<div class="form-group row">
+										<label class="col-sm-12 col-form-label">{{_("Risque")}} <span class="text-danger">*</span></label>
+										<div class="col-sm-12">
+											<input type="text" class="form-control" name="libelle" id="libelle" value="" required>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-12 col-form-label">{{_("Description")}}</label>
+										<div class="col-sm-12">
+                                            <textarea name="description" id="description" cols="30" rows="10" class="form-control"></textarea>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+
+				</div>
+				<div class="modal-footer justify-content-between">
+					<button type="button" class="btn btn-danger" data-dismiss="modal"><i class="fa fa-remove"></i> {{_('Retour')}}</button>
+					<button type="button" id="btn_save_autrerisque" class="btn btn-info"><i class="fa fa-check-circle"></i> {{_('Valider')}}</button>
+				</div>
+			</div>
+			</form>
+		</div>
+	</div>
+</div>

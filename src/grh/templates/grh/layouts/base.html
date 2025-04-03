@@ -1,0 +1,36 @@
+
+{% load static %}
+{% load my_filters %}
+<!DOCTYPE html>
+<html lang="en" class="light">
+
+    <head>
+        <meta charset="utf-8">
+        <link href="{% static 'grh/images/logo.png' %}" rel="shortcut icon">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta name="description" content="">
+        <meta name="keywords" content="">
+        <meta name="author" content="OLEASANTE">
+        <title>{% block title %}{{ title }} | GRH {% endblock %}</title>
+        <link rel="stylesheet" href="{% static 'grh/css/_app.css' %}" />
+        {% block css %}{% endblock %}
+    </head>
+
+    <body class="py-5 md:py-0 bg-black/[0.15] dark:bg-transparent">
+        {% include 'grh/layouts/mobile_menu.html' %}
+        <div class="flex overflow-hidden">
+            {% include 'grh/layouts/side_nav.html' %}
+            <div class="content">
+                {% include 'grh/layouts/top_bar.html' %}
+                {% block content %}{% endblock %}
+            </div>
+        </div>
+        <!-- COMMENTED ON 15/03/2024 -->
+        <!--script src="https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/markerclusterer.js"></script>
+        <script src="https://maps.googleapis.com/maps/api/js?key=["your-google-map-api"]&libraries=places"></script-->
+        <script src="{% static 'grh/js/app.js' %}"></script>
+        <script src="{% static 'grh/js/custom_js_grh.js' %}"></script>
+        {% block js %}{% endblock %}
+
+    </body>
+</html>

@@ -1,0 +1,81 @@
+{% load my_filters %}
+{% load i18n static jazzmin admin_urls %}
+{% load my_filters %}
+<!-- Modal -->
+{% if facture.id %}
+<div class="modal fade" id="modal-annuler_une_facture_compagnie_treso" data-backdrop="static" data-keyboard="false" aria-hidden="true"  style="display: none">
+    <div class="modal-dialog modal-xl" role="document">
+    <div class="modal-content">
+        <div class="modal-header">
+        <h5 class="modal-title" id=""><strong>ANNULER LA FACTURE Nº {{facture.numero}} ?</strong></h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+        </button>
+        </div>
+
+        <form action="{% url 'annulation_facture_simple' facture.id %}" method="post" id="form_annuler_facture_garant">
+            {% csrf_token %}
+            <div class="modal-body">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="d-flex justify-content-between">
+                            <h5>Liste des sinistres</h5>
+                            <span class="badge o-bg-top text-bold text-white text-md pt-2 px-2">
+                                {{facture.compagnie}}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <table class="table dataTable table-bordered table-striped dataTable datatable dtr-inline">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Nº Sinistre</th>
+                                    <th scope="col">Type</th>
+                                    <th scope="col">Date survenance</th>
+                                    <th scope="col">Remboursement</th>
+                                    <th scope="col">Prestataire</th>
+                                    <th scope="col">À régler</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for s in sinistres_factures_impayees %}
+                                    {% if s.facture_compagnie.numero == facture.numero %}
+                                    <tr>
+                                        <td style="text-align:left;">{{s.numero}}</td>
+                                        <td style="text-align:left;">{{s.type_sinistre|capfirst}}</td>
+                                        <td style="text-align:left;">{{s.date_survenance|date:'d/m/Y'|default_if_none:"" }}</td>
+                                        <td ><span class="badge badge-secondary">{{s.statut_remboursement}}</span></td>
+                                        <td style="text-align:left;">{{s.prestataire}}</td>
+                                        <td style="text-align:left;">{{ s.montant_remboursement_accepte|money_field}} {{ request.user.bureau.pays.devise.code }}</td>
+                                    </tr>
+                                    {% endif %}
+                                {% endfor %}
+                                <tr>
+                                    <td colspan="5"></td>
+                                    <td>
+                                        <span class="badge badge-secondary text-bold text-md">
+                                            {{facture.montant_restant|money_field}} {{ request.user.bureau.pays.devise.code }}
+                                        </span>
+                                    </td>
+                                </tr>                                 
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Fermer</button>
+                <button type="button" id="btn_annuler_une_facture_compagnie_treso" class="btn o-bg-primary">Valider l'annulation</button>
+            </div>
+        </form>
+    </div>
+    </div>
+</div>
+<script>
+    {% comment %} $(document).ready(function() {
+        $('.datatable_annulation_facture_compagnie').DataTable({
+        });
+    }); {% endcomment %}
+</script>
+{% endif %}

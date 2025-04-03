@@ -1,0 +1,79 @@
+{% load i18n static jazzmin admin_urls %}
+{% load my_filters %}
+
+<table id="table_provision_sinistre" style="width:100%;" class="table table-bordered table-striped dtr-inline">
+    <thead>
+        <tr>
+            <th rowspan="2">Postes dommages</th>
+            {% for garantie in garanties_sinistre %}
+                <th colspan="3" class="garantie-header text-center" data-garantie-id="{{ garantie.id }}">{{ garantie.nom }}</th>
+            {% endfor %}
+        </tr>
+        <tr>
+            {% for garantie in garanties_sinistre %}
+                <th style="width: 100px;">Estimation</th>
+                <th style="width: 100px;">Déjà réglé</th>
+                <th style="width: 100px;">Provision</th>
+            {% endfor %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for postedommage in postedommages %}
+            <tr>
+                <td style="width:200px !important;">{{ postedommage.libelle|default_if_none:"" }}</td>
+                {% for garantie in garanties_sinistre %}
+                    {% with key=postedommage.id|stringformat:"s"|add:"_"|add:garantie.id %}
+                        {% with provision=provisions_dict|get_item:key %}
+                            <td>
+                                <input type="text" id="estimation_{{ postedommage.id }}_{{ garantie.id }}"
+                                       name="estimation_{{ garantie.id }}" class="form-control form-control-sm money_field calculs_montant_garantie_sinistre"
+                                       data-type="estimation" value="{{ provision.estimation|default_if_none:'' }}"
+                                       onkeypress="isInputNumber(event)" oninput="formatMontant(this)">
+                            </td>
+                            <td>
+                                <input type="text" id="deja_regle_{{ postedommage.id }}_{{ garantie.id }}"
+                                       name="deja_regle_{{ garantie.id }}" class="form-control form-control-sm money_field calculs_montant_garantie_sinistre"
+                                       data-type="deja_regle" value="{{ provision.deja_regle|default_if_none:'' }}"
+                                       onkeypress="isInputNumber(event)" oninput="formatMontant(this)">
+                            </td>
+                            <td>
+                                <input type="text" id="provision_{{ postedommage.id }}_{{ garantie.id }}"
+                                       name="provision_{{ garantie.id }}" class="form-control form-control-sm money_field calculs_montant_garantie_sinistre"
+                                       data-type="provision" value="{{ provision.provision|default_if_none:'' }}"
+                                       onkeypress="isInputNumber(event)" oninput="formatMontant(this)">
+                            </td>
+                        {% endwith %}
+                    {% endwith %}
+                {% endfor %}
+            </tr>
+        {% endfor %}
+
+        <!-- Ligne Totaux -->
+        <tr style="background:#17A2B8; text-align:center; font-weight:bold; color:#fff">
+            <td>Totaux</td>
+            {% for garantie in garanties_sinistre %}
+                <td><input type="text" id="total_estimation_{{ garantie.id }}" class="form-control form-control-sm money_field total_estimation" value="" readonly></td>
+                <td><input type="text" id="total_deja_regle_{{ garantie.id }}" class="form-control form-control-sm money_field total_deja_regle" value="" readonly></td>
+                <td><input type="text" id="total_provision_{{ garantie.id }}" class="form-control form-control-sm money_field total_provision" value="" readonly></td>
+            {% endfor %}
+        </tr>
+    </tbody>
+</table>
+
+<script>
+    function formatMontant(input) {
+        // Supprimez d'abord tous les caractères non numériques
+        var montant = input.value.replace(/\D/g, '');
+
+        // Ajoutez un espace comme séparateur pour les milliers
+        montant = addSpacesForThousands(montant);
+
+        // Mettez à jour la valeur de l'input
+        input.value = montant;
+    }
+
+    // Fonction pour ajouter un espace comme séparateur pour les milliers
+    function addSpacesForThousands(x) {
+        return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+    }
+</script>

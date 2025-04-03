@@ -1,0 +1,88 @@
+<div  class="modal fade"  id="modal-taux_compagnie" data-backdrop="static" data-keyboard="false" aria-hidden="true"  style="display: none">
+	<div class="modal-dialog modal-xl">
+		<div class="modal-content">
+			<form enctype="multipart/form-data" id="form_taux_compagnie" action="{% url 'modifier_compagnie' compagnie.id %}" method="post">
+			{% csrf_token %}
+			<div class="modal-header">
+				<h4 class="modal-title">{{_("MODIFICATION DES TAUX")}}</h4>
+				<button type="button" class="close"data-dismiss="modal"aria-label="Close">
+					<span aria-hidden="true">×</span>
+				</button>
+			</div>
+			<div class="modal-body">
+				<div class="alert  alert-dismissible fade show hidden" role="alert">
+				  <span class="message">{{_("TRAITEMENT EN COURS")}}</span>
+				</div>
+				<div class="col-md-12 offset-0">
+					<div class="tab-content" id="myTabContent">
+						<div class="row">
+                            <table id="table_garantie_police" class="table table-bordered table-striped dataTable_ dtr-inline">
+                                <thead>
+                                    <tr>
+                                        <th style="width:5%"></th>
+                                        <th>{{_("Produit")}}</th>
+                                        <th class="text-center" style="width:25%">{{_("Taux com courtage")}} (%)</th>
+                                        <th class="text-center" style="width:25%;">{{_("Taux com courtage terme")}} (%)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for taux in param_produit_compagnie %}
+                                        <tr>
+                                            <td>
+                                                <input type="checkbox" class="form-control taux-checkbox" name="taux_{{taux.id}}" value="{{taux.id}}" style="width: 1rem; height: 1.25rem;">
+                                            </td>
+                                            <td>{{ taux.produit.nom|default_if_none:"" }}</td>
+                                            <td>
+                                                <input maxlength="5" type="text" class="form-control money_field_avec_virgule taux_com_courtage" name="taux_com_courtage_{{taux.id}}" value="{{ taux.taux_com_courtage|default_if_none:'' }}" disabled>
+                                            </td>
+                                            <td>
+                                                <input maxlength="5" type="text" class="form-control money_field_avec_virgule taux_com_courtage_terme" name="taux_com_courtage_terme_{{taux.id}}" value="{{ taux.taux_com_courtage_terme|default_if_none:'' }}" disabled>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+					</div>
+
+				</div>
+				<div class="modal-footer justify-content-between">
+					<button type="button" class="btn btn-danger" data-dismiss="modal"><i class="fa fa-remove"></i> {{_('Retour')}}</button>
+					<button type="button" id="btn_save_taux_compagnie" class="btn btn-info"><i class="fa fa-check-circle"></i> {{_('Enregistrer')}}</button>
+				</div>
+			</div>
+			</form>
+		</div>
+	</div>
+</div>
+
+<script>
+    function isInputNumber(evt){
+
+        var ch = String.fromCharCode(evt.which);
+
+        if(!(/[0-9]/.test(ch))){
+            evt.preventDefault();
+        }
+    }
+
+    // Surveiller les changements des cases à cocher
+    $(document).on('change', '.taux-checkbox', function () {
+        // Récupérer la ligne parente (tr) de la case cochée/décochée
+        const parentRow = $(this).closest('tr');
+
+        // Trouver les champs associés
+        const taux_com_courtageInput = parentRow.find('.taux_com_courtage');
+        const taux_com_courtage_termeInput = parentRow.find('.taux_com_courtage_terme');
+
+        if ($(this).is(':checked')) {
+            // Activer les champs si la case est cochée
+            taux_com_courtageInput.prop('disabled', false);
+            taux_com_courtage_termeInput.prop('disabled', false);
+        } else {
+            // Désactiver et vider les champs si la case est décochée
+            taux_com_courtageInput.prop('disabled', true);
+            taux_com_courtage_termeInput.prop('disabled', true);
+        }
+    });
+</script>

@@ -1,0 +1,84 @@
+
+{% load static %}
+
+    <style>
+        #title {
+            color: #B7482B;
+        }
+        #link {
+            color: #0000FF;
+        }
+        #status {
+            padding: 5px;
+            border-radius: 5px;
+        }
+    </style>
+
+    <div class="intro-y col-span-12 md:col-span-12 lg:col-span-12 mt-8">
+        <div class="box">
+            <div class="flex flex-col lg:flex-row items-start justify-between px-5 pt-5">
+                <div class="w-full flex flex-col lg:flex-row items-start lg:items-center border-b border-gray-500">
+                    <h1 class="text-xl lg:text-lg font-medium mb-3 lg:mb-0 lg:mr-3" id="title">
+                        {{_('DOCUMENTS_DU_BENEFICIAIRE')}}
+                    </h1>
+                </div>
+                {% if etat_police == "Résilié" %}
+                <div class="w-auto lg:absolute lg:right-0 mt-5 lg:mt-0 mr-5">
+                    <button class="btn btn-primary-soft w-full ml-4" disabled>
+                        <i data-feather="plus" class="mr-2 mb-1"></i>
+                        {{_('AJOUTER_UN_NOUVEAU_DOCUMENT')}}
+                    </button>
+                </div>
+                   {% else %}
+                   <a class="w-auto lg:absolute lg:right-0 mt-5 lg:mt-0 mr-5" href="{% url 'grh.ajouter_document_beneficiaire' police.id beneficiaire.id %}">
+                       <button class="btn btn-primary-soft w-full ml-4">
+                           <i data-feather="plus" class="mr-2 mb-1"></i>
+                           {{_('AJOUTER_UN_NOUVEAU_DOCUMENT')}}
+                       </button>
+                   </a>
+                   {% endif %}
+            </div>
+            <div class="grid grid-cols-12 gap-6 mt-2 p-8">
+                <div class="intro-y col-span-12 overflow-auto lg:overflow-visible">
+                    {% if documents %}
+                    <table class="table table-report -mt-2 datatable">
+                        <thead>
+                            <tr>
+                                <th class="whitespace-nowrap">{{_('Libelle')}}</th>
+                                <th class="whitespace-nowrap">{{_('Type_document')}}</th>
+                                <th class="whitespace-nowrap">{{_('Ajoute_le')}}</th>
+                                <th class="whitespace-nowrap">{{_('Commentaire')}}</th>
+                                <th class="whitespace-nowrap">{{_('Telecharger_document')}}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for document in documents %}
+                            <tr class="intro-x">
+                                <td class="w-auto">{{ document.nom|default_if_none:"" }}</td>
+                                <td class="w-auto">{{ document.type_document.libelle|default_if_none:"" }}</td>
+                                <td class="w-auto">{{ document.created_at|default_if_none:""|date:"d/m/Y" }}</td>
+                                <td class="w-auto">{{ document.commentaire|default_if_none:"" }}</td>
+                                <td class="w-40">
+                                    <div class="flex justify-center items-center">
+                                        <a href="{{ document.fichier.url }}" download style="margin-right: 10px;">
+                                            <i data-feather="corner-left-down" id="title"></i>
+                                        </a>
+                                        <a href="{{ document.fichier.url }}" style="margin-left: 10px;">
+                                            <i data-feather="eye" id="title"></i>
+                                        </a>                           
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                    <div class="alert alert-primary-soft show flex items-center mb-5 mx-auto inline-block justify-center">
+                        <i data-feather="info" class="mr-2"></i>
+                        {{_('AUCUNE_DONNEE')}}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>

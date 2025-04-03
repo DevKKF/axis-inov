@@ -1,0 +1,262 @@
+<div  class="modal fade"  id="modal-client" data-backdrop="static" data-keyboard="false" aria-hidden="true"  style="display: none">
+	<div class="modal-dialog modal-xl">
+		<div class="modal-content">
+			<form enctype="multipart/form-data" id="form_add_client" action="{% url 'add_client' %}" method="post">
+			{% csrf_token %}
+			<div class="modal-header">
+				<h4 class="modal-title">{{_("AJOUT D'UN CLIENT")}}</h4>
+				<button type="button" class="close"data-dismiss="modal"aria-label="Close">
+					<span aria-hidden="true">×</span>
+				</button>
+			</div>
+			<div class="modal-body">
+				<div class="alert  alert-dismissible fade show hidden" role="alert">
+				  <span class="message">{{_("TRAITEMENT EN COURS")}}</span>
+				</div>
+				<div class="col-md-12 offset-0">
+					<ul class="nav nav-tabs" id="myTab" role="tablist">
+						<li class="nav-item"><a class="nav-link active" id="identity-tab" data-toggle="tab" href="#identity" role="tab" aria-controls="identity" aria-selected="true">{{_('GENERAL')}}</a></li>
+						<li class="nav-item"><a class="nav-link" id="coordonnee-tab" data-toggle="tab" href="#coordonnee" role="tab" aria-controls="coordonnee" aria-selected="false">{{_('COORDONNEES')}}</a></li>
+					</ul>
+					<div class="tab-content" id="myTabContent">
+
+						<div class="tab-pane fade show active mt-3" id="identity" role="tabpanel" aria-labelledby="identity-tab">
+							<div class="row">
+								<div class="col-md-6">
+
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Type de personne")}} <span class="required">*</span></label>
+										<div class="col-sm-7">
+											<select class="form-control" name="type_personne_id" id="type_personne_id" autocomplete="off" required>
+												<option value="">{{_('Choisir')}}</option>
+												{% for type_personne in types_personnes %}
+													<option value="{{ type_personne.id }}">{{ type_personne.libelle }}</option>
+												{% endfor %}
+											</select>
+										</div>
+									</div>
+									<div class="form-group row champ_variable_client if_personne_physique">
+										<label class="col-sm-5 col-form-label">{{_("Type de client")}} <span class="required">*</span></label>
+										<div class="col-sm-7">
+											<select class="form-control" name="type_client_id" id="type_client_id" autocomplete="off" required>
+												<option value="">{{_('Choisir')}}</option>
+												{% for tc in types_clients %}
+													<option value="{{ tc.id }}" {% if tc.libelle == 'STANDARD'|stringformat:"s" %}selected{% endif %}>{{ tc.libelle }}</option>
+												{% endfor %}
+											</select>
+										</div>
+									</div>
+									<div class="form-group row champ_variable_client if_personne_physique">
+										<label class="col-sm-5 col-form-label">Civilité <span class="required">*</span></label>
+										<div class="col-sm-7">
+											<select class="form-control" name="civilite_id" autocomplete="off" required>
+												<option value="">{{_('Choisir')}}</option>
+												{% for civilite in civilites %}
+													<option value="{{ civilite.id }}">{{ civilite.name }}</option>
+												{% endfor %}
+											</select>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_('Nom')}} <span class="required">*</span></label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control" name="nom" value="" autocomplete="off" required/>
+										</div>
+									</div>
+									<div class="form-group row champ_variable_client if_personne_physique">
+										<label class="col-sm-5 col-form-label">{{_('Prenoms')}} <span class="required">*</span></label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control" name="prenoms" autocomplete="off" value=""/>
+										</div>
+									</div>
+									<div class="form-group row champ_variable_client if_personne_physique">
+										<label class="col-sm-5 col-form-label">{{_('Sexe')}} <span class="required">*</span></label>
+										<div class="col-sm-7">
+											<select class="form-control" name="sexe" id="sexe" autocomplete="off">
+												<option value="">{{_('Choisir')}}</option>
+												<option value="F">{{_('Feminin')}} (F)</option>
+												<option value="M">{{_('Masculin')}} (M)</option>
+											</select>
+										</div>
+									</div>
+									<div class="form-group row" style="display:none">
+										<label class="col-sm-5 col-form-label">Commercial </label>
+										<div class="col-sm-7">
+											<select name="commercial" id="commercial_id" class="form-control tags-multiple">
+												<option value="">{{_('Choisir')}}</option>
+												{% for com in commercials %}
+													<option value="{{com.id}}">{{com.first_name}} {{com.last_name}}</option>
+												{% endfor %}
+											</select>
+										</div>
+									</div>
+									<div class="form-group row" style="display:none">
+										<label class="col-sm-5 col-form-label">Groupe</label>
+										<div class="col-sm-7">
+											<select name="groupe_id" id="groupe_id" class="form-control tags-multiple">
+												<option value="">{{_('Choisir')}}</option>
+												{% for groupe in groupes %}
+													<option value="{{groupe.id}}">{{groupe.libelle}}</option>
+												{% endfor %}
+											</select>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Date de naissance")}}</label>
+										<div class="col-sm-7">
+											<input type="date" class="form-control" name="date_naissance" id="date_naissance" autocomplete="off" value=""/>
+										</div>
+									</div>
+
+									<div class="form-group row" style="display:none">
+										<label class="col-sm-5 col-form-label">{{_("Date de création")}}</label>
+										<div class="col-sm-7">
+											<input type="date" class="form-control" name="date_creation" id="date_creation" autocomplete="off" value=""/>
+										</div>
+									</div>
+
+								</div>
+								<div class="vl"></div>
+								<div class="col-md-5" style="border-left:0px;">
+
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Business unit")}}</label>
+										<div class="col-sm-7">
+											<select class="form-control" name="business_unit_id" id="business_unit_id" autocomplete="off">
+												<option value="">{{_('Choisir')}}</option>
+												{% for bu in business_units %}
+													<option value="{{ bu.id }}">{{ bu.libelle }}</option>
+												{% endfor %}
+											</select>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_('Pays')}} <span class="required">*</span></label>
+										<div class="col-sm-7">
+											<select class="form-control tags-multiple" name="pays_id" id="pays_id" autocomplete="off" required>
+												<option value="">{{_('Choisir')}}</option>
+												{% for p in pays %}
+													<option value="{{ p.id }}" {% if p.code == "CI" %} selected {% endif %}>{{ p.nom }}</option>
+												{% endfor %}
+											</select>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_('Ville')}} </label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control" name="ville" autocomplete="off" value=""/>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Tel fixe")}}</label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control" name="telephone_fixe" autocomplete="off" value="" onkeypress="isInputNumber(event)">
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Tel mobile")}} </label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control" name="telephone_mobile" autocomplete="off" value="" onkeypress="isInputNumber(event)">
+										</div>
+									</div>
+
+									<div class="form-group row  ">
+										<label class="col-sm-5 col-form-label">{{_('Logo')}} <span class="required"></span></label>
+										<div class="col-sm-7">
+											<input type="file" class="form-control" id="logo_client" name="logo_client"/>
+										</div>
+									</div>
+
+								</div>
+							</div>
+						</div>
+
+						<div class="tab-pane fade mt-3" id="coordonnee" role="tabpanel" aria-labelledby="coordonnee-tab">
+							<div class="row">
+								<div class="col-md-6">
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_('Adresse')}} </label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control" name="adresse" autocomplete="off" value="" />
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Code postal")}}</label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control" name="adresse_postale" autocomplete="off" value="" />
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("E-mail")}} </label>
+										<div class="col-sm-7">
+											<input type="email" class="form-control" name="email" autocomplete="off" value="" />
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Site web")}}</label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control" name="site_web" autocomplete="off" value="" />
+										</div>
+									</div>
+								</div>
+								<div class="vl"></div>
+								<div class="col-md-5" style="border-left:0px;">
+
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_('Facebook')}} </label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control" name="facebook" autocomplete="off" value="" />
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_('Twitter')}} </label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control" name="twitter" autocomplete="off" value="" />
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_('Instagram')}} </label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control" name="instagram" autocomplete="off" value="" />
+										</div>
+									</div>
+
+									<div class="form-group row">
+                                        <label class="col-sm-5 col-form-label">Secteur d'activité </label>
+                                        <div class="col-sm-7">
+                                            <select name="secteur_activite_id" id="" class="form-control tags-multiple">
+                                                <option value="">{{_('Choisir')}}</option>
+                                                {% for secteur_activite in secteurs_activite %}
+                                                <option value="{{secteur_activite.id}}">{{secteur_activite.libelle}}</option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                    </div>
+
+								</div>
+							</div>
+						</div>
+
+					</div>
+
+				</div>
+				<div class="modal-footer justify-content-between">
+					<button type="button" class="btn btn-danger" data-dismiss="modal"><i class="fa fa-remove"></i> {{_('Retour')}}</button>
+					<button type="button" id="btn_save_client" class="btn btn-info"><i class="fa fa-check-circle"></i> {{_('Enregistrer')}}</button>
+				</div>
+			</div>
+			</form>
+		</div>
+	</div>
+</div>
+
+<script>
+    function isInputNumber(evt){
+
+        var ch = String.fromCharCode(evt.which);
+
+        if(!(/[0-9]/.test(ch))){
+            evt.preventDefault();
+        }
+    }
+</script>

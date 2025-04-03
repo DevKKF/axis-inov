@@ -1,0 +1,106 @@
+{% extends "admin/base_site.html" %}
+{% block extrastyle %} {% endblock %}
+{% block content %}
+<div class="col-12 col-md-12 order-2 order-md-1">
+
+
+  <div class="card">
+    <div class="card-header">
+        <h3 class="card-title"><b>{{_('LISTE_DES_WS_BOBYS')}}</b></h3>
+        <div class="card-tools">
+            <a class="btn btn-sm btn-default" href="{% url 'ws_boby_create' %}"><i class="fas fa-plus"></i> {{_('Nouveau_ws_boby')}}</a>
+        </div>
+    </div>
+
+
+
+    <div class="card-body">
+      <div id="example1_wrapper" class="dataTables_wrapper dt-bootstrap4">
+        <div class="row">
+          <div class="col-12 col-md-12 col-sm-12">
+              <div class="spinner-border__" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); display: none;"></div>
+
+              <table class="table table-bordered table-striped dataTable customDataTable dtr-inline" id="table_boby">
+                  <thead>
+                    <tr>
+                      <th scope="col">#{{_('ID')}}</th>
+                      <th scope="col">{{_('Ws_Boby')}}</th>
+                      <th scope="col">{{_('Statut')}}</th>
+                      <!--th scope="col">Fichier tarif</th-->
+                      <th>{{_('Actions')}}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                  </tbody>
+              </table>
+
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+
+{% endblock %}
+
+
+{% block extrajs %}
+<script>
+    $(document).ready(function() {
+
+        dataTable = $('#table_boby').DataTable({
+            "language": {
+                "url": "//cdn.datatables.net/plug-ins/9dcbecd42ad/i18n/French.json"
+            },
+            "serverSide": true,
+            "ajax": {
+                "url": "{% url 'ws_boby_datatable' %}",
+                "data": function (data) {
+                    data.page = data.start / data.length + 1;
+                },
+                "dataSrc": function (json) {
+                    return json.data;
+                }
+            },
+            "columns": [
+                {"data": "id", "orderable": true},
+                {"data": "name", "orderable": true},
+                {"data": "status", "orderable": true},
+                {"data": "actions", "orderable": false, "searchable": false},
+            ],
+            "paging": true,
+            "pageLength": 10,
+            "processing": true,  // Show the loading indicator
+            "searching": true,   // Enable the search feature
+            "search": {
+                "search": $('#table_boby-table_filter input').val()
+            }
+        });
+
+         dataTable.on('xhr.dt', function (e, settings, json, xhr) {
+            // Hide the spinner when the data is loaded
+            $('.spinner-border').hide();
+         });
+
+        // Show the spinner when the table is processing
+        dataTable.on('processing.dt', function (e, settings, processing) {
+            if (processing) {
+                $('.spinner-border').show();
+            }
+        });
+
+
+        // Add custom search functionality for code and name columns
+        $('#search_code, #search_nom, #search_type').on('keyup change', function() {
+            dataTable.search('').draw(); // Clear existing search
+            dataTable.draw(); // Trigger a new draw, which will include the updated search parameters
+        });
+
+    });
+
+</script>
+
+{% endblock %}

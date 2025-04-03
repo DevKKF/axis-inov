@@ -1,0 +1,88 @@
+{% load my_filters %}
+{% comment %} {% load tz %} {% endcomment %}
+
+<style type="text/css">
+	tr.tr_totaux td
+	{
+		border:1px solid #dee2e6;
+	}
+
+	tr.tr_totaux td .money_field
+	{
+		border:none;
+		background:none;
+		font-weight:bold;
+		font-size:22px;
+	}
+
+	tr.tr_invisible td
+	{
+		border:0px solid red;
+		padding:0px;
+	}
+	.varAlimentSinistreAutre{
+		display:none;
+	}
+
+</style>
+<div class="modal modal-seance_done fade" id="modal-seance_done" data-backdrop="static" data-keyboard="false" aria-hidden="true"style="display: none" xmlns="http://www.w3.org/1999/html">
+	<div class="modal-dialog modal-m">
+		<div class="modal-content">
+			<form enctype="multipart/form-data" id="form_mark_seance_done" action="{% url 'popup_seance_done' sinistre.id %}" method="post">
+				{% csrf_token %}
+				<div class="modal-header">
+					<h4 class="modal-title">{{_('GESTION_DE_LA_SEANCE')}}</h4>
+					<button type="button" class="close"data-dismiss="modal"aria-label="Close"><span aria-hidden="true">×</span></button>
+				</div>
+				<div class="modal-body">
+					<div class="alert  alert-dismissible fade show hidden" role="alert">
+						<span class="message">{{_('TRAITEMENT_EN_COURS')}}</span>
+					</div>
+					<div class="col-md-12 offset-0">
+
+                        <div class="form-groupn mb-2 row">
+                            <div class="col-sm-4">{{_('Date')}}: </div>
+                            <div class="col-sm-8">
+                                <input type="date" name="date_survenance" class="form-control" value="{{ today|date:'Y-m-d' }}" id="" required>
+                            </div>
+                        </div>
+					</div>
+				</div>
+				<div class="modal-footer justify-content-between">
+					<button type="button" class="btn btn-default" data-dismiss="modal">{{_('Fermer')}}</button>
+
+						<button 
+                        type="button" 
+                        class="btn btn-success"
+                        id="btn_seance_done" 
+                        data-acte_id="{{sinistre.id}}">
+                        {{_('MARQUER_COMME_EFFECTUER')}}
+                    </button>
+				</div>
+			</form>
+			<div class="form_sinistre_overlay"><div style="margin:auto;padding:20px 0;color:white;text-align:center;">{{_('TRAITEMENT_EN_COURS')}} ...</div></div>
+		</div>
+	</div>
+</div>
+
+
+<!-- Modal -->
+<div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+	<div class="modal-dialog" role="document">
+	  <div class="modal-content">
+		<div class="modal-header">
+		  <h5 class="modal-title" id="exampleModalLabel">{{_('Modal_title')}}</h5>
+		  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+			<span aria-hidden="true">&times;</span>
+		  </button>
+		</div>
+		<div class="modal-body">
+		  ...
+		</div>
+		<div class="modal-footer">
+		  <button type="button" class="btn btn-danger" data-dismiss="modal">{{_('Annuler')}}</button>
+		  <button type="button" class="btn o-bg-primary">{{_('Approuver')}}</button>
+		</div>
+	  </div>
+	</div>
+  </div>

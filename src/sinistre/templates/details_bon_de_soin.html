@@ -1,0 +1,120 @@
+{% extends "admin/base_site.html" %}
+{% load my_filters %}
+{% load static %}
+{% block extrastyle %} {% endblock %}
+{% block content %}
+<div class="col-12 col-md-12 order-2 order-md-1">
+
+  <div class="row">
+
+    <div class="col-sm-12">
+      <div class="row">
+        <div class="col-sm-2">
+          <div class="card-avatar mx-auto mb-4" >
+            <img src="{% if aliment.photo %} {{aliment.photo.url}} {% else %} {% static 'admin_custom/user.png' %} {% endif %}" class="img-fluid" style="width:130px;border:2px solid orange;border-radius:5px;">
+          </div>
+        </div>
+        <div class="col-sm-10">
+        <div class="">
+          <!--div class="card-header">
+            <h5 class="card-title">INFORMATIONS PERSONNELLES</h5>
+          </div-->
+          <div class="card-body mt-0 pt-0">
+            <div class="row">
+              <div class="col-sm-6">
+                <div class="form-groupn mb-2 row">
+                  <div class="col-sm-4">{{_('Numero_Assure')}}: </div>
+                  <div class="col-sm-8">
+                    <span class=" col-sm-12 text-bold">{{ aliment.carte_active.numero }}</span>
+                  </div>
+                </div>
+                <div class="form-groupn mb-2 row">
+                  <div class="col-sm-4">{{_('Nom')}}:</div>
+                  <div class="col-sm-8">
+                    <span class="col-sm-12 text-bold">{{ aliment.nom }}</span>
+                  </div>
+                </div>
+                <div class="form-groupn mb-2 row">
+                  <div class="col-sm-4">{{_('Prenoms')}}:<span class="required"></span></div>
+                  <div class="col-sm-8">
+                    <span class="text-bold col-sm-12"> {{ aliment.prenoms }}</span>
+                  </div>
+                </div>
+                <div class="form-groupn mb-2 row">
+                  <div class="col-sm-4">{{_('Date_de_naissance')}}: <span></span></div>
+                  <div class="col-sm-8">
+                    <span class="text-bold col-sm-12" readonly="">{{ aliment.date_naissance|date:"d/m/Y" }}</span>
+                  </div>
+                </div>
+                <div class="form-groupn mb-2 row">
+                  <div class="col-sm-4">{{_('Taux_de_couverture')}}:</div>
+                  <div class="col-sm-8">
+                    <span class="text-bold col-sm-12" readonly="">{% if dossier_sinistre.tm_prefinanced and request.user.is_prestataire %} 100 {% else %}{{ dossier_sinistre.formulegarantie.taux_couverture }} {% endif %}%</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    </div>
+  </div>
+
+
+  <div class=" col-md-12">
+
+
+{% if request.user.is_pharm %}
+  <div class="card">
+    <div class="card-header m-bg-light">
+      <div class="card-title">
+      <h6><strong>{{_('LISTE_DES_FEUILLES_DE_SOIN')}}</strong></h6>
+      </div>
+      <div class="card-tools">
+
+      </div>
+    </div>
+    <div class="card-body">
+      <table class="table table-bordered table-striped dataTable_ dtr-inline">
+        <thead>
+        <tr>
+          <th scope="col">{{_('Numero_Feuille_de_soin')}}</th>
+          <th scope="col">{{_('Assure')}}</th>
+          <th scope="col">{{_('Prestataire')}}</th>
+          <th scope="col">{{_('Date_de_prestation')}}</th>
+          <th scope="col">{{_('Actions')}}</th>
+        </tr>
+        </thead>
+        <tbody>
+          {% for dossier_sinistre in dossiers_sinistres %}
+          <tr>
+              <td>{{ dossier_sinistre.numero|default_if_none:"" }}</td>
+              <td>{{ dossier_sinistre.aliment.nom|default_if_none:"" }} {{ dossier_sinistre.aliment.prenoms|default_if_none:"" }}</td>
+              <td>{{ dossier_sinistre.prestataire|default_if_none:"" }}</td>
+              <td>{{ dossier_sinistre.date_survenance|date:'d/m/Y à H:i'|default_if_none:"" }}</td>
+              <td class="text-center">
+                {% if dossier_sinistre.is_closed %}
+                  <a><span class="btn btn-sm bg-danger btn-details rounded-pill"><i class="fa fa-lock"></i></span></a>
+                {% else %}
+                  <a href="{% url 'details_dossier_sinistre' dossier_sinistre.id %}"><span class="btn btn-sm btn-details rounded-pill"><i class="fa fa-eye"></i> {{_('Details')}}</span></a>
+                {% endif %}
+              </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+  {% endif %}
+
+</div>
+</div>
+
+
+{% endblock %}
+
+
+{% block extrajs %}
+
+{% endblock %}

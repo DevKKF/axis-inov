@@ -1,0 +1,111 @@
+
+{% load static %}
+
+    <style>
+        #title {
+            color: #B7482B;
+        }
+        #link {
+            color: #0000FF;
+        }
+        #status {
+            color: #FFFFFF;
+            padding: 5px;
+            border-radius: 5px;
+        }
+    </style>
+
+    <div class="grid grid-cols-12 gap-6">
+        <div class="col-span-12 2xl:col-span-12">
+            <div class="grid grid-cols-12 gap-6">
+                <div class="intro-y col-span-12 md:col-span-12 lg:col-span-12">
+                    <div class="box">
+                        <div class="flex items-start px-5 pt-5">
+                            <div class="w-full flex flex-col lg:flex-row items-center border-b border-gray-500">
+                                <h1 class="text-xl lg:text-lg font-medium mb-3 mr-5" id="title">
+                                    {{_('FORMULES_DE_GARANTIE')}}
+                                </h1>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-12 gap-6 mt-2 p-8">
+                            <div class="intro-y col-span-12 overflow-auto lg:overflow-visible">
+                                {% if formules %}
+                                <table class="table table-report -mt-2 datatable">
+                                    <thead>
+                                        <tr>
+                                            <th class="whitespace-nowrap">{{_('Code_formule')}}</th>
+                                            <th class="whitespace-nowrap">{{_('Libelle_formule')}}</th>
+                                            <th class="whitespace-nowrap">{{_('Taux_de_couverture')}}</th>
+                                            <th class="whitespace-nowrap">{{_('Type_tarif')}}</th>
+                                            <th class="whitespace-nowrap">{{_('Date_d_effet')}}</th>
+                                            <th class="whitespace-nowrap">{{_('Statut')}}</th>
+                                            <th class="whitespace-nowrap text-center">{{_('Actions')}}</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for formule in formules %}
+                                            <tr class="intro-x">
+                                                <td class="w-auto">{{ formule.code|default_if_none:"" }}</td>
+                                                <td class="w-auto">{{ formule.libelle|default_if_none:"" }}</td>
+                                                <td class="w-auto">{{ formule.taux_couverture|default_if_none:"" }}%</td>
+                                                <td class="w-auto">{{ formule.type_tarif|default_if_none:"" }}</td>
+                                                <td class="w-auto">{{ formule.date_debut|default_if_none:""|date:"d/m/Y" }}</td>
+                                                <td class="w-auto">
+                                                    <div class="flex items justify-center" id="status" 
+                                                    style="background-color: {% if formule.statut == 'ACTIF' %}#007500;color:#FFFFFF;font-weight: bold;
+                                                    {% elif formule.statut == 'INACTIF' %}#DC3545;color:#FFFFFF;font-weight: bold;
+                                                    {% endif %}">
+                                                        {{ police.statut|default_if_none:"" }}
+                                                    </div>
+                                                </td>
+                                                <td class="table-report__action w-auto">
+                                                    <div class="flex justify-center items-center">
+                                                        <a href="{% url 'grh.details_formule_police' police_id=police.id formule_id=formule.id %}">
+                                                            <i data-feather="eye" id="title"></i>
+                                                        </a>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                                {% else %}
+                                <div class="alert alert-primary-soft show flex items-center mx-auto inline-block justify-center">
+                                    <i data-feather="info" class="mr-2"></i>
+                                    {{_('AUCUNE_DONNEE')}}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% comment %}
+    <div class="col-span-12 2xl:col-span-12">
+        <div class="grid grid-cols-12 gap-6">
+            <div class="intro-y col-span-12 md:col-span-12 lg:col-span-12">
+                <div class="box">
+                    <div class="flex items-start px-5 pt-5">
+                        <div class="w-full flex flex-col lg:flex-row items-center border-b border-gray-500">
+                            <h1 class="text-xl lg:text-lg font-medium mb-3 mr-5">
+                                EXCLUSIONS
+                            </h1>
+                        </div>
+                    </div>
+                    <div class="mt-1">
+                            <div class="p-2 mt-2 flex border-r border-gray-500">
+                                <div class="w-1/2 p-2 mt-2">
+                                    <p class="font-bold">Exclusions</p>
+                                </div>
+                                <div class="w-1/2 p-2 mt-2">
+                                    <p>Produits de beauté- Produits cosmétiques- Médicamants traditionnels- Maldies congénitales- Pansement</p>
+                                </div>
+                            </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endcomment %}

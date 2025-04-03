@@ -1,0 +1,52 @@
+{% extends 'police/base.html' %} {% block extrastyle %} {% endblock %} {% block content %}
+<div class="col-12 col-md-12 order-2 order-md-1">{% include 'police/header.html' %}
+
+  <div class="card">
+    <div class="card-header">
+        <h3 class="card-title text-white">{{_('PRIME_PAR_FAMILLE')}}</h3>
+        <div class="card-tools">
+
+        </div>
+    </div>
+    <div class="card-body">
+      <div id="example1_wrapper" class="dataTables_wrapper dt-bootstrap4">
+        <div class="row">
+          <div class="col-12 col-md-12 col-sm-12">
+            <table class="table table-bordered table-striped dataTable dtr-inline" id="table_beneficiaires">
+              <thead>
+                <tr>
+                  <th scope="col">{{_('Numero_Famille')}}</th>
+                  <th scope="col">{{_('Nom_Adherent_principal')}}</th>
+                  <th scope="col">{{_('Prime_AP')}}</th>
+                  <th scope="col">{{_('Prime_Conjoints')}}</th>
+                  <th scope="col">{{_('Prime_Enfants')}}</th>
+                  <th scope="col">{{_('Prime_totale')}}</th>
+                </tr>
+              </thead>
+              <tbody>
+              {% for aliment in aliments_principaux %}
+                <tr>
+                  <td>{{ aliment.numero_famille|default_if_none:"" }}</td>
+                  <td>{{ aliment.adherent_principal|default_if_none:"" }}</td>
+                  <td>{{ aliment.surprime_ttc|default_if_none:"" }}</td>
+                  <td>{{ aliment.prime_conjoint|default_if_none:"" }}</td>
+                  <td>{{ aliment.prime_enfants|default_if_none:"" }}</td>
+                  <td>{{ aliment.prime_totale|default_if_none:"" }}</td>
+                </tr>
+              {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %} {% block extrajs %}
+<script>
+  $(document).ready(function() {
+      $('#beneficiaire').removeClass('o-bg-primary');
+      $('#beneficiaire').addClass('o-active');
+  });
+</script>{% endblock %}

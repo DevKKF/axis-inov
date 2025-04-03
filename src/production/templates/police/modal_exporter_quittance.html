@@ -1,0 +1,60 @@
+<div class="modal fade" id="modal-exporter_quittance" data-backdrop="static" data-keyboard="false" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <form enctype="multipart/form-data" method="post" action="{% url 'exporter_quittance' client.id police.id %}" id="modal_form_exporter_quittance" validate>
+          {% csrf_token %}
+          <input type="hidden" name="client_id" value="{{client.id}}">
+          <input type="hidden" name="police_id" value="{{police.id}}">
+          <div class="modal-header">
+            <h4 class="modal-title">{{_("EXPORTER DES QUITTANCES DE LA POLICE N°")}}<b>{{ police.numero|default_if_none:"" }}</b></h4>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close"> <span aria-hidden="true">×</span></button>
+          </div>
+           <div class="modal-body">
+               <div class="alert alert-dismissible fade show hidden" role="alert">
+                  <span class="message"> {{_("TRAITEMENT EN COURS")}}</span>
+               </div>
+               <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-group row">
+                            <label class="col-sm-5 col-form-label">{{_("Type de fichier")}} <span class="required">*</span></label>
+                            <div class="col-sm-7">
+                                <select class="form-control" name="type_fichier_id" id="type_fichier" required>
+                                    <option value="">{{_('Choisir type de fichier')}}</option>
+                                    {% for typefichier in typefichiers %}
+                                        <option value="{{typefichier.id}}">{{typefichier.libelle}}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label class="col-sm-5 col-form-label">{{_('Période début')}}</label>
+                            <div class="col-sm-7">
+                                <input type="date" class="form-control" name="periode_debut" id="periode_debut">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="vl"></div>
+                    <div class="col-md-5">
+                        <div class="form-group row">
+                            <label class="col-sm-5 col-form-label">{{_("Date exportation")}} <span class="required">*</span></label>
+                            <div class="col-sm-7">
+                                <input type="date" class="form-control" name="date_exportation" value="{{ today|date:'Y-m-d' }}" id="date_exportation" required readonly>
+                            </div>
+                        </div>
+                        <div class="form-group row">
+                            <label class="col-sm-5 col-form-label">{{_('Période fin')}}</label>
+                            <div class="col-sm-7">
+                                <input type="date" class="form-control" name="periode_fin" id="periode_fin">
+                            </div>
+                        </div>
+                    </div>
+               </div>
+          </div>
+          <div class="modal-footer justify-content-between">
+            <button type="button" class="btn btn-danger" data-dismiss="modal"><i class="fa fa-remove"></i> {{_('Retour')}}</button>
+            <button type="button" id="btn_save_exporter_quittance" data-option="police" class="btn bg-info"><i class="fa fa-check-circle"></i> {{_('Valider')}}</button>
+          </div>
+      </form>
+    </div>
+  </div>
+</div>

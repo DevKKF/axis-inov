@@ -1,0 +1,125 @@
+{% load my_filters %}
+{% load i18n static jazzmin admin_urls %}
+<div  class="modal fade"  id="modal-reglement_ordonnancement"  aria-hidden="true"  style="display: none">
+	<div class="modal-dialog modal-xl">
+		<div class="modal-content">
+			<form enctype="multipart/form-data" id="form_add_reglement_ordonnancement" action="{% url 'add_mise_en_reglement_ordonnancement' %}" method="post">
+                {% csrf_token %}
+                <div class="modal-header">
+                    <h4 class="modal-title">{{_('EFFECTUER_UN_PAIEMENT')}}</b></h4>
+                    <button type="button"class="close"data-dismiss="modal"aria-label="Close">
+                        <span aria-hidden="true">×</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert  alert-dismissible fade show hidden" role="alert">
+                    <span class="message"> {{_('TRAITEMENT_EN_COURS')}}</span>
+                    </div>
+                    <div class="col-md-12 offset-0">
+                        <div class="row">
+                            
+                            <div class="col-md-6">
+
+                                <div class="form-group row" id="moyen_de_paiement_bloc">
+                                    <label class="col-sm-6 col-form-label">{{_('Mode_de_paiement')}}<span class="required">*</span></label>
+                                    <div class="col-sm-6">
+                                        <select id="moyens_paiements" name="moyens_paiement_id" class="tags-multiple" onchange="toggleIbanBlock()">
+                                            <option value="">{{_('Choisir')}}</option>
+                                            {% for mr in modes_reglements %}
+                                                <option value="{{ mr.id }}">{{ mr.libelle }}</option>
+                                            {% endfor %}
+                                        </select>
+                                    </div>
+                                </div>
+
+                                <div class="form-group row" id="numero_piece_bloc">
+                                    <label class="col-sm-6 col-form-label">{{_('Numero_piece')}}<span class="required">*</span></label>
+                                    <div class="col-sm-6 w-100">
+                                        <input type="text" id="iban" class="form-control alpha_num_input" id="numero_piece" name="numero_piece" placeholder="">
+                                    </div>
+                                </div>
+
+
+
+                                <div class="form-group row">
+                                    <label class="col-sm-6 col-form-label">{{_('Beneficiaire_du_paiement')}}<span class="required">*</span></label>
+                                    <div class="col-sm-6">
+                                        <span class="form-control">{{bordereau.ordre_de}}</span>          
+                                    </div>
+                                </div>
+                                <div class="form-group row" id="iban_bloc" style="display: none;">
+                                    <label class="col-sm-6 col-form-label">{{_('Numero_IBAN')}}<span class="required">*</span></label>
+                                    <div class="col-sm-6 w-100">
+                                        <input type="text" id="iban" class="form-control" id="iban" name="iban" placeholder="CI097 01111 111xxx91058 27">
+                                    </div>
+                                </div>
+
+
+                                <div class="form-group row">
+                                    <label class="col-sm-6 col-form-label">{{_('Date_de_paiement')}}<span class="required">*</span></label>
+                                    <div class="col-sm-6">
+                                        <input type="date" name="date_paiement" class="form-control" id="" value="{% now 'Y-m-d' %}">
+                                    </div>
+                                </div>
+
+                            </div>
+                            
+                            <div class="vl"></div>
+
+                            <div class="col-md-6" style="border-left:0px;margin-left:-10px;padding-left:20px;">
+
+                                <div class="col-sm-12 row">
+                                    <div class="col-form-label col-sm-4">{{_('Numero_Bordereau')}} :</div>
+                                    <div class="form-group col-sm-8">
+                                        <div class="form-control" readonly><strong>{{ bordereau.numero }} ({{bordereau.periode_comptable}})</strong></div>
+                                    </div>
+                                </div>
+
+                                <div class="col-sm-12 row">
+                                    <div class="col-form-label col-sm-4">{{_('Type_de_remb')}} : </div>
+                                    <div class="form-group col-sm-8">
+                                        <div class="form-control" readonly><strong>{{bordereau.type_remboursement}}</strong></div>
+                                    </div>
+                                </div>
+
+                                <div class="col-sm-12 row">
+                                    <div class="col-form-label col-sm-4">{{_('A_la_ordre_de')}} : </div>
+                                    <div class="form-group col-sm-8">
+                                        <div class="form-control" readonly><strong>{{bordereau.ordre_de}}</strong></div>
+                                    </div>
+                                </div>
+
+                                <div class="col-sm-12 row">
+                                    <div class="col-form-label col-sm-4">{{_('Montant')}} :</div>
+                                    <div class="form-group col-sm-8">
+                                        <div class="form-control bg-success" readonly><strong>{{ montant_accepte_total|money_field}} FCFA</strong></div>
+                                    </div>
+                                </div>
+
+
+                            </div>
+
+                        </div>
+
+                    </div>
+                    <div class="modal-footer justify-content-between">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">{{_('Retour')}}</button>
+                        <span id="loading_gif_reglement_ordonnancement" style="display:none;color:#BB4127;">{{_('Chargement_en_cours')}}... <img src="{% static 'admin_custom/ripple-loader.svg' %}" style="width:50px;"></span>
+                        <button type="button" id="btn_save_reglement_ordonnancement" class="btn o-bg-primary">{{_('Valider')}}</button>
+                    </div>
+                </div>
+			</form>
+		</div>
+	</div>
+
+</div>
+
+<script>
+    function toggleIbanBlock() {
+        var moyenPaiementSelect = document.getElementById("moyens_paiements");
+        var ibanBloc = document.getElementById("iban_bloc");
+
+        // Affiche le bloc IBAN si "Virement" est sélectionné, sinon le masque
+        ibanBloc.style.display = (moyenPaiementSelect.value === "3") ? "flex" : "none";
+    }
+</script>

@@ -1,0 +1,294 @@
+{% extends "admin/base_site.html" %}
+{% load my_filters %}
+{% block extrastyle %}
+
+<style>
+    div.dataTables_processing>div:last-child>div {
+        background: rgb(187 65 38) !important;
+    }
+</style>
+
+{% endblock %}
+{% block content %}
+
+ <!--div class="col-12 col-md-12 order-2 order-md-1">
+
+      <div class="card">
+          <div class="card-header">
+              <h3 class="card-title"><b>
+                  SAISIE DE DOSSIERS SINISTRES PHYSIQUES
+              </b></h3>
+              <div class="card-tools">
+              </div>
+          </div>
+
+          <div class="card-body" style="background-color:var(--colorJauneOlea)">
+            <div id="example_wrapper_" class="dataTables_wrapper dt-bootstrap4">
+              <div class="row ">
+
+                <div class="col-xl-4 col-sm-6">
+                  <a style="cursor: pointer;display: block;" data-toggle="modal" data-target="#modal-sinistre_consultation_gestionnaire" data-modal_title="DEMANDE DE PRISE EN CHARGE - CONSULTATION">
+                  <div class="card card-stats mb-4 mb-xl-0">
+                    <div class="card-body" style="min-height: 120px;">
+                      <div class="row">
+                        <div class="col">
+                          <h5 class="card-title text-muted mb-0"></h5> <br>
+                          <span class="h3 font-weight-bold mb-0" style="color: dblack">CONSULTATION</span>
+                        </div>
+                        <div class="col-auto">
+                          <div class="icon icon-shape text-white rounded-circle shadow" style="background: linear-gradient(45deg, #C11B0E, #BB4127);">
+                            <i class="fas fa-plus" style=""></i>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  </a>
+                </div>
+
+                <div class="col-xl-4 col-sm-6">
+                  <a style="cursor: pointer;display: block;" data-toggle="modal" data-target="#modal-sinistre-soins_ambulatoires_gestionnaire" data-modal_title="DEMANDE DE PRISE EN CHARGE - SOINS AMBULATOIRES">
+                  <div class="card card-stats mb-4 mb-xl-0">
+                    <div class="card-body" style="min-height: 120px;">
+                      <div class="row">
+                        <div class="col">
+                          <h5 class="card-title text-muted mb-0"></h5>
+                          <span class="h3 font-weight-bold mb-0" style="color: dblack">SOINS AMBULATOIRES</span>
+                        </div>
+                        <div class="col-auto">
+                          <div class="icon icon-shape text-white rounded-circle shadow" style="background: linear-gradient(45deg, #C11B0E, #BB4127);">
+                            <i class="fa fa-clock" style=""></i>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                      </a>
+                </div>
+
+                <div class="col-xl-4 col-sm-6">
+                  <a style="cursor: pointer;display: block;" data-toggle="modal" data-target="#modal-sinistre_hospitalisation_gestionnaire" data-modal_title="DEMANDE DE PRISE EN CHARGE - HOSPITALISATION">
+                  <div class="card card-stats mb-4 mb-xl-0">
+                    <div class="card-body" style="min-height: 120px;">
+                      <div class="row">
+                        <div class="col">
+                          <h5 class="card-title text-muted mb-0"></h5> <br>
+                          <span class="h3 font-weight-bold mb-0" style="color: dblack">HOSPITALISATION</span>
+                        </div>
+                        <div class="col-auto">
+                          <div class="icon icon-shape text-white rounded-circle shadow" style="background: linear-gradient(45deg, #C11B0E, #BB4127);">
+                            <i class="fa fa-bed" style=""></i>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  </a>
+                </div>
+
+              </div>
+            </div>
+          </div>
+
+      </div>
+
+ </div-->
+
+ <div class="col-12 col-md-12 order-2 order-md-1">
+
+      <div class="card">
+          <div class="card-header">
+              <h3 class="card-title"><b>
+                  {{_('LISTE_DES_PRESTATIONS_SAISIES_PAR_LES_GESTIONNAIRES')}}
+              </b></h3>
+              <div class="card-tools">
+              </div>
+          </div>
+
+      {% if not request.user.is_med %}
+      <div style="background:#CCCCCC;padding:10px;border-bottom:1px solid #eee;padding-bottom:10px;margin-bottom:10px;">
+            <form method="get"><label style="font-weight:normal;font-size:12px;display:none;"><i>{{_('Formulaire_de_recherche')}}</i></label>
+                <div class="row">
+                    <div class="col-12 col-md-12 col-sm-12 row">
+
+                        <div class="col-sm-3 row">
+                            <span class="col-sm-5 text-right" style="margin-top:5px;">{{_('Numero_feuille_de_soins')}} : </span>
+                            <div class="col-sm-7">
+                                <input class="form-control" type="text" name="nb" id="num_feuille_soins" style="border-radius:3px;border:1px solid brown;text-transform:uppercase;">
+                            </div>
+                        </div>
+
+                        <div class="col-sm-2 row">
+                            <span class="col-sm-5 text-right" style="margin-top:5px;">{{_('Prestataire')}} : </span>
+                            <div class="col-sm-7">
+                                <select name="prestataire" id="prestataire" class="form-control tags-multiple" style="border-radius:3px;border:1px solid brown;text-transform:uppercase;">
+                                  <option value="">{{_('Choisir')}}</option>
+                                  {% for prestataire in prestataires %}
+                                  <option value="{{prestataire.id}}">{{prestataire.name}}</option>
+                                  {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+
+                        {% comment %} <div class="col-sm-2 row">
+                            <span class="col-sm-8 text-right" style="margin-top:5px;">Bénéficiaire : </span>
+                            <div class="col-sm-4">
+                                <select name="adherent_principal" id="adherent_principal" class="form-control tags-multiple">
+                                  <option value="">Choisir</option>
+                                  {% for adh in adherent_principaux %}
+                                  <option value="{{adh.id}}">{{adh.nom}} {{adh.prenoms}}</option>
+                                  {% endfor %}
+                                </select>
+                            </div>
+                        </div> {% endcomment %}
+                        
+                        {% comment %} <div class="col-md-4 row">
+                            <span class="col-sm-7 text-right" style="margin-top:5px;">Type Remboursement : </span>
+                            <div class="col-sm-5">
+                                <select name="type_remboursement" id="type_remboursement" class="form-control tags-multiple">
+                                  <option value="">Choisir</option>
+                                  {% for type_remboursement in type_remboursements %}
+                                  <option value="{{type_remboursement.id}}">{{type_remboursement.libelle}}</option>
+                                  {% endfor %}
+                                </select>
+                            </div>
+                        </div> {% endcomment %}
+
+                        
+                        
+                        <div class="col-sm-3 row">
+                            <span class="col-sm-7 text-right" style="margin-top:5px;">{{_('Numero_carte')}} : </span>
+                            <div class="col-sm-5">
+                                <input class="form-control" type="text" name="nc" id="num_assure" style="border-radius:3px;border:1px solid brown;text-transform:uppercase;">
+                            </div>
+                        </div>
+
+                        <div class="col-sm-3 row">
+                            <span class="col-sm-7 text-right" style="margin-top:5px;">{{_('Date_prestation')}} : </span>
+                            <div class="col-sm-5">
+                                <input class="form-control" type="date" name="d" id="date_prestation" value="" style="border-radius:3px;border:1px solid brown;text-transform:uppercase;">
+                            </div>
+                        </div>
+
+
+                    </div>
+                </div>
+            </form>
+          </div>
+      {% endif %}
+
+      <div class="card-body">
+        <div id="example_wrapper" class="dataTables_wrapper dt-bootstrap4">
+          <div class="row">
+            <div class="col-12 col-md-12 col-sm-12 ">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped dataTable__ customDataTable__ dtr-inline" id="table_dossiers_sinistres_physiques_gestionnaires" style="width: 100%;" data-orderby="0">
+                    <thead>
+                      <tr>
+                        <th scope="col" style="display:none;">{{_('ID')}}</th>
+                        <th scope="col">{{_('Numero_feuille_de_soins')}}</th>
+                        <th scope="col">{{_('Type')}}</th>
+                        <th scope="col">{{_('Nom_du_beneficiaire')}}</th>
+                        <!--th scope="col">Prestataire</th-->
+                        <th scope="col">{{_('Frais_reel')}}</th>
+                        <th scope="col">{{_('Part_assureur')}}</th>
+                        <th scope="col">{{_('Part_beneficiaire')}}</th>
+                        <th scope="col">{{_('Date_prestation')}}</th>
+                        <th scope="col">{{_('Statut')}}</th>
+                        <th scope="col">{{_('Actions')}}</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+
+                    </tbody>
+                </table>
+                </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+{% endblock %}
+
+
+{% block extrajs %}
+<script>
+    $(document).ready(function() {
+        $('#garantie').removeClass('o-bg-primary');
+        $('#garantie').addClass('o-active');
+
+
+  dataTable = $('#table_dossiers_sinistres_physiques_gestionnaires').DataTable({
+            "language": {
+                "url": "https://cdn.datatables.net/plug-ins/9dcbecd42ad/i18n/French.json"
+            },
+            "serverSide": true,
+            "ajax": {
+                "url": "{% url 'dossiersinistre_physique_gestionnaire_datatable' %}",
+                "data": function (data) {
+                    data.page = data.start / data.length + 1;
+                    data.num_feuille_soins = $('#num_feuille_soins').val();
+                    data.num_assure = $('#num_assure').val();
+                    data.date_prestation = $('#date_prestation').val();
+                    data.type_remboursement = $('#type_remboursement').val();
+                    data.prestataire = $('#prestataire').val();
+                    data.adherent_principal = $('#adherent_principal').val();                    
+                },
+                "dataSrc": function (json) {
+                    return json.data;
+                }
+            },
+            "columns": [
+                {"data": "numero", "orderable": false},
+                {"data": "type_or_numero_carte", "orderable": false},
+                {"data": "nom", "orderable": false},
+                {"data": "total_frais_reel", "orderable": false},
+                {"data": "total_part_compagnie", "orderable": false},
+                {"data": "total_part_assure", "orderable": false},
+                {"data": "date_prestation", "orderable": false},
+                {% if request.user.is_med %}
+                {"data": "statut_prorogation", "orderable": false},
+                {% endif %}
+                {"data": "statut", "orderable": false},
+                {"data": "actions", "orderable": false, "searchable": false},
+            ],
+            "paging": true,
+            "pageLength": 10,
+            "processing": true,  // Show the loading indicator
+            "searching": false,   // Enable the search feature
+            "search": {
+                "search": $('#table_dossiers_sinistres_physiques_gestionnaires-table_filter input').val()
+            }
+        });
+
+
+        dataTable.on('xhr.dt', function (e, settings, json, xhr) {
+            // Hide the spinner when the data is loaded
+            $('.spinner-border').show();
+        });
+
+        // Show the spinner when the table is processing
+        dataTable.on('processing.dt', function (e, settings, processing) {
+            if (processing) {
+                $('.spinner-border').show();
+            }
+        });
+
+        // Add custom search functionality for code, name, and prenoms columns
+        $('#num_feuille_soins, #num_assure, #date_prestation, #type_remboursement, #prestataire, #adherent_principal').on('keyup change', function() {
+            dataTable.search('').draw(); // Clear existing search
+            dataTable.draw(); // Trigger a new draw, which will include the updated search parameters
+        });
+
+
+    });
+</script>
+
+
+{% include 'modal_sinistre_soins_ambulatoires_gestionnaire.html' %}
+{% include 'modal_sinistre_hospitalisation_gestionnaire.html' %}
+{% include 'modal_sinistre_consultation_gestionnaire.html' %}
+
+{% endblock %}

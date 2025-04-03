@@ -1,0 +1,170 @@
+<div  class="modal fade"  id="modal_formule_update_universelle" data-backdrop="static" data-keyboard="false" aria-hidden="trued"  style="display: noned">
+	<div class="modal-dialog modal-xl">
+		<div class="modal-content">
+			<form id="form_update_formule" action="{% url 'update_formule' formule.id %}" method="post">
+				{% csrf_token %}
+                <div class="modal-header">
+                    <h4 class="modal-title" id="mbu-title">{{_("MODIFICATION_D_UNE_FORMULE_DE_GARANTIE")}}</h4>
+                    <button type="button"class="close"data-dismiss="modal"aria-label="Close">
+                        <span aria-hidden="true">×</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert  alert-dismissible fade show hidden" role="alert">
+                        <span class="message"> {{_("TRAITEMENT_EN_COURS")}} </span>
+                    </div>
+                    <div class="col-md-12 offset-0">
+                        <ul class="nav nav-tabs" id="myTab" role="tablist">
+                            <li class="nav-item"><a class="nav-link active" id="formule_general_update-tab" data-toggle="tab" href="#formule_general_update" role="tab" aria-controls="formule_general_update" aria-selected="true">{{_("GENERAL")}}</a></li>
+                            <li class="nav-item d-none"><a class="nav-link" id="formule_tiers_payant_update-tab" data-toggle="tab" href="#formule_tiers_payant_update" role="tab" aria-controls="formule_tiers_payant_update" aria-selected="false">{{_("PREFINANCEMENT")}}</a></li>
+                        </ul>
+                        <div class="tab-content" id="myFormuleTabContentUpdate">
+                            <div class="tab-pane fade mt-3 show active" id="formule_general_update" role="tabpanel" aria-labelledby="formule_general_update-tab">
+                                <div class="row">
+                                    <!-- -->
+                                    <div class="col-md-6">
+                                        <div class="form-group row">
+                                            <label class="col-sm-5 col-form-label">{{_("Libelle")}} <span class="required">*</span></label>
+                                            <div class="col-sm-7">
+                                                <input type="text" class="form-control" name="libelle" value="{{ formule.libelle|default_if_none:'' }}" required>
+                                            </div>
+                                        </div>
+                                        <div class="form-group row">
+                                            <label class="col-sm-5 col-form-label">{{_("Date_debut")}} <span class="required">*</span></label>
+                                            <div class="col-sm-7">
+                                                <input type="date" class="form-control" name="date_debut" value="{{ formule.date_debut|date:'Y-m-d' }}" required/>
+                                            </div>
+                                        </div>
+                                        <div class="form-group row">
+                                            <label class="col-sm-5 col-form-label">{{_("Taux_de_couverture")}} (%)<span class="required">*</span></label>
+                                            <div class="col-sm-7">
+                                                <input type="text" max="100" min="0" class="form-control money_field" name="taux_couverture" value="{{ formule.taux_couverture|default_if_none:'0' }}" required>
+                                            </div>
+                                        </div>
+                                        <div class="form-group row">
+                                            <label class="col-sm-5 col-form-label">{{_("Territorialite")}} <span class="required">*</span></label>
+                                            <div class="col-sm-7">
+                                                <select class="form-control tags-multiple" style="width:100%" name="territorialite" required>
+                                                    <option value="">{{_("Choisir")}}</option>
+                                                    {% for territorialite in territorialites %}
+                                                    <option {% if formule.territorialite_id == territorialite.id %} selected {% endif %} value="{{ territorialite.id }}">{{ territorialite.libelle }}</option>
+                                                    {% endfor %}
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="form-group row">
+                                            <label class="col-sm-5 col-form-label">{{_("Type_tarif")}} <span class="required">*</span></label>
+                                            <div class="col-sm-7">
+                                                <select class="form-control tags-multiple" style="width:100%" name="type_tarif" required>
+                                                    <option value="">{{_("Choisir")}}</option>
+                                                    {% for type_tarif in types_tarifs %}
+                                                    <option {% if formule.type_tarif_id == type_tarif.id %} selected {% endif %} value="{{ type_tarif.id }}">{{ type_tarif.libelle }}</option>
+                                                    {% endfor %}
+                                                </select>
+                                            </div>
+                                        </div>
+                                        {% comment %}
+                                        <div class="form-group row">
+                                            <label class="col-sm-5 col-form-label">Date fin <span class="required"></span></label>
+                                            <div class="col-sm-7">
+                                                <input type="date" class="form-control" name="date_fin" value="{{ today|date:'Y-m-d' }}" id="mbu-date_fin"/>
+                                            </div>
+                                        </div>
+                                        {% endcomment %}
+                                    </div>
+                                    <!-- -->
+
+                                    <div class="vl"></div>
+
+                                    <div class="col-md-5">
+
+                                        <div class="form-group row">
+                                            <label class="col-sm-6 col-form-label">{{_("Reseau_de_soins")}} <span class="required"></span></label>
+                                            <div class="col-sm-6">
+                                                <select class="form-control tags-multiple" style="width:100%" name="reseau_soin" >
+                                                    <option value="">{{_("Choisir")}}</option>
+                                                    {% for reseau in reseaux_soins %}
+                                                    <option {% if formule.reseau_soin_id == reseau.id %} selected {% endif %} value="{{ reseau.id }}">{{ reseau.nom }}</option>
+                                                    {% endfor %}
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="form-group row">
+                                            <label class="col-sm-6 col-form-label">{{_("Plafond_conso_famille")}} <span class="required"></span></label>
+                                            <div class="col-sm-6">
+                                                <input type="text" class="form-control money_field" name="plafond_conso_famille" value="{{ formule.plafond_conso_famille|default_if_none:'0' }}" />
+                                            </div>
+                                        </div>
+                                        <div class="form-group row">
+                                            <label class="col-sm-6 col-form-label">{{_("Plafond_conso_individuelle")}} <span class="required"></span></label>
+                                            <div class="col-sm-6">
+                                                <input type="text" class="form-control money_field" name="plafond_conso_individuelle" value="{{ formule.plafond_conso_individuelle|default_if_none:'0' }}" />
+                                            </div>
+                                        </div>
+                                        <div class="form-group row">
+                                            <label class="col-sm-6 col-form-label">{{_("Pharmacie_vitamines_vaccins")}} <span class="required"></span></label>
+                                            <div class="col-sm-6">
+                                                <input type="text" class="form-control" name="garantis_pharmacie" value="{{ formule.garantis_pharmacie|default_if_none:'' }}"/>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                
+                                </div>
+                            </div>
+                            
+                            <div class="tab-pane fade mt-3 d-none" id="formule_tiers_payant_update" role="tabpanel" aria-labelledby="formule_tiers_payant_update-tab">
+                                <div class="row">
+                                    <div class="col-md-5">
+                                        <div class="form-group row">
+                                            <label class="col-sm-6 col-form-label"> {{_("Mode_de_prefinancement")}} <span class="required">*</span></label>
+                                            <div class="col-sm-6">
+                                                <select class="form-control required_field" name="option_mode_prefinancement" id="option_mode_prefinancement_update" autocomplete="off">
+                                                    <option value="">{{_("Choisir")}}</option>
+                                                    {% for mode_prefinancement in mode_prefinancements %}
+                                                    <option value="{{ mode_prefinancement.code }}" {% if formule.mode_prefinancement == mode_prefinancement %} selected {% endif %}>{{ mode_prefinancement.libelle }}</option>
+                                                    {% endfor %}
+                                                </select>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                    <div class="vl"></div>
+                                    <div class="col-md-7" style="border-left:0px;margin-left:-10px;padding-left:20px;">
+
+                                        <div class="form-group row if_tpp {% if formule.mode_prefinancement.code != "TPP" %} d-none {% endif %}">
+                                            <label class="col-sm-4 col-form-label"> {{_("Rubriques")}} <span class="required"></span></label>
+                                            <div class="col-sm-8">
+                                                <select class="form-control tags-multiple w-100 text-black update" style="width:100%" name="selected_rubriques" id="formule_rubriques_update" multiple="multiple" placeholder="Choisir">
+                                                    {% for rubrique in rubriques %}
+                                                    <option value="{{ rubrique.id }}" {% for formule_rubrique in formule_rubriques %} {% if formule_rubrique.rubrique == rubrique %} selected {% endif %} {% endfor %}>{{ rubrique.libelle }}</option>
+                                                    {% endfor %}
+                                                </select>
+                                            </div>
+                                        </div>
+
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer justify-content-between">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">{{_("Retourr)}}</button>
+                    <button type="button" id="btn_update_formule_universelle" class="btn o-bg-primary">{{_("Valider")}}</button>
+                </div>
+            </form>
+		</div>
+	</div>
+</div>
+<script>
+	$(document).ready(function () {
+        $(".tags-multiple").select2();
+        $(document).on('click','#formule_tiers_payant_update-tab', function(){
+
+            $(".select2-selection__choice__display").css("color", "#000");
+
+        });
+	});
+</script>

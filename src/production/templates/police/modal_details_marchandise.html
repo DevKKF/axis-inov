@@ -1,0 +1,703 @@
+{% load my_filters %}
+{% load i18n static jazzmin admin_urls %}
+{% get_jazzmin_settings request as jazzmin_settings %}
+<div  class="modal fade"  id="modal-details_marchandise" data-backdrop="static" data-keyboard="false" aria-hidden="true"  style="display: none">
+	<div class="modal-dialog modal-xl">
+		<div class="modal-content">
+			<div id="form_update_marchandise">
+			<div class="modal-header">
+				<h4 class="modal-title"><img class="" src="" style="height:40px;border-radius:360px;"/> {{_("FICHE MARCHANDISE")}} - <b>{{ marchandise.num_certificat|default_if_none:"" }} | <span class="badge badge-{{marchandise.statut|default_if_none:''|slugify}}">{{ marchandise.statut|default_if_none:"" }}</span></b></h4>
+				<button type="button"class="close"data-dismiss="modal"aria-label="Close">
+					<span aria-hidden="true">×</span>
+				</button>
+			</div>
+			<div class="modal-body">
+				<div class="alert  alert-dismissible fade show hidden" role="alert">
+				  <span class="message"> {{_("TRAITEMENT EN COURS")}}</span>
+				</div>
+				<div class="col-md-12 offset-0">
+					<ul class="nav nav-tabs" id="myTab" role="tablist">
+						<li class="nav-item"><a class="nav-link active" id="detail_marchandise-tab" data-toggle="tab" href="#detail_marchandise" role="tab" aria-controls="detail_marchandise" aria-selected="true">{{_('IDENTITE')}}</a></li>
+						<li class="nav-item"><a class="nav-link" id="sinistres-tab" data-toggle="tab" href="#sinistres" role="tab" aria-controls="sinistres" aria-selected="false">{{_("SES SINISTRES")}}</a></li>
+						<li class="nav-item"><a class="nav-link" id="historiques-tab" data-toggle="tab" href="#historiques" role="tab" aria-controls="historiques" aria-selected="false">{{_("HISTORIQUES")}}</a></li>
+					</ul>
+					<div class="tab-content" id="myTabContent">
+
+						<div class="tab-pane fade show active mt-3" id="detail_marchandise" role="tabpanel" aria-labelledby="detail_marchandise-tab">
+                            <div class="row" style="max-height:550px;">
+								<div class="col-md-12 text-uppercase" style="margin-bottom:10px !important; border-top:2px solid #F16623">
+									<h6><mark class="match">Informations générales</mark></h6>
+								</div>
+								<div class="col-md-6">
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("N° de certificat")}}</label>
+										<div class="col-sm-7">
+											<span class="form-control">{{ marchandise.num_certificat|default_if_none:"" }}</span>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("N° Fact fournisseur")}}</label>
+										<div class="col-sm-7">
+											<span class="form-control">{{ marchandise.num_fact_fournisseur|default_if_none:"" }}</span>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Ref DAI")}}</label>
+										<div class="col-sm-7">
+											<span class="form-control">{{ marchandise.ref_dai|default_if_none:"" }}</span>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Date de commande")}}</label>
+										<div class="col-sm-7">
+											<span class="form-control">{{ marchandise.date_commande|date:'Y-m-d' }}</span>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Nombre de colis")}}</label>
+										<div class="col-sm-7">
+											<span class="form-control">{{ marchandise.nombre_colis|money_format_mille }}</span>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Poids Brut")}}</label>
+										<div class="col-sm-7">
+											<span class="form-control">{{ marchandise.poids_brut|money_format_mille }}</span>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Plein de souscription")}} <span class="required">*</span></label>
+										<div class="col-sm-7">
+											<span class="form-control">{{ marchandise.plein_souscription|money_format_mille }}</span>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Immatriculation")}}</label>
+										<div class="col-sm-7">
+											<span class="form-control">{{ marchandise.immatriculation|default_if_none:"" }}</span>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Pavillon, Cie, Prest.")}}</label>
+										<div class="col-sm-7">
+											<span class="form-control">{{ marchandise.pavillon_cie_prest|default_if_none:"" }}</span>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Destination")}}</label>
+										<div class="col-sm-7">
+											<span class="form-control">{{ marchandise.destination|default_if_none:"" }}</span>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Lieu de transit/transbordement")}}</label>
+										<div class="col-sm-7">
+											<span class="form-control">{{ marchandise.lieu_transit_transbordement|default_if_none:"" }}</span>
+										</div>
+									</div>
+								</div>
+								<div class="vl"></div>
+								<div class="col-md-5" style="border-left:0px;">
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Date émission certificat")}} <span class="required">*</span></label>
+										<div class="col-sm-7">
+											<span class="form-control">{{ marchandise.date_emmision_certificat|date:'Y-m-d' }}</span>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Date de sortie")}}</label>
+										<div class="col-sm-7">
+											<span class="form-control">{{ marchandise.date_sortie|date:'Y-m-d' }}</span>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("N° de commande")}}</label>
+										<div class="col-sm-7">
+											<span class="form-control">{{ marchandise.num_commande|default_if_none:"" }}</span>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Marchandises")}}</label>
+										<div class="col-sm-7">
+											<span class="form-control">{{ marchandise.marchandises_description|default_if_none:"" }}</span>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Poids Net")}}</label>
+										<div class="col-sm-7">
+											<span class="form-control">{{ marchandise.poids_net|money_format_mille }}</span>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Valeur assurée")}}</label>
+										<div class="col-sm-7">
+											<span class="form-control">{{ marchandise.valeur_assuree|money_format_mille }}</span>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Moyen de transport")}}</label>
+										<div class="col-sm-7">
+                                            <span class="form-control">{{ marchandise.moyens_transport.libelle|default_if_none:"" }}</span>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Marque, Modèle, Type")}}</label>
+										<div class="col-sm-7">
+											<span class="form-control">{{ marchandise.marque_modele_type|default_if_none:"" }}</span>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Date de voyage")}}</label>
+										<div class="col-sm-7">
+											<span class="form-control">{{ marchandise.debut_voyage|date:'Y-m-d' }}</span>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Lieu de départ")}}</label>
+										<div class="col-sm-7">
+											<span class="form-control">{{ marchandise.lieu_depart|default_if_none:"" }}</span>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Conditions d'assurance")}}</label>
+										<div class="col-sm-7">
+                                            <span class="form-control">{{ marchandise.conditions_assurance.libelle|default_if_none:"" }}</span>
+										</div>
+									</div>
+								</div>
+								<div class="col-md-12 text-uppercase" style="margin-bottom:10px !important; border-top:2px solid #F16623">
+									<h6><mark class="match">Commissaire d'avaries</mark></h6>
+								</div>
+								<div class="col-md-6">
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Nom")}}</label>
+										<div class="col-sm-7">
+											<span class="form-control">{{ marchandise.nom_commissaire|default_if_none:"" }}</span>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Code")}}</label>
+										<div class="col-sm-7">
+											<span class="form-control">{{ marchandise.code_commissaire|default_if_none:"" }}</span>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Adresse")}}</label>
+										<div class="col-sm-7">
+											<span class="form-control">{{ marchandise.adresse_commissaire|default_if_none:"" }}</span>
+										</div>
+									</div>
+								</div>
+								<div class="vl"></div>
+								<div class="col-md-5" style="border-left:0px;">
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Téléphone")}}</label>
+										<div class="col-sm-7">
+											<span class="form-control">{{ marchandise.telephone_commissaire|default_if_none:"" }}</span>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Email")}}</label>
+										<div class="col-sm-7">
+											<span class="form-control">{{ marchandise.courriel_commissaire|default_if_none:"" }}</span>
+										</div>
+									</div>
+								</div>
+								<div class="col-md-12 text-uppercase" style="margin-bottom:10px !important; border-top:2px solid #F16623">
+									<h6><mark class="match">Calculs</mark></h6>
+								</div>
+								<div class="col-md-6">
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Taux risque ordinaire")}}</label>
+										<div class="col-sm-7">
+											<span class="form-control money_field_avec_virgule">{{ marchandise.taux_risque_ordinaire|default_if_none:"" }}</span>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Taux risque guerre")}}</label>
+										<div class="col-sm-7">
+											<span class="form-control money_field_avec_virgule">{{ marchandise.taux_risque_guerre|default_if_none:"" }}</span>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Taux supprime")}}</label>
+										<div class="col-sm-7">
+											<span class="form-control money_field_avec_virgule">{{ marchandise.taux_supprime|default_if_none:"" }}</span>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Taux réduc. commerciale")}}</label>
+										<div class="col-sm-7">
+											<span class="form-control money_field_avec_virgule">{{ marchandise.taux_reduction_commerciale|default_if_none:"" }}</span>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Taux de la taxe")}}</label>
+										<div class="col-sm-7">
+											<span class="form-control money_field_avec_virgule">{{ marchandise.taux_taxe|default_if_none:"" }}</span>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Accessoires")}}</label>
+										<div class="col-sm-7">
+											<span class="form-control">{{ marchandise.accessoires|money_format_mille }}</span>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Autres frais")}}</label>
+										<div class="col-sm-7">
+											<span class="form-control">{{ marchandise.autres_frais|money_format_mille }}</span>
+										</div>
+									</div>
+								</div>
+								<div class="vl"></div>
+								<div class="col-md-5" style="border-left:0px;">
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Prime risque ordinaire")}}</label>
+										<div class="col-sm-7">
+											<span class="form-control">{{ marchandise.prime_risque_ordinaire|money_format_mille }}</span>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Prime risque guerre")}}</label>
+										<div class="col-sm-7">
+											<span class="form-control">{{ marchandise.prime_risque_guerre|money_format_mille }}</span>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Prime supprime")}}</label>
+										<div class="col-sm-7">
+											<span class="form-control">{{ marchandise.prime_supprime|money_format_mille }}</span>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Prime brut")}}</label>
+										<div class="col-sm-7">
+											<span class="form-control">{{ marchandise.prime_brut|money_format_mille }}</span>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Prime de réduction")}}</label>
+										<div class="col-sm-7">
+											<span class="form-control" style="background: #f0dcc8; border: #f0dcc8">{{ marchandise.prime_reduction|money_format_mille|default_if_none:"" }}</span>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Total taxe")}}</label>
+										<div class="col-sm-7">
+											<span class="form-control">{{ marchandise.total_taxe|money_format_mille }}</span>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Prime TTC")}}</label>
+										<div class="col-sm-7">
+											<span class="form-control">{{ marchandise.prime_ttc_mar|money_format_mille }}</span>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+
+						<div class="tab-pane fade mt-3" id="sinistres" role="tabpanel" aria-labelledby="sinistres-tab">
+							<div class="rowd" style="padding-top:0px;">
+								<div class="card">
+									<div class="row">
+										<div class="col-md-12">
+										  <span class="btn btn-sm btn-primary pull-right" data-toggle="modal" data-target="#modal-sinistre"><i class="fas fa-plus-circle"></i> {{_("Nouveau sinistre")}}</span><br><br>
+										</div>
+									</div>
+									<div class="">
+										<table class="table table-bordered table-striped dataTable dtr-inline" id="table_sinistres">
+											<thead>
+											  <tr>
+												<th scope="col">{{_('Numero_sinistre')}}</th>
+												<th scope="col">{{_('Ouverture')}}</th>
+												<th scope="col">{{_('Prestation')}}</th>
+												<th scope="col">{{_('Prestataire')}}</th>
+												<th scope="col">{{_('Garantie')}}</th>
+												<th scope="col">{{_('Acte')}}</th>
+												<th scope="col">{{_('Frais_reel')}}</th>
+												<th scope="col">{{_('PEC')}}</th>
+												<th scope="col">{{_('Statut')}}</th>
+											  </tr>
+											</thead>
+											<tbody>
+											{% for sinistre in sinistres %}
+											  <tr>
+												<td>&nbsp;</td>
+												<td></td>
+												<td></td>
+												<td></td>
+												<td></td>
+												<td></td>
+												<td></td>
+												<td></td>
+												<td></td>
+											  </tr>
+											{% endfor %}
+											</tbody>
+										</table>
+									</div>
+								</div>
+							</div>
+						</div>
+
+						<div class="tab-pane fade mt-3" id="historiques" role="tabpanel" aria-labelledby="historiques-tab">
+							<div class="rowd" style="max-height:550px;">
+								<div class="card">
+									<div class="" style="max-height:500px;">
+										<table class="table table-bordered table-striped dataTable dtr-inline" id="table_marchandises">
+											  <thead>
+												<tr>
+												  <th scope="col">{{_("N° de certificat")}}</th>
+												  <th scope="col">{{_("Date émission certificat")}}</th>
+												  <th scope="col">{{_("N° fact fournisseur")}}</th>
+												  <th scope="col">{{_("N° de commande")}}</th>
+												  <th scope="col">{{_("Date de commande")}}</th>
+												  <th scope="col">{{_('Valeur assurée')}}</th>
+												  <th scope="col">{{_('Statut')}}</th>
+												  <th scope="col" class="text-center">{{_('Actions')}}</th>
+												</tr>
+											  </thead>
+											  <tbody>
+												  {% for histo in historiques %}
+													<tr>
+													  <td>{{ histo.num_certificat|default_if_none:"" }}</td>
+													  <td>{{ histo.date_emmision_certificat|date:'Y-m-d' }}</td>
+													  <td>{{ histo.num_fact_fournisseur|default_if_none:"" }}</td>
+													  <td>{{ histo.num_commande|default_if_none:"" }}</td>
+													  <td>{{ histo.date_commande|date:'Y-m-d' }}</td>
+													  <td>{{ histo.valeur_assuree|money_format_mille }}</td>
+													  <td>
+														  <span class="badge badge-{{histo.statut|default_if_none:''|slugify}}">{{ histo.statut|default_if_none:"" }}</span>
+													  </td>
+													  <td class="text-center">
+														<span style="cursor:pointer;" class="btn_details_histo_marchandise" data-toggle="modal" data-target="#modal-details_marchandise_histo{{ histo.id }}"><i class="fas fa-eye text-info"></i></span>
+													  </td>
+													</tr>
+												  {% endfor %}
+											  </tbody>
+										</table>
+									</div>
+								</div>
+							</div>
+						</div>
+
+					</div>
+
+				</div>
+				<div class="modal-footer justify-content-between">
+					<button type="button" class="btn btn-danger" data-dismiss="modal"><i class="fa fa-remove"></i> {{_('Fermer')}}</button>
+				</div>
+			</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+{% for histo in historiques %}
+<div  class="modal fade modal_interne"  id="modal-details_marchandise_histo{{ histo.id }}" data-backdrop="static" data-keyboard="false" aria-hidden="true"  style="display: none">
+	<div class="modal-dialog modal-xl">
+		<div class="modal-content">
+			<div id="">
+			<div class="modal-header">
+				<h4 class="modal-title"><img class="" src="" style="height:40px;border-radius:360px;"/> {{_("FICHE HISTORIQUE MARCHANDISE")}} - <b>{{ histo.num_certificat|default_if_none:"" }} | <span class="badge badge-{{histo.statut|default_if_none:''|slugify}}">{{ histo.statut|default_if_none:"" }}</span></b></h4>
+				<button type="button"class="close"data-dismiss="modal"aria-label="Close">
+					<span aria-hidden="true">×</span>
+				</button>
+			</div>
+			<div class="modal-body">
+				<div class="alert  alert-dismissible fade show hidden" role="alert">
+				  <span class="message"> {{_("TRAITEMENT EN COURS")}}</span>
+				</div>
+				<div class="col-md-12 offset-0">
+					<ul class="nav nav-tabs" id="myTabHisto" role="tablist">
+						<li class="nav-item"><a class="nav-link active" id="detail_historique-tab" data-toggle="tab" href="#detail_historique" role="tab" aria-controls="detail_historique" aria-selected="true">{{_('IDENTITE')}}</a></li>
+					</ul>
+					<div class="tab-content" id="myTabHistoContent">
+						<div class="tab-pane fade show active mt-3" id="detail_historique" role="tabpanel" aria-labelledby="detail_historique-tab">
+                            <div class="row" style="max-height:550px;">
+								<div class="col-md-12 text-uppercase" style="margin-bottom:10px !important; border-top:2px solid #F16623">
+									<h6><mark class="match">Informations générales</mark></h6>
+								</div>
+								<div class="col-md-6">
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("N° de certificat")}}</label>
+										<div class="col-sm-7">
+											<span class="form-control">{{ histo.num_certificat|default_if_none:"" }}</span>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("N° Fact fournisseur")}}</label>
+										<div class="col-sm-7">
+											<span class="form-control">{{ histo.num_fact_fournisseur|default_if_none:"" }}</span>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Ref DAI")}}</label>
+										<div class="col-sm-7">
+											<span class="form-control">{{ histo.ref_dai|default_if_none:"" }}</span>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Date de commande")}}</label>
+										<div class="col-sm-7">
+											<span class="form-control">{{ histo.date_commande|date:'Y-m-d' }}</span>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Nombre de colis")}}</label>
+										<div class="col-sm-7">
+											<span class="form-control">{{ histo.nombre_colis|money_format_mille }}</span>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Poids Brut")}}</label>
+										<div class="col-sm-7">
+											<span class="form-control">{{ histo.poids_brut|money_format_mille }}</span>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Plein de souscription")}} <span class="required">*</span></label>
+										<div class="col-sm-7">
+											<span class="form-control">{{ histo.plein_souscription|money_format_mille }}</span>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Immatriculation")}}</label>
+										<div class="col-sm-7">
+											<span class="form-control">{{ histo.immatriculation|default_if_none:"" }}</span>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Pavillon, Cie, Prest.")}}</label>
+										<div class="col-sm-7">
+											<span class="form-control">{{ histo.pavillon_cie_prest|default_if_none:"" }}</span>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Destination")}}</label>
+										<div class="col-sm-7">
+											<span class="form-control">{{ histo.destination|default_if_none:"" }}</span>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Lieu de transit/transbordement")}}</label>
+										<div class="col-sm-7">
+											<span class="form-control">{{ histo.lieu_transit_transbordement|default_if_none:"" }}</span>
+										</div>
+									</div>
+								</div>
+								<div class="vl"></div>
+								<div class="col-md-5" style="border-left:0px;">
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Date émission certificat")}} <span class="required">*</span></label>
+										<div class="col-sm-7">
+											<span class="form-control">{{ histo.date_emmision_certificat|date:'Y-m-d' }}</span>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Date de sortie")}}</label>
+										<div class="col-sm-7">
+											<span class="form-control">{{ histo.date_sortie|date:'Y-m-d' }}</span>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("N° de commande")}}</label>
+										<div class="col-sm-7">
+											<span class="form-control">{{ histo.num_commande|default_if_none:"" }}</span>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Marchandises")}}</label>
+										<div class="col-sm-7">
+											<span class="form-control">{{ histo.marchandises_description|default_if_none:"" }}</span>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Poids Net")}}</label>
+										<div class="col-sm-7">
+											<span class="form-control">{{ histo.poids_net|money_format_mille }}</span>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Valeur assurée")}}</label>
+										<div class="col-sm-7">
+											<span class="form-control">{{ histo.valeur_assuree|money_format_mille }}</span>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Moyen de transport")}}</label>
+										<div class="col-sm-7">
+                                            <span class="form-control">{{ histo.moyens_transport.libelle|default_if_none:"" }}</span>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Marque, Modèle, Type")}}</label>
+										<div class="col-sm-7">
+											<span class="form-control">{{ histo.marque_modele_type|default_if_none:"" }}</span>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Date de voyage")}}</label>
+										<div class="col-sm-7">
+											<span class="form-control">{{ histo.debut_voyage|date:'Y-m-d' }}</span>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Lieu de départ")}}</label>
+										<div class="col-sm-7">
+											<span class="form-control">{{ histo.lieu_depart|default_if_none:"" }}</span>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Conditions d'assurance")}}</label>
+										<div class="col-sm-7">
+                                            <span class="form-control">{{ histo.conditions_assurance.libelle|default_if_none:"" }}</span>
+										</div>
+									</div>
+								</div>
+								<div class="col-md-12 text-uppercase" style="margin-bottom:10px !important; border-top:2px solid #F16623">
+									<h6><mark class="match">Commissaire d'avaries</mark></h6>
+								</div>
+								<div class="col-md-6">
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Nom")}}</label>
+										<div class="col-sm-7">
+											<span class="form-control">{{ histo.nom_commissaire|default_if_none:"" }}</span>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Code")}}</label>
+										<div class="col-sm-7">
+											<span class="form-control">{{ histo.code_commissaire|default_if_none:"" }}</span>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Adresse")}}</label>
+										<div class="col-sm-7">
+											<span class="form-control">{{ histo.adresse_commissaire|default_if_none:"" }}</span>
+										</div>
+									</div>
+								</div>
+								<div class="vl"></div>
+								<div class="col-md-5" style="border-left:0px;">
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Téléphone")}}</label>
+										<div class="col-sm-7">
+											<span class="form-control">{{ histo.telephone_commissaire|default_if_none:"" }}</span>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Email")}}</label>
+										<div class="col-sm-7">
+											<span class="form-control">{{ histo.courriel_commissaire|default_if_none:"" }}</span>
+										</div>
+									</div>
+								</div>
+								<div class="col-md-12 text-uppercase" style="margin-bottom:10px !important; border-top:2px solid #F16623">
+									<h6><mark class="match">Calculs</mark></h6>
+								</div>
+								<div class="col-md-6">
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Taux risque ordinaire")}}</label>
+										<div class="col-sm-7">
+											<span class="form-control money_field_avec_virgule">{{ histo.taux_risque_ordinaire|default_if_none:"" }}</span>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Taux risque guerre")}}</label>
+										<div class="col-sm-7">
+											<span class="form-control money_field_avec_virgule">{{ histo.taux_risque_guerre|default_if_none:"" }}</span>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Taux supprime")}}</label>
+										<div class="col-sm-7">
+											<span class="form-control money_field_avec_virgule">{{ histo.taux_supprime|default_if_none:"" }}</span>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Taux réduc. commerciale")}}</label>
+										<div class="col-sm-7">
+											<span class="form-control money_field_avec_virgule">{{ histo.taux_reduction_commerciale|default_if_none:"" }}</span>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Taux de la taxe")}}</label>
+										<div class="col-sm-7">
+											<span class="form-control money_field_avec_virgule">{{ histo.taux_taxe|default_if_none:"" }}</span>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Accessoires")}}</label>
+										<div class="col-sm-7">
+											<span class="form-control">{{ histo.accessoires|money_format_mille }}</span>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Autres frais")}}</label>
+										<div class="col-sm-7">
+											<span class="form-control">{{ histo.autres_frais|money_format_mille }}</span>
+										</div>
+									</div>
+								</div>
+								<div class="vl"></div>
+								<div class="col-md-5" style="border-left:0px;">
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Prime risque ordinaire")}}</label>
+										<div class="col-sm-7">
+											<span class="form-control">{{ histo.prime_risque_ordinaire|money_format_mille }}</span>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Prime risque guerre")}}</label>
+										<div class="col-sm-7">
+											<span class="form-control">{{ histo.prime_risque_guerre|money_format_mille }}</span>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Prime supprime")}}</label>
+										<div class="col-sm-7">
+											<span class="form-control">{{ histo.prime_supprime|money_format_mille }}</span>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Prime brut")}}</label>
+										<div class="col-sm-7">
+											<span class="form-control">{{ histo.prime_brut|money_format_mille }}</span>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Prime de réduction")}}</label>
+										<div class="col-sm-7">
+											<span class="form-control" style="background: #f0dcc8; border: #f0dcc8">{{ histo.prime_reduction|money_format_mille|default_if_none:"" }}</span>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Total taxe")}}</label>
+										<div class="col-sm-7">
+											<span class="form-control">{{ histo.total_taxe|money_format_mille }}</span>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Prime TTC")}}</label>
+										<div class="col-sm-7">
+											<span class="form-control">{{ histo.prime_ttc_mar|money_format_mille }}</span>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+
+				</div>
+				<div class="modal-footer justify-content-between">
+					<button type="button" class="btn btn-danger" data-dismiss="modal"><i class="fa fa-remove"></i> {{_('Fermer')}}</button>
+				</div>
+			</div>
+			</div>
+		</div>
+	</div>
+</div>
+{% endfor %}

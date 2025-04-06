@@ -87,12 +87,13 @@ manage.py
 debug.log
 wsgi.py
 passenger_wsgi.py
-git.txt
 
 # Fichier de documentation
 requete.txt
 requete_html.html
 requete_views.py
+github.txt
+touch
 
 
 #Documents ou fichiers à ne pas transmettre

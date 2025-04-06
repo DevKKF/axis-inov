@@ -2779,19 +2779,3 @@ class TypeRecours(models.Model):
         verbose_name = "Type de recours sur un sinistre"
         verbose_name_plural = "Type de recours sur un sinistre"
 
-
-class Recours(models.Model):
-    code = models.CharField(max_length=100, blank=True, null=True)
-    libelle = models.CharField(max_length=100, blank=True, null=True)
-    description = models.CharField(max_length=100, blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    statut = models.BooleanField(default=True)
-
-    def __str__(self):
-        return self.libelle
-
-    class Meta:
-        db_table = 'recours'
-        verbose_name = "Recours sur un sinistre"
-        verbose_name_plural = "Recours sur un sinistre"

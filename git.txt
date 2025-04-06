@@ -6,3 +6,6 @@ git fetch origin
 
 # Remplace TOUT le contenu local par celui de la branche distante
 git reset --hard origin/develop
+
+#Liste des branches distantes :
+git branch -r

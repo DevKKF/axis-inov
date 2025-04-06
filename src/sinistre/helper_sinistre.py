@@ -2,9 +2,10 @@ from pprint import pprint
 
 from comptabilite.models import EncaissementCommission
 from configurations.helper_config import send_notification_background_task_mail, execute_query
-from configurations.models import ActionLog, BackgroundQueryTask, CronLog, Retenue
+from configurations.models import ActionLog, BackgroundQueryTask, CronLog, Prestataire, Retenue
 from production.models import MouvementPolice, Reglement, Quittance, ApporteurPolice
 from shared.enum import StatutReversementCompagnie, StatutEncaissementCommission, StatutValidite
+from shared.veos import get_taux_euro_by_devise
 import openpyxl
 from django.http import JsonResponse, HttpResponse
 import openpyxl

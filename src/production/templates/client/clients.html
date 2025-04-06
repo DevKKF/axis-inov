@@ -32,7 +32,7 @@
                 </div>
                 <div class="col-md-3">
                     <span class="text-right" style="margin-top:5px;">{% trans 'N° Police' %} : </span>
-                        <input id="search_numero_police" class="form-control" type="text" name="np" style="border-radius:3px;border:1px solid rgba(0, 0, 0, 0.3);text-transform:uppercase;" placeholder="N° police">
+                    <input id="search_numero_police" class="form-control" type="text" name="np" style="border-radius:3px;border:1px solid rgba(0, 0, 0, 0.3);text-transform:uppercase;" placeholder="N° police">
                 </div>
                 <div class="col-md-3">
                     <span class="text-right" style="margin-top:5px;">{% trans 'Type de personne' %} : </span>
@@ -43,7 +43,6 @@
                         {% endfor %}
                     </select>
                 </div>
-
                 <div class="col-md-3">
                     <span class="text-right" style="margin-top:5px;">{% trans 'Commercial' %} : </span>
                     <select class="form-control tags-multiple" id="search_commercial" style="border:1px solid rgba(0, 0, 0, 0.3);">
@@ -53,7 +52,9 @@
                         {% endfor %}
                     </select>
                 </div>
-
+                <div class="col-md-12 d-none">
+                    <button class="btn btn-success btn-sm mt-2" style="float:right"><i class="fa fa-search"></i> Rechercher</button>
+                </div>
             </div>
         </div>
     </form>

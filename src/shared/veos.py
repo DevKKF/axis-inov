@@ -16,13 +16,14 @@ from django_dump_die.middleware import dd
 
 from django.contrib.auth.models import AbstractUser, Group
 from comptabilite.models import EncaissementCommission
-from configurations.models import AuthGroup, ChangementFormule, Devise, GroupeInter, NatureQuittance, TypeApporteur, TypeQuittance, \
+from configurations.models import AuthGroup, ChangementFormule, ComptePrestataireVeos, Devise, GroupeInter, NatureQuittance, PeriodeVeos, QuittanceVeos, TypeApporteur, TypeQuittance, \
     User, \
-    Pays, Profession, QualiteBeneficiaire, Bureau, TypePersonne, TypeClient, \
+    PrescripteurVeos, PrestataireVeos, Pays, Profession, QualiteBeneficiaire, Bureau, TypePersonne, TypeClient, \
     Civilite, Langue, Prescripteur, Prestataire, Compagnie, Specialite, PrescripteurPrestataire, Acte, Affection, \
     TypePrestataire, \
-    CronLog, TypeGarant, Territorialite, TypeTarif, Rubrique, Produit, ParamProduitCompagnie, \
-    Secteur, TypePrefinancement, \
+    CronLog, TypeGarant, Territorialite, TypeTarif, Rubrique, Produit, ParamProduitCompagnie, CompagnieVeos, ClientVeos, \
+    PoliceVeos, FormuleVeos, SinistreVeos, Secteur, TypePrefinancement, AlimentVeos, UtilisateurGrhVeos, \
+    UtilisateurVeos, ApporteurVeos, \
     Apporteur, BaseCalcul, ApporteurInternational
 from production.models import Aliment, Client, Mouvement, Police, MouvementPolice, Motif, FormuleGarantie, AlimentFormule, \
     PeriodeCouverture, Carte, Quittance, ApporteurPolice, Reglement
@@ -595,7 +596,7 @@ def import_compagnie_manuellement(request):
     cpt_nouveaux_compagnies = 0
     cpt_tous_compagnies = 0
 
-    compagnies_veos = ""
+    compagnies_veos = CompagnieVeos.objects.filter(STATUT_IMPORT=False).order_by('ID_PER')[:1000]
 
     #dd(compagnies_veos)
     if compagnies_veos:
@@ -724,7 +725,7 @@ def import_client_manuellement(request):
     cpt_nouveaux_clients = 0
     cpt_tous_clients = 0
 
-    clients_veos = ""
+    clients_veos = ClientVeos.objects.filter(STATUT_IMPORT=False).order_by('ID_PER')[:1000]
     cpt = 0
 
     #dd(clients_veos)
@@ -3471,7 +3472,7 @@ def import_utilisateurs_prestataire_manuellement(request):
     cpt_anciens = 0
     cpt_nouveaux = 0
 
-    utilisateurs_veos = ""
+    utilisateurs_veos = ComptePrestataireVeos.objects.filter(STATUT_IMPORT=False)
 
     #dd(utilisateurs_veos)
     for utilisateur in utilisateurs_veos:
@@ -3696,7 +3697,7 @@ def import_quittances_manuellement(request):
     cpt_nouveaux = 0
     cpt_failed = 0
 
-    quittances_veos = ""
+    quittances_veos = QuittanceVeos.objects.filter(STATUT_IMPORT=False)[:1000]
 
     if quittances_veos:
 
@@ -5593,7 +5594,7 @@ def import_periode_veos_manuellement(request):
     cpt_toutes_polices=0
 
 
-    periode_veos = ""
+    periode_veos = PeriodeVeos.objects.filter(STATUT_IMPORT=False).order_by('ID_NPOL')[:1000]
     cpt = 0
 
     #dd(polices_veos)

@@ -10,11 +10,11 @@ from sinistre.models import BordereauOrdonnancement
 class ReglementReverseCompagnie(Reglement):
     class Meta:
         proxy = True
-        verbose_name = "Reglement assureur"
-        verbose_name_plural = "Reglements assureur"
+        verbose_name = "Reglement compagnie"
+        verbose_name_plural = "Reglements compagnie"
 
         permissions = [
-            ("can_do_reglement_compagnie", "Peut faire des règlements assureurs"),
+            ("can_do_reglement_compagnie", "Peut faire des règlements compagnies"),
         ]
 
     def get_queryset(self):

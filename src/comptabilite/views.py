@@ -38,9 +38,9 @@ from django.db import transaction
 from comptabilite.models import BordereauOrdonnance, CompteComptable, EncaissementCommission, Journal, ReglementReverseCompagnie
 from configurations.helper_config import create_query_background_task, execute_query
 from configurations.models import Bureau, Caution, Compagnie, MailingList, NatureOperation, Devise, ModeReglement, Banque, PeriodeComptable, \
-    CompteTresorerie, ActionLog, TypeRemboursement, Prestataire
+    CompteTresorerie, ActionLog, TypeRemboursement
 from configurations.models import Compagnie, NatureOperation, Devise, ModeReglement, Banque, PeriodeComptable, \
-    CompteTresorerie, ActionLog, TypeRemboursement, Prestataire, ModelLettreCheque, \
+    CompteTresorerie, ActionLog, TypeRemboursement, ModelLettreCheque, \
     BordereauLettreCheque, BusinessUnit
 from production.models import Aliment, Reglement, Police, Quittance, Operation, OperationReglement, MouvementPolice, \
     Client, PoliceAssureur, HistoriquePolice
@@ -96,9 +96,6 @@ class BordereauxOrdonnancesView(TemplateView):
 
         type_remboursements = TypeRemboursement.objects.all()
 
-        prestataire_ids = BordereauOrdonnancement.objects.filter(bureau=request.user.bureau, statut_paiement=StatutPaiementSinistre.ORDONNANCE, statut_validite=StatutValidite.VALIDE).values_list('prestataire_id', flat=True)
-        prestataires = Prestataire.objects.filter(id__in=prestataire_ids).order_by('name')
-
         adherent_principal_ids = BordereauOrdonnancement.objects.filter(bureau=request.user.bureau, statut_paiement=StatutPaiementSinistre.ORDONNANCE, statut_validite=StatutValidite.VALIDE, type_remboursement__code="RD").values_list('adherent_principal_id', flat=True)
         adhs = Aliment.objects.filter(id__in=adherent_principal_ids).order_by('nom')
 
@@ -120,9 +117,7 @@ class BordereauxOrdonnancesView(TemplateView):
         context['total_amount'] = money_field(total_amount)
 
         # context['dossiers_sinistres'] = dossiers_sinistres
-        context['prestataires'] = prestataires
         context['assures'] = assures
-        # context['facture_prestataires'] = facture_prestataires
         context['periodes_comptables'] = periodes_comptables
         context['user'] = user
 
@@ -223,7 +218,6 @@ def bordereaux_ordonnances_datatable(request):
 
     search_numero_bordereau = request.GET.get('search_numero_bordereau', '')
     search_periode_comptable = request.GET.get('search_periode_comptable', '')
-    search_prestataire = request.GET.get('search_prestataire', '')
     search_type_remboursement = request.GET.get('search_type_remboursement', '')
     search_adherent_principal = request.GET.get('search_adherent_principal', '')
     search_assure = request.GET.get('search_assure', '')
@@ -241,9 +235,6 @@ def bordereaux_ordonnances_datatable(request):
     if search_periode_comptable:
         queryset = queryset.filter(periode_comptable__id=search_periode_comptable)
 
-    if search_prestataire:
-        queryset = queryset.filter(prestataire__id=search_prestataire)
-
     if search_assure:
         queryset = queryset.filter(assure__id=search_assure)
 
@@ -256,9 +247,8 @@ def bordereaux_ordonnances_datatable(request):
     # Map column index to corresponding model field for sorting
     sort_columns = {
         0: '-numero',
-        1: 'prestataire__name',
-        2: 'periode_comptable',
-        3: 'created_at',
+        1: 'periode_comptable',
+        2: 'created_at',
         # Add more columns as needed
     }
 
@@ -282,24 +272,12 @@ def bordereaux_ordonnances_datatable(request):
         detail_url = reverse('details_bordereau_ordonnancement', args=[c.id])  # URL to the detail view# URL to the detail view
         actions_html = f'<a href="{detail_url}"><span class="badge btn-sm btn-details rounded-pill"><i class="fa fa-eye"></i> Détails</span></a>'
 
-        # nom_prestataire = c.prestataire.name if c.prestataire else f'{c.adherent_principal.nom} {c.adherent_principal.prenoms} ({c.adherent_principal.carte_active()})'
-
-        if c.type_remboursement.code == "TP":
-            nom_prestataire = c.prestataire.name if c.prestataire else ""
-        elif c.type_remboursement.code == "RD" :
-            if c.assure:
-                nom_prestataire = (c.assure.nom + " " + (c.assure.prenoms if c.assure.prenoms else "")) if c.assure else ""
-            else:
-                nom_prestataire = f'{c.adherent_principal.nom} {c.adherent_principal.prenoms} ({c.adherent_principal.carte_active()})' if c.adherent_principal else ""
-
-
         periode_comptable_libelle = c.periode_comptable.libelle if c.periode_comptable else ""
 
         data_iten = {
             "id": c.id,
             "numero": c.numero if c.numero else "",
             "type_remboursement": c.type_remboursement.code,
-            "prestataire__name": nom_prestataire,
             "periode_comptable": periode_comptable_libelle,
             "rembourse": f'<div style="text-align:right;">{money_field(c.montant_accepte_total)}</div>',
             "rejet": f'<div style="text-align:right;">{money_field(c.montant_rejet_total)}</div>',
@@ -361,7 +339,6 @@ def get_fdr_data(request):
 
         # total_global_a_refacturer = BordereauOrdonnancement.objects.filter(
         total_global_a_refacturer_global = Sinistre.objects.filter(
-            prestataire__bureau=request.user.bureau,
             statut_paiement=StatutPaiementSinistre.PAYE,
             statut_validite=StatutValidite.VALIDE,
             dossier_sinistre_id__isnull=False,
@@ -592,21 +569,7 @@ class RefacturationAssureurView(TemplateView):
         bureau = self.request.user.bureau
 
         # Récupérer les compagnies avec des sinistres facturables
-        '''garants = Compagnie.objects.filter(bureau=bureau,
-            sinistre__in=Sinistre.objects.filter(
-                statut=StatutSinistre.ACCORDE,
-                statut_paiement=StatutPaiementSinistre.PAYE,
-                statut_validite=StatutValidite.VALIDE,
-                facture_compagnie__isnull=True,
-                dossier_sinistre__isnull=False,
-            )
-        ).distinct()
-        '''
-
-        # Tenir compte du bureau du prestataire
-        # Récupérer les compagnies avec des sinistres facturables
-        compagnie_ids = Sinistre.objects.filter(prestataire__bureau=bureau,
-                                               statut=StatutSinistre.ACCORDE,
+        compagnie_ids = Sinistre.objects.filter(statut=StatutSinistre.ACCORDE,
                                                statut_paiement=StatutPaiementSinistre.PAYE,
                                                statut_validite=StatutValidite.VALIDE,
                                                facture_compagnie__isnull=True,
@@ -685,7 +648,6 @@ def generate_facture_assureur_datatable(request):
         #     queryset = queryset.filter(
         #         Q(numero__icontains=search) |
         #         Q(dossier_sinistre__numero__icontains=search) |
-        #         Q(prestataire__name__icontains=search) |
         #         Q(aliment__nom__icontains=search) |
         #         Q(aliment__prenoms__icontains=search) |
         #         Q(aliment__cartes__numero__icontains=search) |
@@ -960,7 +922,6 @@ def get_refacturation_assureur_data(request):
 
         # total_global_a_refacturer = BordereauOrdonnancement.objects.filter(
         total_global_a_refacturer_global = Sinistre.objects.filter(
-            prestataire__bureau=request.user.bureau,
             statut_paiement=StatutPaiementSinistre.PAYE,
             statut_validite=StatutValidite.VALIDE,
             dossier_sinistre_id__isnull=False,
@@ -984,7 +945,6 @@ def get_garant_selectionne_data(request, compagnie_id):
 
         # total_garant_a_refacturer = BordereauOrdonnancement.objects.filter( #methode 2
         total_garant_a_refacturer_global = Sinistre.objects.filter(
-            prestataire__bureau=request.user.bureau,
             statut_paiement=StatutPaiementSinistre.PAYE,
             statut_validite=StatutValidite.VALIDE,
             dossier_sinistre_id__isnull=False,
@@ -1391,69 +1351,6 @@ class SuiviTresorerie(TemplateView):
         data_chart_bar = prepare_chart_bar_data(bureau=bureau)
         data_chart_line = prepare_chart_line_data(bureau=bureau)
 
-        # treso = []
-        # # Parcourez chaque compagnie avec caution
-        # for compagnie in garants_cautionne:
-
-        #     # Calculer le total en attente de règlement pour cette compagnie
-        #     total_en_attente_compagnie = FactureCompagnie.objects.filter(
-        #         # bureau=compagnie.bureau,
-        #         compagnie=compagnie,
-        #         statut=StatutFacture.NON_SOLDE
-        #     ).aggregate(total_montant_restant=Sum('montant_restant'))['total_montant_restant'] or 0
-
-        #     # Calculez le total à refacturer pour cette compagnie
-        #     total_a_refacturer_compagnie = Sinistre.objects.filter(
-        #         prestataire__bureau=self.request.user.bureau,
-        #         compagnie=compagnie,
-        #         statut_paiement=StatutPaiementSinistre.PAYE,
-        #         statut_validite=StatutValidite.VALIDE,
-        #         dossier_sinistre_id__isnull=False,
-        #         facture_compagnie_id__isnull=False,
-        #     ).aggregate(montant_remboursement_accepte=Sum('montant_remboursement_accepte'))['montant_remboursement_accepte'] or 0
-
-        #     total_provisionne_compagnie = Sinistre.objects.filter(
-        #         prestataire__bureau=self.request.user.bureau,
-        #         compagnie=compagnie,
-        #         statut_validite=StatutValidite.VALIDE,
-        #         dossier_sinistre_id__isnull=False,
-        #     ).aggregate(montant_remboursement_accepte=Sum('montant_remboursement_accepte'))['montant_remboursement_accepte'] or 0
-
-        #     total_refacture_compagnie = FactureCompagnie.objects.filter(
-        #         statut=StatutFacture.NON_SOLDE,
-        #         compagnie=compagnie,
-        #     ).aggregate(montant_restant=Sum('montant_restant'))['montant_restant'] or 0
-
-        #     total_rembourse_compagnie = FactureCompagnie.objects.filter(
-        #         compagnie=compagnie,
-        #     ).aggregate(montant_regle=Sum('montant_regle'))['montant_regle'] or 0
-
-        #     total_montant_ordonnance_compagnie = Sinistre.objects.filter(
-        #         compagnie=compagnie,
-        #         statut_paiement=StatutPaiementSinistre.ORDONNANCE,
-        #         statut_validite=StatutValidite.VALIDE,
-        #         dossier_sinistre_id__isnull=False,
-        #         facture_compagnie_id__isnull=True,
-        #     ).aggregate(montant_remboursement_accepte=Sum('montant_remboursement_accepte'))['montant_remboursement_accepte'] or 0
-
-        #     # Ajoutez les valeurs calculées à la compagnie actuelle
-        #     compagnie.total_en_attente_de_reglement = total_en_attente_compagnie
-        #     compagnie.montant_ordonnance = total_montant_ordonnance_compagnie
-        #     compagnie.total_provisionne = total_provisionne_compagnie
-        #     compagnie.total_a_refacturer = total_a_refacturer_compagnie
-        #     compagnie.total_refacture = total_refacture_compagnie
-
-        #     # treso =  caution - montant à réfacturer - montant réfacturé + montant remboursé
-        #     compagnie.tresorerie = compagnie.montant_caution - (compagnie.total_a_refacturer + compagnie.total_refacture) + total_rembourse_compagnie
-
-        #     if compagnie.montant_caution != 0:
-        #         compagnie.dispo = int((compagnie.tresorerie/compagnie.montant_caution) * 100)
-        #     else:
-        #         compagnie.dispo = 0
-
-        #     # Ajoutez la compagnie avec les valeurs calculées à la liste finale
-        #     treso.append(compagnie)
-
         context_perso = {
             # "garants": garants_cautionne,
             # "treso": treso,
@@ -1499,7 +1396,6 @@ def suivi_treso_datatable(request):
         
         # Montant ordonnancé 
         montant_ordonnances = Sinistre.objects.filter(
-            prestataire__bureau=request.user.bureau,
             statut_paiement=StatutPaiementSinistre.ORDONNANCE,
             statut_validite=StatutValidite.VALIDE,
             dossier_sinistre_id__isnull=False,
@@ -1512,7 +1408,6 @@ def suivi_treso_datatable(request):
 
         # Sinistre réglé par INOV non encore réclamé à la compagnie
         montant_regle_non_reclame = Sinistre.objects.filter(
-            prestataire__bureau=request.user.bureau,
             statut_paiement=StatutPaiementSinistre.PAYE,
             statut_validite=StatutValidite.VALIDE,
             dossier_sinistre_id__isnull=False,
@@ -1714,9 +1609,6 @@ class BordereauxPayesView(TemplateView):
 
         type_remboursements = TypeRemboursement.objects.all()
 
-        prestataire_ids = BordereauOrdonnancement.objects.filter(bureau=request.user.bureau, statut_paiement=StatutPaiementSinistre.PAYE, statut_validite=StatutValidite.VALIDE).values_list('prestataire_id', flat=True)
-        prestataires = Prestataire.objects.filter(id__in=prestataire_ids).order_by('name')
-
         adherent_principal_ids = BordereauOrdonnancement.objects.filter(bureau=request.user.bureau, statut_paiement=StatutPaiementSinistre.PAYE, statut_validite=StatutValidite.VALIDE, type_remboursement__code="RD").values_list('adherent_principal_id', flat=True)
         adhs = Aliment.objects.filter(id__in=adherent_principal_ids).order_by('nom')
 
@@ -1727,10 +1619,7 @@ class BordereauxPayesView(TemplateView):
 
         periodes_comptables = PeriodeComptable.objects.all()
         context = self.get_context_data(**kwargs)
-        # context['dossiers_sinistres'] = dossiers_sinistres
-        context['prestataires'] = prestataires
         context['assures'] = assures
-        # context['facture_prestataires'] = facture_prestataires
         context['periodes_comptables'] = periodes_comptables
         context['user'] = user
 
@@ -1829,7 +1718,6 @@ def bordereaux_payes_datatable(request):
 
     search_numero_bordereau = request.GET.get('search_numero_bordereau', '')
     search_periode_comptable = request.GET.get('search_periode_comptable', '')
-    search_prestataire = request.GET.get('search_prestataire', '')
     search_type_remboursement = request.GET.get('search_type_remboursement', '')
     search_adherent_principal = request.GET.get('search_adherent_principal', '')
     search_assure = request.GET.get('search_assure', '')
@@ -1845,9 +1733,6 @@ def bordereaux_payes_datatable(request):
     if search_periode_comptable:
         queryset = queryset.filter(periode_comptable__id=search_periode_comptable)
 
-    if search_prestataire:
-        queryset = queryset.filter(prestataire__id=search_prestataire)
-
     if search_assure:
         queryset = queryset.filter(assure__id=search_assure)
 
@@ -1858,8 +1743,7 @@ def bordereaux_payes_datatable(request):
     # Map column index to corresponding model field for sorting
     sort_columns = {
         0: '-numero',
-        1: 'prestataire__name',
-        2: 'periode_comptable',
+        1: 'periode_comptable',
         3: 'created_at',
         # Add more columns as needed
     }
@@ -1884,23 +1768,12 @@ def bordereaux_payes_datatable(request):
         detail_url = reverse('details_bordereau_ordonnancement', args=[c.id])  # URL to the detail view# URL to the detail view
         actions_html = f'<a href="{detail_url}"><span class="badge btn-sm btn-details rounded-pill"><i class="fa fa-eye"></i> Détails</span></a>'
 
-        if c.type_remboursement.code == "TP":
-            nom_prestataire = c.prestataire.name if c.prestataire else ""
-        elif c.type_remboursement.code == "RD":
-            if c.assure:
-                nom_prestataire = (
-                            c.assure.nom + " " + (c.assure.prenoms if c.assure.prenoms else "")) if c.assure else ""
-            else:
-                nom_prestataire = f'{c.adherent_principal.nom} {c.adherent_principal.prenoms} ({c.adherent_principal.carte_active()})' if c.adherent_principal else ""
-
-
         periode_comptable_libelle = c.periode_comptable.libelle if c.periode_comptable else ""
 
         data_iten = {
             "id": c.id,
             "numero": c.numero if c.numero else "",
             "type_remboursement": c.type_remboursement.code,
-            "prestataire__name": nom_prestataire,
             "periode_comptable": periode_comptable_libelle,
             "net_a_payer": f'<div style="text-align:right;">{money_field(c.montant_remb_total)}</div>',
             "rejet": f'<div style="text-align:right;">{money_field(c.montant_rejet_total)}</div>',
@@ -2023,7 +1896,6 @@ def paiements_comptables_datatable(request):
     search_numero_bordereau_ord = request.GET.get('search_numero_bordereau_ord', '')
     search_periode_comptable = request.GET.get('search_periode_comptable', '')
     search_type_remboursement = request.GET.get('search_type_remboursement', '')
-    search_prestataire = request.GET.get('search_prestataire', '')
     search_adherent_principal = request.GET.get('search_adherent_principal', '')
     search_assure = request.GET.get('search_assure', '')
 
@@ -2040,9 +1912,6 @@ def paiements_comptables_datatable(request):
 
     if search_periode_comptable:
         queryset = queryset.filter(bordereau_ordonnancement__periode_comptable__id=search_periode_comptable)
-
-    if search_prestataire:
-        queryset = queryset.filter(prestataire__id=search_prestataire)
 
     if search_assure:
         queryset = queryset.filter(bordereau_ordonnancement__assure__id=search_assure)
@@ -2101,14 +1970,6 @@ def paiements_comptables_datatable(request):
 
         nom_compagnie = c.compagnie.nom if c.compagnie else ""
         nom_beneficiaire = c.nom_beneficiaire
-        
-        
-        # if c.bordereau_ordonnancement.type_remboursement.code == "RD":
-        #     # nom_beneficiaire = "RD"
-        #     # nom_beneficiaire = f'{c.adherent_principal.nom} {c.adherent_principal.prenoms} ({c.adherent_principal.carte_active()})'
-        # elif c.bordereau_ordonnancement.type_remboursement.code == "TP":
-        #     # nom_beneficiaire = "TP"
-        #     nom_beneficiaire = c.prestataire.name
 
         data_item = {
             "id": c.id,
@@ -2140,7 +2001,6 @@ def export_paiements_comptables(request):
         search_numero_bordereau_ord = request.POST.get('search_numero_bordereau_ord', '')
         search_periode_comptable = request.POST.get('search_periode_comptable', '')
         search_type_remboursement = request.POST.get('search_type_remboursement', '')
-        search_prestataire = request.POST.get('search_prestataire', '')
         search_adherent_principal = request.POST.get('search_adherent_principal', '')
 
         # Filtrer les données selon les paramètres
@@ -2154,8 +2014,6 @@ def export_paiements_comptables(request):
             paiements = paiements.filter(bordereau_ordonnancement__numero__icontains=search_numero_bordereau_ord)
         if search_type_remboursement:
             paiements = paiements.filter(bordereau_ordonnancement__type_remboursement__code=search_type_remboursement)
-        if search_prestataire:
-            paiements = paiements.filter(prestataire__id=search_prestataire)
         if search_adherent_principal:
             paiements = paiements.filter(adherent_principal__id=search_adherent_principal)
 
@@ -2228,7 +2086,6 @@ class DetailBordereauOrdonnancementView(TemplateView):
     model = Sinistre
 
     def get(self, request, bordereau_id, *args, **kwargs):
-        #TODO , filtrer sur le bureau : prestataire__bureau=request.user.bureau
         bordereau = BordereauOrdonnancement.objects.filter(id=bordereau_id, bureau=request.user.bureau).first()
         # dd(bordereau)
         
@@ -2241,9 +2098,6 @@ class DetailBordereauOrdonnancementView(TemplateView):
 
         compagnies_non_payes_liste = liste_sinistres_bordereau.filter(statut_paiement=StatutPaiementSinistre.ORDONNANCE).values('compagnie').distinct()
         compagnies_non_payes = Compagnie.objects.filter(id__in=compagnies_non_payes_liste)
-
-        prestataire_ids = liste_sinistres_bordereau.values_list('prestataire_id', flat=True)
-        prestataires = Prestataire.objects.filter(id__in=prestataire_ids)
 
         modes_reglements = ModeReglement.objects.all().order_by('libelle')
 
@@ -2269,7 +2123,6 @@ class DetailBordereauOrdonnancementView(TemplateView):
         context['montant_autres_taxes'] = total_taxes
         context['montant_total_paye'] = montant_total_paye
         context['montant_total_impaye'] = montant_total_impaye
-        context['prestataires'] = prestataires
         context['garants'] = compagnies
         context['garants_non_paye'] = compagnies_non_payes
         context['modes_reglements'] = modes_reglements
@@ -2301,7 +2154,6 @@ def detail_bordereau_ordonnancement_datatable(request, bordereau_id):
 
     search_numero_bordereau = request.GET.get('search_numero_bordereau', '')
     search_numero_sinistre = request.GET.get('search_numero_sinistre', '')
-    search_prestataire = request.GET.get('search_prestataire', '')
     search_compagnie = request.GET.get('search_compagnie', '')
     search_statut_paiement = request.GET.get('search_statut_paiement', '')
 
@@ -2312,9 +2164,6 @@ def detail_bordereau_ordonnancement_datatable(request, bordereau_id):
 
     if search_numero_sinistre:
         queryset = queryset.filter(numero__contains=search_numero_sinistre)
-
-    if search_prestataire:
-        queryset = queryset.filter(prestataire__id=int(search_prestataire))
 
     if search_compagnie:
         queryset = queryset.filter(compagnie=search_compagnie)
@@ -2355,7 +2204,6 @@ def detail_bordereau_ordonnancement_datatable(request, bordereau_id):
             "date_survenance": c.date_survenance.strftime("%d/%m/%Y %H:%M") if c.date_survenance else '',
             "numero": c.numero,
             "dossier_sinistre__numero": c.dossier_sinistre.numero,
-            "prestataire": c.prestataire.name,
             "beneficiaire": c.aliment.nom + ' ' + c.aliment.prenoms,
             "carte_active": numero_carte,
             "compagnie": c.compagnie.nom,
@@ -2598,7 +2446,6 @@ def genreate_bordereau_reglement_par_garant(request, bordereau_id, compagnie_id)
         bordereau_ordonnancement=bordereau,
         compagnie=compagnie,
         #numero=generate_random_string(length=12),
-        prestataire=bordereau.prestataire,
         nom_beneficiaire=bordereau.ordre_de,
         numero_iban=numero_iban,
         nombre_sinistres=liste_sinistres_ordonnances.count(),
@@ -2616,8 +2463,6 @@ def genreate_bordereau_reglement_par_garant(request, bordereau_id, compagnie_id)
         sinistre.statut_paiement = StatutPaiementSinistre.PAYE
         sinistre.date_paiement = date_paiement
         sinistre.paiement_comptable = paiement_comptable
-        sinistre.facture_prestataire.statut = SatutBordereauDossierSinistres.PAYE
-        sinistre.facture_prestataire.save()
         sinistre.save()
 
 
@@ -2673,7 +2518,7 @@ def genreate_bordereau_reglement_assure_par_garant(request, bordereau_id, assure
     sinistres_par_garants = []
 
     bordereau = BordereauOrdonnance.objects.get(id=bordereau_id)
-    liste_sinistres = Sinistre.objects.filter(bordereau_ordonnancement=bordereau, facture_prestataire__assure__id=assure_id, statut_validite=StatutValidite.VALIDE)
+    liste_sinistres = Sinistre.objects.filter(bordereau_ordonnancement=bordereau, statut_validite=StatutValidite.VALIDE)
 
     nombre_total_sinistres = liste_sinistres.count()
 
@@ -2751,8 +2596,6 @@ def genreate_bordereau_reglement_assure_par_garant(request, bordereau_id, assure
         bureau=request.user.bureau,
         bordereau_ordonnancement=bordereau,
         compagnie=compagnie,
-        #numero=generate_random_string(length=12),
-        prestataire=bordereau.prestataire,
         nom_beneficiaire=bordereau.ordre_de,
         numero_iban=numero_iban,
         nombre_sinistres=liste_sinistres_ordonnances.count(),
@@ -2770,8 +2613,6 @@ def genreate_bordereau_reglement_assure_par_garant(request, bordereau_id, assure
         sinistre.statut_paiement = StatutPaiementSinistre.PAYE
         sinistre.date_paiement = date_paiement
         sinistre.paiement_comptable = paiement_comptable
-        sinistre.facture_prestataire.statut = SatutBordereauDossierSinistres.PAYE
-        sinistre.facture_prestataire.save()
         sinistre.save()
 
 
@@ -2858,9 +2699,6 @@ class PaiementsRealises(TemplateView):
 
         type_remboursements = TypeRemboursement.objects.all()
 
-        prestataire_ids = PaiementComptable.objects.filter(bureau=request.user.bureau).values_list('prestataire_id', flat=True)
-        prestataires = Prestataire.objects.filter(id__in=prestataire_ids).order_by('name')
-
         bordereau_ordonnancement_ids = PaiementComptable.objects.filter(bureau=request.user.bureau).values_list('bordereau_ordonnancement_id', flat=True)
         adherent_principal_ids = BordereauOrdonnancement.objects.filter(id__in=bordereau_ordonnancement_ids).values_list('adherent_principal_id', flat=True)
         adhs = Aliment.objects.filter(id__in=adherent_principal_ids).order_by('nom')
@@ -2872,7 +2710,6 @@ class PaiementsRealises(TemplateView):
 
         periodes_comptables = PeriodeComptable.objects.all()
         context = self.get_context_data(**kwargs)
-        context['prestataires'] = prestataires
         context['assures'] = assures
         context['periodes_comptables'] = periodes_comptables
         context['user'] = user
@@ -2908,10 +2745,6 @@ class EditionLettreCheque(TemplateView):
 
         type_remboursements = TypeRemboursement.objects.all()
 
-        prestataire_ids = PaiementComptable.objects.filter(bureau=request.user.bureau, mode_reglement_id=5, bordereau_lettre_cheque__isnull=True).values_list('prestataire_id',
-                                                                                                   flat=True)
-        prestataires = Prestataire.objects.filter(id__in=prestataire_ids).order_by('name')
-
         bordereau_ordonnancement_ids = PaiementComptable.objects.filter(bureau=request.user.bureau, mode_reglement_id=5, bordereau_lettre_cheque__isnull=True).values_list('bordereau_ordonnancement_id', flat=True)
         adherent_principal_ids = BordereauOrdonnancement.objects.filter(id__in=bordereau_ordonnancement_ids).values_list('adherent_principal_id', flat=True)
         adhs = Aliment.objects.filter(id__in=adherent_principal_ids).order_by('nom')
@@ -2920,7 +2753,6 @@ class EditionLettreCheque(TemplateView):
 
         periodes_comptables = PeriodeComptable.objects.all()
         context = self.get_context_data(**kwargs)
-        context['prestataires'] = prestataires
         context['periodes_comptables'] = periodes_comptables
         context['user'] = user
 
@@ -2958,7 +2790,6 @@ def edition_lettre_cheque_datatable(request):
     search_numero_bordereau_ord = request.GET.get('search_numero_bordereau_ord', '')
     search_periode_comptable = request.GET.get('search_periode_comptable', '')
     search_type_remboursement = request.GET.get('search_type_remboursement', '')
-    search_prestataire = request.GET.get('search_prestataire', '')
     search_adherent_principal = request.GET.get('search_adherent_principal', '')
 
     queryset = PaiementComptable.objects.filter(bureau=request.user.bureau, mode_reglement_id=5, bordereau_lettre_cheque__isnull=True).order_by('-id')
@@ -2975,9 +2806,6 @@ def edition_lettre_cheque_datatable(request):
 
     if search_periode_comptable:
         queryset = queryset.filter(periode_comptable__id=search_periode_comptable)
-
-    if search_prestataire:
-        queryset = queryset.filter(prestataire__id=search_prestataire)
 
     if search_adherent_principal:
         queryset = queryset.filter(bordereau_ordonnancement__adherent_principal__id=search_adherent_principal)
@@ -3012,13 +2840,6 @@ def edition_lettre_cheque_datatable(request):
         nom_compagnie = c.compagnie.nom if c.compagnie else ""
         nom_beneficiaire = c.nom_beneficiaire
 
-        # if c.bordereau_ordonnancement.type_remboursement.code == "RD":
-        #     # nom_beneficiaire = "RD"
-        #     # nom_beneficiaire = f'{c.adherent_principal.nom} {c.adherent_principal.prenoms} ({c.adherent_principal.carte_active()})'
-        # elif c.bordereau_ordonnancement.type_remboursement.code == "TP":
-        #     # nom_beneficiaire = "TP"
-        #     nom_beneficiaire = c.prestataire.name
-
         data_iten = {
             "id": c.id,
             "numero": c.numero if c.numero else "",
@@ -3046,13 +2867,6 @@ def submit_edition_lettre_cheque(request):
     # TODO : CODE_PAYS_YY_MM
     # try:
     with transaction.atomic():
-
-        # print("periode " + request.POST.get('periode_id'))
-        # print("search adh " + request.POST.get('search_adh'))
-        # print("prestataire " + request.POST.get('prestataire_id'))
-        # print("selectedItems" + request.POST.get('selectedItems'))
-        # pprint("ADH ID")
-        # print(request.POST.get('search_adh'))
 
         Paiement_ids = literal_eval(request.POST.get('selectedItems'))
         model_lettre_cheque_id = request.POST.get('modelLettreCheque')
@@ -3895,7 +3709,6 @@ def get_montant_caution(bureau, compagnie=None):
 
 def get_montant_sinistre_regle(bureau, compagnie=None, month=None):
     queryset = Sinistre.objects.filter(
-        prestataire__bureau=bureau,
         statut_paiement=StatutPaiementSinistre.PAYE,
         statut_validite=StatutValidite.VALIDE,
         dossier_sinistre_id__isnull=False,
@@ -4139,7 +3952,6 @@ class ExecutionRequeteExcelComptaView(TemplateView):
     model = Sinistre
 
     def get(self, request, *args, **kwargs):
-        #TODO , filtrer sur le bureau : prestataire__bureau=request.user.bureau
         periode_comptable = PeriodeComptable.objects.all()
         query_datas = [
             {
@@ -4173,7 +3985,6 @@ class ExecutionRequeteExcelComptaView(TemplateView):
         context = self.get_context_data(**kwargs)
         context['query_datas'] = query_datas
         context['periode_comptable'] = periode_comptable
-        context['prestataires'] = None
 
         return self.render_to_response(context)
 
@@ -4254,7 +4065,6 @@ def alert_consumption():
                 mcaution = caution.montant if caution else 0
                 
                 montant_regle_non_reclame = Sinistre.objects.filter(
-                    prestataire__bureau=bureau,
                     statut_paiement=StatutPaiementSinistre.PAYE,
                     statut_validite=StatutValidite.VALIDE,
                     dossier_sinistre_id__isnull=False,

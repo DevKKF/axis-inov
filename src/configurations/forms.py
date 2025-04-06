@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.models import Permission
-from .models import ActionLog, SousRubrique, Tarif, Compagnie, Banque, \
+from .models import ActionLog, RegroupementActe, SousRubrique, StatExcelWsBoby, Tarif, Compagnie, Banque, SousRegroupementActe, \
     ApporteurInternational, GroupeInter, Branche, Garantie, GarantieBranche, Formule, GarantieFormule
 
 
@@ -19,6 +19,17 @@ class PermissionForm(forms.ModelForm):
         widgets = {
             'permissions': forms.CheckboxSelectMultiple(),  # Utiliser le widget CheckboxSelectMultiple pour les cases à cocher
         }
+
+
+class RegroupementActeForm(forms.ModelForm):
+    class Meta:
+        model = RegroupementActe
+        exclude = ['code']  # Exclude the 'code' field from the form
+
+class SousRegroupementActeForm(forms.ModelForm):
+    class Meta:
+        model = SousRegroupementActe
+        exclude = ['code']  # Exclude the 'code' field from the form
 
 
 class SousRubriqueForm(forms.ModelForm):
@@ -59,6 +70,12 @@ class GroupeInterForm(forms.ModelForm):
     class Meta:
         model = GroupeInter
         exclude = ['updated_at']  # Exclude the 'code' field from the form
+
+class StatExcelWsBobyForm(forms.ModelForm):
+    class Meta:
+        model = StatExcelWsBoby
+        exclude = ['updated_at']  # Exclude the 'code' field from the form
+
 
 class GarantieBrancheForm(forms.ModelForm):
     branche = forms.ModelChoiceField(

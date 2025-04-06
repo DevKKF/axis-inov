@@ -9,7 +9,8 @@ from import_export.admin import ImportExportModelAdmin
 from django import forms
 from admin_custom.admin import custom_admin_site
 from configurations.forms import ActionLogForm, PermissionForm, SousRubriqueForm, TarifForm, \
-    CompagnieAdminForm, BanqueAdminForm, ApporteurInternationalForm, GroupeInterForm, GarantieBrancheForm, GarantieFormuleForm
+    CompagnieAdminForm, BanqueAdminForm, ApporteurInternationalForm, GroupeInterForm, GarantieBrancheForm, \
+    GarantieFormuleForm
 from configurations.models import *
 from production.models import Quittance, SecteurActivite, TypeDocument, Mouvement, Motif
 
@@ -51,15 +52,21 @@ class TarifAdmin(admin.ModelAdmin):
     form: TarifForm
 
     list_per_page = 30
-    list_display = ('acte', 'lettre_cle_classique', 'coef_classique', 'pu_classique', 'cout_classique', 'pu_mutuelle', 'cout_mutuelle', 'pu_public_hg', 'cout_public_hg', 'pu_public_chu', 'cout_public_chu', 'pu_public_ica', 'cout_public_ica')
-    list_filter = ('acte', )  # Vous pouvez ajouter d'autres champs de filtrage si nécessaire
-    search_fields = ('acte', )  # Vous pouvez ajouter d'autres champs de recherche si nécessaire
+    list_display = (
+    'acte', 'lettre_cle_classique', 'coef_classique', 'pu_classique', 'cout_classique', 'pu_mutuelle', 'cout_mutuelle',
+    'pu_public_hg', 'cout_public_hg', 'pu_public_chu', 'cout_public_chu', 'pu_public_ica', 'cout_public_ica')
+    list_filter = ('acte',)  # Vous pouvez ajouter d'autres champs de filtrage si nécessaire
+    search_fields = ('acte',)  # Vous pouvez ajouter d'autres champs de recherche si nécessaire
 
 
 class TarifExcelAdmin(ImportExportModelAdmin):
-    list_display = ('CODE_REGROUPEMENT_INOV', 'LIBELLE_ACTE', 'CODE_ACTE', 'LETTRE_CLE_CLASSIQUE', 'COEF_CLASSIQUE', 'PU_CLASSIQUE', 'COUT_CLASSIQUE', 'PU_MUTUELLE', 'COUT_MUTUELLE', 'PU_PUBLIC_HG', 'COUT_PUBLIC_HG')
-    list_filter = ('CODE_REGROUPEMENT_INOV', 'LIBELLE_ACTE', 'CODE_ACTE')  # Vous pouvez ajouter d'autres champs de filtrage si nécessaire
-    search_fields = ('CODE_REGROUPEMENT_INOV', 'LIBELLE_ACTE', 'CODE_ACTE')  # Vous pouvez ajouter d'autres champs de recherche si nécessaire
+    list_display = (
+    'CODE_REGROUPEMENT_INOV', 'LIBELLE_ACTE', 'CODE_ACTE', 'LETTRE_CLE_CLASSIQUE', 'COEF_CLASSIQUE', 'PU_CLASSIQUE',
+    'COUT_CLASSIQUE', 'PU_MUTUELLE', 'COUT_MUTUELLE', 'PU_PUBLIC_HG', 'COUT_PUBLIC_HG')
+    list_filter = ('CODE_REGROUPEMENT_INOV', 'LIBELLE_ACTE',
+                   'CODE_ACTE')  # Vous pouvez ajouter d'autres champs de filtrage si nécessaire
+    search_fields = ('CODE_REGROUPEMENT_INOV', 'LIBELLE_ACTE',
+                     'CODE_ACTE')  # Vous pouvez ajouter d'autres champs de recherche si nécessaire
     list_per_page = 10
 
 
@@ -79,7 +86,7 @@ class ChangementFormuleAdmin(ImportExportModelAdmin):
                     'LIB_FORMULE', 'CD_FORMULE', 'DATE_DEBUT')
 
     search_fields = ('NOM', 'PRENOMS', 'NUMERO_CARTE', 'QUALITE_BENEFICIAIRE',
-                    'LIB_FORMULE', 'CD_FORMULE', 'DATE_DEBUT')
+                     'LIB_FORMULE', 'CD_FORMULE', 'DATE_DEBUT')
     list_per_page = 10
 
 
@@ -92,7 +99,7 @@ class ProfessionAdmin(ImportExportModelAdmin):
 
 class BureausAdmin(ImportExportModelAdmin):
     inlines = [TaxeInline]
-    list_display = ('nom', 'code', 'telephone', 'fax', 'email','tarif_bureau')
+    list_display = ('nom', 'code', 'telephone', 'fax', 'email', 'tarif_bureau')
     list_filter = ('nom', 'code', 'telephone', 'fax', 'email', ('pays', admin.RelatedOnlyFieldListFilter))
     search_field = ('nom', 'code', 'telephone', 'fax', 'email')
     list_per_page = 10
@@ -112,14 +119,16 @@ class BureausAdmin(ImportExportModelAdmin):
 
 
 class RetenueAdmin(admin.ModelAdmin):
-    list_filter = ('code','libelle')
-    list_display = ('code','libelle','taux','secteur','prestataires')
-    fields = ['code','libelle','taux','secteur','type_prestataire']
+    list_filter = ('code', 'libelle')
+    list_display = ('code', 'libelle', 'taux', 'secteur', 'prestataires')
+    fields = ['code', 'libelle', 'taux', 'secteur', 'type_prestataire']
     search_field = ('libelle', 'code')
     list_per_page = 20
 
     def prestataires(self, obj):
-        return ', '.join([ type.name for type in obj.type_prestataire.all() ]) if obj.type_prestataire.count() > 0 else '-'
+        return ', '.join(
+            [type.name for type in obj.type_prestataire.all()]) if obj.type_prestataire.count() > 0 else '-'
+
     prestataires.allow_tags = True
     prestataires.short_description = "Types Prestataires"
 
@@ -145,9 +154,9 @@ class ParamProduitCompagnieInline(admin.TabularInline):
 
 class CompagnieAdmin(admin.ModelAdmin):
     inlines = [ParamProduitCompagnieInline]  # , Pres
-    list_display = ('nom', 'code', 'type_garant', 'telephone', )
+    list_display = ('nom', 'code', 'type_garant', 'telephone',)
     list_filter = ('nom', 'code', 'type_garant', 'telephone', 'email')
-    search_field = ('nom', 'code','type_garant', 'telephone', 'email')
+    search_field = ('nom', 'code', 'type_garant', 'telephone', 'email')
     list_per_page = 10
     form = CompagnieAdminForm
 
@@ -156,7 +165,6 @@ class CompagnieAdmin(admin.ModelAdmin):
         queryset = queryset.filter(bureau=request.user.bureau)
 
         return queryset
-
 
     def save_model(self, request, obj, form, change):
         # Renseignez le champ bureau uniquement lors de la création d'une nouvelle compagnie
@@ -168,7 +176,7 @@ class CompagnieAdmin(admin.ModelAdmin):
 
 
 class MotifAdmin(admin.ModelAdmin):
-    list_display = ('code','libelle',)
+    list_display = ('code', 'libelle',)
 
 
 class TypeEtablissementAdmin(admin.ModelAdmin):
@@ -194,22 +202,22 @@ class RubiqueAdmin(ImportExportModelAdmin):
 
 class LangueAdmin(admin.ModelAdmin):
     list_filter = ('libelle',)
-    list_display = ('libelle','code')
-    search_field = ('libelle','code')
+    list_display = ('libelle', 'code')
+    search_field = ('libelle', 'code')
     list_per_page = 20
 
 
 class PaysAdmin(admin.ModelAdmin):
     list_filter = ('nom',)
-    list_display = ('nom','code','indicatif', 'poligamie', 'devise')
-    search_field = ('nom','code')
+    list_display = ('nom', 'code', 'indicatif', 'poligamie', 'devise')
+    search_field = ('nom', 'code')
     list_per_page = 20
 
 
 class DeviseAdmin(admin.ModelAdmin):
     list_filter = ('libelle',)
-    list_display = ('libelle','code')
-    search_field = ('code','libelle')
+    list_display = ('libelle', 'code')
+    search_field = ('code', 'libelle')
     list_per_page = 20
 
 
@@ -217,10 +225,12 @@ class ParamProduitCompagnieInline(admin.TabularInline):
     model = ParamProduitCompagnie
     extra = 1
 
+
 class ProduitAdmin(admin.ModelAdmin):
     inlines = [ParamProduitCompagnieInline]
     list_display = ('code', 'nom', 'branche')
     list_per_page = 20
+
 
 class BrancheAdmin(admin.ModelAdmin):
     list_filter = ('code', 'nom', 'status')
@@ -231,9 +241,10 @@ class BrancheAdmin(admin.ModelAdmin):
 
 class TaxeAdmin(admin.ModelAdmin):
     list_filter = ('libelle',)
-    list_display = ('libelle','code')
+    list_display = ('libelle', 'code')
     search_field = ('libelle', 'code')
     list_per_page = 20
+
 
 @admin.register(BaseCalcul)
 class BaseCalculAdmin(admin.ModelAdmin):
@@ -248,6 +259,7 @@ class TypeQuittanceAdmin(admin.ModelAdmin):
     list_filter = ('libelle', 'code')
     search_field = ('libelle', 'code')
 
+
 @admin.register(NatureQuittance)
 class NatureQuittanceAdmin(admin.ModelAdmin):
     list_display = ('libelle', 'code')
@@ -257,7 +269,7 @@ class NatureQuittanceAdmin(admin.ModelAdmin):
 
 class BanqueAdmin(admin.ModelAdmin):
     list_display = ('code', 'libelle', 'bureau')
-    form=BanqueAdminForm
+    form = BanqueAdminForm
 
     def save_model(self, request, obj, form, change):
         # Renseignez le champ bureau uniquement lors de la création d'un nouvel utilisateur
@@ -268,14 +280,11 @@ class BanqueAdmin(admin.ModelAdmin):
         # Appelez la méthode save_model de la classe parente pour effectuer l'enregistrement réel
         super().save_model(request, obj, form, change)
 
-
     def get_queryset(self, request):
         queryset = super().get_queryset(request)
         queryset = queryset.filter(bureau=request.user.bureau)
 
         return queryset
-
-
 
 
 class TypeDocumentAdmin(admin.ModelAdmin):
@@ -288,7 +297,7 @@ class CustomUserAdmin(UserAdmin):
     list_display = ('username', 'last_name', 'first_name', 'is_active', 'is_superuser')
 
     list_filter = ('username', 'last_name', 'first_name', 'is_active', 'is_superuser')
-    #search_fields = ('username', 'last_name', 'first_name', 'email', 'is_active', 'is_superuser')
+    # search_fields = ('username', 'last_name', 'first_name', 'email', 'is_active', 'is_superuser')
     list_per_page = 10
 
     inlines = [
@@ -349,7 +358,7 @@ class CustomUserAdmin(UserAdmin):
 
     staff_add_fieldsets = (
         (None, {"fields": (
-        "username", "password1", "password2", "first_name", "last_name", "email")}),
+            "username", "password1", "password2", "first_name", "last_name", "email")}),
         (
             "Permissions",
             {
@@ -376,7 +385,6 @@ class CustomUserAdmin(UserAdmin):
             return self.superuser_fieldsets
         else:
             return self.staff_fieldsets
-
 
     def get_queryset(self, request):
         queryset = super().get_queryset(request)
@@ -405,9 +413,9 @@ class ActionLogAdmin(admin.ModelAdmin):
     form = ActionLogForm
     list_per_page = 30
     list_display = ('data_before', 'data_after',)
-    #list_display = ('done_by', 'table', 'row', 'action', 'description', 'data_before', 'data_after',)
-    #search_fields = ('action',)
-    #list_filter = ('action',)
+    # list_display = ('done_by', 'table', 'row', 'action', 'description', 'data_before', 'data_after',)
+    # search_fields = ('action',)
+    # list_filter = ('action',)
 
 
 # class TypeRemboursementAdmin(admin.ModelAdmin):
@@ -434,7 +442,7 @@ class PeriodeComptableAdmin(ImportExportModelAdmin):
 
 class KeyValueDataAdmin(ImportExportModelAdmin):
     list_display = ('key', 'description', 'statut')
-    list_filter = ('key','statut')
+    list_filter = ('key', 'statut')
     search_field = ('key', 'description', 'data')
     list_per_page = 10
     formfield_overrides = {
@@ -452,15 +460,16 @@ class NatureOperationAdmin(admin.ModelAdmin):
 
 
 class BackgroundQueryTaskAdmin(admin.ModelAdmin):
-    list_display = ('name','auteur','created_at','updated_at','fichier_excel','statut',)
-    list_filter = ('status','created_at',('created_by__bureau', admin.RelatedOnlyFieldListFilter),'created_by__username')
-    search_field = ('name','status','created_by__username')
-    readonly_fields = ('created_at','updated_at','error_message','name','created_by','fichier_excel', 'statut')
+    list_display = ('name', 'auteur', 'created_at', 'updated_at', 'fichier_excel', 'statut',)
+    list_filter = (
+    'status', 'created_at', ('created_by__bureau', admin.RelatedOnlyFieldListFilter), 'created_by__username')
+    search_field = ('name', 'status', 'created_by__username')
+    readonly_fields = ('created_at', 'updated_at', 'error_message', 'name', 'created_by', 'fichier_excel', 'statut')
     list_per_page = 10
 
     superuser_fieldsets = (
         ('Général', {
-            'fields': ('name', 'query','file', 'status')
+            'fields': ('name', 'query', 'file', 'status')
         }),
         ('Meta Donnée', {
             'fields': (
@@ -470,7 +479,7 @@ class BackgroundQueryTaskAdmin(admin.ModelAdmin):
 
     staff_fieldsets = (
         ('Général', {
-            'fields': ('name','file', 'status')
+            'fields': ('name', 'file', 'status')
         }),
         ('Meta Donnée', {
             'fields': (
@@ -521,12 +530,12 @@ class BackgroundQueryTaskAdmin(admin.ModelAdmin):
 
 class ApporteurInternationalAdmin(admin.ModelAdmin):
     list_display = ('code', 'nom', 'pays')
-    form=ApporteurInternationalForm
+    form = ApporteurInternationalForm
 
 
 class GroupeInterAdmin(admin.ModelAdmin):
     list_display = ('code', 'nom', 'apporteur', 'status')
-    form=GroupeInterForm
+    form = GroupeInterForm
 
     def has_add_permission(self, request):
         if request.user.is_superuser:
@@ -551,9 +560,9 @@ class GroupeInterAdmin(admin.ModelAdmin):
 
 
 class ModelLettreChequeAdmin(admin.ModelAdmin):
-    list_display = ('libelle','banque','auteur','statut',)
-    list_filter = ('statut',('bureau', admin.RelatedOnlyFieldListFilter),('banque', admin.RelatedOnlyFieldListFilter))
-    search_field = ('libelle','banque__libelle')
+    list_display = ('libelle', 'banque', 'auteur', 'statut',)
+    list_filter = ('statut', ('bureau', admin.RelatedOnlyFieldListFilter), ('banque', admin.RelatedOnlyFieldListFilter))
+    search_field = ('libelle', 'banque__libelle')
     # readonly_fields = ('created_at','updated_at','error_message','name','created_by','fichier_excel', 'statut')
     list_per_page = 10
 
@@ -589,15 +598,15 @@ class ModelLettreChequeAdmin(admin.ModelAdmin):
 
 
 class BordereauLettreChequeAdmin(admin.ModelAdmin):
-    list_display = ('libelle','created_at','nombre','edite_par','action',)
+    list_display = ('libelle', 'created_at', 'nombre', 'edite_par', 'action',)
     list_filter = ('libelle', 'created_at',)
-    search_field = ('libelle', 'created_at','created_by')
-    readonly_fields = ('created_at','edite_par','fichier_pdf',)
+    search_field = ('libelle', 'created_at', 'created_by')
+    readonly_fields = ('created_at', 'edite_par', 'fichier_pdf',)
     list_per_page = 10
 
     superuser_fieldsets = (
         ('Général', {
-            'fields': ('libelle', 'model_lettre_cheque','nombre', 'fichier_pdf')
+            'fields': ('libelle', 'model_lettre_cheque', 'nombre', 'fichier_pdf')
         }),
         ('Meta Donnée', {
             'fields': (
@@ -607,13 +616,13 @@ class BordereauLettreChequeAdmin(admin.ModelAdmin):
 
     staff_fieldsets = (
         ('Général', {
-            'fields': ('libelle','nombre', 'fichier_pdf', 'edite_par')
+            'fields': ('libelle', 'nombre', 'fichier_pdf', 'edite_par')
         }),
     )
 
     add_fieldsets = (
         ('Général', {
-            'fields': ('libelle', 'model_lettre_cheque','nombre', 'fichier')
+            'fields': ('libelle', 'model_lettre_cheque', 'nombre', 'fichier')
         }),
     )
 
@@ -671,7 +680,8 @@ class MailingListAdminForm(forms.ModelForm):
             if user:
                 self.fields['created_by'].initial = user
                 self.fields['updated_by'].initial = user
-                
+
+
 class MailingListAdmin(admin.ModelAdmin):
     form = MailingListAdminForm
 
@@ -776,14 +786,14 @@ class GarantieFormuleAdmin(admin.ModelAdmin):
 
 class ConditionsAssuranceAdmin(admin.ModelAdmin):
     list_filter = ('libelle',)
-    list_display = ('libelle','code', 'status')
+    list_display = ('libelle', 'code', 'status')
     search_field = ('libelle', 'code', 'status')
     list_per_page = 20
 
 
 class MoyensTransportAdmin(admin.ModelAdmin):
     list_filter = ('libelle',)
-    list_display = ('libelle','code', 'status')
+    list_display = ('libelle', 'code', 'status')
     search_field = ('libelle', 'code', 'status')
     list_per_page = 20
 
@@ -809,10 +819,10 @@ admin.site.register(TypePersonne)
 admin.site.register(Pays, PaysAdmin)
 admin.site.register(Branche, BrancheAdmin)
 admin.site.register(Produit, ProduitAdmin)
-admin.site.register(Fractionnement,)
-admin.site.register(ModeReglement,)
+admin.site.register(Fractionnement, )
+admin.site.register(ModeReglement, )
 admin.site.register(Banque, BanqueAdmin)
-admin.site.register(Devise,DeviseAdmin)
+admin.site.register(Devise, DeviseAdmin)
 admin.site.register(Taxe, TaxeAdmin)
 admin.site.register(TypeQuittance, TypeQuittanceAdmin)
 admin.site.register(TypeApporteur)
@@ -840,7 +850,6 @@ admin.site.register(TypeMouvement)
 admin.site.register(Circonstance)
 admin.site.register(PosteDommage)
 admin.site.register(GarantieCirconstance)
-admin.site.register(EtapeSinistre)
 
-#admin.site.register(Mouvement) #à réactiver plus tard
-#admin.site.register(Motif, MotifAdmin) #à réactiver plus tard
+# admin.site.register(Mouvement) #à réactiver plus tard
+# admin.site.register(Motif, MotifAdmin) #à réactiver plus tard

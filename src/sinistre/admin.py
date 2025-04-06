@@ -3,7 +3,7 @@ from django.contrib import admin
 # Register your models here.
 from admin_custom.admin import custom_admin_site
 from django.utils.html import format_html
-from sinistre.models import DossierSinistre
+from sinistre.models import DossierSinistre, DemandeRemboursementMobile
 
 admin.site = custom_admin_site
 admin.site.site_header = 'INOV - SINISTRE'
@@ -42,4 +42,4 @@ class DemandeRemboursementMobileAdmin(admin.ModelAdmin):
 
     action.short_description = 'Action'
 
-#admin.site.register(DemandeRemboursementMobile, DemandeRemboursementMobileAdmin)
+admin.site.register(DemandeRemboursementMobile, DemandeRemboursementMobileAdmin)

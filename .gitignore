@@ -42,9 +42,6 @@ var/
 # Jupyter Notebook
 .ipynb_checkpoints
 
-# Pytest cache
-.pytest_cache/
-
 # Coverage reports
 htmlcov/
 .coverage
@@ -56,14 +53,9 @@ htmlcov/
 coverage.xml
 
 # Alembic migrations
-migrations/versions/*.pyc
+migrations/*.pyc
 migrations/__pycache__/
-migrations/versions/__pycache__/
 
-# MyPy cache
-.mypy_cache/
-.dmypy.json
-dmypy.json
 
 # IDE files
 .idea/
@@ -91,5 +83,55 @@ npm-debug.log*
 *.env.*
 *.env
 
-# Fichier de reglage ou configuration
+# Fichier de reglage ou autres
 settings.py
+manage.py
+debug.log
+wsgi.py
+passenger_wsgi.py
+
+# Fichier de documentation
+requete.txt
+requete_html.html
+requete_views.py
+
+
+#Documents ou fichiers à ne pas transmettre
+portefeuilles/fichiers/*.xlsx
+
+clients/documents/*.docx
+clients/documents/*.xlsx
+clients/documents/*.png
+clients/documents/*.jpg
+clients/documents/*.jpeg
+clients/logos/*.png
+clients/logos/*.jpg
+clients/logos/*.jpeg
+clients/polices/logos_partenaires/*.png
+clients/polices/logos_partenaires/*.jpg
+clients/polices/logos_partenaires/*.jpeg
+
+factures/fact_compagnies/*.docx
+factures/fact_compagnies/*.xlsx
+factures/fact_compagnies/*.png
+factures/fact_compagnies/*.jpg
+factures/fact_compagnies/*.jpeg
+
+modeles/prescripteur/*.docx
+modeles/prescripteur/*.xlsx
+modeles/prescripteur/*.png
+modeles/prescripteur/*.jpg
+modeles/prescripteur/*.jpeg
+
+bordereaux/*.docx
+bordereaux/*.xlsx
+bordereaux/*.png
+bordereaux/*.jpg
+bordereaux/*.jpeg
+
+aliments/police_631/*.docx
+aliments/police_631/*.xlsx
+aliments/police_631/*.png
+aliments/police_631/*.jpg
+aliments/police_631/*.jpeg
+

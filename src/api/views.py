@@ -30,27 +30,26 @@ from api.api_helper import send_otp_mail, send_demande_rembours_mail
 from api.paginations import SmartResultsSetPagination
 from api.serializers import KeyValueDataSerializer, UserSerializer, AlimentSerializer, CreateUserSerializer, \
     ResetPasswordUserSerializer, UserDataSerializer, BarremeSerializer, SinisteSerializer, \
-    ModeRemboursementSerializer, TypePrestataireSerializer, PrestataireSerializer, \
+    ModeRemboursementSerializer, DemandeRemboursementSerializer, TypePrestataireSerializer, PrestataireSerializer, \
     PrestataireDataSerializer, ActeSerializer, BureauSerializer, \
-    CarteDigitalDematerialiseeSerializer, TypeActeSerialiser, CiviliteSerializer, \
+    ProspectSerializer, CarteDigitalDematerialiseeSerializer, TypeActeSerialiser, CiviliteSerializer, \
     QualiteBeneficiaireSerializer, PaysSerializer, ProfessionSerializer
 from configurations.helper_config import verify_sql_query, execute_query
 # from api.serializers import AlimentWaspitoSerialiser, PrestationWaspito
-
-#Qui sera retiré à la longue
-from configurations.models import Acte, ActeWaspito, Affection, Prescripteur, PrescripteurPrestataire, Prestataire, TypePrestataire, PrestataireReseauSoin, Profession
-from production.models import Aliment, AlimentFormule, Bareme, Carte, FormuleGarantie, CarteDigitalDematerialisee
-#Qui sera retiré à la longue
-
-from configurations.models import Specialite, KeyValueData, Bureau, TypeActe, Civilite, \
-    QualiteBeneficiaire, Pays, User, ModeReglement
+from configurations.models import Acte, ActeWaspito, Affection, Prescripteur, PrescripteurPrestataire, Prestataire, \
+    Specialite, KeyValueData, TypePrestataire, PrestataireReseauSoin, WsBoby, Bureau, TypeActe, Civilite, \
+    QualiteBeneficiaire, Pays, Profession
+from configurations.models import User, ModeReglement
 from grh.helper import generate_uiid
-from production.models import TypeDocument, Police
-from shared.enum import EtatPolice, Statut, StatutSinistre, StatutEnrolement, StatutRemboursement
+from grh.models import CampagneAppmobile, CampagneAppmobileProspect
+from production.models import Aliment, AlimentFormule, Bareme, Carte, FormuleGarantie, CarteDigitalDematerialisee, \
+    TypeDocument, Police
+from shared.enum import EtatPolice, Statut, StatutSinistre, StatutEnrolement
+from shared.enum import StatutRemboursement
 from shared.helpers import get_tarif_acte_from_bareme, generate_numero_carte
 from shared.sinistres_repository import base_url
 from sinistre.helper_sinistre import get_retenue_selon_contexte
-from sinistre.models import DossierSinistre, Sinistre
+from sinistre.models import DossierSinistre, Sinistre, DemandeRemboursementMobile, DocumentDossierSinistre
 
 
 def get_user_id_from_token(token):
@@ -144,7 +143,7 @@ def info(request):
                 plafond_hospitalisation = bareme_plafond_hospitalisation.first().plafond_acte if bareme_plafond_hospitalisation else 0
 
                 # vérifie s'il y a au moins 2 éléments dans la liste et
-                #  si tous les éléments de la liste sont des chaînes de caractères. Si ces conditions sont remplies, 
+                #  si tous les éléments de la liste sont des chaînes de caractères. Si ces conditions sont remplies,
                 if isinstance(codes_acte, list) and len(codes_acte) >= 2 and all(
                         isinstance(code, str) for code in codes_acte):
                     type_prise_en_charge_id = 2
@@ -342,7 +341,7 @@ def service_save(request):
             plafond_hospitalisation = bareme_plafond_hospitalisation.first().plafond_acte if bareme_plafond_hospitalisation else 0
 
             # vérifie s'il y a au moins 2 éléments dans la liste et
-            #  si tous les éléments de la liste sont des chaînes de caractères. Si ces conditions sont remplies, 
+            #  si tous les éléments de la liste sont des chaînes de caractères. Si ces conditions sont remplies,
             if isinstance(codes_acte, list) and len(codes_acte) >= 2 and all(
                     isinstance(code, str) for code in codes_acte):
                 type_prise_en_charge_id = 2
@@ -708,7 +707,7 @@ class DemandeRemboursementView(views.APIView):
     def post(self, request):
         user = self.request.user
 
-        serializer = ""
+        serializer = DemandeRemboursementSerializer(data=request.data)
         if serializer.is_valid():
             # Vérifier si l'utilisateur est un adherent principal
             if user.aliment.adherent_principal_id:
@@ -773,7 +772,7 @@ class DemandeRemboursementView(views.APIView):
                 status=status.HTTP_403_FORBIDDEN
             )
 
-        serializer = ""
+        serializer = DemandeRemboursementSerializer(demande, many=True)
         return Response(serializer.data)
 
 class RegisterUserView(views.APIView):
@@ -1055,7 +1054,7 @@ class BeneficiariesByCarteView(views.APIView):
                         if formule_garantie.reseau_soin is not None:
                             reseau_soin = formule_garantie.reseau_soin
                             prestataires = PrestataireReseauSoin.objects.filter(
-                                reseau_soin_id=reseau_soin.id, 
+                                reseau_soin_id=reseau_soin.id,
                                 prestataire_id=prestataire_id
                             )
                             print(prestataires)
@@ -1238,6 +1237,119 @@ class ActeDataView(views.APIView, SmartResultsSetPagination):
         return self.get_paginated_response(serializer.data)
 
 
+class WsBobyView(views.APIView):
+    permission_classes = [IsAuthenticated]
+    parser_classes = [JSONParser]
+
+    def post(self, request):
+        resp = {
+            "statusCode": 0,
+            "statusMessage": None,
+            "responses": [
+                {
+                    "name": "",
+                    "statusCode": 0,
+                    "statusMessage": None,
+                    "totalCount": None,
+                    "beans": []
+                }
+            ]
+        }
+        try:
+            # recuperation des donnees de la requete
+            req_data = request.data.get('requests', None)
+            # verification de la presence des donnees
+            if req_data is None:
+                resp["statusCode"] = 400
+                resp["statusMessage"] = "Bad Request"
+                resp["responses"] = []
+                return Response(data=resp, status=status.HTTP_400_BAD_REQUEST)
+            # recuperation des donnees de la requete a partie du nom de la transaction
+            ws_boby = WsBoby.objects.filter(status=True, name=req_data[0]["name"]).first()
+            print("@@@@@@@@ hello bug @@@@@@@@@@@")
+            print(req_data[0]["name"])
+            print(ws_boby)
+            if ws_boby is not None:
+                # recuperation des parametres de la transaction
+                boby_params = req_data[0]["params"]
+                try:
+                    # verification du contenu de la requete sql si les tags sont presents
+                    db_query = ws_boby.request
+                    verify_sql_query(db_query)
+                    # print(db_query)
+
+                    # verification de la presence des donnees avec la bonne clé params
+                    boby_param_keys = list(boby_params.keys())
+                    db_query_param = ws_boby.paramwsboby_set.all()
+                    # verification de la fourniture de toutes les cles
+                    for db_param in db_query_param:
+                        if db_param.name not in boby_param_keys:
+                            resp["responses"][0]["name"] = req_data[0]["name"]
+                            resp["responses"][0]["statusCode"] = 1
+                            resp["responses"][0]["statusMessage"] = f"Le paramètre ({db_param.name}) est inexistant"
+                            return Response(data=resp, status=status.HTTP_200_OK)
+
+                    # match des parametres de la requete avec les parametres de la transaction
+                    # print(db_query)
+                    for param in boby_param_keys:
+                        print(param)
+                        print(str(boby_params[param]))
+                        db_query = db_query.replace(f'[:{param}]', f"'{boby_params[param]}'")
+
+                    print(db_query)
+
+                    # execution de la requete
+                    data, columns = execute_query(db_query)
+                    print(columns)
+                    print(data)
+                    # formatage des donnees
+                    final_data = []
+                    for row in data:
+                        # matching des colonnes avec les donnees
+                        final_data.append(dict(zip(columns, row)))
+
+                    if len(final_data) == 0:
+                        boby_name = req_data[0]["name"]
+                        resp["responses"][0]["name"] = req_data[0]["name"]
+                        resp["responses"][0]["statusCode"] = 5
+                        resp["responses"][0]["statusMessage"] = f"Aucun élément trouvé ({boby_name})"
+                        return Response(data=resp, status=status.HTTP_200_OK)
+
+                    print(data)
+                    print(columns)
+                    resp["responses"][0]["name"] = req_data[0]["name"]
+                    resp["responses"][0]["statusCode"] = 0
+                    resp["responses"][0]["totalCount"] = len(final_data)
+                    resp["responses"][0]["beans"] = final_data
+                    return Response(data=resp, status=status.HTTP_200_OK)
+
+                except Exception as e:
+                    resp["responses"][0]["name"] = req_data[0]["name"]
+                    resp["responses"][0]["statusCode"] = 1
+                    resp["responses"][0]["statusMessage"] = "Erreur : " + str(e)
+                    return Response(data=resp, status=status.HTTP_200_OK)
+            else:
+                print("@@@@@@@@ hello bug @@@@@@@@@@@")
+                # si la transaction n'existe pas
+                boby_name = req_data[0]["name"]
+                # verification de la presence des donnees avec la bonne clé params
+                boby_params = req_data[0]["params"]
+                resp["responses"][0]["name"] = req_data[0]["name"]
+                resp["responses"][0]["statusCode"] = 1
+                resp["responses"][0]["statusMessage"] = f"Le nom de la transaction ({boby_name}) est inexistant"
+                return Response(data=resp, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            print(e)
+            resp["statusCode"] = 400
+            resp["statusMessage"] = "Bad Request : " + str(e)
+            resp["responses"] = []
+            return Response(data=resp, status=status.HTTP_400_BAD_REQUEST)
+
+
+        # return Response(data=resp, status=status.HTTP_200_OK)
+
+
 class TestNumCartView(views.APIView):
     permission_classes = [IsAuthenticated]
     parser_classes = [JSONParser]
@@ -1292,7 +1404,7 @@ class AddAyantDroitView(views.APIView):
 
 
         # Step 3 : Sérialisation et validation des données du Prospect
-        serializer = ""
+        serializer = ProspectSerializer(data=data)
         if serializer.is_valid():
             prospect = serializer.save()
             # uiid = generate_uiid(request)
@@ -1333,7 +1445,7 @@ class ListProspectsView(views.APIView):
         # Sérialiser les données des prospects
         serialized_prospects = []
         for liste in prospects:
-            data = ""
+            data = ProspectSerializer(liste.prospect).data
             data['statut_enrolement'] = liste.statut_enrolement
             data['mouvement'] = liste.mouvement_id
             serialized_prospects.append(data)
@@ -1563,6 +1675,9 @@ class PriseEnChargeView(views.APIView):
             affection_id = affection.pk
 
             # CREATION DU DOSSISER SINISTRE
+            # api_user_id = 1  # user Richmond, à remplacer par un user api ...
+            # api_user_id = get_user_id_from_token(token)
+            # user = User.objects.filter(id=api_user_id)
             bureau_id = user.bureau_id if user else None
 
             dossier_sinistre = DossierSinistre.objects.create(
@@ -1608,6 +1723,26 @@ class PriseEnChargeView(views.APIView):
                 fs.save(file_upload_path2, document2)
 
                 type_document = TypeDocument.objects.get(id=type_document_id)
+                document1_save = DocumentDossierSinistre.objects.create(dossier_sinistre=dossier_sinistre,
+                                                                  type_document=type_document,
+                                                                  fichier=file_upload_path1)
+                document2_save = DocumentDossierSinistre.objects.create(dossier_sinistre=dossier_sinistre,
+                                                                  type_document=type_document,
+                                                                  fichier=file_upload_path2)
+
+
+
+                # print(vars(document1_save))
+                # print(vars(document2_save))
+                #
+                # documents.append({
+                #     'id': document.pk,
+                #     # 'nom': document.nom,
+                #     'fichier': '<a href="' + document.fichier.url + '"><i class="fa fa-file" title="Aperçu"></i> Afficher</a>',
+                #     'type_document': document.type_document.libelle,
+                #     # 'confidentialite': document.confidentialite,
+                # })
+
 
             except MultiValueDictKeyError:
                 file_upload_path = ''
@@ -1931,38 +2066,24 @@ class ConstantesView(views.APIView):
 def suggestions(request):
     query = request.GET.get('numero', '')
     if query:
-        # Récupérer l'utilisateur
         user = request.user
 
-        # Vérifier si l'utilisateur a un rôle valide
         if not (user.is_commercial or user.is_production):
             return JsonResponse([], safe=False)
 
-        # Recherche des résultats pour les utilisateurs commerciaux ou de production
         if user.is_commercial:
             results = (
                 Police.objects.filter(numero__icontains=query, commercial_id=user.id)
-                .select_related('client')  # Optimisation pour inclure les données du client
-                .values(
-                    'id',  # Pour générer le lien
-                    'numero',
-                    'client__nom',
-                )[:10]
+                .select_related('client')
+                .values('id', 'numero', 'client__nom')[:10]
             )
-        else:  # Si l'utilisateur est de type 'production' ou un autre type valide
+        else:
             results = (
                 Police.objects.filter(numero__icontains=query)
-                .select_related('client')  # Optimisation pour inclure les données du client
-                .values(
-                    'id',  # Pour générer le lien
-                    'numero',
-                    'client__nom',
-                )[:10]
+                .select_related('client')
+                .values('id', 'numero', 'client__nom')[:10]
             )
 
-        print("Police : ", results)
-
-        # Ajouter les données formatées pour chaque police
         results_with_links = [
             {
                 'numero_police': item['numero'],
@@ -1972,4 +2093,6 @@ def suggestions(request):
             for item in results
         ]
 
+        return JsonResponse(results_with_links, safe=False)
+    return JsonResponse([], safe=False)
 

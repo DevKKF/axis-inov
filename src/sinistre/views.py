@@ -555,19 +555,12 @@ def dossiersinistre_datatable(request):
         cartes = c.aliment.cartes.filter(statut=Statut.ACTIF) if c.aliment else None
         numero_carte = cartes.first().numero if cartes else None
 
-        centre_prescripteur = c.centre_prescripteur.name if c.centre_prescripteur else ""
-        nom_prestataire = c.prestataire.name if c.prestataire else ""
-        nom_pharmacie = c.pharmacie.name if c.pharmacie else ""
-
         data_iten = {
             "id": c.id,
             "numero": c.numero if c.numero else "",
             "type_or_numero_carte": type_or_numero_carte,
             "nom": c.aliment.nom + ' ' + c.aliment.prenoms,
             "numero_carte": numero_carte,
-            "centre_prescripteur": centre_prescripteur,
-            "prestataire": nom_pharmacie if (request.user.is_med and c.type_priseencharge.code == "CONSULT") else nom_prestataire,
-            "pharmacie": nom_pharmacie if nom_pharmacie else nom_prestataire,
             "total_frais_reel": money_field(total_frais_reel),
             "total_part_compagnie": money_field(total_part_compagnie),
             "total_part_assure": money_field(total_part_assure),
@@ -755,20 +748,12 @@ def ententes_prealables_datatable(request):
         cartes = c.aliment.cartes.filter(statut=Statut.ACTIF) if c.aliment else None
         numero_carte = cartes.first().numero if cartes else None
 
-        centre_prescripteur = c.centre_prescripteur.name if c.centre_prescripteur else ""
-        nom_prestataire = c.prestataire.name if c.prestataire else ""
-        nom_pharmacie = c.pharmacie.name if c.pharmacie else ""
-
         data_iten = {
             "id": c.id,
             "numero": c.numero if c.numero else "",
             "type_or_numero_carte": type_or_numero_carte,
             "nom": c.aliment.nom + ' ' + c.aliment.prenoms,
             "numero_carte": numero_carte,
-            "centre_prescripteur": centre_prescripteur,
-            "prestataire": nom_pharmacie if (
-                        request.user.is_med and c.type_priseencharge.code == "CONSULT") else nom_prestataire,
-            "pharmacie": nom_pharmacie if nom_pharmacie else nom_prestataire,
             "total_frais_reel": money_field(total_frais_reel),
             "total_part_compagnie": money_field(total_part_compagnie),
             "total_part_assure": money_field(total_part_assure),
@@ -1511,9 +1496,6 @@ def add_medicament_gestionnaire_todossiersinistre(request, dossier_sinistre_id):
             date_survenance = make_aware(date_survenance)
 
             aliment = dossier_sinistre.aliment
-            centre_prescripteur_id = dossier_sinistre.prestataire_id
-
-            medicament = Acte.objects.get(id=medicament_id)
 
             if prix_unitaire == '': prix_unitaire = 0
             prix_unitaire = int(prix_unitaire)
@@ -3044,9 +3026,6 @@ def pharmacie_details(request, aliment_id):
 
             dossier_sinistre = DossierSinistre.objects.create(created_by=request.user,
                                                               bureau_id=request.user.bureau.id,
-                                                              prestataire_id=prestataire_ph_direct_id,
-                                                              centre_prescripteur_id=prestataire_ph_direct_id,# a confirmer
-                                                              pharmacie_id=request.user.prestataire.id,
                                                               aliment_id=aliment.id,
                                                               formulegarantie_id=aliment.formule.id,
                                                               police_id=aliment.formule.police.id,
@@ -4661,8 +4640,6 @@ def add_sinistre(request):
 
                     dossier_sinistre = DossierSinistre.objects.create(created_by=request.user,
                                                                       bureau_id=request.user.bureau.id,
-                                                                      prestataire_id=prestataire.id,
-                                                                      centre_prescripteur_id=prestataire.id,
                                                                       # a confirmer
                                                                       aliment_id=aliment.id,
                                                                       formulegarantie_id=formule.id,
@@ -5479,22 +5456,11 @@ def add_sinistre_soins_ambulatoire(request):
 
         type_prise_en_charge_id = request.POST.get('type_prise_en_charge_id')
         type_prise_en_charge_code = "AMBULAT"
-        # date_prestation = datetime.datetime.now(tz=timezone.utc)
-        # date_survenance = datetime.datetime.now(tz=timezone.utc)
         date_entree = request.POST.get('date_entree')
         date_sortie = request.POST.get('date_sortie')
-        # actes = request.POST.getlist('selected_actes[]')
         actes_du_tableau = request.POST.get('actes_du_tableau').rstrip(',').split(',')
         actes = request.POST.getlist('selected_acte_info[]')
         nombre_seances = request.POST.getlist('nombre_seance[]')
-        couts_actes = request.POST.getlist('cout_acte[]')
-        # prestataire = request.user.prestataire
-        prescripteur_id = request.POST.get('prescripteur')
-        centre_prescripteur_id = request.POST.get('centre_prescripteur')
-        affection_id = request.POST.get('affection')
-        renseignement_clinique = request.POST.get('renseignement_clinique')
-        aliment_id = request.POST.get('current_searched_aliment_id')
-        aliment = Aliment.objects.get(id=aliment_id)
         pprint(nombre_seances)
         
         soins_a_l_entrange = request.POST.get('soins_a_l_entrange', None)
@@ -5553,9 +5519,6 @@ def add_sinistre_soins_ambulatoire(request):
                     # crée le dossier sinistre
                     dossier_sinistre = DossierSinistre.objects.create(created_by=request.user,
                                                                       bureau_id=request.user.bureau.id,
-                                                                      prestataire_id=prestataire.id,
-                                                                      centre_prescripteur_id=centre_prescripteur_id,
-                                                                      aliment_id=aliment.id,
                                                                       formulegarantie_id=formule.id,
                                                                       police_id=formule.police.id,
                                                                       compagnie_id=formule.police.compagnie.id,
@@ -5811,14 +5774,6 @@ def add_sinistre_optique(request):
         actes_du_tableau = request.POST.get('actes_du_tableau').rstrip(',').split(',')
         actes = request.POST.getlist('selected_acte_info[]')
         nombre_seances = request.POST.getlist('nombre_seance[]')
-        couts_actes = request.POST.getlist('cout_acte[]')
-        prestataire = request.user.prestataire
-        prescripteur_id = request.POST.get('prescripteur')
-        centre_prescripteur_id = request.POST.get('centre_prescripteur')
-        affection_id = request.POST.get('affection')
-        renseignement_clinique = request.POST.get('renseignement_clinique')
-        aliment_id = request.POST.get('current_searched_aliment_id')
-        aliment = Aliment.objects.get(id=aliment_id)
         soins_a_l_entrange = request.POST.get('soins_a_l_entrange', None)
 
         if request.user.is_prestataire:
@@ -5878,9 +5833,6 @@ def add_sinistre_optique(request):
                     # crée le dossier sinistre
                     dossier_sinistre = DossierSinistre.objects.create(created_by=request.user,
                                                                       bureau_id=request.user.bureau.id,
-                                                                      prestataire_id=prestataire.id,
-                                                                      centre_prescripteur_id=centre_prescripteur_id,
-                                                                      aliment_id=aliment.id,
                                                                       formulegarantie_id=formule.id,
                                                                       police_id=formule.police.id,
                                                                       compagnie_id=formule.police.compagnie.id,
@@ -6145,14 +6097,9 @@ def add_sinistre_gestionnaire(request):
         actes_du_tableau = request.POST.get('actes_du_tableau').rstrip(',').split(',')
         actes = request.POST.getlist('selected_acte_info[]')
         nombre_seances = request.POST.getlist('nombre_seance[]')
-        couts_actes = request.POST.getlist('cout_acte[]')
-        prescripteur_id = request.POST.get('prescripteur')
-        centre_prescripteur_id = request.POST.get('centre_prescripteur')
-        affection_id = request.POST.get('affection')
         renseignement_clinique = request.POST.get('renseignement_clinique_gestionnaire')
         commentaire = request.POST.get('commentaire_gestionnaire')
         aliment_id = request.POST.get('current_searched_aliment_id')
-        aliment = Aliment.objects.get(id=aliment_id)
         
         soins_a_l_entrange = request.POST.get('soins_a_l_entrange', None)
         
@@ -6217,9 +6164,6 @@ def add_sinistre_gestionnaire(request):
                         # crée le dossier sinistre
                         dossier_sinistre = DossierSinistre.objects.create(created_by=request.user,
                                                                           bureau_id=request.user.bureau.id,
-                                                                          prestataire_id=prestataire.id,
-                                                                          centre_prescripteur_id=centre_prescripteur_id,
-                                                                          aliment_id=aliment.id,
                                                                           formulegarantie_id=formule.id,
                                                                           police_id=formule.police.id,
                                                                           compagnie_id=formule.police.compagnie.id,

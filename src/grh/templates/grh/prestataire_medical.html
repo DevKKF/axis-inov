@@ -1,0 +1,272 @@
+{% extends "grh/layouts/base.html" %}
+{% load static %}
+{% block title %}{{_('PRESTATAIRE_MEDICAL')}}{% endblock %}
+
+{% block content %}
+
+    <style>
+        #title {
+            color: #B7482B;
+        }
+        #link {
+            color: #0000FF;
+        }
+        #status {
+            padding: 5px;
+            border-radius: 5px;
+        }
+    </style>
+
+    <div class="flex items-start pt-5">
+        <div class="w-full flex flex-col lg:flex-row items-center">
+            <a href="{% url 'grh.police_overview' police.id %}">
+                <button class="btn btn-primary-soft flex items-center w-30 pd-5">
+                    <i data-feather="corner-up-left" class="report-box__icon text-primary mr-2"></i>
+                    {{_('RETOUR_A_L_ACCEUIL')}}
+                </button>            
+            </a>
+        </div>
+    </div>
+    <div class="flex items-start pt-5">
+        <div class="w-full flex flex-col lg:flex-row items-center">
+            <a href="{% url 'grh.reseau_de_soin' police.id formule.id reseau_soin.id %}">
+                <button class="btn btn-primary-soft flex items-center w-30 pd-5">
+                    <i data-feather="corner-up-left" class="report-box__icon text-primary mr-2"></i>
+                    {{_('RETOUR')}}
+                </button>            
+            </a>
+        </div>
+    </div>
+
+    <div class="grid grid-cols-12 gap-6 mt-5">
+        <div class="intro-y col-span-12 md:col-span-12 lg:col-span-12">
+            <div class="box">
+                <div class="flex items-start px-5 pt-5">
+                    <div class="w-full flex flex-col lg:flex-row items-center border-b border-gray-500">
+                        <h1 class="text-xl lg:text-lg font-medium mb-3 mr-5" id="title">
+                            {{_('PRESTATAIRE_MEDICAL')}}
+                        </h1>
+                    </div>
+                </div>
+                <div class="flex items-start px-5 pt-5">
+                    <div class="w-full flex flex-col lg:flex-row items-center border-b border-gray-500">
+                        <h1 class="text-xl lg:text-lg font-medium mb-3 mr-5" id="title">
+                            {{_('IDENTITE')}}
+                        </h1>
+                    </div>
+                </div>
+                <div class="mt-1">
+                    <div class="flex">
+                        <div class="w-1/2 p-2 mt-2 flex border-r border-gray-500">
+                            <div class="w-1/2 p-2 mt-2">
+                                <p class="font-bold">{{_('Societe')}}</p>
+                                <br>
+                                <p class="font-bold">{{_('Civilite')}}</p>
+                            </div>
+                            <div class="w-1/2 p-2 mt-2">
+                                <p>{{ police.compagnie|default_if_none:"" }}</p>
+                                <br>
+                                <p>{{ police.client.civilite|default_if_none:"" }}</p>
+                            </div>
+                        </div>
+                        <div class="w-1/2 p-2 mt-2 flex border-r border-gray-500">
+                            <div class="w-1/2 p-2 mt-2">
+                                <p class="font-bold">{{_('Categorie')}}</p>
+                                <br>
+                                <p class="font-bold">{{_('Medecin_conseil')}}</p>
+                                <br>
+                                <p class="font-bold">{{_('Ref')}}.</p>
+                            </div>
+                            <div class="w-1/2 p-2 mt-2">
+                                <p>{{ prestataire.type_prestataire|default_if_none:"" }}</p>
+                                <br>
+                                <p>#</p>
+                                <br>
+                                <p>{{ prestataire.code|default_if_none:"" }}</p>
+                            </div>
+                        </div>
+                        <div class="w-1/2 p-2 mt-2 flex">
+                            <div class="w-1/2 p-2 mt-2">
+                                <p class="font-bold">{{_('Nom')}}</p>
+                                <br>
+                                <p class="font-bold">{{_('Public')}}/{{_('Prive')}}</p>
+                            </div>
+                            <div class="w-1/2 p-2 mt-2">
+                                <p>{{ prestataire.name|default_if_none:"" }}</p>
+                                <br>
+                                <p>{{ prestataire.secteur|default_if_none:"" }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex items-start px-5 pt-5">
+                    <div class="w-full flex flex-col lg:flex-row items-center border-b border-gray-500">
+                        <h1 class="text-xl lg:text-lg font-medium mb-3 mr-5" id="title">
+                            {{_('COORDONNEES')}}
+                        </h1>
+                    </div>
+                </div>
+                <div class="mt-1">
+                    <div class="flex">
+                        <div class="w-1/2 p-2 mt-2 flex border-r border-gray-500">
+                            <div class="w-1/2 p-2 mt-2">
+                                <p class="font-bold">{{_('Adresse')}} (1)</p>
+                            </div>
+                            <div class="w-1/2 p-2 mt-2">
+                                <p>{{ prestataire.addresse|default_if_none:"" }}</p>
+                            </div>
+                        </div>
+                        <div class="w-1/2 p-2 mt-2 flex">
+                            <div class="w-1/2 p-2 mt-2">
+                                <p class="font-bold">{{_('Pays')}}</p>
+                            </div>
+                            <div class="w-1/2 p-2 mt-2">
+                                <p>?</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex items-start px-5 pt-5">
+                    <div class="w-full flex flex-col lg:flex-row items-center border-b border-gray-500">
+                        <h1 class="text-xl lg:text-lg font-medium mb-3 mr-5" id="title">
+                            {{_('SPECIALITES')}}
+                        </h1>
+                    </div>
+                </div>
+                <div class="flex items-start px-5 pt-5">
+                    <div class="w-full flex flex-col lg:flex-row items-center border-b border-gray-500">
+                        <h1 class="text-xl lg:text-lg font-medium mb-3 mr-5" id="title">
+                            {{_('SPECIALITES')}}
+                        </h1>
+                    </div>
+                </div>
+                {% for option in types_prestataire %}
+                <div class="mt-1">
+                    <div class="flex">
+                        <div class="w-1/2 p-2 mt-2 flex border-r border-gray-500 justify-center items-center">
+                            <div class="w-1/2 p-2 mt-2">
+                                    <div class="intro-y mt-4">
+                                        <div class="inbox__item inbox__item--active inline-block sm:block text-slate-600 dark:text-slate-500 bg-slate-100 dark:bg-darkmode-400/70 border-b border-slate-200/60 dark:border-darkmode-400">
+                                            <div class="flex px-5 py-3">
+                                                <div class="w-72 flex-none flex items-center mr-5">
+                                                    <input class="form-check-input flex-none" type="checkbox" {% if option.name == selected_type.name %}checked{% endif %} disabled>
+                                                    <div class="inbox__item--sender truncate ml-3">{{ option.name }}</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                            </div>
+                        </div>
+                        <div class="w-1/2 p-2 mt-2 flex border-r border-gray-500 justify-center items-center">
+                            <div class="w-1/2 p-2 mt-2">
+                                ?
+                            </div>
+                        </div>
+                        <div class="w-1/2 p-2 mt-2 flex border-r border-gray-500 justify-center items-center">
+                            <div class="w-1/2 p-2 mt-2">
+                                ?
+                            </div>
+                        </div>
+                        <div class="w-1/2 p-2 mt-2 flex border-r border-gray-500 justify-center items-center">
+                            <div class="w-1/2 p-2 mt-2">
+                                ?
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+                <div class="flex items-start px-5 pt-5">
+                    <div class="w-full flex flex-col lg:flex-row items-center border-b border-gray-500">
+                        <h1 class="text-xl lg:text-lg font-medium mb-3 mr-5" id="title">
+                            {{_('AUTRES')}}
+                        </h1>
+                    </div>
+                </div>
+                <div class="mt-1">
+                    <div class="flex">
+                        <div class="w-1/2 p-2 mt-2 flex border-r border-gray-500">
+                            <div class="w-1/2 p-2 mt-2">?</div>
+                            <div class="w-1/2 p-2 mt-2">?</div>
+                        </div>
+                        <div class="w-1/2 p-2 mt-2 flex">
+                            <div class="w-1/2 p-2 mt-2">?</div>
+                            <div class="w-1/2 p-2 mt-2">?</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="grid grid-cols-12 gap-6 mt-8">
+        <div class="col-span-12 2xl:col-span-12">
+            <div class="grid grid-cols-12 gap-6">
+                <div class="intro-y col-span-12 md:col-span-12 lg:col-span-12">
+                    <div class="box">
+                        <div class="flex items-start px-5 pt-5">
+                            <div class="w-full flex flex-col lg:flex-row items-center border-b border-gray-500">
+                                <h1 class="text-xl lg:text-lg font-medium mb-3 mr-5" id="title">
+                                    {{_('RESEAUX_DU_PRESTATAIRE')}}
+                                </h1>
+                            </div>
+                        </div>
+                        <div class="intro-y col-span-12 overflow-auto lg:overflow-visible">
+                            <table class="table table-report -mt-2 datatable">
+                                <thead>
+                                    <tr>
+                                        <th class="whitespace-nowrap">{{_('Num_reseau')}}.</th>
+                                        <th class="whitespace-nowrap">{{_('Nom_reseau')}}</th>
+                                        <th class="whitespace-nowrap">{{_('Debut')}}</th>
+                                        <th class="whitespace-nowrap">{{_('Fin')}}</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr class="intro-x">
+                                        <td class="w-auto">?</td>
+                                        <td class="w-auto">?</td>
+                                        <td class="w-auto">?</td>
+                                        <td class="w-auto">?</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="intro-y col-span-12 md:col-span-12 lg:col-span-12">
+        <div class="box">
+            <div class="flex items-start px-5 pt-5">
+                <div class="w-full flex flex-col lg:flex-row items-center border-b border-gray-500">
+                    <h1 class="text-xl lg:text-lg font-medium mb-3 mr-5" id="title">
+                        {{_('PRATICIENS_RATTACHES_AU_CENTRE_DE_SOINS')}}
+                    </h1>
+                </div>
+            </div>
+            <div class="intro-y col-span-12 overflow-auto lg:overflow-visible">
+                <table class="table table-report -mt-2 datatable">
+                    <thead>
+                        <tr>
+                            <th class="whitespace-nowrap">{{_('Numero')}}</th>
+                            <th class="whitespace-nowrap">{{_('Nom_Prenom')}}</th>
+                            <th class="whitespace-nowrap">{{_('Specialite')}}</th>
+                            <th class="whitespace-nowrap">{{_('Debut')}}</th>
+                            <th class="whitespace-nowrap">{{_('Fin')}}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="intro-x">
+                            <td class="w-auto">?</td>
+                            <td class="w-auto">?</td>
+                            <td class="w-auto">?</td>
+                            <td class="w-auto">?</td>
+                            <td class="w-auto">?</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

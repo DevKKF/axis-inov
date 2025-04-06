@@ -68,8 +68,6 @@ migrations/__pycache__/
 .vscode/
 
 # Static files and compiled files
-static/
-media/
 *.png
 *.jpg
 *.jpeg

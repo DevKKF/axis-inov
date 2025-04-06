@@ -1,0 +1,8 @@
+# Assure-toi d'être sur la branche develop
+git checkout develop
+
+# Récupère les dernières infos du dépôt distant
+git fetch origin
+
+# Remplace TOUT le contenu local par celui de la branche distante
+git reset --hard origin/develop

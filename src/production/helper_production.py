@@ -1,9 +1,11 @@
 import datetime
 
-from production.models import Mouvement, FormuleGarantie
+from production.models import Aliment, AlimentFormule, Carte, Mouvement, MouvementAliment, FormuleGarantie
 from shared.enum import Statut, StatutEnrolement, StatutIncorporation, StatutValidite, StatutTraitement
 from sqlite3 import Date
 
+from shared.helpers import generate_numero_famille, generer_nombre_famille_du_mois, generer_numero_ordre, \
+    generate_numero_carte, generer_qrcode_carte
 from django.utils import timezone
 from django.db import transaction
 

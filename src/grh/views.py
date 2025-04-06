@@ -17,7 +17,9 @@ from django.contrib.auth import get_user_model
 from django_dump_die.middleware import dd
 import openpyxl
 
+from grh.models import Campagne, CampagneProspect, Prospect, CampagneAppmobileProspect, CampagneAppmobile
 from production.helper_production import create_alimet_helper
+from production.views import getAdherentsPrincipaux
 from shared.helpers import generate_numero_famille, generer_nombre_famille_du_mois
 from sinistre.models import Sinistre
 
@@ -1575,7 +1577,7 @@ class AjouterMembreFamilleBeneficiaire(TemplateView):
         police = get_object_or_404(Police, id=police_id)
         beneficiaire = get_object_or_404(Aliment, id=beneficiaire_id)
 
-        adherents_principaux = ""
+        adherents_principaux = getAdherentsPrincipaux(police_id)
 
         pays = Pays.objects.all()
         civilites = Civilite.objects.exclude(code='STE')  # CIVILITES
@@ -1709,7 +1711,7 @@ class AjouterBeneficiaire(TemplateView):
             adherents_principaux = Aliment.objects.filter(id=adherent_principal_id)
             qualites_beneficiaires = qualites_beneficiaires.exclude(code='AD')
         else:
-            adherents_principaux = ""
+            adherents_principaux = getAdherentsPrincipaux(police_id)
 
         pays = Pays.objects.all()
         civilites = Civilite.objects.exclude(code='STE')  # CIVILITES

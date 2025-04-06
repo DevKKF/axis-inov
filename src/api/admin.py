@@ -1,3 +1,8 @@
 from django.contrib import admin
+from .models import InfoActe
 
-# Register your models here.
+@admin.register(InfoActe)
+class InfoActeAdmin(admin.ModelAdmin):
+    list_display = ('numero_assure', 'medecin', 'acte', 'affection', 'rc')
+    search_fields = ('numero_assure', 'medecin', 'affection')
+    list_filter = ('medecin', 'affection') 

@@ -78,6 +78,279 @@ class TypeRemboursement(models.Model):
         verbose_name_plural = 'Types de remboursement'
 
 
+class CompagnieVeos(models.Model):
+    ID_PER = models.CharField(max_length=100, null=True)
+    CODE = models.CharField(max_length=100, null=True)
+    NOM = models.CharField(max_length=255, null=True)
+    COM_APPORT_COMPTANT = models.CharField(max_length=100, null=True)
+    COM_APPORT_TERME = models.CharField(max_length=100, null=True)
+    COM_GESTION = models.CharField(max_length=100, null=True)
+    TELEPHONE = models.CharField(max_length=100, null=True)
+    EMAIL = models.CharField(max_length=100, null=True)
+    ADRESSE = models.CharField(max_length=255, null=True)
+    BUREAU = models.CharField(max_length=100, null=True)
+    STATUT_IMPORT = models.BooleanField(default=False)
+
+    class Meta:
+        db_table = 'compagnie_veos'
+        verbose_name = 'Compagnie VEOS'
+        verbose_name_plural = 'Compagnies VEOS'
+
+
+class ClientVeos(models.Model):
+    ID_PER = models.CharField(max_length=100, null=True)
+    CODE = models.CharField(max_length=100, null=True)
+    NOM = models.CharField(max_length=255, null=True)
+    PRENOMS = models.CharField(max_length=100, null=True)
+    DATE_NAISSANCE = models.CharField(max_length=100, null=True)
+    TELEPHONE_FIXE = models.CharField(max_length=100, null=True)
+    TELEPHONE_MOBILE = models.CharField(max_length=100, null=True)
+    EMAIL = models.CharField(max_length=100, null=True)
+    VILLE = models.CharField(max_length=100, null=True)
+    ADRESSE = models.CharField(max_length=255, null=True)
+    TYPE_PER = models.CharField(max_length=100, null=True)
+    LANG = models.CharField(max_length=100, null=True)
+    PAYS = models.CharField(max_length=100, null=True)
+    BUREAU = models.CharField(max_length=100, null=True)
+    STATUT_IMPORT = models.BooleanField(default=False)
+
+    class Meta:
+        db_table = 'client_veos'
+        verbose_name = 'Client VEOS'
+        verbose_name_plural = 'Clients VEOS'
+
+
+class PoliceVeos(models.Model):
+    NUMERO = models.CharField(max_length=100, null=True)
+    NUMERO_PROVISOIRE = models.CharField(max_length=100, null=True)
+    PRIME_TTC = models.CharField(max_length=100, null=True)
+    PRIME_NET = models.CharField(max_length=100, null=True)
+    DATE_DEBUT_EFFET = models.CharField(max_length=100, null=True)
+    DATE_MVT = models.CharField(max_length=100, null=True)
+    DATE_FIN_EFFET = models.CharField(max_length=100, null=True)
+    MOTIF = models.CharField(max_length=100, null=True)
+    ID_NPOL = models.CharField(max_length=100, null=True)
+    ID_POL = models.CharField(max_length=100, null=True)
+    CLIENT_IDPER = models.CharField(max_length=100, null=True)
+    CLIENT_ID = models.CharField(max_length=100, null=True)
+    ASS_ID_PER = models.CharField(max_length=100, null=True)
+    COMPAGNIE_ID = models.CharField(max_length=100, null=True)
+    BUREAU_ID = models.CharField(max_length=100, null=True)
+    PRODUIT_ID = models.CharField(max_length=100, null=True)
+    DEVISE_ID = models.CharField(max_length=100, null=True)
+    PEF_TMOD = models.CharField(max_length=100, null=True)
+    PEF_DEPASS = models.CharField(max_length=100, null=True)
+    PEF_DOSSIER = models.CharField(max_length=100, null=True)
+    PEF_TMOD = models.CharField(max_length=100, null=True)
+    PEF_DEPASS = models.CharField(max_length=100, null=True)
+    PEF_DOSSIER = models.CharField(max_length=100, null=True)
+    TAUXCOM = models.CharField(max_length=100, null=True)
+    TAUXGEST = models.CharField(max_length=100, null=True)
+    MONTANTCOM = models.CharField(max_length=100, null=True)
+    MONTANTGEST = models.CharField(max_length=100, null=True)
+    PREAV_RESIL = models.CharField(max_length=100, null=True)
+    STATUS = models.CharField(max_length=100, null=True)
+    STATUT_IMPORT = models.BooleanField(default=False)
+
+    class Meta:
+        db_table = 'police_veos'
+        verbose_name = 'Police VEOS'
+        verbose_name_plural = 'Polices VEOS'
+
+
+class FormuleVeos(models.Model):
+    ID_FORMULE = models.CharField(max_length=100, null=True)
+    CODE_FORMULE = models.CharField(max_length=100, null=True)
+    LIBELLE_FORMULE = models.CharField(max_length=255, null=True)
+    NOM_ASSURE = models.CharField(max_length=255, null=True)
+    NUMERO_ASSURE = models.CharField(max_length=100, null=True)
+    ID_NPOL = models.CharField(max_length=100, null=True)
+    NUMERO_POLICE = models.CharField(max_length=100, null=True)
+    DATE_DEBUT = models.CharField(max_length=100, null=True)
+    DATE_FIN = models.CharField(max_length=100, null=True)
+    CODE_TYPE_TARIF = models.CharField(max_length=100, null=True)
+    LIB_TYPE_TARIF = models.CharField(max_length=255, null=True)
+    CODE_TERRITORIALITE = models.CharField(max_length=100, null=True)
+    LIB_TERRITORIALITE = models.CharField(max_length=100, null=True)
+    NUM_SOC = models.CharField(max_length=100, null=True)
+    STATUT_IMPORT = models.BooleanField(default=False)
+    LIGNE1 = models.CharField(max_length=255, null=True)
+    LIGNE2 = models.CharField(max_length=255, null=True)
+    LIGNE3 = models.CharField(max_length=255, null=True)
+    LIGNE4 = models.CharField(max_length=255, null=True)
+    LIGNE5 = models.CharField(max_length=255, null=True)
+
+    class Meta:
+        db_table = 'formule_veos'
+        verbose_name = 'Formule VEOS'
+        verbose_name_plural = 'Formules VEOS'
+
+
+class SinistreVeos(models.Model):
+    ID_SIN = models.CharField(max_length=100, null=True)
+    FRAIS_REEL = models.CharField(max_length=100, null=True)
+    TICKET_MODERATEUR = models.CharField(max_length=100, null=True)
+    PART_ASSURE = models.CharField(max_length=100, null=True)
+    PART_COMPAGNIE = models.CharField(max_length=100, null=True)
+    CLIENT = models.CharField(max_length=255, null=True)
+    ID_NPOL = models.CharField(max_length=255, null=True)
+    ID_PER_PRESTA = models.CharField(max_length=255, null=True)
+    ID_ADHERENT = models.CharField(max_length=255, null=True)
+    CODE_COMPAGNIE = models.CharField(max_length=255, null=True)
+    ID_MED_TRAITANT = models.CharField(max_length=255, null=True)
+    ID_MED_PRESC = models.CharField(max_length=255, null=True)
+    NUMERO_DOSSIER = models.CharField(max_length=255, null=True)
+    NUMERO_POLICE = models.CharField(max_length=255, null=True)
+    NUMERO_CARTE = models.CharField(max_length=255, null=True)
+    NOM_PATIENT = models.CharField(max_length=255, null=True)
+    PRENOM_PATIENT = models.CharField(max_length=255, null=True)
+    MATRICULE = models.CharField(max_length=255, null=True)
+    DATNAISS_ADH = models.DateField(blank=False, null=True)
+    DATNAISS_ADH_EN = models.DateField(blank=False, null=True)
+    STATUT_PATIENT = models.CharField(max_length=255, null=True)
+    ADHERENT_PRINCIPAL = models.CharField(max_length=255, null=True)
+    CD_FORMULE = models.CharField(max_length=255, null=True)
+    DATE_SINISTRE = models.DateField(blank=False, null=True)
+    DATE_SINISTRE_EN = models.DateField(blank=False, null=True)
+    DATE_DE_RECEPTION_FACTURE = models.DateField(blank=False, null=True)
+    CODE_ACTE = models.CharField(max_length=255, null=True)
+    AFFECTION = models.CharField(max_length=255, null=True)
+    CODE_AFFECTION = models.CharField(max_length=255, null=True)
+    NOM_PRESTA = models.CharField(max_length=255, null=True)
+    RESEAU_SOIN = models.CharField(max_length=255, null=True)
+    CATEG_PRESTA = models.CharField(max_length=255, null=True)
+    CENTRE_PRESCRIPTEUR = models.CharField(max_length=255, null=True)
+    MEDECIN_TRAITANT = models.CharField(max_length=255, null=True)
+    SPECIALITE_MEDECIN_TRAITANT = models.CharField(max_length=255, null=True)
+    MEDECIN_PRESCRIPTEUR = models.CharField(max_length=255, null=True)
+    SPECIALITE_MEDECIN_PRESCRIPTEUR = models.CharField(max_length=255, null=True)
+    DEPASSEMENT_EXCLUSION = models.CharField(max_length=255, null=True)
+    PART_OLEA = models.CharField(max_length=255, null=True)
+    TPS = models.CharField(max_length=255, null=True)
+    FAR = models.CharField(max_length=255, null=True)
+    TICKET_PREFINANCE = models.CharField(max_length=255, null=True)
+    NET_REGLE = models.CharField(max_length=255, null=True)
+    DATE_ORD = models.DateField(blank=False, null=True)
+    DATE_ORD_EN = models.DateField(blank=False, null=True)
+    DATE_REG = models.DateField(blank=False, null=True)
+    DATE_REG_EN = models.DateField(blank=False, null=True)
+    NUMERO_LCHQ = models.CharField(max_length=255, null=True)
+    NUMERO_BORDEREAU = models.CharField(max_length=255, null=True)
+    NUM_FACTURE = models.CharField(max_length=255, null=True)
+    NUM_BENEFICIAIRE_DU_REMB = models.CharField(max_length=255, null=True)
+    NOM_BENEFICIAIRE_DU_REMB = models.CharField(max_length=255, null=True)
+    COMPAGNIE = models.CharField(max_length=255, null=True)
+    CODE_SOCIETE = models.CharField(max_length=255, null=True)
+    REGROUPEMENT_OLEA = models.CharField(max_length=255, null=True)
+    TYPE_ASSURE = models.CharField(max_length=255, null=True)
+    OBSERVATION = models.CharField(max_length=255, null=True)
+    STATUT_IMPORT = models.BooleanField(default=True)
+    SESSION_UUID = models.CharField(max_length=255, null=True)
+
+    class Meta:
+        db_table = 'sinistre_veos'
+
+
+class AlimentVeos(models.Model):
+    ID_ALIMENT = models.CharField(max_length=100, null=True)
+    NOM = models.CharField(max_length=100, null=True)
+    PRENOMS = models.CharField(max_length=100, null=True)
+    DATE_NAISSANCE = models.DateField(blank=False, null=True)
+    GENRE = models.CharField(max_length=1, null=True)
+    CODE_POSTAL = models.CharField(max_length=100, null=True)
+    EMAIL = models.CharField(max_length=100, null=True)
+    NUMERO_FAMILLE = models.IntegerField(null=True)
+    TELEPHONE_FIXE = models.CharField(max_length=100, null=True)
+    TELEPHONE_MOBILE = models.CharField(max_length=100, null=True)
+    ADRESSE = models.CharField(max_length=255, null=True)
+    VILLE = models.CharField(max_length=100, null=True)
+    ADHERENT_PRINCIPAL_ID = models.CharField(max_length=100, null=True)
+    ADHERENT_PRINCIPAL_IDPER = models.CharField(max_length=100, null=True)
+    NUMERO_CARTE = models.CharField(max_length=100, null=True)
+    CODE_QUALITE_BENEFICIAIRE = models.CharField(max_length=100, null=True)
+    QUALITE_BENEFICIAIRE = models.CharField(max_length=100, null=True)
+    ID_NPOL = models.CharField(max_length=100, null=True)
+    DATE_ENTREE = models.DateField(blank=False, null=True)
+    DATE_SORTIE = models.DateField(blank=False, null=True)
+    CD_FORMULE = models.CharField(max_length=100, null=True)
+    LIB_FORMULE = models.CharField(max_length=100, null=True)
+    CD_COLLEGE = models.CharField(max_length=100, null=True)
+    LIB_COLLEGE = models.CharField(max_length=100, null=True)
+    STATUT_IMPORT = models.BooleanField(default=False)
+
+    class Meta:
+        db_table = 'aliment_veos'
+
+
+class PrestataireVeos(models.Model):
+    ID_PER = models.CharField(max_length=100, null=True)
+    CODE = models.CharField(max_length=100, null=True)
+    NAME = models.CharField(max_length=255, null=True)
+    TELEPHONE = models.CharField(max_length=100, null=True)
+    TELEPHONE2 = models.CharField(max_length=100, null=True)
+    TELEPHONE3 = models.CharField(max_length=100, null=True)
+    FAX = models.CharField(max_length=100, null=True)
+    EMAIL = models.CharField(max_length=100, null=True)
+    ADRESSE = models.CharField(max_length=255, null=True)
+    VILLE = models.CharField(max_length=100, null=True)
+    SOCIETE = models.CharField(max_length=100, null=True)
+    TYPE_PRESTATAIRE = models.CharField(max_length=100, null=True)
+    SECTEUR = models.CharField(max_length=100, null=True)
+    STATUT_IMPORT = models.BooleanField(default=False)
+
+    class Meta:
+        db_table = 'prestataire_veos'
+        verbose_name = 'Prestataire Veos'
+        verbose_name_plural = 'Prestataires VEOS'
+
+
+class UtilisateurVeos(models.Model):
+    ID_PER = models.CharField(max_length=100, null=True)
+    NOM = models.CharField(max_length=100, null=True)
+    PRENOM = models.CharField(max_length=255, null=True)
+    CODE = models.CharField(max_length=100, null=True)
+    LOGIN = models.CharField(max_length=100, null=True)
+    EMAIL = models.CharField(max_length=100, null=True)
+    ID_PRESTA = models.CharField(max_length=100, null=True)
+    NUM_PRESTA = models.CharField(max_length=100, null=True)
+    NOM_PRESTA = models.CharField(max_length=100, null=True)
+    SOCIETE = models.CharField(max_length=100, null=True)
+    STATUT_IMPORT = models.BooleanField(default=False)
+
+    class Meta:
+        db_table = 'utilisateurs_veos'
+        verbose_name = 'Utilisateur Veos'
+        verbose_name_plural = 'Utilisateurs VEOS'
+
+
+class UtilisateurGrhVeos(models.Model):
+    NOM = models.CharField(max_length=255, null=True)
+    LOGIN = models.CharField(max_length=255, null=True)
+    ADMIN = models.CharField(max_length=255, null=True)
+    SUPERVUE = models.CharField(max_length=255, null=True)
+    ACCES_SANTE = models.CharField(max_length=255, null=True)
+    NOM_CLIENT = models.TextField(null=True)
+    CODE_CLIENT = models.CharField(max_length=255, null=True)
+    BUREAU = models.CharField(max_length=255, null=True)
+    STATUT_IMPORT = models.BooleanField(default=False)
+    class Meta:
+        db_table = 'utilisateurs_grh_veos'
+        verbose_name = 'Utilisateur GRH VEOS'
+        verbose_name_plural = 'Utilisateurs GRH VEOS'
+
+
+class AlimentMatricule(models.Model):
+    ID_ADH = models.CharField(max_length=100, null=True)
+    NOM = models.CharField(max_length=100, null=True)
+    PRENOMS = models.CharField(max_length=100, null=True)
+    NUMERO_CARTE = models.CharField(max_length=100, null=True)
+    MATRICULE = models.CharField(max_length=100, null=True)
+    STATUT_IMPORT = models.BooleanField(default=False)
+
+    class Meta:
+        db_table = 'aliment_matricule'
+
+
 class ChangementFormule(models.Model):
     NOM = models.CharField(max_length=100, null=True)
     PRENOMS = models.CharField(max_length=100, null=True)
@@ -225,7 +498,7 @@ def upload_location_bureau(instance, filename):
     return 'bureaux/tarifs/%s.%s' % (file_name, extension)
 
 
-def upload_logo_location_bureau(instance, filename):
+def upload_logo_bureau(instance, filename):
     filebase, extension = filename.rsplit('.', 1)
     file_name = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
     return 'bureaux/logos/%s.%s' % (file_name, extension)
@@ -249,6 +522,7 @@ class Bureau(models.Model):
     whatsapp = models.CharField(max_length=50, blank=True, default=None, null=True)
     mention_legale = models.TextField(blank=True, null=True)
     tarfile = models.FileField(upload_to=upload_location_bureau, blank=True, default=None, null=True)
+    logo = models.FileField(upload_to=upload_logo_bureau, blank=True, default=None, null=True)
     cachet = models.ImageField(upload_to='bureaux/cachets', blank=True, default='', null=True)
     taxes = models.ManyToManyField(Taxe, through='BureauTaxe')
     option_export_beneficiaires = models.BooleanField(default=True)
@@ -256,7 +530,6 @@ class Bureau(models.Model):
     ca_type = models.CharField('CA', choices=CA_TYPE, max_length=50, blank=True, null=True, default='REVERSEMENT')
     type_bon_consultation = models.fields.CharField(choices=TypeBonConsultation.choices, default=TypeBonConsultation.AUTO_CARBONE, max_length=15, null=True)
     fuseau_horaire=models.IntegerField(blank=True, null=True)
-    logo = models.ImageField(upload_to=upload_logo_location_bureau, null=True, blank=True, )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     status = models.BooleanField(default=True)
@@ -296,6 +569,7 @@ class BureauTaxe(models.Model):
 class Retenue(models.Model):
     bureau = models.ForeignKey(Bureau, null=True, on_delete=models.RESTRICT)
     secteur = models.ForeignKey(Secteur, on_delete=models.RESTRICT, blank=True, null=True)
+    type_prestataire = models.ManyToManyField('configurations.TypePrestataire', verbose_name="Types Prestataires", blank=True , related_name='type_prestataire')
     libelle = models.CharField(max_length=50, blank=True, null=True)
     code = models.CharField(max_length=10, blank=True, null=True)
     taux = models.FloatField(blank=True, null=True)    
@@ -493,6 +767,66 @@ class Compagnie(models.Model):
         verbose_name_plural = 'Assureurs'
 
 
+class TypePrestataire(models.Model):
+    name = models.CharField(max_length=255)
+    code = models.CharField(max_length=10)
+    veos_code = models.CharField(max_length=10, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    status = models.BooleanField(default=True)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        db_table = 'type_prestataires'
+        verbose_name = 'Type de prestataire'
+        verbose_name_plural = 'Types de prestataires'
+
+
+class Prestataire(models.Model):
+    id_per = models.CharField(max_length=255, blank=True, null=True)
+    name = models.CharField(max_length=255)
+    code = models.CharField(max_length=255, unique=True)
+    veos_code_soc = models.CharField(max_length=255, blank=True, default=None, null=True)
+    veos_type_pres = models.CharField(max_length=255, blank=True, default=None, null=True)
+    telephone = models.CharField(max_length=255, blank=True, default=None, null=True)
+    fax = models.CharField(max_length=255, blank=True, default=None, null=True)
+    email = models.EmailField(max_length=255, blank=True, default=None, null=True)
+    addresse = models.CharField(max_length=255, blank=True, default=None, null=True)
+    ville = models.CharField(max_length=255, blank=True, default=None, null=True)
+    logo = models.FileField(upload_to='prestataires/logos', blank=True, default=None, null=True)
+    fichier_tarification = models.FileField(upload_to='prestataires/tarifs', blank=True, default=None, null=True)
+    liste_prescripteurs = models.FileField(upload_to='prescripteurs/liste', blank=True, default=None, null=True)
+    type_prestataire = models.ForeignKey(TypePrestataire, null=True, on_delete=models.RESTRICT)
+    secteur = models.ForeignKey(Secteur, on_delete=models.RESTRICT, null=True)
+    type_etablissement = models.ForeignKey(TypeEtablissement, null=True, on_delete=models.RESTRICT)
+    bureau = models.ForeignKey(Bureau, null=True, on_delete=models.RESTRICT)
+    rb_ordre = models.CharField(max_length=255, blank=True, default=None, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    status = models.BooleanField(default=True)
+    has_tarif_prestataire = models.BooleanField(default=False)
+
+    latitude = models.DecimalField(max_digits=40, decimal_places=10, blank=True, null=True)
+    longitude = models.DecimalField(max_digits=40, decimal_places=10, blank=True, null=True)
+
+    def __str__(self):
+        return self.name
+
+    @property
+    def fichier_tarifs(self):
+        return mark_safe('<a href="{0}" download>{1}</a>'.format(self.fichier_tarification.url,
+                                                                 'Télécharger')) if self.fichier_tarification else ""
+
+    # tarif_download.short_description = 'Tarif'
+
+    class Meta:
+        db_table = 'prestataires'
+        verbose_name = 'Prestataire'
+        verbose_name_plural = 'Prestataires'
+
+
 class Specialite(models.Model):
     name = models.CharField(max_length=255)
     code = models.CharField(max_length=255, null=True)
@@ -513,6 +847,8 @@ class Specialite(models.Model):
 
 class Prescripteur(models.Model):
     bureau = models.ForeignKey(Bureau, on_delete=models.RESTRICT, null=True)
+    veos_code_specialite = models.CharField(max_length=50, blank=True, null=True)
+    veos_id_per = models.CharField(max_length=50, blank=True, null=True)
     nom = models.CharField(max_length=50, blank=True, null=True)
     prenoms = models.CharField(max_length=50, blank=True, null=True)
     specialite = models.ForeignKey(Specialite, null=True, on_delete=models.RESTRICT)
@@ -530,6 +866,114 @@ class Prescripteur(models.Model):
         db_table = 'prescripteur'
         verbose_name = 'Prescripteur'
         verbose_name_plural = 'Prescripteurs'
+
+
+class PrescripteurVeos(models.Model):
+    id_per = models.CharField(max_length=200, blank=True, null=True)
+    numero = models.CharField(max_length=200, blank=True, null=True)
+    nom = models.CharField(max_length=150, blank=True, null=True)
+    prenom = models.CharField(max_length=150, blank=True, null=True)
+    specialite = models.CharField(max_length=150, blank=True, null=True)
+    email = models.CharField(max_length=50, blank=True, null=True)
+    telephone = models.CharField(max_length=100, blank=True, null=True)
+    ID_PRESTA = models.CharField(max_length=50, blank=True, null=True)
+    NUM_PRESTA = models.CharField(max_length=100, blank=True, null=True)
+    NOM_PRESTA = models.CharField(max_length=100, blank=True, null=True)
+    STATUT_IMPORT = models.BooleanField(default=False)
+
+    class Meta:
+        db_table = 'prescripteurs_veos'
+        verbose_name = 'Prescripteur Veos'
+        verbose_name_plural = 'Prescripteurs VEOS'
+
+
+class QuittanceVeos(models.Model):
+    NUMERO_CLIENT = models.CharField(max_length=255, null=True)
+    NOM_CLIENT = models.CharField(max_length=255, null=True)
+    NUMERO_COMPAGNIE = models.CharField(max_length=255, null=True)
+    NOM_COMPAGNIE = models.CharField(max_length=255, null=True)
+    NUMERO_APPORTEUR = models.CharField(max_length=255, null=True)
+    NOM_APPORTEUR = models.CharField(max_length=255, null=True)
+    CODE_PRODUIT = models.CharField(max_length=255, null=True)
+    LIBELLE_PRODUIT = models.CharField(max_length=255, null=True)
+    NUMERO_POLICE = models.CharField(max_length=255, null=True)
+    ID_NPOL = models.CharField(max_length=255, null=True)
+    NUMERO_QUITTANCE = models.CharField(max_length=255, null=True)
+    DATE_EMIS = models.CharField(max_length=255, null=True, blank=True)
+    DATE_DEBUT = models.CharField(max_length=255, null=True, blank=True)
+    DATE_FIN = models.CharField(max_length=255, null=True, blank=True)
+    CODE_TYPE_QUITTANCE = models.CharField(max_length=255, null=True)
+    LIBELLE_TYPE_QUITTANCE = models.CharField(max_length=255, null=True)
+    CODE_NATURE_QUITTANCE = models.CharField(max_length=255, null=True)
+    LIBELLE_NATURE_QUITTANCE = models.CharField(max_length=255, null=True)
+    CODE_SITUATION_CLIENT = models.CharField(max_length=255, null=True)
+    LIBELLE_SITUATION_CLIENT = models.CharField(max_length=255, null=True)
+    DATE_SITUATION_CLIENT = models.CharField(max_length=255, null=True, blank=True)
+    CODE_SITUATION_COMPAGNIE = models.CharField(max_length=255, null=True)
+    LIBELLE_SITUATION_COMPAGNIE = models.CharField(max_length=255, null=True)
+    DATE_SITUATION_COMPAGNIE = models.CharField(max_length=255, null=True, blank=True)
+    CODE_SITUATION_APPORTEUR = models.CharField(max_length=255, null=True)
+    LIBELLE_SITUATION_APPORTEUR = models.CharField(max_length=255, null=True)
+    DATE_SITUATION_APPORTEUR = models.CharField(max_length=255, null=True, blank=True)
+    MOIS_DE_COMPTE = models.CharField(max_length=255, null=True)
+    PRIME_NETTE = models.DecimalField(max_digits=20, decimal_places=2, null=True, blank=True)
+    CSS = models.DecimalField(max_digits=20, decimal_places=2, null=True, blank=True)
+    CSS_OLEA = models.DecimalField(max_digits=20, decimal_places=2, null=True, blank=True)
+    CARTE_ROSE = models.DecimalField(max_digits=20, decimal_places=2, null=True, blank=True)
+    CONSTAT = models.DecimalField(max_digits=20, decimal_places=2, null=True, blank=True)
+    ACCESSOIRES = models.DecimalField(max_digits=20, decimal_places=2, null=True, blank=True)
+    ACCESSOIRES_CIE = models.DecimalField(max_digits=20, decimal_places=2, null=True, blank=True)
+    TAXES = models.DecimalField(max_digits=20, decimal_places=2, null=True, blank=True)
+    TSVL = models.DecimalField(max_digits=20, decimal_places=2, null=True, blank=True)
+    PRIME_TOTALE = models.DecimalField(max_digits=20, decimal_places=2, null=True, blank=True)
+    PRIME_TTC_HORS_CSS_HORS_CARTE = models.DecimalField(max_digits=20, decimal_places=2, null=True, blank=True)
+    PRIME_TTC = models.DecimalField(max_digits=20, decimal_places=2, null=True, blank=True)
+    TAUX = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)
+    COMMISSION = models.DecimalField(max_digits=20, decimal_places=2, null=True, blank=True)
+    SOLDE = models.DecimalField(max_digits=20, decimal_places=2, null=True, blank=True)
+    INDICE = models.DecimalField(max_digits=20, decimal_places=2, null=True, blank=True)
+    NUMERO_SOCIETE = models.CharField(max_length=255, null=True)
+    CODE_MOUVEMENT = models.CharField(max_length=255, null=True)
+    LIBELLE_MOUVEMENT = models.CharField(max_length=255, null=True)
+    CODE_MOTIF = models.CharField(max_length=255, null=True)
+    LIBELLE_MOTIF = models.CharField(max_length=255, null=True)
+    STATUT_IMPORT = models.BooleanField(default=False)
+
+
+    class Meta:
+        db_table = 'quittances_veos'
+        verbose_name = 'Quittance Veos'
+        verbose_name_plural = 'Quittances VEOS'
+
+
+class Stock(models.Model):
+    begin_number = models.IntegerField()
+    end_number = models.IntegerField()
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    status = models.BooleanField(default=True)
+    prestataire = models.ForeignKey(Prestataire, null=True, on_delete=models.RESTRICT)
+
+    def __str__(self):
+        return self.begin_number + '__' + self.end_number
+
+    class Meta:
+        db_table = 'stocks'
+        verbose_name = 'Stock'
+        verbose_name_plural = 'Stocks'
+
+
+class SpecialiteTypePresta(models.Model):
+    specialite = models.ForeignKey(Specialite, null=True, on_delete=models.RESTRICT)
+    type_prestataire = models.ForeignKey(TypePrestataire, null=True, on_delete=models.RESTRICT)
+
+    def __str__(self):
+        return self.specialite.name
+
+    class Meta:
+        db_table = 'specialite_type_presta'
+        verbose_name = 'Spécialité type prestataire'
+        verbose_name_plural = 'Specialités type prestataire'
 
 
 class TypePriseencharge(models.Model):
@@ -592,6 +1036,209 @@ class SousRubrique(models.Model):
         db_table = 'sous_rubriques'
         verbose_name = 'Sous-rubrique'
         verbose_name_plural = 'Sous-rubriques'
+
+
+class TypeActe(models.Model):
+    libelle = models.CharField(max_length=50, blank=True, null=True)
+    code = models.CharField(max_length=50, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.libelle
+
+    class Meta:
+        db_table = 'type_actes'
+        verbose_name = "Type d'acte"
+        verbose_name_plural = "Types d'acte"
+
+
+class RegroupementActe(models.Model):
+    rubrique = models.ForeignKey(Rubrique, null=True, on_delete=models.RESTRICT)
+    libelle = models.CharField(max_length=255)
+    code = models.CharField(max_length=255, blank=True, default=None, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    status = models.BooleanField(default=True)
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+
+        if not self.code:
+            # Generate the code based on the inserted ID
+            self.code = f"RA{slugify(self.libelle)[:4]}{str(self.pk).zfill(4)}".upper()
+
+        super().save(*args, **kwargs)
+
+
+    def __str__(self):
+        return self.libelle
+
+    class Meta:
+        db_table = 'regroupement_acte'
+        verbose_name = "Regroupement d'acte"
+        verbose_name_plural = "Regroupements d'actes"
+
+
+class SousRegroupementActe(models.Model):
+    rubrique = models.ForeignKey(Rubrique, null=True, on_delete=models.RESTRICT)
+    libelle = models.CharField(max_length=255)
+    code = models.CharField(max_length=255, blank=True, default=None, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    status = models.BooleanField(default=True)
+
+    def save(self, *args, **kwargs):
+        super().save(*args, **kwargs)
+
+        if not self.code:
+            # Generate the code based on the inserted ID
+            self.code = f"SRA{slugify(self.libelle)[:4]}{str(self.pk).zfill(4)}".upper()
+
+        super().save(*args, **kwargs)
+
+
+    def __str__(self):
+        return self.libelle
+
+    class Meta:
+        db_table = 'sous_regroupement_acte'
+        verbose_name = "Sous-regroup. d'acte"
+        verbose_name_plural = "Sous-regroup. d'actes"
+
+
+class SousRubriqueRegroupementActe(models.Model):
+    sous_rubrique = models.ForeignKey(SousRubrique, null=True, on_delete=models.RESTRICT)
+    regroupement_acte = models.ForeignKey(RegroupementActe, null=True, on_delete=models.RESTRICT)
+    statut = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = 'sous_rubrique_regroupement_acte'
+        verbose_name = "Contenu de la sous-rubrique"
+        verbose_name_plural = "Contenus de la sous-rubrique"
+
+
+class Acte(models.Model):
+    rubrique = models.ForeignKey(Rubrique, null=True, on_delete=models.RESTRICT)
+    regroupement_acte = models.ForeignKey(RegroupementActe, null=True, on_delete=models.RESTRICT)
+    type_acte = models.ForeignKey(TypeActe, null=True, on_delete=models.RESTRICT)
+    libelle = models.CharField(max_length=255)
+    code = models.CharField(max_length=255, unique=True, blank=True, default=None, null=True)
+    lettre_cle = models.CharField(max_length=5, blank=True, null=True)
+    delais_carence = models.IntegerField(blank=True, null=True) #pas utilisé
+    delais_controle = models.IntegerField(blank=True, null=True)
+    base_calcul_tm = models.CharField(choices=BaseCalculTM.choices, default=BaseCalculTM.FRAIS_REEL, max_length=20, null=True)
+    option_seance = models.BooleanField(default=False)
+    option_quantite = models.BooleanField(default=False)
+    accord_automatique = models.BooleanField(default=False)
+    specialiste_uniquement = models.BooleanField(default=False)
+    est_gratuit = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    status = models.BooleanField(default=True)
+    statut_validite = models.fields.CharField(choices=StatutValidite.choices, default=StatutValidite.VALIDE, max_length=15, null=True)
+
+    def __str__(self):
+        return self.libelle
+
+    class Meta:
+        db_table = 'actes'
+        verbose_name = 'Acte'
+        verbose_name_plural = 'Actes'
+
+
+    @property
+    def entente_prealable(self):
+        current_user = get_current_authenticated_user()
+        param_acte = ParamActe.objects.filter(acte=self, bureau=current_user.bureau).first()
+        return param_acte.entente_prealable if param_acte else False
+
+
+class SousRegroupementActeActe(models.Model):
+    sous_regroupement_acte = models.ForeignKey(SousRegroupementActe, null=True, on_delete=models.RESTRICT)
+    acte = models.ForeignKey(Acte, null=True, on_delete=models.RESTRICT)
+    statut = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = 'sous_regroupement_acte_acte'
+        verbose_name = "Contenu du sous-regroupement d'actes"
+        verbose_name_plural = "Contenus du sous-regroupement d'actes"
+
+
+class Medicament(models.Model):
+    rubrique = models.ForeignKey(Rubrique, null=True, on_delete=models.RESTRICT)
+    libelle = models.CharField(max_length=255)
+    code = models.CharField(max_length=255, blank=True, default=None, null=True)
+    accord_automatique = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    status = models.BooleanField(default=True)
+
+    def __str__(self):
+        return self.libelle
+
+    class Meta:
+        db_table = 'medicaments'
+        verbose_name = 'Medicament'
+        verbose_name_plural = 'Medicaments'
+
+
+class ActeWaspito(models.Model):
+    acte = models.ForeignKey(Acte, null=True, on_delete=models.RESTRICT)
+    libelle_en = models.CharField(max_length=255, blank=True, null=True)
+    libelle_fr = models.CharField(max_length=255, blank=True, null=True)
+    code_olea = models.CharField(max_length=20, blank=True, default=None, null=True)
+    code_waspito = models.CharField(max_length=20, blank=True, default=None, null=True)
+    cotation = models.CharField(max_length=20, blank=True, default=None, null=True)
+    prix = models.IntegerField(blank=True, null=True)
+    date_debut = models.DateField(blank=False, null=True)
+    date_fin = models.DateField(blank=False, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    status = models.BooleanField(default=True)
+
+    def __str__(self):
+        return self.libelle_fr
+
+    class Meta:
+        db_table = 'acte_waspito'
+        verbose_name = 'Acte de waspito'
+        verbose_name_plural = 'Actes de waspito'
+
+
+class CategorieAffection(models.Model):
+    libelle = models.CharField(max_length=255)
+    code = models.CharField(max_length=255, blank=True, default=None, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    status = models.BooleanField(default=True)
+
+    def __str__(self):
+        return self.libelle
+
+    class Meta:
+        db_table = 'categorie_affection'
+        verbose_name = "Categorie d'affection"
+        verbose_name_plural = "Categories d'affection"
+
+
+class Affection(models.Model):
+    libelle = models.CharField(max_length=255)
+    short_name = models.CharField(max_length=255, blank=True, default=None, null=True)
+    code = models.CharField(max_length=50, null=True)
+    code_cim_10 = models.CharField(max_length=50)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    status = models.BooleanField(default=True)
+    categorie = models.ForeignKey(CategorieAffection, on_delete=models.RESTRICT, null=True)
+
+    def __str__(self):
+        return f"{self.libelle} - {self.status} - {self.code_cim_10} - {self.status}"
+
+    class Meta:
+        db_table = 'affections'
+        verbose_name = 'Affection'
+        verbose_name_plural = 'Affections'
 
 
 class GroupeNat(models.Model):
@@ -726,8 +1373,8 @@ class TypeProduit(models.Model):
 
     class Meta:
         db_table = 'type_produit'
-        verbose_name = 'Type de produit'
-        verbose_name_plural = 'Type de produit'
+        verbose_name = 'Type Produit'
+        verbose_name_plural = 'Type Produit'
 
 
 class RisqueProduit(models.Model):
@@ -815,9 +1462,9 @@ class Langue(models.Model):
 
 class Fractionnement(models.Model):
     libelle = models.CharField(max_length=100, blank=True, null=True)
+    status = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    status = models.BooleanField(default=True)
 
     def __str__(self):
         return self.libelle
@@ -869,6 +1516,20 @@ class Regularisation(models.Model):
         db_table = 'regularisations'
         verbose_name = 'Régularisation'
         verbose_name_plural = 'Régularisations'
+
+
+class TicketModerateur(models.Model):
+    libelle = models.CharField(max_length=100, blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.libelle
+
+    class Meta:
+        db_table = 'ticket_moderateurs'
+        verbose_name = 'Ticket moderateur'
+        verbose_name_plural = 'Tickets moderateur'
 
 
 class TypePrefinancement(models.Model):
@@ -947,6 +1608,7 @@ class User(AbstractUser):
     password_type = models.fields.CharField(choices=PasswordType.choices, default=PasswordType.DEFAULT, null=True, max_length=20)
     is_admin_group = models.BooleanField(verbose_name='Statut admin groupe', default=False)
 
+    """
     @property
     def is_production(self):
         return self.groups.filter(name__contains='PRODUCTION').exists()
@@ -969,10 +1631,10 @@ class User(AbstractUser):
 
     @property
     def user_groups(self):
-        #Retourne une liste des noms des groupes auxquels l'utilisateur appartient.
+        # Retourne une liste des noms des groupes auxquels l'utilisateur appartient.
         return [group.name for group in self.groups.all()]
-
     """
+
     @property
     def is_production(self):
         if self.groups.filter(name__contains='PRODUCTION').first() is not None:
@@ -1012,7 +1674,47 @@ class User(AbstractUser):
     def user_groups(self):
         #Return a list of group names the user belongs to.
         return (group.name for group in self.groups.all())
-    """
+
+
+
+class ParamActe(models.Model):
+    created_by = models.ForeignKey(User, related_name="pa_created_by", null=True, on_delete=models.RESTRICT)
+    updated_by = models.ForeignKey(User, related_name="pa_updated_by", null=True, on_delete=models.RESTRICT)
+    bureau = models.ForeignKey(Bureau, null=True, on_delete=models.RESTRICT)
+    acte = models.ForeignKey(Acte, null=True, on_delete=models.RESTRICT)
+    delais_controle = models.IntegerField(blank=True, null=True)
+    delais_carence = models.IntegerField(blank=True, null=True)
+    accord_automatique = models.BooleanField(default=False)
+    entente_prealable = models.BooleanField(default=False)
+    specialiste_uniquement = models.BooleanField(default=False)
+    est_gratuit = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now=True)
+    updated_at = models.DateTimeField(auto_now=True,)
+    status = models.BooleanField(default=True)
+
+    class Meta:
+        db_table = 'param_actes'
+        verbose_name = "Paramétrage de l'acte"
+        verbose_name_plural = "Paramétrages de l'acte"
+
+
+class PrescripteurPrestataire(models.Model):
+    created_by = models.ForeignKey(User, related_name="pp_created_by", null=True, on_delete=models.RESTRICT)
+    deleted_by = models.ForeignKey(User, related_name="pp_deleted_by", null=True, on_delete=models.RESTRICT)
+    prestataire = models.ForeignKey(Prestataire, null=True, on_delete=models.RESTRICT)
+    prescripteur = models.ForeignKey(Prescripteur, null=True, on_delete=models.RESTRICT)
+    statut_validite = models.fields.CharField(choices=StatutValidite.choices, default=StatutValidite.VALIDE, max_length=15, null=True)
+    observation = models.CharField(max_length=255, blank=True, null=True)
+    deleted_at = models.DateTimeField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.prestataire.name + ' de ' + self.prescripteur.name
+
+    class Meta:
+        db_table = 'prescripteur_prestataire'
+        verbose_name = 'Prescripteur du prestataire'
+        verbose_name_plural = 'Prescripteurs du prestataire'
 
 
 class ApporteurInternational(models.Model):
@@ -1077,6 +1779,85 @@ class GroupeInter(models.Model):
         db_table = 'groupe_inters'
         verbose_name = 'GroupeInter'
         verbose_name_plural = 'GroupeInters'
+
+
+class ApporteurVeos(models.Model):
+    NUM_SOC = models.CharField(max_length=100, null=True)
+    LIB_TIT = models.CharField(max_length=100, null=True)
+    NUM_PER = models.CharField(max_length=100, null=True)
+    NOM_PER = models.CharField(max_length=100, null=True)
+    PRENOM_PER = models.CharField(max_length=100, null=True)
+    ADRESSE1_ADR = models.CharField(max_length=255, null=True)
+    ADRESSE2_ADR = models.CharField(max_length=255, null=True)
+    ADRESSE3_ADR = models.CharField(max_length=255, null=True)
+    CD_PST = models.CharField(max_length=100, null=True)
+    VILLE_ADR = models.CharField(max_length=100, null=True)
+    CD_PAYS = models.CharField(max_length=100, null=True)
+    LIB_PAYS = models.CharField(max_length=100, null=True)
+    FIXE = models.CharField(max_length=100, null=True)
+    MOBILE = models.CharField(max_length=100, null=True)
+    EMAIL = models.CharField(max_length=100, null=True)
+    ID_NPOL = models.CharField(max_length=100, null=True)
+    CONTRAT = models.CharField(max_length=100, null=True)
+    EFFET = models.DateField(blank=False, null=True)
+    CIE = models.CharField(max_length=100, null=True)
+    ID_PER_APPORTEUR = models.CharField(max_length=100, null=True)
+    NUM_APPORTEUR = models.CharField(max_length=100, null=True)
+    NOM_APPORTEUR = models.CharField(max_length=100, null=True)
+    PRENOM_APPORTEUR = models.CharField(max_length=100, null=True)
+    APPORTEUR_INTER = models.CharField(max_length=100, null=True)
+    TXT_CINT = models.CharField(max_length=100, null=True)
+    TXC_CINT = models.CharField(max_length=100, null=True)
+    STATUT_IMPORT = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.NOM_APPORTEUR + ' - ' + self.CONTRAT
+
+    class Meta:
+        db_table = 'apporteur_veos'
+        verbose_name = 'Apporteur veos'
+        verbose_name_plural = 'Apporteurs veos'
+
+
+class ReseauSoin(models.Model):
+    created_by = models.ForeignKey(User, null=True, on_delete=models.RESTRICT)
+    bureau = models.ForeignKey(Bureau, null=True, on_delete=models.RESTRICT)
+    code = models.CharField(max_length=15, null=True)
+    nom = models.CharField(max_length=255)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    status = models.BooleanField(default=True)
+
+    def __str__(self):
+        return f'{self.nom}'
+
+    class Meta:
+        db_table = 'reseaux_soins'
+        verbose_name = 'Réseau de soins'
+        verbose_name_plural = 'Réseaux de soins'
+
+    @property
+    def nombre_prestataires(self):
+        return self.ses_prestataires.all().filter(statut_validite=StatutValidite.VALIDE).count()
+
+    def has_prestataire(self, prestataire):
+        prestataire_exists = self.ses_prestataires.all().filter(statut_validite=StatutValidite.VALIDE).filter(prestataire=prestataire)
+        return True if prestataire_exists else None
+
+
+class PrestataireReseauSoin(models.Model):
+    created_by = models.ForeignKey(User, null=True, on_delete=models.RESTRICT)
+    removed_by = models.ForeignKey(User, related_name="removed_by", null=True, on_delete=models.RESTRICT)
+    prestataire = models.ForeignKey(Prestataire, related_name="ses_reseaux_soins", on_delete=models.RESTRICT)
+    reseau_soin = models.ForeignKey(ReseauSoin, related_name="ses_prestataires", on_delete=models.RESTRICT)
+    date_integration = models.DateTimeField(blank=True, null=True)
+    date_retrait = models.DateTimeField(blank=True, null=True)
+    statut_validite = models.fields.CharField(choices=StatutValidite.choices, default=StatutValidite.VALIDE, max_length=15, null=True)
+
+    class Meta:
+        db_table = 'prestataire_reseau_soin'
+        verbose_name = 'Prestataire du réseau de soins'
+        verbose_name_plural = 'Prestataires du réseau de soins'
 
 
 class QualiteBeneficiaire(models.Model):
@@ -1176,6 +1957,7 @@ class CompteTresorerie(models.Model):
 class NatureQuittance(models.Model):
     libelle = models.CharField(max_length=50, blank=True, null=True)
     code = models.CharField(max_length=50, blank=True, null=True)
+    code_veos = models.CharField(max_length=50, blank=True, null=True)
     status = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -1192,6 +1974,7 @@ class NatureQuittance(models.Model):
 class TypeQuittance(models.Model):
     libelle = models.CharField(max_length=50, blank=True, null=True)
     code = models.CharField(max_length=50, blank=True, null=True)
+    code_veos = models.CharField(max_length=50, blank=True, null=True)
     status = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -1208,9 +1991,9 @@ class TypeQuittance(models.Model):
 class CategorieVehicule(models.Model):
     libelle = models.CharField(max_length=50, blank=True, null=True)
     code = models.CharField(max_length=50, blank=True, null=True)
+    status = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    status = models.BooleanField(default=True)
 
     def __str__(self):
         return self.libelle
@@ -1300,7 +2083,13 @@ class Tarif(models.Model):
     validated_by = models.ForeignKey(User, related_name="validated_by", null=True, on_delete=models.RESTRICT)
     deleted_by = models.ForeignKey(User, related_name="tarif_deleted_by", null=True, on_delete=models.RESTRICT)
     bureau = models.ForeignKey(Bureau, null=True, on_delete=models.RESTRICT)
+    prestataire = models.ForeignKey(Prestataire, null=True, on_delete=models.RESTRICT)
     #police = models.ForeignKey(Police, null=True, on_delete=models.RESTRICT)
+
+
+    acte = models.ForeignKey(Acte, null=True, on_delete=models.RESTRICT)
+    code_acte = models.CharField(max_length=50, blank=True, null=True)
+
 
     lettre_cle_public_hg = models.CharField(max_length=50, blank=True, null=True)
     coef_public_hg = models.IntegerField(null=True)
@@ -1327,6 +2116,12 @@ class Tarif(models.Model):
     pu_classique = models.IntegerField(null=True)
     cout_classique = models.IntegerField(null=True)
 
+    lettre_cle_prestataire = models.CharField(max_length=50, blank=True, null=True)
+    coef_prestataire = models.IntegerField(null=True)
+    pu_prestataire = models.IntegerField(null=True)
+    cout_prestataire = models.IntegerField(null=True)
+
+
     statut = models.fields.CharField(choices=Statut.choices, default=Statut.ACTIF, max_length=15, null=True)
     statut_validite = models.fields.CharField(choices=StatutValidite.choices, default=StatutValidite.VALIDE, max_length=15, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -1336,6 +2131,58 @@ class Tarif(models.Model):
         db_table = 'tarifs'
         verbose_name = 'Tarif'
         verbose_name_plural = 'Tarifs'
+
+
+class TarifExcel(models.Model):
+    CODE_REGROUPEMENT_OLEA = models.CharField(max_length=100, null=True)
+    LIBELLE_ACTE = models.CharField(max_length=100, null=True)
+    CODE_ACTE = models.CharField(max_length=100, null=True)
+    REGROUPEMENT_ACTE = models.CharField(max_length=100, null=True)
+
+    LETTRE_CLE_CLASSIQUE = models.CharField(max_length=100, null=True)
+    COEF_CLASSIQUE = models.CharField(max_length=100, null=True)
+    PU_CLASSIQUE = models.CharField(max_length=100, null=True)
+    COUT_CLASSIQUE = models.CharField(max_length=100, null=True)
+
+    LETTRE_CLE_MUTUELLE = models.CharField(max_length=100, null=True)
+    COEF_MUTUELLE = models.CharField(max_length=100, null=True)
+    PU_MUTUELLE = models.CharField(max_length=100, null=True)
+    COUT_MUTUELLE = models.CharField(max_length=100, null=True)
+
+    LETTRE_CLE_PUBLIC_HG = models.CharField(max_length=100, null=True)
+    COEF_PUBLIC_HG = models.CharField(max_length=100, null=True)
+    PU_PUBLIC_HG = models.CharField(max_length=100, null=True)
+    COUT_PUBLIC_HG = models.CharField(max_length=100, null=True)
+
+    LETTRE_CLE_PUBLIC_CHU = models.CharField(max_length=100, null=True)
+    COEF_PUBLIC_CHU = models.CharField(max_length=100, null=True)
+    PU_PUBLIC_CHU = models.CharField(max_length=100, null=True)
+    COUT_PUBLIC_CHU = models.CharField(max_length=100, null=True)
+
+    LETTRE_CLE_PUBLIC_ICA = models.CharField(max_length=100, null=True)
+    COEF_PUBLIC_ICA = models.CharField(max_length=100, null=True)
+    PU_PUBLIC_ICA = models.CharField(max_length=100, null=True)
+    COUT_PUBLIC_ICA = models.CharField(max_length=100, null=True)
+
+
+
+    class Meta:
+        db_table = 'tarif_excels'
+
+
+#créer les actes autorises par spécialité
+class SpecialiteActeAutorise(models.Model):
+    specialite = models.ForeignKey(Specialite, null=True, on_delete=models.RESTRICT)
+    acte = models.ForeignKey(Acte, null=True, on_delete=models.RESTRICT)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.specialite.name + ' peut faire ' + self.acte.libelle
+
+    class Meta:
+        db_table = 'specialite_acte_autorise'
+        verbose_name = 'Acte autorisé'
+        verbose_name_plural = 'Actes autorisés'
 
 
 class ActionLog(models.Model):
@@ -1390,6 +2237,39 @@ class KeyValueData(models.Model):
         db_table = 'keyvaluedata'
         verbose_name = 'Configuration'
         verbose_name_plural = 'Configurations'
+
+
+class WsBoby(models.Model):
+    name = models.CharField(max_length=100, blank=True, null=True, unique=True)
+    request = models.TextField(blank=True, null=True)
+    status = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        db_table = 'ws_boby'
+        verbose_name = 'WS Boby'
+        verbose_name_plural = 'WS Boby'
+
+
+class ParamWsBoby(models.Model):
+    ws_boby = models.ForeignKey(WsBoby, null=True, on_delete=models.RESTRICT)
+    name = models.CharField(max_length=100, blank=True, null=True)
+    value = models.TextField(blank=True, null=True)
+    status = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        db_table = 'param_ws_boby'
+        verbose_name = 'Param WS Boby'
+        verbose_name_plural = 'Param WS Boby'
 
 
 class BackgroundQueryTask(models.Model):
@@ -1574,6 +2454,55 @@ class BordereauLettreCheque(models.Model):
         verbose_name_plural = 'Historique des lettres Chèques'
 
 
+class PeriodeVeos(models.Model):
+    ID_NPOL = models.CharField(max_length=255, null=True)
+    NUM_POL = models.CharField(max_length=255, null=True)
+    DATEEFFET = models.CharField(max_length=255, null=True)
+    ECHEANCE = models.CharField(max_length=255, null=True)
+    DEBUTEFFETOLD = models.CharField(max_length=255, null=True)
+    FINEFFETOLD = models.TextField(null=True)
+    OBSERVATION = models.TextField(null=True)
+    DUREE = models.CharField(max_length=255, null=True)
+    STATUT_IMPORT = models.BooleanField(default=False)
+    class Meta:
+        db_table = 'periode_veos'
+        verbose_name = 'Période VEOS'
+        verbose_name_plural = 'Période VEOS'
+
+
+class StatExcelWsBoby(models.Model):
+    libelle_fr = models.CharField(max_length=255, blank=True, null=True, unique=True)
+    libelle_en = models.CharField(max_length=255, blank=True, null=True, unique=True)
+    libelle_pt = models.CharField(max_length=255, blank=True, null=True, unique=True)
+    code_ws = models.CharField(max_length=100, blank=True, null=True, unique=True)
+    status = models.BooleanField(default=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self):
+        return self.libelle_fr
+
+    class Meta:
+        db_table = 'stat_excel_ws_boby'
+        verbose_name = 'Stat Excel Ws Boby'
+        verbose_name_plural = 'Stats Excel Ws Boby' 
+
+
+class ComptePrestataireVeos(models.Model):
+    CODE_PRESTATAIRE = models.CharField(max_length=255, null=True)
+    NOM_PRESTATAIRE = models.CharField(max_length=255, null=True)
+    EMAIL = models.CharField(max_length=255, null=True)
+    REMBOURSEMENT_ORDRE_DE = models.CharField(max_length=255, null=True)
+    TYPE_PRESTATAIRE = models.CharField(max_length=255, null=True)
+    SECTEUR_PRESTATAIRE = models.CharField(max_length=255, null=True)
+    OBSERVATION = models.TextField(null=True)
+    STATUT_IMPORT = models.BooleanField(default=False)
+    class Meta:
+        db_table = 'compte_prestataire_veos'
+        verbose_name = 'Compte Prestataire VEOS'
+        verbose_name_plural = 'Comptes Prestataires VEOS'
+
+
 class BusinessUnit(models.Model):
     libelle = models.CharField(max_length=100, blank=True, null=True, unique=True)
     status = models.BooleanField(default=True)
@@ -1725,7 +2654,6 @@ class Groupe(models.Model):
         verbose_name = 'Groupes'
         verbose_name_plural = 'Groupes'
 
-
 class TypeSinistre(models.Model):
     libelle = models.CharField(max_length=100, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -1768,8 +2696,8 @@ class Responsabilite(models.Model):
 
     class Meta:
         db_table = 'responsabilite'
-        verbose_name = "Responsabilités"
-        verbose_name_plural = "Responsabilités"
+        verbose_name = "Taux de responsabilite"
+        verbose_name_plural = "Taux de responsabilite"
 
 
 class TypeMouvement(models.Model):
@@ -1836,391 +2764,19 @@ class GarantieCirconstance(models.Model):
         verbose_name_plural = 'Garanties / Circonstances'
 
 
-class EtapeSinistre(models.Model):
-    code = models.CharField(max_length=10, blank=True, null=True)
+class TypeRecours(models.Model):
+    code = models.CharField(max_length=100, blank=True, null=True)
     libelle = models.CharField(max_length=100, blank=True, null=True)
-    type = models.CharField(choices=TypeEtape.choices, max_length=50, null=True)  # False
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return f'{self.code} - {self.libelle} - {self.type} - {self.created_at}'
-
-    class Meta:
-        db_table = 'etape_sinistre'
-        verbose_name = 'Etape sinistre'
-        verbose_name_plural = 'Etape sinistre'
-
-
-class TypePrestataire(models.Model):
-    name = models.CharField(max_length=255)
-    code = models.CharField(max_length=10)
-    veos_code = models.CharField(max_length=10, null=True, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    status = models.BooleanField(default=True)
-
-    def __str__(self):
-        return self.name
-
-    class Meta:
-        db_table = 'type_prestataires'
-        verbose_name = 'Type de prestataire'
-        verbose_name_plural = 'Types de prestataires'
-
-
-class Prestataire(models.Model):
-    id_per = models.CharField(max_length=255, blank=True, null=True)
-    name = models.CharField(max_length=255)
-    code = models.CharField(max_length=255, unique=True)
-    veos_code_soc = models.CharField(max_length=255, blank=True, default=None, null=True)
-    veos_type_pres = models.CharField(max_length=255, blank=True, default=None, null=True)
-    telephone = models.CharField(max_length=255, blank=True, default=None, null=True)
-    fax = models.CharField(max_length=255, blank=True, default=None, null=True)
-    email = models.EmailField(max_length=255, blank=True, default=None, null=True)
-    addresse = models.CharField(max_length=255, blank=True, default=None, null=True)
-    ville = models.CharField(max_length=255, blank=True, default=None, null=True)
-    logo = models.FileField(upload_to='prestataires/logos', blank=True, default=None, null=True)
-    fichier_tarification = models.FileField(upload_to='prestataires/tarifs', blank=True, default=None, null=True)
-    liste_prescripteurs = models.FileField(upload_to='prescripteurs/liste', blank=True, default=None, null=True)
-    type_prestataire = models.ForeignKey(TypePrestataire, null=True, on_delete=models.RESTRICT)
-    secteur = models.ForeignKey(Secteur, on_delete=models.RESTRICT, null=True)
-    type_etablissement = models.ForeignKey(TypeEtablissement, null=True, on_delete=models.RESTRICT)
-    bureau = models.ForeignKey(Bureau, null=True, on_delete=models.RESTRICT)
-    rb_ordre = models.CharField(max_length=255, blank=True, default=None, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    status = models.BooleanField(default=True)
-    has_tarif_prestataire = models.BooleanField(default=False)
-
-    latitude = models.DecimalField(max_digits=40, decimal_places=10, blank=True, null=True)
-    longitude = models.DecimalField(max_digits=40, decimal_places=10, blank=True, null=True)
-
-    def __str__(self):
-        return self.name
-
-    @property
-    def fichier_tarifs(self):
-        return mark_safe('<a href="{0}" download>{1}</a>'.format(self.fichier_tarification.url,
-                                                                 'Télécharger')) if self.fichier_tarification else ""
-
-    # tarif_download.short_description = 'Tarif'
-
-    class Meta:
-        db_table = 'prestataires'
-        verbose_name = 'Prestataire'
-        verbose_name_plural = 'Prestataires'
-
-
-
-
-class PrescripteurPrestataire(models.Model):
-    created_by = models.ForeignKey(User, related_name="pp_created_by", null=True, on_delete=models.RESTRICT)
-    deleted_by = models.ForeignKey(User, related_name="pp_deleted_by", null=True, on_delete=models.RESTRICT)
-    prestataire = models.ForeignKey(Prestataire, null=True, on_delete=models.RESTRICT)
-    prescripteur = models.ForeignKey(Prescripteur, null=True, on_delete=models.RESTRICT)
-    statut_validite = models.fields.CharField(choices=StatutValidite.choices, default=StatutValidite.VALIDE, max_length=15, null=True)
-    observation = models.CharField(max_length=255, blank=True, null=True)
-    deleted_at = models.DateTimeField(blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return self.prestataire.name + ' de ' + self.prescripteur.name
-
-    class Meta:
-        db_table = 'prescripteur_prestataire'
-        verbose_name = 'Prescripteur du prestataire'
-        verbose_name_plural = 'Prescripteurs du prestataire'
-
-
-
-class TypeActe(models.Model):
-    libelle = models.CharField(max_length=50, blank=True, null=True)
-    code = models.CharField(max_length=50, blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return self.libelle
-
-    class Meta:
-        db_table = 'type_actes'
-        verbose_name = "Type d'acte"
-        verbose_name_plural = "Types d'acte"
-
-
-class RegroupementActe(models.Model):
-    rubrique = models.ForeignKey(Rubrique, null=True, on_delete=models.RESTRICT)
-    libelle = models.CharField(max_length=255)
-    code = models.CharField(max_length=255, blank=True, default=None, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    status = models.BooleanField(default=True)
-
-    def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
-
-        if not self.code:
-            # Generate the code based on the inserted ID
-            self.code = f"RA{slugify(self.libelle)[:4]}{str(self.pk).zfill(4)}".upper()
-
-        super().save(*args, **kwargs)
-
-
-    def __str__(self):
-        return self.libelle
-
-    class Meta:
-        db_table = 'regroupement_acte'
-        verbose_name = "Regroupement d'acte"
-        verbose_name_plural = "Regroupements d'actes"
-
-
-class SousRubriqueRegroupementActe(models.Model):
-    sous_rubrique = models.ForeignKey(SousRubrique, null=True, on_delete=models.RESTRICT)
-    regroupement_acte = models.ForeignKey(RegroupementActe, null=True, on_delete=models.RESTRICT)
     statut = models.BooleanField(default=True)
 
-    class Meta:
-        db_table = 'sous_rubrique_regroupement_acte'
-        verbose_name = "Contenu de la sous-rubrique"
-        verbose_name_plural = "Contenus de la sous-rubrique"
-
-
-class Acte(models.Model):
-    rubrique = models.ForeignKey(Rubrique, null=True, on_delete=models.RESTRICT)
-    regroupement_acte = models.ForeignKey(RegroupementActe, null=True, on_delete=models.RESTRICT)
-    type_acte = models.ForeignKey(TypeActe, null=True, on_delete=models.RESTRICT)
-    libelle = models.CharField(max_length=255)
-    code = models.CharField(max_length=255, unique=True, blank=True, default=None, null=True)
-    lettre_cle = models.CharField(max_length=5, blank=True, null=True)
-    delais_carence = models.IntegerField(blank=True, null=True) #pas utilisé
-    delais_controle = models.IntegerField(blank=True, null=True)
-    base_calcul_tm = models.CharField(choices=BaseCalculTM.choices, default=BaseCalculTM.FRAIS_REEL, max_length=20, null=True)
-    option_seance = models.BooleanField(default=False)
-    option_quantite = models.BooleanField(default=False)
-    accord_automatique = models.BooleanField(default=False)
-    specialiste_uniquement = models.BooleanField(default=False)
-    est_gratuit = models.BooleanField(default=False)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    status = models.BooleanField(default=True)
-    statut_validite = models.fields.CharField(choices=StatutValidite.choices, default=StatutValidite.VALIDE, max_length=15, null=True)
-
     def __str__(self):
         return self.libelle
 
     class Meta:
-        db_table = 'actes'
-        verbose_name = 'Acte'
-        verbose_name_plural = 'Actes'
-
-
-    @property
-    def entente_prealable(self):
-        current_user = get_current_authenticated_user()
-        param_acte = ParamActe.objects.filter(acte=self, bureau=current_user.bureau).first()
-        return param_acte.entente_prealable if param_acte else False
-
-
-
-class ParamActe(models.Model):
-    created_by = models.ForeignKey(User, related_name="pa_created_by", null=True, on_delete=models.RESTRICT)
-    updated_by = models.ForeignKey(User, related_name="pa_updated_by", null=True, on_delete=models.RESTRICT)
-    bureau = models.ForeignKey(Bureau, null=True, on_delete=models.RESTRICT)
-    acte = models.ForeignKey(Acte, null=True, on_delete=models.RESTRICT)
-    delais_controle = models.IntegerField(blank=True, null=True)
-    delais_carence = models.IntegerField(blank=True, null=True)
-    accord_automatique = models.BooleanField(default=False)
-    entente_prealable = models.BooleanField(default=False)
-    specialiste_uniquement = models.BooleanField(default=False)
-    est_gratuit = models.BooleanField(default=False)
-    created_at = models.DateTimeField(auto_now=True)
-    updated_at = models.DateTimeField(auto_now=True,)
-    status = models.BooleanField(default=True)
-
-    class Meta:
-        db_table = 'param_actes'
-        verbose_name = "Paramétrage de l'acte"
-        verbose_name_plural = "Paramétrages de l'acte"
-
-
-
-class SousRegroupementActe(models.Model):
-    rubrique = models.ForeignKey(Rubrique, null=True, on_delete=models.RESTRICT)
-    libelle = models.CharField(max_length=255)
-    code = models.CharField(max_length=255, blank=True, default=None, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    status = models.BooleanField(default=True)
-
-    def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
-
-        if not self.code:
-            # Generate the code based on the inserted ID
-            self.code = f"SRA{slugify(self.libelle)[:4]}{str(self.pk).zfill(4)}".upper()
-
-        super().save(*args, **kwargs)
-
-
-    def __str__(self):
-        return self.libelle
-
-    class Meta:
-        db_table = 'sous_regroupement_acte'
-        verbose_name = "Sous-regroup. d'acte"
-        verbose_name_plural = "Sous-regroup. d'actes"
-
-
-class SousRegroupementActeActe(models.Model):
-    sous_regroupement_acte = models.ForeignKey(SousRegroupementActe, null=True, on_delete=models.RESTRICT)
-    acte = models.ForeignKey(Acte, null=True, on_delete=models.RESTRICT)
-    statut = models.BooleanField(default=True)
-
-    class Meta:
-        db_table = 'sous_regroupement_acte_acte'
-        verbose_name = "Contenu du sous-regroupement d'actes"
-        verbose_name_plural = "Contenus du sous-regroupement d'actes"
-
-
-class Medicament(models.Model):
-    rubrique = models.ForeignKey(Rubrique, null=True, on_delete=models.RESTRICT)
-    libelle = models.CharField(max_length=255)
-    code = models.CharField(max_length=255, blank=True, default=None, null=True)
-    accord_automatique = models.BooleanField(default=False)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    status = models.BooleanField(default=True)
-
-    def __str__(self):
-        return self.libelle
-
-    class Meta:
-        db_table = 'medicaments'
-        verbose_name = 'Medicament'
-        verbose_name_plural = 'Medicaments'
-
-
-class ActeWaspito(models.Model):
-    acte = models.ForeignKey(Acte, null=True, on_delete=models.RESTRICT)
-    libelle_en = models.CharField(max_length=255, blank=True, null=True)
-    libelle_fr = models.CharField(max_length=255, blank=True, null=True)
-    code_olea = models.CharField(max_length=20, blank=True, default=None, null=True)
-    code_waspito = models.CharField(max_length=20, blank=True, default=None, null=True)
-    cotation = models.CharField(max_length=20, blank=True, default=None, null=True)
-    prix = models.IntegerField(blank=True, null=True)
-    date_debut = models.DateField(blank=False, null=True)
-    date_fin = models.DateField(blank=False, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    status = models.BooleanField(default=True)
-
-    def __str__(self):
-        return self.libelle_fr
-
-    class Meta:
-        db_table = 'acte_waspito'
-        verbose_name = 'Acte de waspito'
-        verbose_name_plural = 'Actes de waspito'
-
-
-class CategorieAffection(models.Model):
-    libelle = models.CharField(max_length=255)
-    code = models.CharField(max_length=255, blank=True, default=None, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    status = models.BooleanField(default=True)
-
-    def __str__(self):
-        return self.libelle
-
-    class Meta:
-        db_table = 'categorie_affection'
-        verbose_name = "Categorie d'affection"
-        verbose_name_plural = "Categories d'affection"
-
-
-class Affection(models.Model):
-    libelle = models.CharField(max_length=255)
-    short_name = models.CharField(max_length=255, blank=True, default=None, null=True)
-    code = models.CharField(max_length=50, null=True)
-    code_cim_10 = models.CharField(max_length=50)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    status = models.BooleanField(default=True)
-    categorie = models.ForeignKey(CategorieAffection, on_delete=models.RESTRICT, null=True)
-
-    def __str__(self):
-        return f"{self.libelle} - {self.status} - {self.code_cim_10} - {self.status}"
-
-    class Meta:
-        db_table = 'affections'
-        verbose_name = 'Affection'
-        verbose_name_plural = 'Affections'
-
-
-
-class ReseauSoin(models.Model):
-    created_by = models.ForeignKey(User, null=True, on_delete=models.RESTRICT)
-    bureau = models.ForeignKey(Bureau, null=True, on_delete=models.RESTRICT)
-    code = models.CharField(max_length=15, null=True)
-    nom = models.CharField(max_length=255)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    status = models.BooleanField(default=True)
-
-    def __str__(self):
-        return f'{self.nom}'
-
-    class Meta:
-        db_table = 'reseaux_soins'
-        verbose_name = 'Réseau de soins'
-        verbose_name_plural = 'Réseaux de soins'
-
-    @property
-    def nombre_prestataires(self):
-        return self.ses_prestataires.all().filter(statut_validite=StatutValidite.VALIDE).count()
-
-    def has_prestataire(self, prestataire):
-        prestataire_exists = self.ses_prestataires.all().filter(statut_validite=StatutValidite.VALIDE).filter(prestataire=prestataire)
-        return True if prestataire_exists else None
-
-
-class PrestataireReseauSoin(models.Model):
-    created_by = models.ForeignKey(User, null=True, on_delete=models.RESTRICT)
-    removed_by = models.ForeignKey(User, related_name="removed_by", null=True, on_delete=models.RESTRICT)
-    prestataire = models.ForeignKey(Prestataire, related_name="ses_reseaux_soins", on_delete=models.RESTRICT)
-    reseau_soin = models.ForeignKey(ReseauSoin, related_name="ses_prestataires", on_delete=models.RESTRICT)
-    date_integration = models.DateTimeField(blank=True, null=True)
-    date_retrait = models.DateTimeField(blank=True, null=True)
-    statut_validite = models.fields.CharField(choices=StatutValidite.choices, default=StatutValidite.VALIDE, max_length=15, null=True)
-
-    class Meta:
-        db_table = 'prestataire_reseau_soin'
-        verbose_name = 'Prestataire du réseau de soins'
-        verbose_name_plural = 'Prestataires du réseau de soins'
-
-
-class QualiteBeneficiaire(models.Model):
-    libelle = models.CharField(max_length=50, blank=True, null=True)
-    code = models.CharField(max_length=10, blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return self.libelle
-
-    class Meta:
-        db_table = 'qualite_beneficiaire'
-        verbose_name = 'Qualité bénéficiaire'
-        verbose_name_plural = 'Qualités bénéficiaire'
-
-
-
-
-
-
-
+        db_table = 'type_recours'
+        verbose_name = "Type de recours sur un sinistre"
+        verbose_name_plural = "Type de recours sur un sinistre"
 
 

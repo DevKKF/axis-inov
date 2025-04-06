@@ -23,7 +23,7 @@ class AnalysePortefeuille(models.Model):
     commercial = models.ForeignKey(User, blank=False, null=True, on_delete=models.RESTRICT)
     fichier = models.ImageField(upload_to=upload_fichier_portefeuille, null=True, blank=True, )
     type_portefeuille = models.fields.CharField(choices=TypePortefeuille.choices, default=TypePortefeuille.AUCUN, max_length=255, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True, null=True)
     created_by = models.ForeignKey(User, related_name="portefeuille_created_by", blank=True, null=True, default=None, on_delete=models.RESTRICT)
 
     def __str__(self):
@@ -43,7 +43,7 @@ def upload_fichier_commission(instance, filename):
 
 class ControleCommission(models.Model):
     fichier = models.ImageField(upload_to=upload_fichier_commission, null=True, blank=True, )
-    created_at = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True, null=True)
     created_by = models.ForeignKey(User, related_name="controle_commision_created_by", blank=True, null=True, default=None, on_delete=models.RESTRICT)
 
     def __str__(self):

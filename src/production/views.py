@@ -2143,8 +2143,9 @@ def modifier_police(request, police_id):
         else:
             autre_risque_id = request.POST.get('autre_risque_id')
 
+            print("autre_risque_id ", autre_risque_id)
             if autre_risque_id:
-                autrerisque = AutreRisque.objects.get(id=request.POST.get('autre_risque_aliment_id'))
+                autrerisque = AutreRisque.objects.get(id=autre_risque_id)
 
                 # Créer sa ligne d'historique
                 autrerisque_historique_created = HistoriqueAliment(
@@ -5820,6 +5821,38 @@ def get_formules(request, police_id):
     formules_list = [{'code': formule['code'], 'libelle': formule['libelle']} for formule in formules]
 
     return JsonResponse({'formules': formules_list})
+
+
+def getAliments(police_id):
+    aliments = []
+
+    police = Police.objects.filter(pk=police_id, statut_validite=StatutValidite.VALIDE)
+    for formule in police.formules:
+
+        aliment_formule = AlimentFormule.objects.filter(formule_id=formule.id, statut=Statut.ACTIF).order_by('-id')
+
+        for af in aliment_formule:
+            if af.aliment not in aliments:
+                aliments.append(af.aliment)
+
+    return aliments
+
+
+def getAdherentsPrincipaux(police_id):
+    aliments = []
+
+    police = Police.objects.get(id=police_id)
+
+    for formule in police.formules:
+
+        aliment_formule = AlimentFormule.objects.filter(formule_id=formule.id, statut=Statut.ACTIF, statut_validite=StatutValidite.VALIDE).order_by('-id')
+
+        for af in aliment_formule:
+            if af.aliment.statut == Statut.ACTIF and af.aliment.qualite_beneficiaire and af.aliment.qualite_beneficiaire.code == "AD":
+                if af.aliment not in aliments:
+                    aliments.append(af.aliment)
+
+    return aliments
 
 
 def check_pandas_value(value):

@@ -64,8 +64,7 @@ from production.templatetags.my_filters import money_field, convertir_date_multi
 from shared.enum import PasswordType, Statut, StatutValidite, BaseCalculTM, StatutPaiementSinistre, TypePortefeuille, \
     SatutBordereauDossierSinistres, StatutSinistre
 
-from production.templatetags.my_filters import money_field, convertir_date_multiformat, supprimer_espaces, convertir_date_jj_mm_aaaa, format_montant, money_format_mille, \
-    rendre_html
+from production.templatetags.my_filters import money_field, convertir_date_multiformat, supprimer_espaces, convertir_date_jj_mm_aaaa, format_montant, money_format_mille
 
 
 class AnalysePortefeuilleView(PermissionRequiredMixin,TemplateView):

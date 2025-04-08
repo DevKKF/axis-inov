@@ -1,5 +1,21 @@
 {% load i18n static jazzmin admin_urls %}
 {% load my_filters %}
+<style>
+	.suggestion {
+		border: 1px solid #ddd;
+		background: #fff;
+		position: absolute;
+		width: 100%;
+		max-height: 250px;
+		overflow-y: auto;
+		z-index: 1000;
+		box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+	}
+
+	.suggest-item:hover {
+		background-color: #f0f0f0;
+	}
+</style>
 <div  class="modal fade" id="modal-sinistre" data-backdrop="static" data-keyboard="false" aria-hidden="true"  style="display: none">
 	<div class="modal-dialog modal-xl">
 		<div class="modal-content">
@@ -7,21 +23,21 @@
 			{% csrf_token %}
 			<input type="hidden" id="police_id" data-police-id="{{ police.id }}" value="{{ police.id }}">
 			<div class="modal-header">
-				<h4 class="modal-title">{{_("CREER UN SINISTRE")}}</h4>
+				<h4 class="modal-title">CREER UN SINISTRE</h4>
 				<button type="button" class="close"data-dismiss="modal"aria-label="Close">
 					<span aria-hidden="true">×</span>
 				</button>
 			</div>
 			<div class="modal-body">
 				<div class="alert  alert-dismissible fade show hidden" role="alert">
-				  <span class="message">{{_("TRAITEMENT EN COURS")}}</span>
+				  <span class="message">TRAITEMENT EN COURS</span>
 				</div>
 				<div class="col-md-12 offset-0">
 					<ul class="nav nav-tabs" id="myTab" role="tablist">
-						<li class="nav-item text-uppercase"><a class="nav-link active" id="identity-tab" data-toggle="tab" href="#identity" role="tab" aria-controls="identity" aria-selected="true">{{_("Information du contrat")}}</a></li>
-						<li class="nav-item text-uppercase"><a class="nav-link" id="declaration_sinistre-tab" data-toggle="tab" href="#declaration_sinistre" role="tab" aria-controls="declaration_sinistre" aria-selected="false">{{_("Déclaration du sinistre")}}</a></li>
-						<li class="nav-item text-uppercase"><a class="nav-link" id=intervenant-tab" data-toggle="tab" href="#intervenant" role="tab" aria-controls="intervenant" aria-selected="false">{{_("Intervenants")}}</a></li>
-						<!--li class="nav-item text-uppercase"><a class="nav-link" id=provision-tab" data-toggle="tab" href="#provision" role="tab" aria-controls="provision" aria-selected="false">{{_("Provision")}}</a></li-->
+						<li class="nav-item text-uppercase"><a class="nav-link active" id="identity-tab" data-toggle="tab" href="#identity" role="tab" aria-controls="identity" aria-selected="true">Information du contrat</a></li>
+						<li class="nav-item text-uppercase"><a class="nav-link" id="declaration_sinistre-tab" data-toggle="tab" href="#declaration_sinistre" role="tab" aria-controls="declaration_sinistre" aria-selected="false">Déclaration du sinistre</a></li>
+						<!--li class="nav-item text-uppercase"><a class="nav-link" id=intervenant-tab" data-toggle="tab" href="#intervenant" role="tab" aria-controls="intervenant" aria-selected="false">Intervenants</a></li>
+						<li class="nav-item text-uppercase"><a class="nav-link" id=provision-tab" data-toggle="tab" href="#provision" role="tab" aria-controls="provision" aria-selected="false">Provision</a></li-->
 					</ul>
 					<div class="tab-content" id="myTabContent">
 
@@ -29,44 +45,68 @@
 							<div class="row">
 								<div class="col-md-6">
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_("Code assuré")}} </label>
+										<label class="col-sm-5 col-form-label">Code assuré</label>
 										<div class="col-sm-7">
 											<span class="form-control">{{ client.code|default:client.code_provisoire|default:"" }}</span>
 										</div>
 									</div>
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_("N° Contrat")}}</label>
+										<label class="col-sm-5 col-form-label">N° Contrat</label>
 										<div class="col-sm-7">
 											<span class="form-control">{{ police.numero|default:police.numero_provisoire|default:"" }}</span>
 										</div>
 									</div>
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_("Branche")}} </label>
+										<label class="col-sm-5 col-form-label">Branche</label>
 										<div class="col-sm-7">
 											<input type="hidden" name="branche_id" id="branche_id" data-branche-id="{{ police.produit.branche_id }}" value="{{ police.produit.branche_id }}" class="form-control">
 											<span class="form-control" title="{{ police.produit.branche.nom|default_if_none:'' }}">{{ police.produit.branche.nom|default_if_none:""|slice:":35" }}</span>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">Date début</label>
+										<div class="col-sm-7">
+											<span class="form-control" style="border: 2px solid {{ border_date_color }} " >{{ police.date_debut_effet|date:'d/m/Y' }}</span>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">Commercial</label>
+										<div class="col-sm-7">
+											<span class="form-control" title="{{ police.commercial.first_name|default_if_none:'' }} {{ police.commercial.last_name|default_if_none:'' }}">{{ police.commercial.last_name|default_if_none:'' }} {{ police.commercial.first_name|default_if_none:'' }}</span>
 										</div>
 									</div>
 								</div>
 								<div class="vl"></div>
 								<div class="col-md-5" style="border-left:0px;">
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_("Nom assuré")}} </label>
+										<label class="col-sm-5 col-form-label">Nom assuré</label>
 										<div class="col-sm-7">
 											<span class="form-control">{{ client.nom|default_if_none:'' }} {{ client.prenoms|default_if_none:'' }}</span>
 										</div>
 									</div>
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_("Compagnie")}} </label>
+										<label class="col-sm-5 col-form-label">Compagnie</label>
 										<div class="col-sm-7">
 											<input type="hidden" name="compagnie_id" id="compagnie_id" value="{{ assureur_police.compagnie_id }}" class="form-control">
 											<span class="form-control">{{ assureur_police.compagnie.nom|default_if_none:"" }}</span>
 										</div>
 									</div>
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_("Produit")}} </label>
+										<label class="col-sm-5 col-form-label">Produit</label>
 										<div class="col-sm-7">
 											<span class="form-control" title="{{ police.produit.nom|default_if_none:'' }}">{{ police.produit.nom|default_if_none:""|slice:":35" }}</span>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">Date échéance</label>
+										<div class="col-sm-7">
+											<span class="form-control" style="border: 2px solid {{ border_date_color }}">{{ police.date_echeance }}</span>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">Etat de la police</label>
+										<div class="col-sm-7">
+											<span class="form-control" title="{{ police.etat_police }}">{{ police.etat_police }}</span>
 										</div>
 									</div>
 								</div>
@@ -75,12 +115,73 @@
 
 						<div class="tab-pane fade mt-3" id="declaration_sinistre" role="tabpanel" aria-labelledby="declaration_sinistre-tab">
 							<div class="row" style="max-height:550px;">
+								<!-- POLICE AUTOMOBILE INFORMATIONS -->
+								<div class="col-md-12 text-uppercase" style="margin-bottom:10px !important; border-top:2px solid #F16623">
+									<h6><mark class="match">Véhicules et informations</mark></h6>
+								</div>
+								<div class="col-md-6">
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">Recherche un véhicule</label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control" id="search_vehicule" value="">
+											<input type="hidden" name="vehicule_id" id="vehicule_id">
+											<div class="suggestion"></div>
+											<span class="small"></span>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">N° série</label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control" name="num_serie" id="num_serie" readonly style="background:#fff !important">
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">Marque</label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control" name="marque" id="marque" readonly style="background:#fff !important">
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">Date d'entrée</label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control" name="date_entree" id="date_entree" readonly style="background:#fff !important">
+										</div>
+									</div>
+								</div>
+								<div class="vl"></div>
+								<div class="col-md-5" style="border-left:0px;">
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">N° Immatriculation</label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control" name="immatriculation" id="immatriculation" readonly style="background:#fff !important">
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">Modèle</label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control" name="modele" id="modele" readonly style="background:#fff !important">
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">Usage</label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control" name="usage" id="usage" readonly style="background:#fff !important">
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">Date de sortie</label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control" name="date_sortie" id="date_sortie" readonly style="background:#fff !important">
+										</div>
+									</div>
+								</div>
+
 								<div class="col-md-12 text-uppercase" style="margin-bottom:10px !important; border-top:2px solid #F16623">
 									<h6><mark class="match">Evénement</mark></h6>
 								</div>
 								<div class="col-md-6">
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_("Recherche risque")}} </label>
+										<label class="col-sm-5 col-form-label">Recherche risque</label>
 										<div class="col-sm-7">
 											{% if police.produit.code == '10001' or police.produit.code == '10002' %}
 												<select class="form-control tags-multiple vehicule" name="vehicule_id" id="vehicule_id">
@@ -103,25 +204,25 @@
 										</div>
 									</div>
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_("Date survenance")}} <span class="required">*</span></label>
+										<label class="col-sm-5 col-form-label">Date survenance <span class="required">*</span></label>
 										<div class="col-sm-7">
 											<input type="date" class="form-control" name="date_survenance" id="date_survenance" autocomplete="off" value="" required>
 										</div>
 									</div>
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_("Date ouverture")}} <span class="required">*</span></label>
+										<label class="col-sm-5 col-form-label">Date ouverture <span class="required">*</span></label>
 										<div class="col-sm-7">
 											<input type="date" class="form-control" name="date_ouverture" id="date_ouverture" autocomplete="off" value="{{ today|date:'Y-m-d' }}" max="{{ today|date:'Y-m-d' }}" required>
 										</div>
 									</div>
 									<div class="form-group row d-none">
-										<label class="col-sm-5 col-form-label">{{_("Date clôture")}}</label>
+										<label class="col-sm-5 col-form-label">Date clôture</label>
 										<div class="col-sm-7">
 											<input type="date" class="form-control" name="date_cloture" id="date_cloture" autocomplete="off" value="">
 										</div>
 									</div>
 									<div class="form-group row d-none">
-										<label class="col-sm-5 col-form-label">{{_("Numéro sinistre")}}</label>
+										<label class="col-sm-5 col-form-label">Numéro sinistre</label>
 										<div class="col-sm-7">
 											<input type="text" class="form-control" name="numero" autocomplete="off" value="" />
 										</div>
@@ -131,7 +232,7 @@
 								<div class="col-md-5" style="border-left:0px;">
 
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_("Risque")}} <span class="required">*</span></label>
+										<label class="col-sm-5 col-form-label">Risque <span class="required">*</span></label>
 										<div class="col-sm-7">
 											{% if police.produit.code == '10001' or police.produit.code == '10002' %}
 												<input type="text" class="form-control" name="risque" id="risque" readonly required>
@@ -143,19 +244,19 @@
 										</div>
 									</div>
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_("Date déclaration")}} <span class="required">*</span></label>
+										<label class="col-sm-5 col-form-label">Date déclaration <span class="required">*</span></label>
 										<div class="col-sm-7">
 											<input type="date" class="form-control" name="date_declaration" id="date_declaration" autocomplete="off" value="" required>
 										</div>
 									</div>
 									<div class="form-group row d-none">
-										<label class="col-sm-5 col-form-label">{{_("Date réouverture")}}</label>
+										<label class="col-sm-5 col-form-label">Date réouverture</label>
 										<div class="col-sm-7">
 											<input type="date" class="form-control" name="date_reouverture" id="date_reouverture" autocomplete="off" value="">
 										</div>
 									</div>
 									<div class="form-group row d-none">
-										<label class="col-sm-5 col-form-label">{{_("Sinistre avec recours")}} ? <span class="required">*</span></label>
+										<label class="col-sm-5 col-form-label">Sinistre avec recours ? <span class="required">*</span></label>
 										<div class="col-sm-7" style="margin-top:10px">
 											<input type="radio" value="OUI" name="sinistre_recours" id="sinistre_recours_oui">
 											<label class="form-check-label" for="sinistre_recours_oui">OUI</label>
@@ -171,7 +272,7 @@
 								</div>
 								<div class="col-md-6">
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_("Circonstance")}} <span class="required">*</span></label>
+										<label class="col-sm-5 col-form-label">Circonstance <span class="required">*</span></label>
 										<div class="col-sm-7">
 											<select class="form-control" name="circonstance_id" id="circonstance_id" required>
 												<option value="">Choisir</option>
@@ -182,19 +283,19 @@
 										</div>
 									</div>
 									<div class="form-group row" id="saisie_circonstance_bloc" style="display:none">
-										<label class="col-sm-5 col-form-label">{{_("Saisie la circonstance")}} <span class="required">*</span></label>
+										<label class="col-sm-5 col-form-label">Saisie la circonstance <span class="required">*</span></label>
 										<div class="col-sm-7">
 											<input type="text" class="form-control" name="saisie_circonstance" id="saisie_circonstance" autocomplete="off" value="">
 										</div>
 									</div>
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_("Lieu de survenance")}}</label>
+										<label class="col-sm-5 col-form-label">Lieu de survenance</label>
 										<div class="col-sm-7">
 											<input type="text" class="form-control" name="lieu_survenance" id="lieu_survenance" autocomplete="off" value="">
 										</div>
 									</div>
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_("TVA récupérée")}}</label>
+										<label class="col-sm-5 col-form-label">TVA récupérée</label>
 										<div class="col-sm-7">
 											<select class="form-control" name="tva_recuperee" id="tva_recuperee">
 												<option value="">Choisir</option>
@@ -208,7 +309,7 @@
 								<div class="col-md-5" style="border-left:0px;">
 
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_("Type sinistre")}} <span class="required">*</span></label>
+										<label class="col-sm-5 col-form-label">Type sinistre <span class="required">*</span></label>
 										<div class="col-sm-7">
 											<select class="form-control" name="type_sinistre_id" id="type_sinistre_id" required>
 												<option value="">Choisir</option>
@@ -219,13 +320,13 @@
 										</div>
 									</div>
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_("Franchise")}}</label>
+										<label class="col-sm-5 col-form-label">Franchise</label>
 										<div class="col-sm-7">
 											<input type="text" class="form-control money_field" name="franchise" id="franchise" autocomplete="off" value="">
 										</div>
 									</div>
 									<div class="form-group row" id="responsabilite" style="display:none">
-										<label class="col-sm-5 col-form-label">{{_("Taux de responsabilité")}} <span class="required">*</span></label>
+										<label class="col-sm-5 col-form-label">Taux de responsabilité <span class="required">*</span></label>
 										<div class="col-sm-7">
 											<select class="form-control" name="responsabilite_id" id="responsabilite_id">
 												<option value="">Choisir</option>
@@ -242,19 +343,19 @@
 								</div>
 								<div class="col-md-12">
 									<div class="form-group row">
-										<label class="col-sm-12 col-form-label">{{_("Fait générateur")}} </label>
+										<label class="col-sm-12 col-form-label">Fait générateur </label>
 										<div class="col-sm-12">
 											<textarea class="form-control" name="fait_generateur" id="fait_generateur" cols="3" rows="1"></textarea>
 										</div>
 									</div>
 									<div class="form-group row">
-										<label class="col-sm-12 col-form-label">{{_("Point de choc")}} </label>
+										<label class="col-sm-12 col-form-label">Point de choc </label>
 										<div class="col-sm-12">
 											<textarea class="form-control" name="point_de_choc" id="point_de_choc" cols="3" rows="2"></textarea>
 										</div>
 									</div>
 									<div class="form-group row">
-										<label class="col-sm-12 col-form-label">{{_("Commentaire")}} </label>
+										<label class="col-sm-12 col-form-label">Commentaire </label>
 										<div class="col-sm-12">
 											<textarea class="form-control" name="commentaire" id="commentaire" cols="10" rows="5"></textarea>
 										</div>
@@ -270,13 +371,68 @@
 										<thead>
 											<tr>
 												<th style="width:5%"></th>
-												<th>{{_("Libellé")}}</th>
-												<th class="text-center" style="width:20%">{{_("Mouvement")}}</th>
-												<th class="text-center" style="width:20%;">{{_("Date")}}</th>
+												<th>Libellé</th>
+												<th class="text-center" style="width:20%">Mouvement</th>
+												<th class="text-center" style="width:20%;">Date</th>
 											</tr>
 										</thead>
 										<tbody></tbody>
 									</table>
+								</div>
+
+								<div class="col-md-12">
+									<label for="type_police" class="form-label">Type de police</label>
+									<select id="type_police" name="type_police" class="form-control form-select">
+										<option value="">-- Sélectionner --</option>
+										<option value="auto">Automobile</option>
+										<option value="habitation">Habitation</option>
+										<option value="sante">Santé</option>
+									</select>
+								</div>
+
+								<div class="col-md-12">
+									<label for="date_sinistre" class="form-label">Date du sinistre</label>
+									<input type="date" id="date_sinistre" name="date_sinistre" class="form-control">
+								</div>
+
+								<div class="col-md-12">
+									<label for="lieu" class="form-label">Lieu du sinistre</label>
+									<input type="text" id="lieu" name="lieu" class="form-control">
+								</div>
+
+								<!-- Champs spécifiques à l'assurance AUTO -->
+								<div id="fields-auto" class="police-fields d-none">
+									<div class="col-md-12">
+										<label>Immatriculation</label>
+										<input type="text" name="immatriculation" class="form-control">
+									</div>
+									<div class="col-md-12">
+										<label>Conducteur</label>
+										<input type="text" name="conducteur" class="form-control">
+									</div>
+								</div>
+
+								<!-- Champs spécifiques à l'HABITATION -->
+								<div id="fields-habitation" class="police-fields d-none">
+									<div class="col-md-12">
+										<label>Type de bien</label>
+										<select name="type_bien" class="form-control form-select">
+											<option>Maison</option>
+											<option>Appartement</option>
+											<option>Autre</option>
+										</select>
+									</div>
+								</div>
+
+								<!-- Champs spécifiques à la SANTÉ -->
+								<div id="fields-sante" class="police-fields d-none">
+									<div class="col-md-12">
+										<label>Hospitalisation</label>
+										<select name="hospitalisation" class="form-control form-select">
+											<option value="oui">Oui</option>
+											<option value="non">Non</option>
+										</select>
+									</div>
 								</div>
 							</div>
 						</div>
@@ -340,6 +496,136 @@
         }
     }
 </script>
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const typeSelect = document.getElementById("type_police");
+    const fieldBlocks = document.querySelectorAll(".police-fields");
+
+    typeSelect.addEventListener("change", function () {
+        const selected = this.value;
+
+        // Cacher tous les blocs
+        fieldBlocks.forEach(block => block.classList.add("d-none"));
+
+        // Afficher le bloc correspondant
+        if (selected) {
+            const bloc = document.getElementById(`fields-${selected}`);
+            if (bloc) bloc.classList.remove("d-none");
+        }
+    });
+});
+</script>
+
+<script>
+$(document).ready(function () {
+    $('#search_vehicule').on('input', function () {
+        var query = $(this).val().trim();
+        var policeId = $('#police_id').data('police-id');
+        var $suggestionDiv = $('.suggestion');
+        var $vehiculeIdInput = $('#vehicule_id');
+
+        if (query.length >= 2) {
+            $.ajax({
+                url: '/production/polices/' + policeId + '/vehicules/search',
+                method: 'GET',
+                data: { immatriculation: query },
+                dataType: 'json',
+                success: function (data) {
+                    $suggestionDiv.empty();
+                    if (data.length > 0) {
+                        $.each(data, function (index, vehicule) {
+                            $suggestionDiv.append(`
+                                <div class="suggest-item p-2 border-bottom" data-vehicule-id="${vehicule.id}" style="cursor:pointer">
+                                    <strong>Immat :</strong> ${vehicule.immatriculation}<br>
+                                    <strong>Marque :</strong> ${vehicule.marque} | <strong>Modèle :</strong> ${vehicule.modele}
+                                </div>
+                            `);
+                        });
+                        $suggestionDiv.show();
+                    } else {
+                        $suggestionDiv.hide();
+                    }
+                },
+                error: function (error) {
+                    console.error('Erreur lors de la recherche de véhicules:', error);
+                    $suggestionDiv.empty().hide();
+                }
+            });
+        } else {
+            $suggestionDiv.empty().hide();
+        }
+    });
+
+    // Sélection d’un véhicule
+    $(document).on('click', '.suggest-item', function () {
+        var vehiculeId = $(this).data('vehicule-id');
+        $('#vehicule_id').val(vehiculeId);
+        $('#search_vehicule').val($(this).text().split('\n')[0].replace('Immat :', '').trim());
+        $('.suggestion').hide();
+
+        var policeId = $('#police_id').data('police-id');
+        $.ajax({
+            url: '/production/vehicules/' + vehiculeId,
+            method: 'GET',
+            dataType: 'json',
+            success: function (vehicule) {
+                $('#num_serie').val(vehicule.num_serie);
+                $('#marque').val(vehicule.marque);
+                $('#modele').val(vehicule.modele);
+                $('#immatriculation').val(vehicule.immatriculation);
+                $('#date_entree').val(vehicule.date_entree);
+                $('#usage').val(vehicule.usage);
+                $('#date_sortie').val(vehicule.date_sortie);
+
+                // Vérification de la date de sortie
+                if (vehicule.date_sortie && new Date(vehicule.date_sortie) < new Date()) {
+                    let n = noty({
+                        text: 'Ce véhicule est déjà sorti. Voulez-vous continuer ?',
+                        type: 'warning',
+                        dismissQueue: true,
+                        layout: 'center',
+                        theme: 'defaultTheme',
+                        buttons: [
+                            {
+                                addClass: 'btn btn-primary',
+                                text: 'Confirmer',
+                                onClick: function ($noty) {
+                                    $noty.close();
+                                    $('#btn_save_police_sinistre').prop('disabled', false);
+                                }
+                            },
+                            {
+                                addClass: 'btn btn-danger',
+                                text: 'Annuler',
+                                onClick: function ($noty) {
+                                    $noty.close();
+                                    $('#btn_save_police_sinistre').prop('disabled', true);
+                                    $('#search_vehicule, #vehicule_id, #num_serie, #marque, #modele, #immatriculation, #date_entree, #usage, #date_sortie').val('');
+                                }
+                            }
+                        ]
+                    });
+                    $('#btn_save_police_sinistre').prop('disabled', true);
+                } else {
+                    $('#btn_save_police_sinistre').prop('disabled', false);
+                }
+            },
+            error: function (error) {
+                console.error('Erreur lors de la récupération des détails du véhicule:', error);
+            }
+        });
+    });
+
+    // Cacher les suggestions quand on clique ailleurs
+    $(document).on('click', function (e) {
+        if (!$(e.target).closest('#search_vehicule').length && !$(e.target).closest('.suggestion').length) {
+            $('.suggestion').hide();
+        }
+    });
+});
+</script>
+
 
 {% include 'police/modal_sinistre_garantie.html' %}
 {% include 'police/modal_sinistre_intervenant.html' %}

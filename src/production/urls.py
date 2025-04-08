@@ -122,6 +122,9 @@ urlpatterns = [
     path('police/<int:police_id>/sinistres_datatable', views.police_sinistres_datatable, name='police_sinistres_datatable'),
     path('police/information-vehicule/<int:vehicule_id>', views.information_vehicule, name='information_vehicule'),
     path('police/information-marchandise/<int:marchandise_id>', views.information_marchandise, name='information_marchandise'),
+    path('polices/<int:police_id>/vehicules/search', views.search_vehicules, name='search_vehicules'),
+    path('polices/<int:police_id>/vehicules/search', views.search_vehicules, name='search_vehicules'),
+    path('vehicules/<int:vehicule_id>', views.vehicule_detail, name='vehicule_detail'),
 
     path('add_intervenant_session/', views.add_intervenant_session, name='add_intervenant_session'),
     path('vider_intervenants_garanties/', views.vider_intervenants_garanties_session, name='vider_intervenants_garanties_session'),

@@ -282,116 +282,16 @@ class Police(models.Model):
             return "En attente"
 
     @property
-    def nombre_total_beneficiaires(self):
-        today = timezone.now().date()
-        police_id = self.pk
-
-        db_query = "SELECT count(*) as nombre_beneficiaire from aliments inner join aliment_formule on aliment_formule.aliment_id = aliments.id inner join formulegarantie ON formulegarantie.id = aliment_formule.formule_id inner join polices on polices.id = formulegarantie.police_id where aliments.statut_incorporation='INCORPORE' and aliment_formule.statut_validite='VALIDE' and aliment_formule.id = ( select MAX(id) from aliment_formule WHERE aliment_id = aliments.id and statut_validite='VALIDE') and polices.id = " + str(
-            police_id)
-        db_query = "SELECT count(*) as nombre_beneficiaire from aliments inner join aliment_formule on aliment_formule.aliment_id = aliments.id inner join formulegarantie ON formulegarantie.id = aliment_formule.formule_id inner join polices on polices.id = formulegarantie.police_id where aliment_formule.statut_validite='VALIDE' and aliment_formule.id = ( select MAX(id) from aliment_formule WHERE aliment_id = aliments.id and statut_validite='VALIDE') and polices.id = " + str(
-            police_id)
-        pprint("db_query")
-        print(db_query)
-
-        data, columns = execute_query(db_query)
-
-        final_data = []
-        for row in data:
-            final_data.append(dict(zip(columns, row)))
-
-        nombre_total = final_data[0]["nombre_beneficiaire"]
-
-        # aliment_formule_ids = AlimentFormule.objects.filter(formule_id__in=[p.id for p in self.formules],
-        #                                                     statut=Statut.ACTIF).values_list('aliment_id',
-        #                                                                                      flat=True).order_by('-id')
-
-        # nombre_total = Aliment.objects.filter(id__in=aliment_formule_ids).count()
-
-        return nombre_total
-
-    @property
-    def nombre_beneficiaires_entree_encours(self):
-        today = timezone.now().date()
-        nombre_entree_encours = MouvementAliment.objects.filter(police_id=self.id, mouvement__code="DMD-INCORPO-GRH",
-                                                                date_effet__lte=today,
-                                                                statut_validite=StatutValidite.VALIDE,
-                                                                statut_traitement=StatutTraitement.NON_TRAITE).count()
-
-        #   print(f'@@ nombre_beneficiaires_entree_encours : {nombre_entree_encours} ')
-
-        return nombre_entree_encours
-
-    @property
-    def nombre_beneficiaires_entres(self):
-
-        nombre_entres = self.nombre_total_beneficiaires - self.nombre_beneficiaires_entree_encours - self.nombre_beneficiaires_sortis - self.nombre_beneficiaires_suspendus
-
-        #   print(f'@@ nombre_entres : {nombre_entres} ')
-
-        return nombre_entres
-
-    @property
-    def nombre_beneficiaires_suspendus(self):
-        today = timezone.now().date()
-        #   nombre_suspendus = MouvementAliment.objects.filter(police_id=self.id, mouvement__code="SUSPENSION-BENEF", date_effet__lte=today, statut_validite=StatutValidite.VALIDE).count()
-
-        nombre_suspendus = MouvementAliment.objects.filter(
-            Q(police_id=self.id, mouvement__code="SUSPENSION-BENEF", date_effet__lte=today,
-              statut_validite=StatutValidite.VALIDE) &
-            ~Q(aliment_id__in=MouvementAliment.objects.filter(
-                police_id=self.id, mouvement__code="REMISEVIGUEUR-BENEF", date_effet__lte=today,
-                statut_validite=StatutValidite.VALIDE
-            ).values_list('aliment_id', flat=True))
-        ).count()
-
-        #   print(f'@@ nombre_suspendus : {nombre_suspendus} ')
-
-        return nombre_suspendus
-
-    @property
-    def nombre_beneficiaires_sortis_encours(self):
-
-        today = datetime.datetime.now(tz=timezone.utc).date()
-        nombre_sortis_en_cours = MouvementAliment.objects.filter(police_id=self.id, mouvement__code="DMDSORTIE",
-                                                                 date_effet__lte=today,
-                                                                 statut_validite=StatutValidite.VALIDE,
-                                                                 statut_traitement=StatutTraitement.NON_TRAITE).count()
-
-        #   print(f'@@ nombre_sortis_en_cours : {nombre_sortis_en_cours} ')
-
-        return nombre_sortis_en_cours
-
-    @property
-    def nombre_beneficiaires_sortis(self):
-        # today = datetime.datetime.now(tz=timezone.utc).date()
-        # nombre_sortis = MouvementAliment.objects.filter(police_id=self.id, mouvement__code="SORTIE-BENEF", date_effet__lte=today, statut_validite=StatutValidite.VALIDE).count()
-
-        today = timezone.now().date()
-        police_id = self.pk
-
-        db_query = "SELECT count(*) as nombre_beneficiaire from aliments inner join aliment_formule on aliment_formule.aliment_id = aliments.id inner join formulegarantie ON formulegarantie.id = aliment_formule.formule_id inner join polices on polices.id = formulegarantie.police_id where aliment_formule.statut_validite='VALIDE' and aliment_formule.id = ( select MAX(id) from aliment_formule WHERE aliment_id = aliments.id and statut_validite='VALIDE') and polices.id = " + str(
-            police_id) + " and aliments.date_sortie IS NOT NULL and aliments.date_sortie <= '" + str(today) + "'"
-        pprint("db_query")
-        print(db_query)
-
-        data, columns = execute_query(db_query)
-
-        final_data = []
-        for row in data:
-            final_data.append(dict(zip(columns, row)))
-
-        nombre_sortis = final_data[0]["nombre_beneficiaire"]
-
-        #   print(f'@@ nombre_sortis : {nombre_sortis} ')
-
-        return nombre_sortis
-
-    @property
     def police_dernier_historique(self):
 
         historique = HistoriquePolice.objects.filter(police_id=self.id).order_by('-date_du_jour').first()
 
         return historique
+
+    @property
+    def date_echeance(self):
+        date = self.date_fin_police or self.date_fin_effet
+        return date.strftime('%d/%m/%Y') if date else None
 
 
 class HistoriquePolice(models.Model):
@@ -603,6 +503,12 @@ class Vehicule(models.Model):
         db_table = 'vehicules'
         verbose_name = 'Véhicules'
         verbose_name_plural = 'Véhicules'
+
+    @property
+    def vehicule_dernier_historique(self):
+        vehicule = HistoriqueAliment.objects.filter(vehicule_id=self.id).order_by('-created_at').first()
+
+        return vehicule
 
 
 class Marchandise(models.Model):

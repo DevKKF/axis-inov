@@ -2779,3 +2779,26 @@ class TypeRecours(models.Model):
         verbose_name = "Type de recours sur un sinistre"
         verbose_name_plural = "Type de recours sur un sinistre"
 
+
+class EtapeSinistre(models.Model):
+    code = models.CharField(max_length=100, blank=True, null=True)
+    numero_ordre = models.PositiveIntegerField(null=True)
+    libelle = models.CharField(max_length=100, blank=True, null=True)
+    type_etape = models.fields.CharField(choices=TypeEtape.choices, default=TypeEtape.FACULTATIF, max_length=15, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    statut = models.BooleanField(default=True)
+
+    def __str__(self):
+        return self.libelle
+
+    class Meta:
+        db_table = 'etape_sinistre'
+        verbose_name = "Etape de suivi sinistre"
+        verbose_name_plural = "Etape de suivi sinistre"
+
+        constraints = [
+            models.UniqueConstraint(fields=['code'], name='unique_code_etape'),
+            models.UniqueConstraint(fields=['numero_ordre'], name='unique_ordre_etape'),
+        ]
+

@@ -29,6 +29,7 @@ from docx import Document
 from docx.shared import Inches
 from num2words import num2words
 from django.templatetags.static import static
+from django.views.decorators.http import require_GET
 #import pdfkit
 from PyPDF2 import PdfReader
 from reportlab.platypus import SimpleDocTemplate, Paragraph
@@ -100,7 +101,7 @@ from production.models import FormuleRubriquePrefinance, ModePrefinancement, Mot
     OperationReglement, HistoriquePolice, HistoriqueApporteurPolice, HistoriqueTaxePolice, Marchandise, HistoriqueAliment, \
     HistoriquePoliceGarantie
 from production.templatetags.my_filters import money_field, convertir_date_multiformat, supprimer_espaces, convertir_date_jj_mm_aaaa, format_montant, money_format_mille, \
-    rendre_html, arrondis_nombre, transformer_statut
+    arrondis_nombre, transformer_statut
 from shared.enum import StatutIncorporation, StatutValidite, StatutSinistre, StatutEnrolement, StatutTraitement, \
     StatutReversementCompagnie, StatutValiditeQuittance, Confidentialite
 from sinistre.models import Sinistre, DossierSinistre, MouvementSinistre, AlimentPoliceSinistre, Intervenant, SinistreIntervenant, GarantieSinistre, Provision, ReglementSinistre, \
@@ -4254,19 +4255,29 @@ class PoliceSinistresView(TemplateView):
 
             garanties = PoliceGarantie.objects.filter(police_id=police.id)
             pays = Pays.objects.all().order_by('nom')
-
+ 
             aliments = 0
             aliment = 0
             if police.produit.code == '10001' or police.produit.code == '10002' or police.produit.code == '50001' or police.produit.code == '50002':
-                aliments = AlimentPolice.objects.filter(police_id=police.id)
+                pass
             else:
                 aliment = AlimentPolice.objects.filter(police_id=police.id).first()
+
+            date_jour = datetime.now(tz=timezone.utc).strftime('%Y-%m-%d')
+            date_fin_effet = police.date_fin_effet.strftime('%Y-%m-%d')
+
+            border_date_color = ""
+            if police.date_fin_effet and date_fin_effet > date_jour:
+                border_date_color = "green"
+            else:
+                border_date_color = "red"
 
             context_perso = {
                 'police': police,
                 'client': client,
                 'dossiers_sinistres': None,
                 'sinistres': None,
+                'border_date_color': border_date_color,
                 'dernier_historique': dernier_historique,
                 'assureur_police': assureur_police,
                 'today': today,
@@ -4278,7 +4289,6 @@ class PoliceSinistresView(TemplateView):
                 'circonstances': circonstances,
                 'garanties': garanties,
                 'pays': pays,
-                'aliments': aliments,
                 'aliment': aliment
             }
 
@@ -5190,6 +5200,38 @@ def information_vehicule(request, vehicule_id):
         'risque_info': vehicule.marque+'-'+vehicule.numero_immatriculation,
         'date_entree': aliment.date_entree if aliment else None,
         'date_sortie': aliment.date_sortie if aliment else None,
+    }
+
+    return JsonResponse(data)
+
+
+@require_GET
+def search_vehicules(request, police_id):
+    immatriculation = request.GET.get('immatriculation', '').strip()
+    if len(immatriculation) < 2:
+        return JsonResponse([], safe=False)
+
+    vehicules = Vehicule.objects.filter(
+        #police_id=police_id,
+        numero_immatriculation__icontains=immatriculation
+    ).values('id', 'numero_immatriculation', 'marque', 'modele')
+
+    return JsonResponse(list(vehicules), safe=False)
+
+
+@require_GET
+def vehicule_detail(request, vehicule_id):
+    vehicule = get_object_or_404(Vehicule, id=vehicule_id)
+    print("immatriculation : ", vehicule.numero_immatriculation)
+    data = {
+        'id': vehicule.id,
+        'num_serie': vehicule.numero_serie,
+        'marque': vehicule.marque,
+        'modele': vehicule.modele,
+        'immatriculation': vehicule.numero_immatriculation,
+        'date_entree': vehicule.vehicule_dernier_historique.date_entree.strftime('%Y-%m-%d') if vehicule.vehicule_dernier_historique.date_entree else '',
+        'usage': vehicule.usage,
+        'date_sortie': vehicule.vehicule_dernier_historique.date_sortie.strftime('%Y-%m-%d') if vehicule.vehicule_dernier_historique.date_sortie else ''
     }
 
     return JsonResponse(data)

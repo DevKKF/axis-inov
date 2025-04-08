@@ -25792,6 +25792,7 @@ $(document).ready(function () {
         }
     });
 
+
     // Changement des informations du vehicule
     $('#vehicule_id').on('change', function () {
         let vehicule_id = $(this).val();

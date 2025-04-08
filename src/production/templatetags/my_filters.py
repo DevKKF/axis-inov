@@ -215,13 +215,6 @@ def convertir_date_jj_mm_aaaa(date_str):
     return None
 
 
-@register.filter
-def rendre_html(value):
-    if not value:
-        return ''
-    return mark_safe(value)
-
-
 def arrondis_nombre(value: float) -> int:
     """
     Arrondit un nombre à l'entier supérieur ou inférieur en fonction des décimales.
@@ -250,9 +243,4 @@ def transformer_statut(statut):
         return slugify(statut)
     else:
         return ""  # Retourne une chaîne vide si le statut est None
-
-
-@register.filter
-def get_item(dictionary, key):
-    return dictionary.get(key)
 

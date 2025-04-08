@@ -9,7 +9,11 @@ class Command(BaseCommand):
 
         seeders = [
             'seed_typerecours',
-            #'seed_autres',  # ajoute ici tous les autres fichiers seeders que tu crées
+            'seed_etapesinistre',
+            #'',
+            #'',
+            #'',
+            #'',
         ]
 
         for seeder in seeders:

@@ -805,7 +805,7 @@ class GroupeAdmin(admin.ModelAdmin):
     list_per_page = 10
 
 
-class RisqueProduitAdmin(admin.ModelAdmin):
+class TauxCommissionAdmin(admin.ModelAdmin):
     list_filter = ('libelle', 'code', 'created_at')
     list_display = ('libelle', 'code', 'taux', 'created_at')
     search_field = ('libelle', 'code', 'created_at')
@@ -842,7 +842,7 @@ admin.site.register(ConditionsAssurance, ConditionsAssuranceAdmin)
 admin.site.register(User, CustomUserAdmin)
 admin.site.register(Groupe, GroupeAdmin)
 admin.site.register(BureauTaxe, BureauTaxeAdmin)
-admin.site.register(RisqueProduit, RisqueProduitAdmin)
+admin.site.register(TauxCommission, TauxCommissionAdmin)
 admin.site.register(TypeSinistre)
 admin.site.register(TypeIntervenant)
 admin.site.register(Responsabilite)

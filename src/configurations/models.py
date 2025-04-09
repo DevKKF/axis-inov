@@ -1412,7 +1412,7 @@ class Branche(models.Model):
 class Produit(models.Model):
     branche = models.ForeignKey(Branche, null=True, on_delete=models.RESTRICT)
     type_produit = models.ForeignKey(TypeProduit, null=True, on_delete=models.RESTRICT)
-    risque_produit = models.ForeignKey(RisqueProduit, null=True, on_delete=models.RESTRICT)
+    taux_commission = models.ForeignKey(TauxCommission, null=True, on_delete=models.RESTRICT)
     code = models.CharField(max_length=10, blank=True, null=True)
     nom = models.CharField(max_length=100, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)

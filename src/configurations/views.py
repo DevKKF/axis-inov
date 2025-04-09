@@ -4314,15 +4314,15 @@ def add_compagnie(request):
 
         compagnie = Compagnie.objects.get(id=compagnie_created.pk)
 
-        risqueproduit = RisqueProduit.objects.all()
+        taux_commission = TauxCommission.objects.all()
 
-        for risque in risqueproduit:
-            produits = Produit.objects.filter(risque_produit_id=risque.id)
+        for taux_com in taux_commission:
+            produits = Produit.objects.filter(taux_commission_id=taux_com.id)
             for produit in produits:
                 ParamProduitCompagnie.objects.create(
                     compagnie_id=compagnie.id, produit_id=produit.id,
-                    taux_com_courtage=risque.taux,
-                    taux_com_courtage_terme=risque.taux,
+                    taux_com_courtage=taux_com.taux,
+                    taux_com_courtage_terme=taux_com.taux,
                 ).save()
 
         response = {

@@ -1377,7 +1377,7 @@ class TypeProduit(models.Model):
         verbose_name_plural = 'Type Produit'
 
 
-class RisqueProduit(models.Model):
+class TauxCommission(models.Model):
     libelle = models.CharField(max_length=50, blank=True, null=True)
     code = models.CharField(max_length=50, blank=True, null=True)
     taux= FloatRangeField(blank=True, default=None, null=True, min_value=0)
@@ -1388,9 +1388,9 @@ class RisqueProduit(models.Model):
         return self.libelle
 
     class Meta:
-        db_table = 'risque_produit'
-        verbose_name = 'Risques du produit'
-        verbose_name_plural = "Risques du produit"
+        db_table = 'taux_commision'
+        verbose_name = 'Taux de commission'
+        verbose_name_plural = "Taux de commission"
 
 
 class Branche(models.Model):
@@ -1412,7 +1412,7 @@ class Branche(models.Model):
 class Produit(models.Model):
     branche = models.ForeignKey(Branche, null=True, on_delete=models.RESTRICT)
     type_produit = models.ForeignKey(TypeProduit, null=True, on_delete=models.RESTRICT)
-    risque_produit = models.ForeignKey(RisqueProduit, null=True, on_delete=models.RESTRICT)
+    taux_commission = models.ForeignKey(TauxCommission, null=True, on_delete=models.RESTRICT)
     code = models.CharField(max_length=10, blank=True, null=True)
     nom = models.CharField(max_length=100, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)

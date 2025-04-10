@@ -9616,7 +9616,7 @@ def polices_en_cours_datatable(request):
     today = now()
 
     user = request.user
-    queryset = Police.objects.filter(Q(date_fin_effet__gt=today) | Q(date_fin_police__gt=today))
+    queryset = Police.objects.filter(Q(date_fin_effet__gt=today) | Q(date_fin_police__gt=today)).exclude(Q(statut="ANNULE") | Q(statut="INACTIF"))
 
     """
     if user.is_commercial:
@@ -9740,7 +9740,7 @@ def polices_arrivant_echeance_datatable(request):
     queryset = Police.objects.filter(
         (Q(date_fin_effet__lte=in_90_days) & Q(date_fin_effet__gt=today)) |
         (Q(date_fin_police__lte=in_90_days) & Q(date_fin_police__gt=today))
-    )
+    ).exclude(Q(statut="ANNULE") | Q(statut="INACTIF"))
 
     """
     if user.is_commercial:
@@ -9859,7 +9859,7 @@ def polices_non_renouvellees_resiliees_datatable(request):
     today = now()
 
     user = request.user
-    queryset = Police.objects.filter(Q(date_fin_effet__lt=today) | Q(date_fin_police__lt=today))
+    queryset = Police.objects.filter(Q(date_fin_effet__lt=today) | Q(date_fin_police__lt=today)).exclude(Q(statut="ANNULE") | Q(statut="INACTIF"))
 
     """
     if user.is_commercial:

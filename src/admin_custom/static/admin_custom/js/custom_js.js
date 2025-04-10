@@ -25901,10 +25901,141 @@ $(document).ready(function () {
         // L'obligation le champ taux de responsabilité en fonction de la branche
         const brancheId = $('#branche_id').data('branche-id');
         console.log('brancheId', brancheId);
+
+        // Cacher les deux types au départ
+        $(".branche_auto").hide();
+        $(".branche_autre").hide();
+
+    // Désactiver les champs obligatoires par défaut
+    $('#search_vehicule, #vehicule_id, #num_serie, #marque, #modele, #immatriculation, #date_entree, #usage, #date_sortie, #autre_risque_id')
+        .prop('required', false);
+
         if (brancheId == 1) {
-            $("#responsabilite").show();
             $('#responsabilite_id').attr('required', true);
+
+            // Afficher les champs pour les véhicules
+            $(".branche_auto").show();
+
+            // Rendre certains champs obligatoires
+            $('#search_vehicule, #vehicule_id').prop('required', true);
+
+            // Checking des aliments
+            $('#search_vehicule').on('input', function () {
+                var query = $(this).val().trim();
+                var policeId = $('#police_id').data('police-id');
+                var $suggestionDiv = $('.suggestion');
+                var $vehiculeIdInput = $('#vehicule_id');
+
+                // Réinitialise les champs dès que l'utilisateur modifie la recherche
+                $('#vehicule_id, #num_serie, #marque, #modele, #immatriculation, #date_entree, #usage, #date_sortie').val('');
+                $('#btn_save_police_sinistre').prop('disabled', true);
+
+                if (query.length >= 2) {
+                    $.ajax({
+                        url: '/production/polices/' + policeId + '/vehicules/search',
+                        method: 'GET',
+                        data: { immatriculation: query },
+                        dataType: 'json',
+                        success: function (data) {
+                            $suggestionDiv.empty();
+                            if (data.length > 0) {
+                                $.each(data, function (index, vehicule) {
+                                    $suggestionDiv.append(`
+                                        <div class="suggest-item p-2 border-bottom" data-vehicule-id="${vehicule.id}" style="cursor:pointer">
+                                            <strong><i class="fa fa-car"></i> Immat :</strong> ${vehicule.numero_immatriculation}<br>
+                                            <strong>Marque :</strong> ${vehicule.marque} | <strong>Modèle :</strong> ${vehicule.modele}
+                                        </div>
+                                    `);
+                                });
+                                $suggestionDiv.show();
+                            } else {
+                                $suggestionDiv.hide();
+                            }
+                        },
+                        error: function (error) {
+                            console.error('Erreur lors de la recherche de véhicules:', error);
+                            $suggestionDiv.empty().hide();
+                        }
+                    });
+                } else {
+                    $suggestionDiv.empty().hide();
+                }
+            });
+
+            // Sélection d’un véhicule
+            $(document).on('click', '.suggest-item', function () {
+                var vehiculeId = $(this).data('vehicule-id');
+                $('#vehicule_id').val(vehiculeId);
+                $('#search_vehicule').val($(this).text().split('\n')[0].replace('Immat :', '').trim());
+                $('.suggestion').hide();
+
+                var policeId = $('#police_id').data('police-id');
+                $.ajax({
+                    url: '/production/polices/vehicule/' + vehiculeId,
+                    method: 'GET',
+                    dataType: 'json',
+                    success: function (vehicule) {
+                        $('#search_vehicule').val(vehicule.numero_immatriculation);
+                        $('#num_serie').val(vehicule.num_serie);
+                        $('#marque').val(vehicule.marque);
+                        $('#modele').val(vehicule.modele);
+                        $('#immatriculation').val(vehicule.numero_immatriculation);
+                        $('#date_entree').val(vehicule.date_entree);
+                        $('#usage').val(vehicule.usage);
+                        $('#date_sortie').val(vehicule.date_sortie);
+
+                        // Vérification de la date de sortie
+                        if (vehicule.date_sortie && new Date(vehicule.date_sortie) < new Date()) {
+                            let n = noty({
+                                text: 'Ce véhicule est déjà sorti. Voulez-vous continuer ?',
+                                type: 'warning',
+                                dismissQueue: true,
+                                layout: 'center',
+                                theme: 'defaultTheme',
+                                buttons: [
+                                    {
+                                        addClass: 'btn btn-primary',
+                                        text: 'Confirmer',
+                                        onClick: function ($noty) {
+                                            $noty.close();
+                                            $('#btn_save_police_sinistre').prop('disabled', false);
+                                        }
+                                    },
+                                    {
+                                        addClass: 'btn btn-danger',
+                                        text: 'Annuler',
+                                        onClick: function ($noty) {
+                                            $noty.close();
+                                            $('#btn_save_police_sinistre').prop('disabled', true);
+                                            $('#search_vehicule, #vehicule_id, #num_serie, #marque, #modele, #immatriculation, #date_entree, #usage, #date_sortie').val('');
+                                        }
+                                    }
+                                ]
+                            });
+                            $('#btn_save_police_sinistre').prop('disabled', true);
+                        } else {
+                            $('#btn_save_police_sinistre').prop('disabled', false);
+                        }
+                    },
+                    error: function (error) {
+                        console.error('Erreur lors de la récupération des détails du véhicule:', error);
+                    }
+                });
+            });
+
+            // Cacher les suggestions quand on clique ailleurs
+            $(document).on('click', function (e) {
+                if (!$(e.target).closest('#search_vehicule').length && !$(e.target).closest('.suggestion').length) {
+                    $('.suggestion').hide();
+                }
+            });
+
         } else {
+            // Afficher le champ pour les risques autres
+            $(".branche_autre").show();
+
+            // Rendre le champ autre_risque obligatoire
+            $('#autre_risque_id').prop('required', true);
             $("responsabilite").hide();
             $('#responsabilite_id').removeAttr('required');
         }

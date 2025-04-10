@@ -2699,6 +2699,10 @@ class Responsabilite(models.Model):
         verbose_name = "Taux de responsabilite"
         verbose_name_plural = "Taux de responsabilite"
 
+    constraints = [
+        models.UniqueConstraint(fields=['libelle', 'taux_responsabilite'], name='unique_responsabilite')
+    ]
+
 
 class TypeMouvement(models.Model):
     libelle = models.CharField(max_length=100, blank=True, null=True)

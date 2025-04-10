@@ -56,13 +56,18 @@ class CustomAdminSite(admin.AdminSite):
             count_polices_non_renouvelees_resilies = 0
         """
 
-        count_polices_en_cours = Police.objects.filter(Q(date_fin_effet__gt=today) | Q(date_fin_police__gt=today)).count()
+        count_polices_en_cours = (Police.objects.filter(
+            Q(date_fin_effet__gt=today) | Q(date_fin_police__gt=today)
+        ).exclude(Q(statut="ANNULE") | Q(statut="INACTIF")).count())
         #count_polices_a_echeance = Police.objects.filter(date_fin_effet__lte=in_90_days, date_fin_effet__gt=today).count()
         count_polices_a_echeance = Police.objects.filter(
             (Q(date_fin_effet__lte=in_90_days) & Q(date_fin_effet__gt=today)) |
             (Q(date_fin_police__lte=in_90_days) & Q(date_fin_police__gt=today))
-        ).count()
-        count_polices_non_renouvelees_resilies = Police.objects.filter(Q(date_fin_effet__lt=today) | Q(date_fin_police__lt=today)).count()
+        ).exclude(Q(statut="ANNULE") | Q(statut="INACTIF")).count()
+
+        count_polices_non_renouvelees_resilies = Police.objects.filter(
+            Q(date_fin_effet__lt=today) | Q(date_fin_police__lt=today)
+        ).exclude(Q(statut="ANNULE") | Q(statut="INACTIF")).count()
 
         # Ajout au contexte
         extra_context['count_polices_en_cours'] = count_polices_en_cours

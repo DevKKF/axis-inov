@@ -10,8 +10,8 @@ class Command(BaseCommand):
         seeders = [
             'seed_typerecours',
             'seed_etapesinistre',
-            #'',
-            #'',
+            'seed_responsabilite',
+            'seed_mouvement',
             #'',
             #'',
         ]

@@ -581,7 +581,7 @@ class Marchandise(models.Model):
 
 
 class AlimentPolice(models.Model):
-    vehicule = models.ForeignKey(Vehicule, on_delete=models.RESTRICT, null=True)
+    vehicule = models.ForeignKey(Vehicule, related_name="alimentpolice", on_delete=models.RESTRICT, null=True)
     autre_risque = models.ForeignKey(AutreRisque, on_delete=models.RESTRICT, null=True)
     marchandise = models.ForeignKey(Marchandise, on_delete=models.RESTRICT, null=True)
     usage = models.ForeignKey(Usage, on_delete=models.RESTRICT, null=True)
@@ -732,7 +732,7 @@ class HistoriqueAliment(models.Model):
     prime_ttc_mar = models.BigIntegerField(null=True)
 
     # LES CHAMPS DU MODEL VEHICULE
-    vehicule = models.ForeignKey(Vehicule, on_delete=models.RESTRICT, null=True)
+    vehicule = models.ForeignKey(Vehicule, related_name="historiquevehicule", on_delete=models.RESTRICT, null=True)
     categorie_vehicule = models.ForeignKey(CategorieVehicule, on_delete=models.RESTRICT, null=True)
     carosserie = models.ForeignKey(Carosserie, on_delete=models.RESTRICT, null=True)
     carburant = models.ForeignKey(Carburant, on_delete=models.RESTRICT, null=True)

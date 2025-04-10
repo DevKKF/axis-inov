@@ -8,7 +8,7 @@ from django.utils import timezone
 
 from configurations.models import CompteTresorerie, Devise, Medicament, Compagnie, User, TypePriseencharge, Prestataire, Prescripteur, Acte, \
     Affection, Rubrique, SousRubrique, RegroupementActe, TypePrefinancement, PeriodeComptable, ModeCreation, Bureau, Circonstance, TypeSinistre, Responsabilite, TypeIntervenant, PosteDommage, Pays, \
-    TypeRemboursement, ModeReglement, Banque, BordereauLettreCheque, Garantie, TypeRecours
+    TypeRemboursement, ModeReglement, Banque, BordereauLettreCheque, Garantie, TypeRecours, EtapeSinistre
 from production.models import TypeDocument, Aliment, Police, PeriodeCouverture, FormuleGarantie, Bareme, Client, AlimentPolice, Mouvement, Motif
 from shared.enum import StatutFacture, StatutSinistre, SatutBordereauDossierSinistres, StatutSinistreBordereau, \
     StatutSinistrePrestation, StatutValidite, StatutRemboursement, StatutRemboursementSinistre, Statut, \
@@ -393,9 +393,10 @@ class MouvementSinistre(models.Model):
         verbose_name_plural = 'Mouvements du sinistre'
 
 
-class SinistreEnRecours(models.Model):
+class SinistreEtape(models.Model):
     sinistre = models.ForeignKey(Sinistre, null=True, on_delete=models.RESTRICT)
-    type_recours = models.ForeignKey(TypeRecours, null=True, on_delete=models.RESTRICT)
+    etape_sinistre = models.ForeignKey(EtapeSinistre, null=True, on_delete=models.RESTRICT)
+    numero_ordre = models.PositiveIntegerField(null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -403,11 +404,6 @@ class SinistreEnRecours(models.Model):
         db_table = 'sinistre_etape'
         verbose_name = 'Sinistre étape'
         verbose_name_plural = 'Sinistre étape'
-
-
-
-
-
 
 
 

@@ -9,3 +9,6 @@ git reset --hard origin/develop
 
 #Liste des branches distantes :
 git branch -r
+
+#Commande seeders :
+python manage.py seed_all

@@ -4264,7 +4264,7 @@ class PoliceSinistresView(TemplateView):
                 aliment = AlimentPolice.objects.filter(police_id=police.id).first()
 
             date_jour = datetime.now(tz=timezone.utc).strftime('%Y-%m-%d')
-            date_fin_effet = police.date_fin_effet.strftime('%Y-%m-%d')
+            date_fin_effet = police.date_fin_effet.strftime('%Y-%m-%d') if police.date_fin_effet else None
 
             border_date_color = ""
             if police.date_fin_effet and date_fin_effet > date_jour:
@@ -4601,6 +4601,144 @@ def sinistre_add_document(request, sinistre_id):
             }
 
             return JsonResponse(response)
+
+
+def police_save_sinistre(request, police_id):
+    police = Police.objects.get(id=police_id)
+    client = Client.objects.get(id=police.client_id)
+
+    if request.method == 'POST':
+
+        form = SinistreForm(request.POST)
+
+        if form.is_valid():
+            vehicule_id = request.POST.get('vehicule_id')
+            marchandise_id = request.POST.get('marchandise_id')
+            autre_risque_id = request.POST.get('autre_risque_id')
+            compagnie_id = request.POST.get('compagnie_id')
+            date_survenance = request.POST.get('date_survenance')
+            date_ouverture = request.POST.get('date_ouverture')
+            date_cloture = request.POST.get('date_cloture')
+            risque = request.POST.get('risque')
+            date_declaration = request.POST.get('date_declaration')
+            date_reouverture = request.POST.get('date_reouverture')
+            sinistre_recours = request.POST.get('sinistre_recours')
+            circonstance_id = request.POST.get('circonstance_id')
+            lieu_survenance = request.POST.get('lieu_survenance')
+            tva_recuperee = request.POST.get('tva_recuperee')
+            type_sinistre_id = request.POST.get('type_sinistre_id')
+            franchise = request.POST.get('franchise').replace(' ', '')
+            responsabilite_id = request.POST.get('responsabilite_id')
+            fait_generateur = request.POST.get('fait_generateur')
+            point_de_choc = request.POST.get('point_de_choc')
+            commentaire = request.POST.get('commentaire')
+            numero = request.POST.get('numero')
+
+            sinistre_created = Sinistre(
+                bureau_id=client.bureau_id,
+                client_id=client.id,
+                police_id=police.id,
+                compagnie_id=compagnie_id,
+                type_sinistre_id=type_sinistre_id,
+                responsabilite_id=responsabilite_id,
+                circonstance_id=circonstance_id,
+                created_by=request.user,
+                numero=numero,
+                created_at=datetime.now(),
+                date_survenance=date_survenance if date_survenance else None,
+                date_declaration=date_declaration if date_declaration else None,
+                date_ouverture=date_ouverture if date_ouverture else None,
+                date_cloture=date_cloture if date_cloture else None,
+                date_reouverture=date_reouverture if date_reouverture else None,
+                sinistre_recours=sinistre_recours,
+                lieu_survenance=lieu_survenance,
+                tva_recuperee=tva_recuperee,
+                fait_generateur=fait_generateur,
+                point_de_choc=point_de_choc,
+                commentaire=commentaire,
+                franchise=supprimer_espaces(franchise) if franchise else 0,
+            )
+            sinistre_created.save()
+
+            code_bureau = request.user.bureau.code
+            sinistre_created.numero_provisoire = str(code_bureau) + 'P' + str(Date.today().year)[-2:] + str(
+                sinistre_created.pk).zfill(6)
+            if sinistre_created.numero == "":
+                sinistre_created.numero = sinistre_created.numero_provisoire
+
+            sinistre_created.save()
+
+            sinistre = Sinistre.objects.get(id=sinistre_created.pk)
+
+            # Créer une ligne de mouvement_sinistre avec le mouvement ouverture sinistre et le motif ouverture sinistre
+            ms = MouvementSinistre()
+            ms.sinistre = sinistre
+            ms.police = police
+            ms.mouvement = Mouvement.objects.get(code='OS')
+            ms.motif = Motif.objects.get(code='OS')
+            ms.date_effet = sinistre.date_ouverture
+            ms.created_by = request.user
+            ms.save()
+
+            # Créer la ligne de l'aliment lié au sinistre
+            aliment_police = None
+
+            if vehicule_id:
+                try:
+                    aliment_police = AlimentPolice.objects.get(vehicule_id=vehicule_id)
+                except AlimentPolice.DoesNotExist:
+                    pass  # Gérer l'absence de l'objet si nécessaire
+
+            if marchandise_id:
+                try:
+                    aliment_police = AlimentPolice.objects.get(marchandise_id=marchandise_id)
+                except AlimentPolice.DoesNotExist:
+                    pass  # Gérer l'absence de l'objet si nécessaire
+
+            if not aliment_police and autre_risque_id:
+                try:
+                    aliment_police = AlimentPolice.objects.get(autre_risque_id=autre_risque_id)
+                except AlimentPolice.DoesNotExist:
+                    pass  # Gérer l'absence de l'objet si nécessaire
+
+            if aliment_police:
+                aliment_sinitre_created = AlimentPoliceSinistre(
+                    police=police,
+                    sinistre=sinistre,
+                    aliment_police=aliment_police,
+                    risque=risque,
+                )
+                aliment_sinitre_created.save()
+            else:
+                # Ajouter une gestion si l'aliment_police n'existe pas.
+                print(f"Aucun AlimentPolice trouvé pour vehicule_id={vehicule_id} ou marchandise_id={marchandise_id} ou autre_risque_id={autre_risque_id}")
+
+            response = {
+                'statut': 1,
+                'message': "Sinistre enregistré avec succès !",
+                'data': {
+                    'id': sinistre.pk,
+                    'numero': sinistre.numero,
+                }
+            }
+
+            return JsonResponse(response)
+
+        else:
+            response = {
+                'statut': 0,
+                'message': "Veuillez renseigner correctement le formulaire",
+                'errors': form.errors,
+            }
+
+            return JsonResponse(response)
+    else:
+        response = {
+            'statut': 0,
+            'message': "Cette méthode n'est pas reconnue !",
+        }
+
+        return JsonResponse(response)
 
 
 def police_save_sinistre(request, police_id):
@@ -5212,9 +5350,10 @@ def search_vehicules(request, police_id):
         return JsonResponse([], safe=False)
 
     vehicules = Vehicule.objects.filter(
-        #police_id=police_id,
-        numero_immatriculation__icontains=immatriculation
-    ).values('id', 'numero_immatriculation', 'marque', 'modele')
+        numero_immatriculation__icontains=immatriculation,
+        alimentpolice__police_id=police_id,
+        alimentpolice__statut='ACTIF'
+    ).distinct().values('id', 'numero_immatriculation', 'marque', 'modele')
 
     return JsonResponse(list(vehicules), safe=False)
 
@@ -5222,16 +5361,18 @@ def search_vehicules(request, police_id):
 @require_GET
 def vehicule_detail(request, vehicule_id):
     vehicule = get_object_or_404(Vehicule, id=vehicule_id)
-    print("immatriculation : ", vehicule.numero_immatriculation)
+
+    alimentinfo = AlimentPolice.objects.filter(vehicule_id=vehicule.id).first()
+
     data = {
         'id': vehicule.id,
         'num_serie': vehicule.numero_serie,
         'marque': vehicule.marque,
         'modele': vehicule.modele,
-        'immatriculation': vehicule.numero_immatriculation,
-        'date_entree': vehicule.vehicule_dernier_historique.date_entree.strftime('%Y-%m-%d') if vehicule.vehicule_dernier_historique.date_entree else '',
-        'usage': vehicule.usage,
-        'date_sortie': vehicule.vehicule_dernier_historique.date_sortie.strftime('%Y-%m-%d') if vehicule.vehicule_dernier_historique.date_sortie else ''
+        'numero_immatriculation': vehicule.numero_immatriculation,
+        'usage': alimentinfo.usage.libelle if alimentinfo and alimentinfo.usage.libelle else '',
+        'date_entree': alimentinfo.date_entree.strftime('%Y-%m-%d') if alimentinfo and alimentinfo.date_entree else '',
+        'date_sortie': alimentinfo.date_sortie.strftime('%Y-%m-%d') if alimentinfo and alimentinfo.date_sortie else '',
     }
 
     return JsonResponse(data)
@@ -7167,12 +7308,25 @@ def add_avenant(request, police_id):
                 date_fin_periode_garantie=date_fin_periode_garantie if date_fin_periode_garantie else None,
                 created_by=request.user
             )
-
             mouvement_police.save()
 
             mouvement = Mouvement.objects.get(id=mouvement_police.mouvement_id)
 
             motif = Motif.objects.get(id=mouvement_police.motif_id)
+
+            #si c'est une résiliation ou annulation changer le statut de la police
+            if mouvement.code == "ANNUL" or mouvement.code == "RESIL":
+                Police.objects.filter(id=police.id).update(
+                    statut="ANNULE",
+                    updated_at=datetime.now(),
+                )
+
+            # si c'est une suspension changer le statut de la police
+            if mouvement.code == "SUSP":
+                Police.objects.filter(id=police.id).update(
+                    statut="INACTIF",
+                    updated_at=datetime.now(),
+                )
 
             #si c'est un renouvellement, créer une période de couverture
             if mouvement.code == "AVENANT":
@@ -7189,6 +7343,12 @@ def add_avenant(request, police_id):
                 # police.date_fin_effet = mouvement_police.date_fin_periode_garantie
                 # police.save()
 
+                #Pour une avenant de renouvelement changer le statut de la police
+                if motif.code == "RENOUV":
+                    Police.objects.filter(id=police.id).update(
+                        statut="ACTIF",
+                        updated_at=datetime.now(),
+                    )
 
             response = {
                 'statut': 1,

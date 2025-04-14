@@ -85,9 +85,8 @@ from configurations.models import Compagnie, MarqueVehicule, Pays, Civilite, Pro
     Regularisation, Bureau, BusinessUnit, TypeCompagnie, Groupe, PosteDommage, TypeSinistre, TypeIntervenant, Responsabilite, Circonstance, \
     Devise, Taxe, BureauTaxe, Apporteur, BaseCalcul, TypeQuittance, NatureQuittance, TypeClient, TypePersonne, Langue, \
     Branche, ParamProduitCompagnie, CategorieVehicule, Banque, Carburant, Usage, Carosserie, GarantieCirconstance, \
-    NatureOperation, TypeTarif, Rubrique, Periodicite, \
-    AuthGroup, ActionLog, SousRubrique, TypePrefinancement, CompteTresorerie, \
-    GroupeInter, TypeFichier
+    NatureOperation, TypeTarif, Rubrique, Periodicite, AuthGroup, ActionLog, SousRubrique, TypePrefinancement, CompteTresorerie, \
+    GroupeInter, TypeFichier, EtapeSinistre
 
 from inov import settings
 from production.forms import ContactForm, FilialeForm, AcompteForm, DocumentForm, PoliceForm, PhotoUploadForm
@@ -105,7 +104,7 @@ from production.templatetags.my_filters import money_field, convertir_date_multi
 from shared.enum import StatutIncorporation, StatutValidite, StatutSinistre, StatutEnrolement, StatutTraitement, \
     StatutReversementCompagnie, StatutValiditeQuittance, Confidentialite
 from sinistre.models import Sinistre, DossierSinistre, MouvementSinistre, AlimentPoliceSinistre, Intervenant, SinistreIntervenant, GarantieSinistre, Provision, ReglementSinistre, \
-    HistoriqueSinistre, HistoriqueSinistreIntervenant, HistoriqueGarantieSinistre, HistoriqueProvision, HistoriqueAlimentPoliceSinistre
+    HistoriqueSinistre, HistoriqueSinistreIntervenant, HistoriqueGarantieSinistre, HistoriqueProvision, HistoriqueAlimentPoliceSinistre, SinistreEtape
 from sinistre.forms import SinistreForm
 from comptabilite.models import EncaissementCommission
 from django.contrib.auth.models import Group
@@ -4275,8 +4274,6 @@ class PoliceSinistresView(TemplateView):
             context_perso = {
                 'police': police,
                 'client': client,
-                'dossiers_sinistres': None,
-                'sinistres': None,
                 'border_date_color': border_date_color,
                 'dernier_historique': dernier_historique,
                 'assureur_police': assureur_police,
@@ -4393,7 +4390,7 @@ class DetailsSinistreView(TemplateView):
         context_original = self.get_context_data(**kwargs)
 
         sinistre_id = kwargs['sinistre_id']
-        sinistres = Sinistre.objects.filter(id=sinistre_id, bureau=request.user.bureau)
+        sinistres = Sinistre.objects.filter(id=sinistre_id)
         if sinistres:
             sinistre = sinistres.first()
 
@@ -4479,10 +4476,10 @@ class SinistreAvenantsView(TemplateView):
     def get(self, request, sinistre_id, *args, **kwargs):
         context_original = self.get_context_data(**kwargs)
 
-        sinistre = Sinistre.objects.filter(id=sinistre_id, bureau=request.user.bureau).first()
+        sinistre = Sinistre.objects.filter(id=sinistre_id).first()
         if sinistre:
-            police = Police.objects.filter(id=sinistre.police_id, bureau=request.user.bureau).first()
-            mouvements = Mouvement.objects.filter(type_mouvement_id=2).exclude(code="OS").order_by('libelle')
+            police = Police.objects.filter(id=sinistre.police_id).first()
+            mouvements = Mouvement.objects.filter(type_mouvement_id=2).exclude(code="OUVSIN").order_by('libelle')
             mouvements_sinistre = MouvementSinistre.objects.filter(sinistre_id=sinistre_id, statut_validite=StatutValidite.VALIDE).order_by('-id')
 
             # etat sinistre = dernier motif
@@ -4603,7 +4600,7 @@ def sinistre_add_document(request, sinistre_id):
             return JsonResponse(response)
 
 
-def police_save_sinistre(request, police_id):
+def policesavesinistre(request, police_id):
     police = Police.objects.get(id=police_id)
     client = Client.objects.get(id=police.client_id)
 
@@ -4622,7 +4619,6 @@ def police_save_sinistre(request, police_id):
             risque = request.POST.get('risque')
             date_declaration = request.POST.get('date_declaration')
             date_reouverture = request.POST.get('date_reouverture')
-            sinistre_recours = request.POST.get('sinistre_recours')
             circonstance_id = request.POST.get('circonstance_id')
             lieu_survenance = request.POST.get('lieu_survenance')
             tva_recuperee = request.POST.get('tva_recuperee')
@@ -4650,7 +4646,6 @@ def police_save_sinistre(request, police_id):
                 date_ouverture=date_ouverture if date_ouverture else None,
                 date_cloture=date_cloture if date_cloture else None,
                 date_reouverture=date_reouverture if date_reouverture else None,
-                sinistre_recours=sinistre_recours,
                 lieu_survenance=lieu_survenance,
                 tva_recuperee=tva_recuperee,
                 fait_generateur=fait_generateur,
@@ -4760,7 +4755,6 @@ def police_save_sinistre(request, police_id):
             risque = request.POST.get('risque')
             date_declaration = request.POST.get('date_declaration')
             date_reouverture = request.POST.get('date_reouverture')
-            sinistre_recours = request.POST.get('sinistre_recours')
             circonstance_id = request.POST.get('circonstance_id')
             lieu_survenance = request.POST.get('lieu_survenance')
             tva_recuperee = request.POST.get('tva_recuperee')
@@ -4770,10 +4764,10 @@ def police_save_sinistre(request, police_id):
             fait_generateur = request.POST.get('fait_generateur')
             point_de_choc = request.POST.get('point_de_choc')
             commentaire = request.POST.get('commentaire')
+            saisie_circonstance = request.POST.get('saisie_circonstance')
             numero = request.POST.get('numero')
 
             sinistre_created = Sinistre(
-                bureau_id=client.bureau_id,
                 client_id=client.id,
                 police_id=police.id,
                 compagnie_id=compagnie_id,
@@ -4788,12 +4782,12 @@ def police_save_sinistre(request, police_id):
                 date_ouverture=date_ouverture if date_ouverture else None,
                 date_cloture=date_cloture if date_cloture else None,
                 date_reouverture=date_reouverture if date_reouverture else None,
-                sinistre_recours=sinistre_recours,
                 lieu_survenance=lieu_survenance,
                 tva_recuperee=tva_recuperee,
                 fait_generateur=fait_generateur,
                 point_de_choc=point_de_choc,
                 commentaire=commentaire,
+                autre_circonstance=saisie_circonstance,
                 franchise=supprimer_espaces(franchise) if franchise else 0,
             )
             sinistre_created.save()
@@ -4812,11 +4806,20 @@ def police_save_sinistre(request, police_id):
             ms = MouvementSinistre()
             ms.sinistre = sinistre
             ms.police = police
-            ms.mouvement = Mouvement.objects.get(code='OS')
-            ms.motif = Motif.objects.get(code='OS')
+            ms.mouvement = Mouvement.objects.get(code='OUVSIN')
+            ms.motif = Motif.objects.get(code='OUVSIN')
             ms.date_effet = sinistre.date_ouverture
             ms.created_by = request.user
             ms.save()
+
+            # Créer une ligne de mouvement_sinistre avec le mouvement ouverture sinistre et le motif ouverture sinistre
+            sinetap = SinistreEtape()
+            sinetap.sinistre = sinistre
+            sinetap.etape_sinistre = EtapeSinistre.objects.get(code='OUVSIN')
+            sinetap.numero_ordre = 1
+            sinetap.date_effet = sinistre.date_ouverture
+            sinetap.created_by = request.user
+            sinetap.save()
 
             # Créer la ligne de l'aliment lié au sinistre
             aliment_police = None
@@ -4850,62 +4853,6 @@ def police_save_sinistre(request, police_id):
             else:
                 # Ajouter une gestion si l'aliment_police n'existe pas.
                 print(f"Aucun AlimentPolice trouvé pour vehicule_id={vehicule_id} ou marchandise_id={marchandise_id} ou autre_risque_id={autre_risque_id}")
-
-            # Récupérer les intervenants de la session
-            intervenants = request.session.get('intervenants', [])
-            for intervenant in intervenants:
-                intervenant_created = Intervenant(
-                    type_intervenant_id=intervenant.get('type_intervenant_id'),
-                    pays_id=intervenant.get('pays_id'),
-                    nom=intervenant.get('nom'),
-                    prenoms=intervenant.get('prenoms'),
-                    portable=intervenant.get('portable'),
-                    telephone=intervenant.get('telephone'),
-                    fax=intervenant.get('fax'),
-                    email=intervenant.get('email'),
-                    code_postal=intervenant.get('code_postal'),
-                    boite_postale=intervenant.get('boite_postale'),
-                    ville=intervenant.get('ville'),
-                )
-                intervenant_created.save()
-                intervenant = Intervenant.objects.get(id=intervenant_created.pk)
-
-                # Créer la ligne intervenant du sinistre
-                aliment_sinitre_created = SinistreIntervenant(
-                    intervenant_id=intervenant.id,
-                    sinistre=sinistre
-                )
-                aliment_sinitre_created.save()
-
-            # Récupérer les garanties de la session
-            garanties_sinistre = request.session.get("garanties_sinistre", [])
-            for garantie_sinistre in garanties_sinistre:
-                garantie_sinistre_created = GarantieSinistre(
-                    sinistre=sinistre,
-                    circonstance_id=circonstance_id,
-                    garantie_id=garantie_sinistre.get('id'),
-                    franchise=supprimer_espaces(garantie_sinistre.get('franchise', 0)) if garantie_sinistre.get('franchise', 0) else None,
-                    capital=supprimer_espaces(garantie_sinistre.get('capital', 0)) if garantie_sinistre.get('capital', 0) else None,
-                    prime_nette=supprimer_espaces(garantie_sinistre.get('prime_net', 0)) if garantie_sinistre.get('prime_net', 0) else None,
-                    prime_ttc=supprimer_espaces(garantie_sinistre.get('prime_ttc', 0)) if garantie_sinistre.get('prime_ttc', 0) else None,
-                )
-                garantie_sinistre_created.save()
-
-            # Récupérer les données des provisions
-            provisions_data = json.loads(request.POST.get('provisions', '{}'))
-            print('provisions_data : ', provisions_data)
-            # Enregistrer les provisions
-            for postedommage_id, garanties in provisions_data.items():
-
-                for garantie_id, montants in garanties.items():
-                    Provision.objects.create(
-                        sinistre=sinistre,
-                        garantie_id=garantie_id,
-                        poste_dommage=PosteDommage.objects.get(libelle=postedommage_id),
-                        estimation=supprimer_espaces(montants.get("estimation")) if montants.get("estimation") else None,
-                        deja_regle=supprimer_espaces(montants.get("deja_regle")) if montants.get("deja_regle") else None,
-                        provision=supprimer_espaces(montants.get("provision")) if montants.get("provision") else None,
-                    )
 
             response = {
                 'statut': 1,
@@ -4953,7 +4900,6 @@ def modifier_sinistre(request, sinistre_id):
         risque = request.POST.get('risque')
         date_declaration = request.POST.get('date_declaration')
         date_reouverture = request.POST.get('date_reouverture')
-        sinistre_recours = request.POST.get('sinistre_recours')
         circonstance_id = request.POST.get('circonstance_id')
         lieu_survenance = request.POST.get('lieu_survenance')
         tva_recuperee = request.POST.get('tva_recuperee')
@@ -4982,7 +4928,6 @@ def modifier_sinistre(request, sinistre_id):
             date_ouverture=sinistre_old.date_ouverture,
             date_cloture=sinistre_old.date_cloture,
             date_reouverture=sinistre_old.date_reouverture,
-            sinistre_recours=sinistre_old.sinistre_recours,
             lieu_survenance=sinistre_old.lieu_survenance,
             tva_recuperee=sinistre_old.tva_recuperee,
             fait_generateur=sinistre_old.fait_generateur,
@@ -5004,7 +4949,6 @@ def modifier_sinistre(request, sinistre_id):
             date_ouverture=date_ouverture if date_ouverture else None,
             date_cloture=date_cloture if date_cloture else None,
             date_reouverture=date_reouverture if date_reouverture else None,
-            sinistre_recours=sinistre_recours,
             lieu_survenance=lieu_survenance,
             tva_recuperee=tva_recuperee,
             fait_generateur=fait_generateur,

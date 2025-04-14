@@ -25858,7 +25858,8 @@ $(document).ready(function () {
     // Affichage du bouton de saisie de circonstance
     $('#circonstance_id').on('change', function() {
         let circonstance_id = $(this).val();
-        if (circonstance_id == 43) {
+        console.log('circonstance_id : ', circonstance_id);
+        if (circonstance_id == 4) {
             $("#saisie_circonstance_bloc").show();
             $('#saisie_circonstance').attr('required', true);
         } else {
@@ -25906,12 +25907,16 @@ $(document).ready(function () {
         $(".branche_auto").hide();
         $(".branche_autre").hide();
 
-    // Désactiver les champs obligatoires par défaut
-    $('#search_vehicule, #vehicule_id, #num_serie, #marque, #modele, #immatriculation, #date_entree, #usage, #date_sortie, #autre_risque_id')
+        // Désactiver les champs obligatoires par défaut
+        $('#search_vehicule, #vehicule_id, #num_serie, #marque, #modele, #immatriculation, #date_entree, #usage, #date_sortie, #autre_risque_id')
         .prop('required', false);
 
         if (brancheId == 1) {
-            $('#responsabilite_id').attr('required', true);
+            $("#responsabilite").hide();
+            $('#autre_risque_id').prop('required', false);
+            $('#responsabilite_id').prop('required', false);
+
+            console.log('Police auto en cours...');
 
             // Afficher les champs pour les véhicules
             $(".branche_auto").show();
@@ -26029,15 +26034,16 @@ $(document).ready(function () {
                     $('.suggestion').hide();
                 }
             });
-
-        } else {
+        }
+        else {
+            console.log('Autres polices en cours...');
             // Afficher le champ pour les risques autres
             $(".branche_autre").show();
 
-            // Rendre le champ autre_risque obligatoire
+            // Rendre les champ obligatoire
             $('#autre_risque_id').prop('required', true);
-            $("responsabilite").hide();
-            $('#responsabilite_id').removeAttr('required');
+            $("#responsabilite").show();
+            $('#responsabilite_id').prop('required', true);
         }
 
         const policeId = $('#police_id').data('police-id');

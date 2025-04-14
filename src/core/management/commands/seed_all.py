@@ -12,6 +12,7 @@ class Command(BaseCommand):
             'seed_etapesinistre',
             'seed_responsabilite',
             'seed_mouvement',
+            'seed_motif',
             #'',
             #'',
         ]

@@ -24,39 +24,40 @@
   <div class="card">
     <div class="card-header">
         <h3 class="card-title text-white">LISTE DES SINISTRES</h3>
-        <div class="card-tools btn-export-sinistre"></div>
     </div>
 
   <div style="background:#CCCCCC;padding:10px;border-bottom:1px solid #eee;padding-bottom:10px;margin-bottom:10px;">
-    <form method="get"><label style="font-weight:normal;font-size:12px;display:none;"><i>Formulaire de recherche</i></label>
+    <form method="get"><label style="font-weight:normal;font-size:12px;display:none;"><i>{{_('Formulaire_de_recherche')}}</i></label>
         <div class="row">
-            <div class="col-md-3">
-                <div class="form-group">
-                    <label>Numero sinistre :</label>
-                    <input class="form-control" type="text" name="ns" id="num_sinistre" style="border-radius:3px;border:1px solid brown;text-transform:uppercase;">
+            <div class="col-12 col-md-12 col-sm-12 row">
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label>Numero sinistre :</label>
+                        <input class="form-control" type="text" name="ns" id="num_sinistre" style="border-radius:3px;border:1px solid brown;text-transform:uppercase;">
+                    </div>
                 </div>
-            </div>
-            <div class="col-md-3">
-                <div class="form-group">
-                    <label>Type sinistre :</label>
-                    <select name="type_sinistre" id="type_sinistre_id" class="form-control" style="border-radius:3px;border:1px solid brown;text-transform:uppercase;">
-                      <option value="">Choisir</option>
-                      {% for typesinistre in typesinistres %}
-                        <option value="{{ typesinistre.id }}">{{ typesinistre.libelle|default_if_none:"" }}</option>
-                      {% endfor %}
-                    </select>
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label>Type sinistre :</label>
+                        <select name="type_sinistre" id="type_sinistre_id" class="form-control" style="border-radius:3px;border:1px solid brown;text-transform:uppercase;">
+                          <option value="">Choisir</option>
+                          {% for typesinistre in typesinistres %}
+                            <option value="{{ typesinistre.id }}">{{ typesinistre.libelle|default_if_none:"" }}</option>
+                          {% endfor %}
+                        </select>
+                    </div>
                 </div>
-            </div>
-            <div class="col-md-3">
-                <div class="form-group">
-                    <label>Date déclaration :</label>
-                    <input class="form-control" type="date" name="dd" id="date_declaration" style="border-radius:3px;border:1px solid brown;text-transform:uppercase;">
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label>Date déclaration :</label>
+                        <input class="form-control" type="date" name="dd" id="date_declaration" style="border-radius:3px;border:1px solid brown;text-transform:uppercase;">
+                    </div>
                 </div>
-            </div>
-            <div class="col-md-3">
-                <div class="form-group">
-                    <label>Date ouverture :</label>
-                    <input class="form-control" type="date" name="do" id="date_ouverture" value="" style="border-radius:3px;border:1px solid brown;text-transform:uppercase;">
+                <div class="col-md-3">
+                    <div class="form-group">
+                        <label>Date ouverture :</label>
+                        <input class="form-control" type="date" name="do" id="date_ouverture" value="" style="border-radius:3px;border:1px solid brown;text-transform:uppercase;">
+                    </div>
                 </div>
             </div>
         </div>
@@ -66,23 +67,23 @@
     <div class="card-body">
       <div id="example1_wrapper" class="dataTables_wrapper dt-bootstrap4">
         <div class="row">
-          <div class="col-12 col-md-12 col-sm-12 table-responsive btn-export-sinistre">
-              <a href="{% url 'export_sinistres_police' police.id %}" class="btn btn-sm btn-info pull-right mb-2"><i class="fa fa-file-excel-o"></i> Exporter vers Excel</a>
+          <div class="col-12 col-md-12 col-sm-12">
+              <a href="{% url 'export_sinistres_police' police.id %}" class="btn btn-sm btn-info pull-right btn-export-sinistre"><i class="fa fa-file-excel-o"></i> Exporter vers Excel</a>
               <span class="btn btn-sm btn-info pull-right mb-2 mr-2" data-toggle="modal" data-target="#modal-sinistre"><i class="fa fa-plus-circle"></i> Créer un sinistre</span>
               <table class="table table-bordered table-striped dataTable__ customDataTable__ dtr-inline" id="table_sinistres_police" style="width: 100%;" data-orderby="0">
-                    <thead>
-                      <tr>
-                        <th scope="col">Num sinistre</th>
-                        <th scope="col">Type sinistre</th>
-                        <th scope="col">Date de déclaration</th>
-                        <th scope="col">Date d'ouverture</th>
-                        <th scope="col">Statut</th>
-                        <th scope="col">Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                    </tbody>
-                </table>
+                <thead>
+                  <tr>
+                    <th scope="col">Num sinistre</th>
+                    <th scope="col">Type sinistre</th>
+                    <th scope="col">Date de déclaration</th>
+                    <th scope="col">Date d'ouverture</th>
+                    <th scope="col">Statut</th>
+                    <th scope="col">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                </tbody>
+              </table>
           </div>
         </div>
       </div>
@@ -91,8 +92,70 @@
 </div>
 {% endblock %}
 
+
 {% block extrajs %}
+<script>
+    $(document).ready(function() {
+        $('#sinistre').removeClass('o-bg-primary');
+        $('#sinistre').addClass('o-active');
+        $('.btn-export-sinistre').fadeOut("slow");
 
+        dataTable = $('#table_sinistres_police').DataTable({
+            "language": {
+                "url": "https://cdn.datatables.net/plug-ins/9dcbecd42ad/i18n/French.json"
+            },
+            "serverSide": true,
+            "ajax": {
+                "url": "{% url 'police_sinistres_datatable' police.id %}",
+                "data": function (data) {
+                    data.page = data.start / data.length + 1;
+                    data.num_sinistre = $('#num_sinistre').val();
+                    data.type_sinistre_id = $('#type_sinistre_id').val();
+                    data.date_declaration = $('#date_declaration').val();
+                    data.date_ouverture = $('#date_ouverture').val();
+                    if(data.length > 0){
+                         $('.btn-export-sinistre').fadeIn("slow");
+                    }
+                },
+                "dataSrc": function (json) {
+                    return json.data;
+                }
+            },
+            "columns": [
+                {"data": "numero", "orderable": true},
+                {"data": "type_sinistre", "orderable": true},
+                {"data": "date_declaration", "orderable": false},
+                {"data": "date_ouverture", "orderable": false},
+                {"data": "statut", "orderable": false},
+                {"data": "actions", "orderable": false, "searchable": false},
+            ],
+            "paging": true,
+            "pageLength": 10,
+            "processing": true,  // Show the loading indicator
+            "searching": true,   // Enable the search feature
+            "search": {
+                "search": $('#table_sinistres_police-table_filter input').val()
+            }
+        });
 
+        dataTable.on('xhr.dt', function (e, settings, json, xhr) {
+            // Hide the spinner when the data is loaded
+            $('.spinner-border').show();
+        });
+
+        // Show the spinner when the table is processing
+        dataTable.on('processing.dt', function (e, settings, processing) {
+            if (processing) {
+                $('.spinner-border').show();
+            }
+        });
+
+        // Add custom search functionality for code, name, and prenoms columns
+        $('#num_sinistre, #type_sinistre_id, #date_declaration, #date_ouverture').on('keyup change', function() {
+            dataTable.search('').draw(); // Clear existing search
+            dataTable.draw(); // Trigger a new draw, which will include the updated search parameters
+        });
+    });
+</script>
 {% include 'police/modal_sinistre.html' %}
 {% endblock %}

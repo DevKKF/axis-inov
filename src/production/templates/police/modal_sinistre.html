@@ -182,7 +182,7 @@
 									<div class="form-group row">
 										<label class="col-sm-3 col-form-label">Risque définit sur la police <span class="required">*</span></label>
 										<div class="col-sm-9">
-											<input type="text" class="form-control" name="autre_risque_id" value="{{ aliment.autre_risque.risque }}" required>
+											<input type="text" class="form-control" name="autre_risque_id" value="{{ aliment.autre_risque.risque }}">
 										</div>
 									</div>
 									<div class="form-group row d-none">
@@ -204,9 +204,9 @@
 										</div>
 									</div>
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">Date ouverture <span class="required">*</span></label>
+										<label class="col-sm-5 col-form-label">Date déclaration <span class="required">*</span></label>
 										<div class="col-sm-7">
-											<input type="date" class="form-control" name="date_ouverture" id="date_ouverture" autocomplete="off" value="{{ today|date:'Y-m-d' }}" max="{{ today|date:'Y-m-d' }}" required>
+											<input type="date" class="form-control" name="date_declaration" id="date_declaration" autocomplete="off" value="" required>
 										</div>
 									</div>
 									<div class="form-group row d-none">
@@ -231,9 +231,9 @@
 										</div>
 									</div>
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">Date déclaration <span class="required">*</span></label>
+										<label class="col-sm-5 col-form-label">Date ouverture <span class="required">*</span></label>
 										<div class="col-sm-7">
-											<input type="date" class="form-control" name="date_declaration" id="date_declaration" autocomplete="off" value="" required>
+											<input type="date" class="form-control" name="date_ouverture" id="date_ouverture" autocomplete="off" value="{{ today|date:'Y-m-d' }}" max="{{ today|date:'Y-m-d' }}" required>
 										</div>
 									</div>
 									<div class="form-group row d-none">
@@ -259,12 +259,6 @@
 											</select>
 										</div>
 									</div>
-									<div class="form-group row" id="saisie_circonstance_bloc" style="display:none">
-										<label class="col-sm-5 col-form-label">Saisie la circonstance <span class="required">*</span></label>
-										<div class="col-sm-7">
-											<input type="text" class="form-control" name="saisie_circonstance" id="saisie_circonstance" autocomplete="off" value="">
-										</div>
-									</div>
 									<div class="form-group row">
 										<label class="col-sm-5 col-form-label">TVA récupérée</label>
 										<div class="col-sm-7">
@@ -285,6 +279,12 @@
 								<div class="vl"></div>
 								<div class="col-md-5" style="border-left:0px;">
 
+									<div class="form-group row" id="saisie_circonstance_bloc" style="display:none">
+										<label class="col-sm-5 col-form-label">Saisie la circonstance <span class="required">*</span></label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control" name="saisie_circonstance" id="saisie_circonstance" autocomplete="off" value="">
+										</div>
+									</div>
 									<div class="form-group row">
 										<label class="col-sm-5 col-form-label">Type sinistre <span class="required">*</span></label>
 										<div class="col-sm-7">
@@ -423,26 +423,6 @@
             evt.preventDefault();
         }
     }
-</script>
-
-<script>
-document.addEventListener("DOMContentLoaded", function () {
-    const typeSelect = document.getElementById("type_police");
-    const fieldBlocks = document.querySelectorAll(".police-fields");
-
-    typeSelect.addEventListener("change", function () {
-        const selected = this.value;
-
-        // Cacher tous les blocs
-        fieldBlocks.forEach(block => block.classList.add("d-none"));
-
-        // Afficher le bloc correspondant
-        if (selected) {
-            const bloc = document.getElementById(`fields-${selected}`);
-            if (bloc) bloc.classList.remove("d-none");
-        }
-    });
-});
 </script>
 
 {% include 'police/modal_sinistre_garantie.html' %}

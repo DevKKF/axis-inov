@@ -35,7 +35,7 @@ from django.utils.translation import gettext as _
 from django.views.generic import TemplateView
 from django_dump_die.middleware import dd
 from openpyxl import Workbook
-from openpyxl.styles import Font, PatternFill
+from openpyxl.styles import Font, PatternFill, Border, Side
 from datetime import datetime, timezone
 from django.db.models import Sum, Q, ExpressionWrapper, F, DurationField, Max
 from django.utils.timezone import now
@@ -44,6 +44,7 @@ from django.db.models import Sum
 import tempfile
 import os
 from django.core.files import File
+from openpyxl.utils import get_column_letter
 import xlwings as xw
 from django.db.models import Subquery, OuterRef
 
@@ -108,16 +109,44 @@ class AnalysePortefeuilleView(PermissionRequiredMixin,TemplateView):
 
 # Portefeuille par compagnie
 def generate_excel_portefeuille_compagnie(compagnies, date_requete):
-    """Génère un fichier Excel unique regroupant les portefeuilles de toutes les compagnies, sans les totaux et avec un en-tête unique."""
     workbook = Workbook()
     sheet = workbook.active
     sheet.title = "Portefeuille"
 
     headers = [
-        "POLICE", "COMPAGNIE", "CLIENT", "TYPE DE CLIENT", "BRANCHE", "PRODUIT",  "RECONDUCTION", "STATUT", "ÉCHÉANCE TACITE",
-        "DATE DE FIN", "PRIME HT EX N-1", "PRIME HT EX N", "PRIME TTC EX N"
+        "POLICE", "COMPAGNIE", "CLIENT", "TYPE DE CLIENT", "BRANCHE", "PRODUIT",
+        "RECONDUCTION", "STATUT", "DATE DE RENOUVELEMENT", "DATE DE FIN",
+        "PRIME HT EX N-1", "PRIME HT EX N", "PRIME TTC EX N"
     ]
-    sheet.append(headers)  # Ajout de l'en-tête une seule fois
+
+    # Écriture de l'en-tête
+    sheet.append(headers)
+
+    # Appliquer le filtre
+    sheet.auto_filter.ref = f"A1:{get_column_letter(len(headers))}1"
+
+    # Colonnes avec largeur spécifique
+    largeur_23 = ["DATE DE RENOUVELEMENT", "DATE DE FIN", "PRIME HT EX N-1", "PRIME HT EX N", "PRIME TTC EX N"]
+
+    # Styles de bordures
+    thin_border = Border(
+        left=Side(style='thin'), right=Side(style='thin'),
+        top=Side(style='thin'), bottom=Side(style='thin')
+    )
+    bold_border = Border(
+        left=Side(style='medium'), right=Side(style='medium'),
+        top=Side(style='medium'), bottom=Side(style='medium')
+    )
+
+    # Définir la largeur des colonnes et appliquer style à l'en-tête
+    for col_num, header in enumerate(headers, 1):
+        col_letter = get_column_letter(col_num)
+        largeur = 23 if header in largeur_23 else 28
+        sheet.column_dimensions[col_letter].width = largeur
+
+        cell = sheet.cell(row=1, column=col_num)
+        cell.font = Font(bold=True)
+        cell.border = bold_border
 
     for compagnie in compagnies:
         polices_qs = Police.objects.filter(
@@ -127,82 +156,80 @@ def generate_excel_portefeuille_compagnie(compagnies, date_requete):
         ).distinct()
 
         if not polices_qs.exists():
-            continue  # Si aucune police, on passe à la compagnie suivante
+            continue
 
         compagnie_nom = compagnie.nom
 
         for police in polices_qs:
             dernier_historique = HistoriquePolice.objects.filter(police_id=police.id).order_by('-date_du_jour').first()
 
-            # Initialisation des valeurs
             prime_ht = 0
             prime_ttc = 0
             prime_ht_n = 0
 
             if dernier_historique:
                 annee_actuelle = dernier_historique.date_du_jour.year
-
-                # Récupérer directement le dernier historique de l'année précédente (sans faire un `Max` séparé)
                 historique_annee_precedente = HistoriquePolice.objects.filter(
                     police_id=police.id,
-                    date_du_jour__year__lt=annee_actuelle  # Exclut l'année actuelle
-                ).order_by('-date_du_jour').first()  # Prend le plus récent de cette année
+                    date_du_jour__year__lt=annee_actuelle
+                ).order_by('-date_du_jour').first()
 
-                # Définition des primes
-                prime_ht = dernier_historique.prime_ht if dernier_historique and dernier_historique.prime_ht else 0
-                prime_ttc = dernier_historique.prime_ttc if dernier_historique and dernier_historique.prime_ttc else 0
-                prime_ht_n = historique_annee_precedente.prime_ht if historique_annee_precedente and historique_annee_precedente.prime_ht else 0
+                prime_ht = dernier_historique.prime_ht or 0
+                prime_ttc = dernier_historique.prime_ttc or 0
+                prime_ht_n = historique_annee_precedente.prime_ht if historique_annee_precedente else 0
 
             dernier_mouvement = MouvementPolice.objects.filter(police_id=police.id).order_by('-created_at').first()
             date_for_calcul = datetime.today().date()
-            n_90_days = date_for_calcul + timedelta(days=90)
+            statut = ''
 
-            # Détermination du statut
             if dernier_mouvement and dernier_mouvement.date_fin_periode_garantie:
                 date_fin = dernier_mouvement.date_fin_periode_garantie
-                difference_jours = (date_fin - date_for_calcul).days  # Peut être négatif si expiré
+                difference_jours = (date_fin - date_for_calcul).days
 
                 if difference_jours > 90:
-                    statut = police.etat_police  # Police active normalement
+                    statut = police.etat_police
                 elif difference_jours > 0:
-                    nombre_total_mois = difference_jours // 30
-                    jours_restants = difference_jours % 30
                     statut = "A renouveler"
                 else:
-                    difference_jours = abs(difference_jours)  # Convertir en positif
-                    nombre_total_mois = difference_jours // 30
-                    jours_ecoules = difference_jours % 30
                     statut = "NON renouvelé"
             else:
                 statut = police.etat_police if dernier_mouvement else ''
 
-            date_fin_effet = ""
-            if dernier_historique.mode_renouvellement == "Tacite Reconduction":
-                date_fin_effet = dernier_historique.date_fin_effet.strftime(
-                    "%d/%m/%Y") if dernier_historique.date_fin_effet else ''
+            date_fin_effet = ''
+            if dernier_historique and dernier_historique.mode_renouvellement == "Tacite Reconduction":
+                date_fin_effet = dernier_historique.date_fin_effet.strftime("%d/%m/%Y") if dernier_historique.date_fin_effet else ''
 
-            date_fin_police = ""
-            if dernier_historique.mode_renouvellement == "Sans Tacite Reconduction":
-                date_fin_police = dernier_historique.date_fin_police.strftime(
-                    "%d/%m/%Y") if dernier_historique.date_fin_police else ''
+            date_fin_police = ''
+            if dernier_historique and dernier_historique.mode_renouvellement == "Sans Tacite Reconduction":
+                date_fin_police = dernier_historique.date_fin_police.strftime("%d/%m/%Y") if dernier_historique.date_fin_police else ''
 
-            sheet.append([
+            row = [
                 police.numero,
                 compagnie_nom,
                 police.client.nom if police.client else '',
                 police.client.type_personne.libelle if police.client else '',
                 police.produit.branche.nom if police.produit and police.produit.branche else '',
                 police.produit.nom if police.produit else '',
-                dernier_historique.mode_renouvellement,
+                dernier_historique.mode_renouvellement if dernier_historique else '',
                 statut,
                 date_fin_effet,
                 date_fin_police,
                 prime_ht_n,
                 prime_ht,
                 prime_ttc
-            ])
+            ]
 
-    # Générer le fichier en mémoire
+            sheet.append(row)
+            current_row = sheet.max_row
+
+            for col in range(1, len(headers) + 1):
+                cell = sheet.cell(row=current_row, column=col)
+                cell.border = thin_border
+
+            # Mise en gras des colonnes spécifiques
+            sheet.cell(row=current_row, column=9).font = Font(bold=True)   # date_fin_effet
+            sheet.cell(row=current_row, column=13).font = Font(bold=True)  # prime_ttc
+
     output = BytesIO()
     workbook.save(output)
     output.seek(0)
@@ -451,7 +478,7 @@ def generate_excel_portefeuille_commercial(commercials, date_requete, sans_comme
     sheet.title = "Portefeuille"
 
     headers = [
-        "POLICE", "COMMERCIAL", "CLIENT", "TYPE DE CLIENT", "BRANCHE", "PRODUIT",  "RECONDUCTION", "STATUT", "ÉCHÉANCE TACITE",
+        "POLICE", "COMMERCIAL", "CLIENT", "TYPE DE CLIENT", "BRANCHE", "PRODUIT",  "RECONDUCTION", "STATUT", "DATE DE RENOUVELEMENT",
         "DATE DE FIN", "PRIME HT EX N-1", "PRIME HT EX N", "PRIME TTC EX N", "COM ENCAISSEE", "COM ATTENDUE"
     ]
     sheet.append(headers)  # Ajout de l'en-tête une seule fois
@@ -1012,7 +1039,7 @@ def generate_excel_portefeuille_business_unit(business_units, date_requete, sans
     sheet.title = "Portefeuille"
 
     headers = [
-        "POLICE", "BUSINESS UNIT", "CLIENT", "TYPE DE CLIENT", "BRANCHE", "PRODUIT",  "RECONDUCTION", "STATUT", "ÉCHÉANCE TACITE",
+        "POLICE", "BUSINESS UNIT", "CLIENT", "TYPE DE CLIENT", "BRANCHE", "PRODUIT",  "RECONDUCTION", "STATUT", "DATE DE RENOUVELEMENT",
         "DATE DE FIN", "PRIME HT EX N-1", "PRIME HT EX N", "PRIME TTC EX N", "COM ENCAISSÉE", "COM ATTENDUE"
     ]
     sheet.append(headers) # Ajout de l'en-tête une seule fois

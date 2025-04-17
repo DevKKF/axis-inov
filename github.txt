@@ -10,5 +10,11 @@ git reset --hard origin/develop
 #Liste des branches distantes :
 git branch -r
 
+#Commande de récupération du css et js :
+python manage.py collectstatic
+
+#Commande migration :
+python manage.py migrate
+
 #Commande seeders :
 python manage.py seed_all

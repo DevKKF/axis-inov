@@ -472,7 +472,6 @@ def get_client_by_compagnie(request):
 
 # Portefeuille par commercial
 def generate_excel_portefeuille_commercial(commercials, date_requete, sans_commercial):
-    """Génère un fichier Excel unique regroupant les portefeuilles de tous les commerciaux, y compris les polices sans commercial, sans les totaux et avec un en-tête unique."""
     workbook = Workbook()
     sheet = workbook.active
     sheet.title = "Portefeuille"
@@ -484,7 +483,6 @@ def generate_excel_portefeuille_commercial(commercials, date_requete, sans_comme
     sheet.append(headers)  # Ajout de l'en-tête une seule fois
 
     def ajouter_polices_dans_excel(polices_qs, titre):
-        """Ajoute les polices d'un commercial ou des 'Autres Polices' dans le fichier Excel."""
 
         if not polices_qs.exists():
             return  # Ne rien ajouter si aucune police

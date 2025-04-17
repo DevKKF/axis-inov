@@ -4,26 +4,26 @@
 			<form enctype="multipart/form-data" id="form_add_police" action="{% url 'add_police' client.id %}" method="post">
 			{% csrf_token %}
 			<div class="modal-header">
-				<h4 class="modal-title">{{_("CREATION D'UNE POLICE DU CLIENT")}} <b>{{ client.nom }}</b> <span class="text-white">- by EMI</span></h4>
+				<h4 class="modal-title">CREATION D'UNE POLICE DU CLIENT <b>{{ client.nom }}</b> <span class="text-white">- by EMI</span></h4>
 				<button type="button"class="close"data-dismiss="modal"aria-label="Close">
 					<span aria-hidden="true">×</span>
 				</button>
 			</div>
 			<div class="modal-body">
 				<div class="alert  alert-dismissible fade show hidden" role="alert">
-				  <span class="message"> {{_("TRAITEMENT EN COURS")}}</span>
+				  <span class="message"> TRAITEMENT EN COURS</span>
 				</div>
 				<div class="col-md-12 offset-0">
 					<ul class="nav nav-tabs" id="myTab" role="tablist">
-						<li class="nav-item"><a class="nav-link active" id="general-tab" data-toggle="tab" href="#general" role="tab" aria-controls="general" aria-selected="true">{{_("GENERAL")}}</a></li>
-						<li class="nav-item"><a class="nav-link" id="intermediaire-tab" data-toggle="tab" href="#intermediaire" role="tab" aria-controls="intermediaire" aria-selected="false">{{_("APPORTEURS")}}</a></li>
-						<li class="nav-item"><a class="nav-link" id="garantie-tab" data-toggle="tab" href="#garantie" role="tab" aria-controls="garantie" aria-selected="false">{{_("GARANTIE")}}</a></li>
-						<li class="nav-item"><a class="nav-link" id="risque-tab" data-toggle="tab" href="#risque" role="tab" aria-controls="risque" aria-selected="false">{{_("RISQUE")}}</a></li>
-						<li class="nav-item"><a class="nav-link" id="marchandise-tab" data-toggle="tab" href="#marchandise" role="tab" aria-controls="marchandise" aria-selected="false">{{_("MARCHANDISES TRANSPORTEES")}}</a></li>
-						<li class="nav-item"><a class="nav-link" id="aliment-tab" data-toggle="tab" href="#aliment" role="tab" aria-controls="aliment" aria-selected="false">{{_("ALIMENTS")}}</a></li>
-						<li class="nav-item"><a class="nav-link" id="vehicule-tab" data-toggle="tab" href="#vehicule" role="tab" aria-controls="vehicule" aria-selected="false">{{_("VEHICULE")}}</a></li>
-						<li class="nav-item"><a class="nav-link" id="facturation-tab" data-toggle="tab" href="#facturation" role="tab" aria-controls="facturation" aria-selected="false">{{_("FACTURATION")}}</a></li>
-						<li class="nav-item"><a class="nav-link" id="prime-tab" data-toggle="tab" href="#prime" role="tab" aria-controls="prime" aria-selected="false">{{_("PRIME")}}</a></li>
+						<li class="nav-item"><a class="nav-link active" id="general-tab" data-toggle="tab" href="#general" role="tab" aria-controls="general" aria-selected="true">GENERAL</a></li>
+						<li class="nav-item"><a class="nav-link" id="intermediaire-tab" data-toggle="tab" href="#intermediaire" role="tab" aria-controls="intermediaire" aria-selected="false">APPORTEURS</a></li>
+						<li class="nav-item"><a class="nav-link" id="garantie-tab" data-toggle="tab" href="#garantie" role="tab" aria-controls="garantie" aria-selected="false">GARANTIE</a></li>
+						<li class="nav-item"><a class="nav-link" id="risque-tab" data-toggle="tab" href="#risque" role="tab" aria-controls="risque" aria-selected="false">RISQUE</a></li>
+						<li class="nav-item"><a class="nav-link" id="marchandise-tab" data-toggle="tab" href="#marchandise" role="tab" aria-controls="marchandise" aria-selected="false">MARCHANDISES TRANSPORTEES</a></li>
+						<li class="nav-item"><a class="nav-link" id="aliment-tab" data-toggle="tab" href="#aliment" role="tab" aria-controls="aliment" aria-selected="false">ALIMENTS</a></li>
+						<li class="nav-item"><a class="nav-link" id="vehicule-tab" data-toggle="tab" href="#vehicule" role="tab" aria-controls="vehicule" aria-selected="false">VEHICULE</a></li>
+						<li class="nav-item"><a class="nav-link" id="facturation-tab" data-toggle="tab" href="#facturation" role="tab" aria-controls="facturation" aria-selected="false">FACTURATION</a></li>
+						<li class="nav-item"><a class="nav-link" id="prime-tab" data-toggle="tab" href="#prime" role="tab" aria-controls="prime" aria-selected="false">PRIME</a></li>
 					</ul>
 					<div class="tab-content" id="myTabContent">
 
@@ -43,18 +43,18 @@
 										</div>
 									</div>
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_('Produit')}} <span class="required">*</span></label>
+										<label class="col-sm-5 col-form-label">Produit <span class="required">*</span></label>
 										<div class="col-sm-7">
 											<select class="form-control tags-multiple produit" name="produit" id="produit" autocomplete="off" required>
-												<option value="">{{_("Choisir un produit")}}</option>
+												<option value="">Choisir un produit</option>
 											</select>
 										</div>
 									</div>
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_('Assureur')}} <span class="required">*</span></label>
+										<label class="col-sm-5 col-form-label">Assureur <span class="required">*</span></label>
 										<div class="col-sm-7">
 											<select class="form-control tags-multiple" name="compagnie" id="compagnie" autocomplete="off" required>
-												<option value="">{{_('Choisir')}}</option>
+												<option value="">Choisir</option>
 												{% for compagnie in compagnies %}
 													<option value="{{ compagnie.id }}" data-compagnie_id="{{ compagnie.id }}">{{ compagnie.nom }}</option>
 												{% endfor %}
@@ -62,10 +62,10 @@
 										</div>
 									</div>
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_("Gestionnaire sinistre")}}</label>
+										<label class="col-sm-5 col-form-label">Gestionnaire sinistre</label>
 										<div class="col-sm-7">
 											<select name="gestionnaire_id" id="gestionnaire_id" class="form-control tags-multiple">
-												<option value="">{{_('Choisir')}}</option>
+												<option value="">Choisir</option>
 												{% for gest in gestionnaires %}
 													<option value="{{gest.id}}">{{gest.first_name}} {{gest.last_name}}</option>
 												{% endfor %}
@@ -73,10 +73,10 @@
 										</div>
 									</div>
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_("Gestionnaire production")}}</label>
+										<label class="col-sm-5 col-form-label">Gestionnaire production</label>
 										<div class="col-sm-7">
 											<select name="production_id" id="production_id" class="form-control tags-multiple">
-												<option value="">{{_('Choisir')}}</option>
+												<option value="">Choisir</option>
 												{% for prod in productions %}
 													<option value="{{prod.id}}">{{prod.first_name}} {{prod.last_name}}</option>
 												{% endfor %}
@@ -84,10 +84,10 @@
 										</div>
 									</div>
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_("Commercial")}}</label>
+										<label class="col-sm-5 col-form-label">Commercial</label>
 										<div class="col-sm-7">
 											<select class="form-control tags-multiple" name="commercial_id" id="commercials_id">
-												<option value="">{{_('Choisir')}}</option>
+												<option value="">Choisir</option>
 												{% for comm in commercials %}
 													<option value="{{comm.id}}" {% if client.commercial_id == comm.id %} selected {% endif %}>{{comm.first_name}} {{comm.last_name}}</option>
 												{% endfor %}
@@ -95,7 +95,7 @@
 										</div>
 									</div>
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_("Numéro police Cie")}}</label>
+										<label class="col-sm-5 col-form-label">Numéro police Cie</label>
 										<div class="col-sm-7">
 											<input type="text" class="form-control" name="numero" autocomplete="off" value="" />
 										</div>
@@ -104,54 +104,54 @@
 								<div class="vl"></div>
 								<div class="col-md-6" style="border-left:0px;margin-left:-10px;padding-left:20px;">
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_("Mode renouvellement")}} <span class="required">*</span></label>
+										<label class="col-sm-5 col-form-label">Mode renouvellement <span class="required">*</span></label>
 										<div class="col-sm-7">
 											<select class="form-control" name="mode_renouvellement" id="mode_renouvellement" autocomplete="off" required>
-												<option selected value="">{{_('Choisir')}}</option>
+												<option selected value="">Choisir</option>
 												<option value="{{ mode_renouvellement.TACITE_RECONDUCTION }}">{{ mode_renouvellement.TACITE_RECONDUCTION }}</option>
 												<option value="{{ mode_renouvellement.SANS_TACITE_RECONDUCTION }}">{{ mode_renouvellement.SANS_TACITE_RECONDUCTION }}</option>
 											</select>
 										</div>
 									</div>
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_("Date début")}} <span class="required">*</span></label>
+										<label class="col-sm-5 col-form-label">Date début <span class="required">*</span></label>
 										<div class="col-sm-7">
 											<input type="date" class="form-control" name="date_debut_effet" id="date_debut_effet" autocomplete="off" value="" required/>
 										</div>
 									</div>
 									<div class="form-group row tacide_reconduction">
-										<label class="col-sm-5 col-form-label">{{_("Date de renouvellement")}} <span class="required">*</span></label>
+										<label class="col-sm-5 col-form-label">Date de renouvellement <span class="required">*</span></label>
 										<div class="col-sm-7">
 											<input type="date" class="form-control" name="date_fin_effet" id="date_fin_effet" autocomplete="off" value="">
 										</div>
 									</div>
 									<div class="form-group row sans_tacide_reconduction">
-										<label class="col-sm-5 col-form-label">{{_("Date fin contrat")}}</label>
+										<label class="col-sm-5 col-form-label">Date fin contrat <span class="required">*</span></label>
 										<div class="col-sm-7">
 											<input type="date" class="form-control" name="date_fin_police" id="date_fin_police" autocomplete="off" value="">
 										</div>
 									</div>
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_("Préavis de résiliation")}} <span class="required">*</span></label>
+										<label class="col-sm-5 col-form-label">Préavis de résiliation <span class="required">*</span></label>
 										<div class="col-sm-7">
 											<select class="form-control champ_obligatoire" name="preavis_de_resiliation" autocomplete="off" required>
-												<option value="">{{_('Choisir')}}</option>
-												<option value="1">1 {{_('Mois')}}</option>
-												<option value="2">2 {{_('Mois')}}</option>
-												<option value="3">3 {{_('Mois')}}</option>
-												<option value="4">4 {{_('Mois')}}</option>
-												<option value="5">5 {{_('Mois')}}</option>
-												<option value="6">6 {{_('Mois')}}</option>
-												<option value="Aucun">{{_('Aucun')}}</option>
+												<option value="">Choisir</option>
+												<option value="1">1 Mois</option>
+												<option value="2">2 Mois</option>
+												<option value="3">3 Mois</option>
+												<option value="4">4 Mois</option>
+												<option value="5">5 Mois</option>
+												<option value="6">6 Mois</option>
+												<option value="Aucun">Aucun</option>
 											</select>
 										</div>
 									</div>
 
 									<div class="form-group row box_typecompagnie">
-										<label class="col-sm-5 col-form-label">{{_("Autre assureur")}}</label>
+										<label class="col-sm-5 col-form-label">Autre assureur</label>
 										<div class="col-sm-7">
 											<select class="form-control tags-multiple champ_obligatoire" name="typecompagnie" id="typecompagnie" autocomplete="off">
-												<option value="" selected>{{_('Aucun')}}</option>
+												<option value="" selected>Aucun</option>
 												{% for type in typecompagnie %}
 													<option value="{{ type.id }}" data-typecompagnie_id="{{ type.id }}">{{ type.libelle }}</option>
 												{% endfor %}
@@ -159,10 +159,10 @@
 										</div>
 									</div>
 									<div class="form-group row" id="box_compagnie" style="display:none;">
-										<label class="col-sm-5 col-form-label">{{_("Choisir l'assureur")}} <span class="required">*</span></label>
+										<label class="col-sm-5 col-form-label">Choisir l'assureur <span class="required">*</span></label>
 										<div class="col-sm-7">
 											<select class="form-control tags-multiple" name="compagnie_id" id="compagnie_id" autocomplete="off">
-												<option value="">{{_('Choisir')}}</option>
+												<option value="">Choisir</option>
 											</select>
 										</div>
 									</div>
@@ -174,15 +174,15 @@
 							<div class="row">
 								<div class="col-md-6">
 									<div class="form-group row">
-										<label class="col-sm-6 col-form-label">{{_('Apporteur')}} <span class="required"></span></label>
+										<label class="col-sm-6 col-form-label">Apporteur <span class="required"></span></label>
 										<div class="col-sm-6">
 											<div class="icheck-danger d-inline">
 											  <input type="radio" name="apporteur" value="OUI" id="yes_apporteur"/>
-											  <label for="yes_apporteur"> {{_('OUI')}} </label>
+											  <label for="yes_apporteur"> OUI </label>
 											</div>
 											<div class="icheck-danger d-inline" style="margin-left:50px;">
 											  <input type="radio" name="apporteur" value="NON" id="no_apporteur" checked/>
-											  <label for="no_apporteur">{{_('NON')}} </label>
+											  <label for="no_apporteur">NON </label>
 											</div>
 										</div>
 									</div>
@@ -192,10 +192,10 @@
 									<table id="table_apporteurs_police" style="width:100%;" class="table table-bordered table-striped dataTable_ dtr-inline">
 										<thead>
 											<tr>
-												<th style="width:;">{{_("Apporteur d'affaire")}}<span id="btn_refresh_liste_apporteurs" class="fa fa-refresh pull-right" data-href="{% url 'ajax_apporteurs' %}" title="Rafraichir" style="cursor:pointer;margin-top:5px;"></span></th>
-												<th style="width:;">{{_("Base de calcul")}}</th>
-												<th style="width:20%;">{{_("Taux Com AN.")}} (%)</th>
-												<th style="width:20%;">{{_("Taux Com Renouv")}} (%)</th>
+												<th style="width:;">Apporteur d'affaire<span id="btn_refresh_liste_apporteurs" class="fa fa-refresh pull-right" data-href="{% url 'ajax_apporteurs' %}" title="Rafraichir" style="cursor:pointer;margin-top:5px;"></span></th>
+												<th style="width:;">Base de calcul</th>
+												<th style="width:20%;">Taux Com AN. (%)</th>
+												<th style="width:20%;">Taux Com Renouv (%)</th>
 												<th style="width:"></th>
 											</tr>
 										</thead>
@@ -204,7 +204,7 @@
 												<td style="vertical-align:middle;">
 													<div class="row" style="margin-right:5px;">
 														<select class="form-control calculs_handler_police intermediaire intermediaire_champ_obligatoire" name="intermediaires" id="intermediaires">
-															<option value="">{{_('Choisir')}}</option>
+															<option value="">Choisir</option>
 															{% for apporteur in apporteurs %}
 																<option value="{{ apporteur.id }}">{{ apporteur.nom|default_if_none:"" }} {{ apporteur.prenoms|default_if_none:"" }}</option>
 															{% endfor %}
@@ -213,7 +213,7 @@
 												</td>
 												<td style="vertical-align:middle;padding:5px;">
 													<select class="form-control calculs_handler_police base_calcul_taux_retrocession not_select2 intermediaire_champ_obligatoire" name="base_calcul_taux_retrocession" >
-														<option value="">{{_('Choisir')}}</option>
+														<option value="">Choisir</option>
 														{% for bc in bases_calculs %}
 															<option value="{{ bc.id }}">{{ bc.libelle }}</option>
 														{% endfor %}
@@ -229,7 +229,7 @@
 											</tr>
 										</tbody>
 										<tfoot style="display:none;">
-											<tr class="add-row"><td colspan="5"><span id="btnAddLigneApporteur" style="cursor:pointer;" class="btn btn-sm btn-default float-right"><i class="fa fa-plus" style="font-size:12px;"></i> {{_("Ajouter une ligne")}}</span></td></tr>
+											<tr class="add-row"><td colspan="5"><span id="btnAddLigneApporteur" style="cursor:pointer;" class="btn btn-sm btn-default float-right"><i class="fa fa-plus" style="font-size:12px;"></i> Ajouter une ligne</span></td></tr>
 										</tfoot>
 									</table>
 								</div>
@@ -240,15 +240,15 @@
 							<div class="row" style="max-height:500px;">
 								<div class="col-md-6">
 									<div class="form-group row">
-										<label class="col-sm-6 col-form-label">{{_('Garantie')}} <span class="required"></span></label>
+										<label class="col-sm-6 col-form-label">Garantie <span class="required"></span></label>
 										<div class="col-sm-6">
 											<div class="icheck-danger d-inline">
 											  <input type="radio" name="garantie" value="OUI" id="yes_garantie"/>
-											  <label for="yes_garantie"> {{_('OUI')}} </label>
+											  <label for="yes_garantie"> OUI </label>
 											</div>
 											<div class="icheck-danger d-inline" style="margin-left:50px;">
 											  <input type="radio" name="garantie" value="NON" id="no_garantie" checked/>
-											  <label for="no_garantie">{{_('NON')}} </label>
+											  <label for="no_garantie">NON </label>
 											</div>
 										</div>
 									</div>
@@ -256,10 +256,10 @@
 								<div class="vl"></div>
 								<div class="col-md-5">
 									<div class="form-group row" id="formule_block">
-										<label class="col-sm-6 col-form-label">{{_('Formule')}}</label>
+										<label class="col-sm-6 col-form-label">Formule</label>
 										<div class="col-sm-6">
 											<select class="form-control " name="formule" id="formule" autocomplete="off">
-												<option value="">{{_('Choisir')}}</option>
+												<option value="">Choisir</option>
 												{% for formule in formules %}
 												<option value="{{ formule.id }}" data-formule_id="{{ formule.id }}">{{ formule.libelle }}</option>
 												{% endfor %}
@@ -275,9 +275,9 @@
 										<thead>
 											<tr>
 												<th style="width:5%"></th>
-												<th>{{_("Garantie")}}</th>
-												<th class="text-center" style="width:20%">{{_("Franchise")}} (F CFA)</th>
-												<th class="text-center" style="width:20%;">{{_("Capital")}} (F CFA)</th>
+												<th>Garantie</th>
+												<th class="text-center" style="width:20%">Franchise (F CFA)</th>
+												<th class="text-center" style="width:20%;">Capital (F CFA)</th>
 											</tr>
 										</thead>
 										<tbody>
@@ -292,13 +292,13 @@
 							<div class="row">
 								<div class="col-md-12">
 									<div class="form-group">
-										<label class="form-label">{{_('Risque')}}</label>
+										<label class="form-label">Risque</label>
 									  	<input type="text" class="form-control" name="risque_name" value="" id="risque_name">
 									</div>
 								</div>
 								<div class="col-md-12">
 									<div class="form-group">
-										<label class="form-label">{{_('Description')}}</label>
+										<label class="form-label">Description</label>
 										<textarea class="form-control" name="risque_description" id="risque_description" cols="30" rows="5"></textarea>
 									</div>
 								</div>
@@ -308,17 +308,17 @@
 						<div class="tab-pane fade mt-3" id="aliment" role="tabpanel" aria-labelledby="aliment-tab">
 							<div class="row">
 								<div class="col-md-3">
-								  	<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#modal-police_aliment"><i class="fa fa-plus-circle"></i> {{_("Ajouter un aliment")}}</button>
+								  	<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#modal-police_aliment"><i class="fa fa-plus-circle"></i> Ajouter un aliment</button>
 								</div>
 								<div class="vl"></div>
 								<div class="col-md-5 d-flex">
 									<input type="file" accept=".xlsx" class="form-control mr-3" name="fichier_aliment" id="fichier_aliment" style="width:300px">
-									<button type="button" id="importation_aliment" class="btn btn-warning"><i class="fa fa-download"></i> {{_("Importer")}}</button>
+									<button type="button" id="importation_aliment" class="btn btn-warning"><i class="fa fa-download"></i> Importer</button>
 								</div>
 								<div class="vl"></div>
 								<div class="col-md-3">
 									{% load static %}
-								  	<button type="button" download-fichier="{% static 'production/modeles/import-vehicule-model.xlsx' %}" id="telecharger_modele" class="btn btn-success pull-right"><i class="fa fa-file-excel-o"></i> {{_("Télécharger le modèle")}}</button>
+								  	<button type="button" download-fichier="{% static 'production/modeles/import-vehicule-model.xlsx' %}" id="telecharger_modele" class="btn btn-success pull-right"><i class="fa fa-file-excel-o"></i> Télécharger le modèle</button>
 								</div>
 							</div>
 							<hr>
@@ -331,13 +331,13 @@
 										  <thead>
 											  <tr>
 													<th class="text-center" style="width:5%">##</th>
-													<th>{{_("Immat")}}</th>
-													<th>{{_("Marque")}}</th>
-													<th>{{_("Modèle")}}</th>
-													<th>{{_("Catégorie")}}</th>
-													<th>{{_("Entrée")}}</th>
-													<th>{{_("Propriétaire")}}</th>
-													<th>{{_("Conducteur")}}</th>
+													<th>Immat</th>
+													<th>Marque</th>
+													<th>Modèle</th>
+													<th>Catégorie</th>
+													<th>Entrée</th>
+													<th>Propriétaire</th>
+													<th>Conducteur</th>
 											  </tr>
 										  </thead>
 										  <tbody>
@@ -351,34 +351,34 @@
 							<div class="row">
 								<div class="col-md-6">
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_("N° immat")}} <span class="required">*</span></label>
+										<label class="col-sm-5 col-form-label">N° immat <span class="required">*</span></label>
 										<div class="col-sm-7">
 											<input type="text" class="form-control vehicule_champ_obligatoire" name="immatriculation"/>
 										</div>
 									</div>
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_("N° série")}}</label>
+										<label class="col-sm-5 col-form-label">N° série</label>
 										<div class="col-sm-7">
 											<input type="text" class="form-control" name="num_serie" value=""/>
 										</div>
 									</div>
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_('Marque')}} <span class="required">*</span></label>
+										<label class="col-sm-5 col-form-label">Marque <span class="required">*</span></label>
 										<div class="col-sm-7">
 											<input type="text" class="form-control vehicule_champ_obligatoire" name="marque">
 										</div>
 									</div>
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_("Modèle")}}</label>
+										<label class="col-sm-5 col-form-label">Modèle</label>
 										<div class="col-sm-7">
 											<input type="text" class="form-control" name="modele" value="">
 										</div>
 									</div>
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_('Energie')}} <span class="required">*</span></label>
+										<label class="col-sm-5 col-form-label">Energie <span class="required">*</span></label>
 										<div class="col-sm-7">
 											<select class="form-control tags-multiple vehicule_champ_obligatoire" name="carburant_id" id="carburant_id" autocomplete="off">
-												<option value="">{{_('Choisir')}}</option>
+												<option value="">Choisir</option>
 												{% for cab in carburants %}
 													<option value="{{ cab.id }}">{{ cab.libelle }}</option>
 												{% endfor %}
@@ -386,31 +386,31 @@
 										</div>
 									</div>
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_('Place')}}</label>
+										<label class="col-sm-5 col-form-label">Place</label>
 										<div class="col-sm-7">
 											<input type="text" class="form-control money_field" name="places_assises" value="">
 										</div>
 									</div>
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_("Valeur neuve")}}</label>
+										<label class="col-sm-5 col-form-label">Valeur neuve</label>
 										<div class="col-sm-7">
 											<input type="text" class="form-control money_field" name="valeur_neuve" value="" />
 										</div>
 									</div>
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_("Valeur actuelle")}}</label>
+										<label class="col-sm-5 col-form-label">Valeur actuelle</label>
 										<div class="col-sm-7">
 											<input type="text" class="form-control money_field" name="valeur_actuelle" value=""/>
 										</div>
 									</div>
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_('Conducteur')}}</label>
+										<label class="col-sm-5 col-form-label">Conducteur</label>
 										<div class="col-sm-7">
 											<input type="text" class="form-control" name="conducteur" value=""/>
 										</div>
 									</div>
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_("Propriétaire")}} <span class="required">*</span></label>
+										<label class="col-sm-5 col-form-label">Propriétaire <span class="required">*</span></label>
 										<div class="col-sm-7">
 											<input type="text" class="form-control vehicule_champ_obligatoire" name="proprietaire" value="" required>
 										</div>
@@ -419,16 +419,16 @@
 								<div class="vl"></div>
 								<div class="col-md-5" style="border-left:0px;">
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_("N° immat provi.")}}</label>
+										<label class="col-sm-5 col-form-label">N° immat provi.</label>
 										<div class="col-sm-7">
 											<input type="text" class="form-control" name="immatriculation_provisioire"/>
 										</div>
 									</div>
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_("Catégorie véhicule")}} <span class="required">*</span></label>
+										<label class="col-sm-5 col-form-label">Catégorie véhicule <span class="required">*</span></label>
 										<div class="col-sm-7">
 											<select class="form-control tags-multiple vehicule_champ_obligatoire" name="categorie_id" id="categorie_id" autocomplete="off">
-												<option value="">{{_('Choisir')}}</option>
+												<option value="">Choisir</option>
 												{% for cat in catgories %}
 													<option value="{{ cat.id }}">{{ cat.libelle }}</option>
 												{% endfor %}
@@ -436,10 +436,10 @@
 										</div>
 									</div>
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_("Usage")}} <span class="required">*</span></label>
+										<label class="col-sm-5 col-form-label">Usage <span class="required">*</span></label>
 										<div class="col-sm-7">
 											<select class="form-control tags-multiple vehicule_champ_obligatoire" name="usage_id" id="usage_id" autocomplete="off">
-												<option value="">{{_('Choisir')}}</option>
+												<option value="">Choisir</option>
 												{% for u in usages %}
 													<option value="{{ u.id }}">{{ u.libelle }}</option>
 												{% endfor %}
@@ -447,10 +447,10 @@
 										</div>
 									</div>
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_('Carrosserie')}}</label>
+										<label class="col-sm-5 col-form-label">Carrosserie</label>
 										<div class="col-sm-7">
 											<select class="form-control tags-multiple" name="carosserie_id" id="carosserie_id" autocomplete="off">
-												<option value="">{{_('Choisir')}}</option>
+												<option value="">Choisir</option>
 												{% for car in carosseries %}
 													<option value="{{ car.id }}">{{ car.libelle }}</option>
 												{% endfor %}
@@ -458,37 +458,37 @@
 										</div>
 									</div>
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_("Date d'entrée")}}</label>
+										<label class="col-sm-5 col-form-label">Date d'entrée</label>
 										<div class="col-sm-7">
 											<input type="date" class="form-control" name="date_entree" value="">
 										</div>
 									</div>
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_("Mise en circulation")}} <span class="required">*</span></label>
+										<label class="col-sm-5 col-form-label">Mise en circulation <span class="required">*</span></label>
 										<div class="col-sm-7">
 											<input type="date" class="form-control vehicule_champ_obligatoire" name="date_mise_circulation" value="">
 										</div>
 									</div>
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_('Puissance')}} <span class="required">*</span></label>
+										<label class="col-sm-5 col-form-label">Puissance <span class="required">*</span></label>
 										<div class="col-sm-7">
 											<input type="text" class="form-control money_field vehicule_champ_obligatoire" name="puissance_fiscale">
 										</div>
 									</div>
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_("Poid à vide")}}</label>
+										<label class="col-sm-5 col-form-label">Poid à vide</label>
 										<div class="col-sm-7">
 											<input type="text" class="form-control money_field" name="poids_a_vide" value=""/>
 										</div>
 									</div>
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_("Poid T.A.C")}}</label>
+										<label class="col-sm-5 col-form-label">Poid T.A.C</label>
 										<div class="col-sm-7">
 											<input type="text" class="form-control money_field" name="poid_tac" value=""/>
 										</div>
 									</div>
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_("Commentaire")}}</label>
+										<label class="col-sm-5 col-form-label">Commentaire</label>
 										<div class="col-sm-7">
 											<input type="text" class="form-control" name="commentaire" value="">
 										</div>
@@ -504,67 +504,67 @@
 								</div>
 								<div class="col-md-6">
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_("N° de certificat")}} <span class="required">*</span></label>
+										<label class="col-sm-5 col-form-label">N° de certificat <span class="required">*</span></label>
 										<div class="col-sm-7">
 											<input type="text" class="form-control marchandise_champ_obligatoire" value="" name="num_certificat" id="num_certificat">
 										</div>
 									</div>
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_("N° Fact fournisseur")}}</label>
+										<label class="col-sm-5 col-form-label">N° Fact fournisseur</label>
 										<div class="col-sm-7">
 											<input type="text" class="form-control" name="num_fact_fournisseur" id="num_fact_fournisseur" value="">
 										</div>
 									</div>
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_("Ref DAI")}}</label>
+										<label class="col-sm-5 col-form-label">Ref DAI</label>
 										<div class="col-sm-7">
 											<input type="text" class="form-control" name="ref_dai" id="ref_dai" value="">
 										</div>
 									</div>
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_("Date de commande")}}</label>
+										<label class="col-sm-5 col-form-label">Date de commande</label>
 										<div class="col-sm-7">
 											<input type="date" class="form-control" name="date_commande" id="date_commande" value="">
 										</div>
 									</div>
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_("Nombre de colis")}}</label>
+										<label class="col-sm-5 col-form-label">Nombre de colis</label>
 										<div class="col-sm-7">
 											<input type="text" class="form-control money_field" name="nombre_colis" id="nombre_colis" value="">
 										</div>
 									</div>
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_("Poids Brut")}}</label>
+										<label class="col-sm-5 col-form-label">Poids Brut</label>
 										<div class="col-sm-7">
 											<input type="text" class="form-control money_field" name="poids_brut" id="poids_brut" value="">
 										</div>
 									</div>
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_("Plein de souscription")}}</label>
+										<label class="col-sm-5 col-form-label">Plein de souscription</label>
 										<div class="col-sm-7">
 											<input type="text" class="form-control money_field" name="plein_souscription" id="plein_souscription" value="">
 										</div>
 									</div>
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_("Immatriculation")}}</label>
+										<label class="col-sm-5 col-form-label">Immatriculation</label>
 										<div class="col-sm-7">
 											<input type="text" class="form-control" name="immatriculation_march" id="immatriculation_march" value="">
 										</div>
 									</div>
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_("Pavillon, Cie, Prest.")}}</label>
+										<label class="col-sm-5 col-form-label">Pavillon, Cie, Prest.</label>
 										<div class="col-sm-7">
 											<input type="text" class="form-control" name="pavillon_cie_prest" id="pavillon_cie_prest" value="">
 										</div>
 									</div>
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_("Destination")}}</label>
+										<label class="col-sm-5 col-form-label">Destination</label>
 										<div class="col-sm-7">
 											<input type="text" class="form-control" name="destination" id="destination" value="">
 										</div>
 									</div>
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_("Lieu de transit/transbordement")}}</label>
+										<label class="col-sm-5 col-form-label">Lieu de transit/transbordement</label>
 										<div class="col-sm-7">
 											<input type="text" class="form-control" name="lieu_transit_transbordement" id="lieu_transit_transbordement" value="">
 										</div>
@@ -573,46 +573,46 @@
 								<div class="vl"></div>
 								<div class="col-md-5" style="border-left:0px;">
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_("Date émission certificat")}} <span class="required">*</span></label>
+										<label class="col-sm-5 col-form-label">Date émission certificat <span class="required">*</span></label>
 										<div class="col-sm-7">
 											<input type="date" class="form-control marchandise_champ_obligatoire" name="date_emmision_certificat" id="date_emmision_certificat" value="{{ today|date:'Y-m-d'|default_if_none:'' }}">
 										</div>
 									</div>
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_("Date de sortie")}}</label>
+										<label class="col-sm-5 col-form-label">Date de sortie</label>
 										<div class="col-sm-7">
 											<input type="date" class="form-control" name="date_sortie_march" id="date_sortie_march" value="">
 										</div>
 									</div>
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_("N° de commande")}}</label>
+										<label class="col-sm-5 col-form-label">N° de commande</label>
 										<div class="col-sm-7">
 											<input type="text" class="form-control" name="num_commande" id="num_commande" value="">
 										</div>
 									</div>
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_("Marchandises")}}</label>
+										<label class="col-sm-5 col-form-label">Marchandises</label>
 										<div class="col-sm-7">
 											<input type="text" class="form-control" name="marchandises_description" id="marchandises_description" value="">
 										</div>
 									</div>
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_("Poids Net")}}</label>
+										<label class="col-sm-5 col-form-label">Poids Net</label>
 										<div class="col-sm-7">
 											<input type="text" class="form-control money_field" name="poids_net" id="poids_net" value="">
 										</div>
 									</div>
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_("Valeur assurée")}} <span class="required">*</span></label>
+										<label class="col-sm-5 col-form-label">Valeur assurée <span class="required">*</span></label>
 										<div class="col-sm-7">
 											<input type="text" class="form-control money_field calculs_marchandise_montant_police marchandise_champ_obligatoire" name="valeur_assuree" id="valeur_assuree" value="">
 										</div>
 									</div>
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_("Moyen de transport")}}</label>
+										<label class="col-sm-5 col-form-label">Moyen de transport</label>
 										<div class="col-sm-7">
 											<select class="form-control tags-multiple" name="moyens_transport_id" id="moyens_transport_id" autocomplete="off">
-												<option value="">{{_('Choisir')}}</option>
+												<option value="">Choisir</option>
 												{% for moyens_transport in moyens_transports %}
 													<option value="{{ moyens_transport.id }}">{{ moyens_transport.libelle }}</option>
 												{% endfor %}
@@ -620,28 +620,28 @@
 										</div>
 									</div>
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_("Marque, Modèle, Type")}}</label>
+										<label class="col-sm-5 col-form-label">Marque, Modèle, Type</label>
 										<div class="col-sm-7">
 											<input type="text" class="form-control" name="marque_modele_type" id="marque_modele_type" value="">
 										</div>
 									</div>
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_("Début voyage")}}</label>
+										<label class="col-sm-5 col-form-label">Début voyage</label>
 										<div class="col-sm-7">
 											<input type="date" class="form-control" name="debut_voyage" id="debut_voyage" value="">
 										</div>
 									</div>
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_("Lieu de départ")}}</label>
+										<label class="col-sm-5 col-form-label">Lieu de départ</label>
 										<div class="col-sm-7">
 											<input type="text" class="form-control" name="lieu_depart" id="lieu_depart" value="">
 										</div>
 									</div>
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_("Conditions d'assurance")}}</label>
+										<label class="col-sm-5 col-form-label">Conditions d'assurance</label>
 										<div class="col-sm-7">
 											<select class="form-control tags-multiple" name="conditions_assurance_id" id="conditions_assurance_id" autocomplete="off">
-												<option value="">{{_('Choisir')}}</option>
+												<option value="">Choisir</option>
 												{% for conditions_assurance in conditions_assurances %}
 													<option value="{{ conditions_assurance.id }}">{{ conditions_assurance.libelle }}</option>
 												{% endfor %}
@@ -654,19 +654,19 @@
 								</div>
 								<div class="col-md-6">
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_("Nom")}}</label>
+										<label class="col-sm-5 col-form-label">Nom</label>
 										<div class="col-sm-7">
 											<input type="text" class="form-control" value="" name="nom" id="nom">
 										</div>
 									</div>
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_("Code")}}</label>
+										<label class="col-sm-5 col-form-label">Code</label>
 										<div class="col-sm-7">
 											<input type="text" class="form-control" value="" name="code" id="code">
 										</div>
 									</div>
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_("Adresse")}}</label>
+										<label class="col-sm-5 col-form-label">Adresse</label>
 										<div class="col-sm-7">
 											<input type="text" class="form-control" value="" name="adresse" id="adresse">
 										</div>
@@ -675,13 +675,13 @@
 								<div class="vl"></div>
 								<div class="col-md-5" style="border-left:0px;">
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_("Téléphone")}}</label>
+										<label class="col-sm-5 col-form-label">Téléphone</label>
 										<div class="col-sm-7">
 											<input type="text" class="form-control" value="" name="telephone" id="telephone" onkeypress="isInputNumber(event)">
 										</div>
 									</div>
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_("Email")}}</label>
+										<label class="col-sm-5 col-form-label">Email</label>
 										<div class="col-sm-7">
 											<input type="email" class="form-control" value="" name="email" id="email">
 										</div>
@@ -692,43 +692,43 @@
 								</div>
 								<div class="col-md-6">
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_("Taux risque ordinaire")}}</label>
+										<label class="col-sm-5 col-form-label">Taux risque ordinaire</label>
 										<div class="col-sm-7">
 											<input type="text" class="form-control money_field_avec_virgule calculs_marchandise_montant_police" value="" name="taux_risque_ordinaire" id="taux_risque_ordinaire">
 										</div>
 									</div>
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_("Taux risque guerre")}}</label>
+										<label class="col-sm-5 col-form-label">Taux risque guerre</label>
 										<div class="col-sm-7">
 											<input type="text" class="form-control money_field_avec_virgule calculs_marchandise_montant_police" value="" name="taux_risque_guerre" id="taux_risque_guerre">
 										</div>
 									</div>
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_("Taux supprime")}}</label>
+										<label class="col-sm-5 col-form-label">Taux supprime</label>
 										<div class="col-sm-7">
 											<input type="text" class="form-control money_field_avec_virgule calculs_marchandise_montant_police" value="" name="taux_supprime" id="taux_supprime">
 										</div>
 									</div>
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_("Taux réduc. commerciale")}}</label>
+										<label class="col-sm-5 col-form-label">Taux réduc. commerciale</label>
 										<div class="col-sm-7">
 											<input type="text" class="form-control money_field_avec_virgule calculs_marchandise_montant_police" value="" name="taux_reduction_commerciale" id="taux_reduction_commerciale">
 										</div>
 									</div>
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_("Taux de la taxe")}}</label>
+										<label class="col-sm-5 col-form-label">Taux de la taxe</label>
 										<div class="col-sm-7">
 											<input type="text" class="form-control money_field_avec_virgule calculs_marchandise_montant_police" value="" name="taux_taxe" id="taux_taxe">
 										</div>
 									</div>
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_("Accessoires")}}</label>
+										<label class="col-sm-5 col-form-label">Accessoires</label>
 										<div class="col-sm-7">
 											<input type="text" class="form-control calculs_marchandise_montant_police" value="" name="accessoires" id="accessoires" oninput="formatMontant(this)">
 										</div>
 									</div>
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_("Autres frais")}}</label>
+										<label class="col-sm-5 col-form-label">Autres frais</label>
 										<div class="col-sm-7">
 											<input type="text" class="form-control calculs_marchandise_montant_police" value="" name="autres_frais" id="autres_frais" oninput="formatMontant(this)">
 										</div>
@@ -737,43 +737,43 @@
 								<div class="vl"></div>
 								<div class="col-md-5" style="border-left:0px;">
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_("Prime risque ordinaire")}}</label>
+										<label class="col-sm-5 col-form-label">Prime risque ordinaire</label>
 										<div class="col-sm-7">
 											<input type="text" class="form-control money_field calculs_marchandise_montant_police" value="" name="prime_risque_ordinaire" id="prime_risque_ordinaire" readonly>
 										</div>
 									</div>
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_("Prime risque guerre")}}</label>
+										<label class="col-sm-5 col-form-label">Prime risque guerre</label>
 										<div class="col-sm-7">
 											<input type="text" class="form-control money_field calculs_marchandise_montant_police" value="" name="prime_risque_guerre" id="prime_risque_guerre" readonly>
 										</div>
 									</div>
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_("Prime supprime")}}</label>
+										<label class="col-sm-5 col-form-label">Prime supprime</label>
 										<div class="col-sm-7">
 											<input type="text" class="form-control money_field calculs_marchandise_montant_police" value="" name="prime_supprime" id="prime_supprime" readonly>
 										</div>
 									</div>
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_("Prime brut")}}</label>
+										<label class="col-sm-5 col-form-label">Prime brut</label>
 										<div class="col-sm-7">
 											<input type="text" class="form-control money_field calculs_marchandise_montant_police" value="" name="prime_brut" id="prime_brut" readonly>
 										</div>
 									</div>
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_("Prime de réduction")}}</label>
+										<label class="col-sm-5 col-form-label">Prime de réduction</label>
 										<div class="col-sm-7">
 											<input type="text" class="form-control money_field calculs_marchandise_montant_police" value="" name="prime_reduction" id="prime_reduction" readonly style="background: #f0dcc8; border: #f0dcc8">
 										</div>
 									</div>
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_("Total taxe")}}</label>
+										<label class="col-sm-5 col-form-label">Total taxe</label>
 										<div class="col-sm-7">
 											<input type="text" class="form-control money_field calculs_marchandise_montant_police" value="" name="total_taxe" id="total_taxe" readonly>
 										</div>
 									</div>
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_("Prime TTC")}}</label>
+										<label class="col-sm-5 col-form-label">Prime TTC</label>
 										<div class="col-sm-7">
 											<input type="text" class="form-control money_field calculs_marchandise_montant_police" value="" name="prime_ttc_mar" id="prime_ttc_mar" readonly>
 										</div>
@@ -786,10 +786,10 @@
 							<div class="row">
 								<div class="col-md-6">
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_('Fractionnement')}} <span class="required">*</span></label>
+										<label class="col-sm-5 col-form-label">Fractionnement <span class="required">*</span></label>
 										<div class="col-sm-7">
 											<select class="form-control champ_obligatoire" name="fractionnement" autocomplete="off" required>
-												<option value="">{{_('Choisir')}}</option>
+												<option value="">Choisir</option>
 												{% for fractionnement in fractionnements %}
 													<option value="{{ fractionnement.id }}">{{ fractionnement.libelle }}</option>
 												{% endfor %}
@@ -797,10 +797,10 @@
 										</div>
 									</div>
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_('Regularisation')}} <span class="required">*</span></label>
+										<label class="col-sm-5 col-form-label">Regularisation <span class="required">*</span></label>
 										<div class="col-sm-7">
 											<select class="form-control champ_obligatoire" name="regularisation" autocomplete="off" required>
-												<option value="">{{_('Choisir')}}</option>
+												<option value="">Choisir</option>
 												{% for regularisation in regularisations %}
 												<option value="{{ regularisation.id }}">{{ regularisation.libelle }}</option>
 												{% endfor %}
@@ -808,7 +808,7 @@
 										</div>
 									</div>
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_("Date prochaine facture")}}</label>
+										<label class="col-sm-5 col-form-label">Date prochaine facture</label>
 										<div class="col-sm-7">
 											<input type="date" class="form-control" name="date_prochaine_facture" value="">
 										</div>
@@ -818,32 +818,32 @@
 								<div class="col-md-5" style="border-left:0px;margin-left: 20px;">
 
 									<div class="form-group row">
-										<label class="col-sm-6 col-form-label">{{_("Taux com Courtage AN.")}} <span class="required">*</span></label>
+										<label class="col-sm-6 col-form-label">Taux com Courtage AN. <span class="required">*</span></label>
 										<div class="col-sm-6">
 											<input type="text" class="form-control money_field_avec_virgule calculs_handler_police champ_obligatoire" name="taux_com_courtage" id="taux_com_courtage" autocomplete="off" value="" required readonly0/>
 										</div>
 									</div>
 									<div class="form-group row">
-										<label class="col-sm-6 col-form-label">{{_("Taux com Courtage Terme")}} <span class="required"></span></label>
+										<label class="col-sm-6 col-form-label">Taux com Courtage Terme <span class="required"></span></label>
 										<div class="col-sm-6">
 											<input type="text" class="form-control money_field_avec_virgule calculs_handler_police champ_obligatoire" name="taux_com_courtage_terme" id="taux_com_courtage_terme" autocomplete="off" value="" readonly0/>
 										</div>
 									</div>
 									<div class="form-group row">
-										<label class="col-sm-6 col-form-label">{{_('Participation Bénéf.')}} <span class="required">*</span></label>
+										<label class="col-sm-6 col-form-label">Participation Bénéf. <span class="required">*</span></label>
 										<div class="col-sm-6">
 											<div class="icheck-danger d-inline">
 											  <input type="radio" name="participation" value="OUI" class="participation" id="yes_participation"/>
-											  <label for="yes_participation"> {{_('OUI')}} </label>
+											  <label for="yes_participation"> OUI </label>
 											</div>
 											<div class="icheck-danger d-inline" style="margin-left:50px;">
 											  <input type="radio" name="participation" value="NON" class="participation" id="no_participation" checked/>
-											  <label for="no_participation">{{_('NON')}} </label>
+											  <label for="no_participation">NON </label>
 											</div>
 										</div>
 									</div>
 									<div class="form-group row" id="box_taux_participation" style="display:none;">
-										<label class="col-sm-6 col-form-label">{{_("Taux de participation")}}</label>
+										<label class="col-sm-6 col-form-label">Taux de participation</label>
 										<div class="col-sm-6">
 											<input type="text" class="form-control money_field" name="taux_participation" id="taux_participation" value="0"/>
 										</div>
@@ -856,31 +856,31 @@
 							<div class="row">
 								<div class="col-md-6">
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_("Prime HT")}} <span class="required"></span></label>
+										<label class="col-sm-5 col-form-label">Prime HT <span class="required"></span></label>
 										<div class="col-sm-7">
 											<input type="text" class="form-control money_field calculs_handler_police" name="prime_ht" id="prime_ht" autocomplete="off" value="0" />
 										</div>
 									</div>
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_("Coût police Cie")}}<span class="required"></span></label>
+										<label class="col-sm-5 col-form-label">Coût police Cie<span class="required"></span></label>
 										<div class="col-sm-7">
 											<input type="text" class="form-control money_field calculs_handler_police" name="cout_police_compagnie" id="cout_police_compagnie" autocomplete="off" value="0" />
 										</div>
 									</div>
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_("Coût police courtier")}} <span class="required"></span></label>
+										<label class="col-sm-5 col-form-label">Coût police courtier <span class="required"></span></label>
 										<div class="col-sm-7">
 											<input type="text" class="form-control money_field calculs_handler_police" name="cout_police_courtier" id="cout_police_courtier" autocomplete="off" value="0" />
 										</div>
 									</div>
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_('Taxe')}} <span class="required"></span></label>
+										<label class="col-sm-5 col-form-label">Taxe <span class="required"></span></label>
 										<div class="col-sm-7">
 											<input type="text" class="form-control money_field calculs_handler_police" name="taxe" id="taxe" autocomplete="off" value="0" />
 										</div>
 									</div>
 									<!--div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_("Autres Taxes")}} <span class="required"></span></label>
+										<label class="col-sm-5 col-form-label">Autres Taxes <span class="required"></span></label>
 										<div class="col-sm-6" style="padding-right:0px;">
 											<input style="border-top-right-radius:0px;border-bottom-right-radius:0px;" type="text" class="form-control money_field calculs_handler_police" name="" id="autres_taxes" autocomplete="off" value="0" readonly/>
 										</div>
@@ -889,7 +889,7 @@
 										</div>
 									</div-->
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_("Autres Taxes")}} <span class="required"></span></label>
+										<label class="col-sm-5 col-form-label">Autres Taxes <span class="required"></span></label>
 										<div class="col-sm-7">
 											<input style="border-top-right-radius:0px;border-bottom-right-radius:0px;" type="text" class="form-control money_field calculs_handler_police" name="autres_taxes" id="autres_taxes" autocomplete="off" value="0">
 										</div>
@@ -899,25 +899,25 @@
 								<div class="col-md-5" style="border-left:0px;margin-left: 20px;">
 
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_("Prime TTC")}} <span class="required"></span></label>
+										<label class="col-sm-5 col-form-label">Prime TTC <span class="required"></span></label>
 										<div class="col-sm-7">
 											<input type="text" class="form-control money_field" name="prime_ttc" id="prime_ttc" autocomplete="off" value="0" readonly/>
 										</div>
 									</div>
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_("Com Courtage")}} <span class="required"></span></label>
+										<label class="col-sm-5 col-form-label">Com Courtage <span class="required"></span></label>
 										<div class="col-sm-7">
 											<input type="text" class="form-control money_field" name="commission_courtage" id="commission_courtage" autocomplete="off" value="0" readonly/>
 										</div>
 									</div>
 									<div class="form-group row d-none">
-										<label class="col-sm-5 col-form-label">{{_("Com Gestion")}} <span class="required"></span></label>
+										<label class="col-sm-5 col-form-label">Com Gestion <span class="required"></span></label>
 										<div class="col-sm-7">
 											<input type="text" class="form-control money_field" name="commission_gestion" id="commission_gestion" autocomplete="off" value="0"  readonly/>
 										</div>
 									</div>
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_("Retro Apporteurs")}} <span class="required"></span></label>
+										<label class="col-sm-5 col-form-label">Retro Apporteurs <span class="required"></span></label>
 										<div class="col-sm-7">
 											<input type="text" class="form-control money_field" name="commission_intermediaire" id="total_commission_intermediaire" autocomplete="off" value="0"  readonly/>
 										</div>
@@ -930,8 +930,8 @@
 
 				</div>
 				<div class="modal-footer justify-content-between">
-					<button type="button" class="btn btn-danger" data-dismiss="modal"><i class="fa fa-remove"></i> {{_('Retour')}}</button>
-					<button type="button" id="btn_save_police" class="btn btn-info"><i class="fa fa-check-circle"></i> {{_('Enregistrer')}}</button>
+					<button type="button" class="btn btn-danger" data-dismiss="modal"><i class="fa fa-remove"></i> Retour</button>
+					<button type="button" id="btn_save_police" class="btn btn-info"><i class="fa fa-check-circle"></i> Enregistrer</button>
 				</div>
 			</div>
 			</form>

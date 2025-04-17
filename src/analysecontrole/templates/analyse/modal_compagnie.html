@@ -46,11 +46,31 @@
 									<div class="alert alert-danger text-danger text-white mb-2" id="message-error" style="display: none;"></div>
 									<div class="alert alert-warning text-warning text-white mb-2" id="message-warning" style="display: none;"></div>
 									<div class="table-responsive" id="polices_compagnie" style="display:none;">
-										<h3 class="mt-3">Liste des polices des compagnies</h3>
-										<div class="police_compagnie_null" id="police_compagnie_null">
-											<h5 class="text-center text-italic">Cette compagnie n'a pas de police...</h5>
-										</div>
-										<div class="police_compagnie_existe" id="police_compagnie_existe"></div>
+										<h6 class="mt-3">Liste des polices des compagnies</h6>
+										<table class="table table-bordered table-striped dataTable dtr-inline" id="table_polices_compagnie">
+											<thead>
+												<tr>
+													<th>{{_("Client")}}</th>
+													<th>{{_("Numero")}}</th>
+													<th width="10%">{{_("Date échéance")}}</th>
+													<th width="7%">{{_("Statut")}}</th>
+													<th width="10%">{{_("Date création")}}</th>
+													<th width="12%">{{_("Date résiliation")}}</th>
+													<th>{{_("Prime HT")}}</th>
+													<th>{{_("Com Courtage")}}</th>
+												</tr>
+											</thead>
+											<tbody>
+											</tbody>
+											<tfoot>
+												<tr>
+													<td colspan="6" class="text-right f-bold">TOTAL GENERAL :</td>
+													<td class="f-bold"><span class="form-control money_field readonly" id="com_total_ht" style="background: rgb(240, 220, 200); border: rgb(240, 220, 200); text-align: right; color:#000; font-weight:bold"></span></td>
+													<td class="f-bold"><span class="form-control money_field readonly" id="com_total_com_courtage" style="background: rgb(240, 220, 200); border: rgb(240, 220, 200); text-align: right; color:#000; font-weight:bold"></span></td>
+												</tr>
+											</tfoot>
+										</table>
+										<hr>
 									</div>
 								</div>
 							</div>

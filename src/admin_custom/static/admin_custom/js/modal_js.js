@@ -174,7 +174,7 @@ $(document).ready(function () {
         });
     });
 
-    $('#btn_save_police_aliment_modification').on('click', function () {
+    $('#btn_save_modification_police_aliment_modification').on('click', function () {
         // Supprimer les erreurs précédentes
         $('.mod_aliment_champ_obligatoire').removeClass('is-invalid').removeClass('is-valid');
         $('#message-modal-error').text('').hide();
@@ -383,82 +383,21 @@ $(document).ready(function() {
             $('.tacide_reconduction input').attr('required', 'required');
         } else if (mode_renouvellement === "Sans Tacite Reconduction") {
             $('.sans_tacide_reconduction').show();
+            $('.sans_tacide_reconduction input').attr('required', 'required');
         }
     }
 
-    function validateDates() {
-        let police_date_debut = $('#date_debut_effet').val();
-        let police_date_fin_effet = $('#date_fin_effet').val();
-        let police_date_fin_police = $('#date_fin_police').val();
-        let mode_renouvellement = $('#mode_renouvellement').val();
-        let btn_submit = $('#btn_save_police');
 
-        // Réactiver le bouton avant vérification
-        btn_submit.removeAttr('disabled');
-
-        if (isValidDate(police_date_debut)) {
-            if (mode_renouvellement === "Tacite Reconduction" && isValidDate(police_date_fin_effet)) {
-                if (new Date(police_date_debut) >= new Date(police_date_fin_effet)) {
-                    notifyWarning('La date de renouvellement doit être strictement postérieure à la date de début.');
-                    btn_submit.attr('disabled', 'disabled');
-                    return false;
-                }
-            } else if (mode_renouvellement === "Sans Tacite Reconduction" && isValidDate(police_date_fin_police)) {
-                if (new Date(police_date_debut) >= new Date(police_date_fin_police)) {
-                    notifyWarning('La date de fin du contrat doit être strictement postérieure à la date de début.');
-                    btn_submit.attr('disabled', 'disabled');
-                    return false;
-                }
-            }
-        }
-
-        return true; // Validation réussie
-    }
-
-    // Fonction pour la validation des dates dans le modal de modification
-    function validateDatesModification() {
-        let police_date_debut = $("#modal-modification_police #date_debut_effet").val();
-        let police_date_fin = $("#modal-modification_police #date_fin_effet").val();
-        let police_date_fin_police = $("#modal-modification_police #date_fin_police").val();
-        let mode_renouvellement = $("#modal-modification_police #mode_renouvellement").val();
-        let btn_submit = $("#btn_save_modification_police");
-
-        // Réactiver le bouton avant vérification
-        btn_submit.removeAttr('disabled');
-
-        if (isValidDate(police_date_debut)) {
-            if (mode_renouvellement === "Tacite Reconduction" && isValidDate(police_date_fin)) {
-                if (new Date(police_date_debut) >= new Date(police_date_fin)) {
-                    notifyWarning("La date de renouvellement doit être strictement postérieure à la date de début.");
-                    btn_submit.attr('disabled', 'disabled');
-                    return false;
-                }
-            } else if (mode_renouvellement === "Sans Tacite Reconduction" && isValidDate(police_date_fin_police)) {
-                if (new Date(police_date_debut) >= new Date(police_date_fin_police)) {
-                    notifyWarning("La date de fin du contrat doit être strictement postérieure à la date de début.");
-                    btn_submit.attr('disabled', 'disabled');
-                    return false;
-                }
-            }
-        }
-
-        return true; // Validation réussie
-    }
 
     // Exécuter au chargement de la page
     $(document).ready(function () {
         manage_mode_renouvellement();
-        validateDates();
         validateDatesModification();
     });
 
     // Déclencher la gestion des modes et la validation des dates
     $(document).on('change', "#mode_renouvellement, #date_debut_effet, #date_fin_effet, #date_fin_police", function () {
         manage_mode_renouvellement();
-        validateDates();
-    });
-
-    $(document).on('change', "#modal-modification_police #mode_renouvellement, #modal-modification_police #date_debut_effet, #modal-modification_police #date_fin_effet, #modal-modification_police #date_fin_police", function () {
         validateDatesModification();
     });
 
@@ -477,24 +416,23 @@ $(document).ready(function() {
         const filePath = $(this).attr('download-modification-fichier');
 
         // Vérifier l'existence du fichier via une requête fetch
-        fetch(filePath, { method: 'HEAD' })
-            .then(response => {
-                if (response.ok) {
-                    // Si le fichier existe, déclencher le téléchargement
-                    const link = document.createElement('a');
-                    link.href = filePath;
-                    link.download = filePath.split('/').pop();
-                    link.click();
-                } else {
-                    // Si le fichier n'existe pas, afficher un message d'erreur
-                    alert('Le fichier demandé est introuvable.');
-                }
-            })
-            .catch(error => {
-                // Gérer les erreurs réseau ou autres
-                console.error('Erreur lors de la vérification du fichier:', error);
-                alert('Une erreur est survenue. Veuillez réessayer plus tard.');
-            });
+        fetch(filePath, { method: 'HEAD' }).then(response => {
+            if (response.ok) {
+                // Si le fichier existe, déclencher le téléchargement
+                const link = document.createElement('a');
+                link.href = filePath;
+                link.download = filePath.split('/').pop();
+                link.click();
+            } else {
+                // Si le fichier n'existe pas, afficher un message d'erreur
+                alert('Le fichier demandé est introuvable.');
+            }
+        })
+        .catch(error => {
+            // Gérer les erreurs réseau ou autres
+            console.error('Erreur lors de la vérification du fichier:', error);
+            alert('Une erreur est survenue. Veuillez réessayer plus tard.');
+        });
     });
 
     // Lorsque le modal est complètement fermé
@@ -661,7 +599,6 @@ $(document).ready(function () {
             url: '/production/produit/' + produit_id + '/sous-menu',
             success: function (produit) {
                 let produit_code = produit[0].fields.code;
-                console.log('Produit code (modification) :', produit_code);
 
                 // Réinitialiser les dynamiques
                 $(ongletsDynamiques.join(', ')).addClass('d-none');
@@ -684,7 +621,6 @@ $(document).ready(function () {
                 } else if (produit_code == 50001 || produit_code == 50002) { // Produits marchandise
                     afficherOngletAvecChamps('#marchandise-tab_modification', '.marchandise_champ_obligatoire');
                 } else {
-                    console.log('Est-ce que le produit est vraiment chargé');
                     afficherOngletAvecChamps('#risque-tab_modification');
                 }
 

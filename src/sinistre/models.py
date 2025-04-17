@@ -20,7 +20,6 @@ import random
 #
 class Sinistre(models.Model):
     client = models.ForeignKey(Client, null=True, on_delete=models.RESTRICT)
-    bureau = models.ForeignKey(Bureau, null=True, on_delete=models.RESTRICT)
     compagnie = models.ForeignKey(Compagnie, null=True, on_delete=models.RESTRICT)
     police = models.ForeignKey(Police, null=True, on_delete=models.RESTRICT)
     type_sinistre = models.ForeignKey(TypeSinistre, null=True, on_delete=models.RESTRICT)
@@ -36,6 +35,7 @@ class Sinistre(models.Model):
     fait_generateur = models.TextField(blank=True, null=True)
     point_de_choc = models.TextField(blank=True, null=True)
     commentaire = models.TextField(blank=True, null=True)
+    autre_circonstance = models.TextField(blank=True, null=True)
 
     franchise = models.BigIntegerField(null=True)
 
@@ -101,16 +101,22 @@ class Sinistre(models.Model):
         mouvement = MouvementSinistre.objects.filter(sinistre_id=self.id, date_effet__lte=today, statut_validite=StatutValidite.VALIDE).order_by('-id').first()
 
         if mouvement:
-            return mouvement.motif.etat_sinistre
+            return mouvement.motif.etat_police
         else:
             return "En attente"
+
+    @property
+    def get_derniere_etape(self):
+        """
+        Retourne l'objet de la dernière étape du sinistre.
+        """
+        return self.sinistreetape_set.order_by('-numero_ordre').first()
 
 
 #
 class HistoriqueSinistre(models.Model):
     sinistre = models.ForeignKey(Sinistre, null=True, on_delete=models.RESTRICT)
     client = models.ForeignKey(Client, null=True, on_delete=models.RESTRICT)
-    bureau = models.ForeignKey(Bureau, null=True, on_delete=models.RESTRICT)
     compagnie = models.ForeignKey(Compagnie, null=True, on_delete=models.RESTRICT)
     police = models.ForeignKey(Police, null=True, on_delete=models.RESTRICT)
     type_sinistre = models.ForeignKey(TypeSinistre, null=True, on_delete=models.RESTRICT)
@@ -126,6 +132,7 @@ class HistoriqueSinistre(models.Model):
     fait_generateur = models.TextField(blank=True, null=True)
     point_de_choc = models.TextField(blank=True, null=True)
     commentaire = models.TextField(blank=True, null=True)
+    autre_circonstance = models.TextField(blank=True, null=True)
 
     franchise = models.BigIntegerField(null=True)
 
@@ -149,18 +156,6 @@ class HistoriqueSinistre(models.Model):
         db_table = 'historique_sinistres'
         verbose_name = 'Historique Sinistres'
         verbose_name_plural = 'Historique Sinistres'
-
-        permissions = [
-            ("can_do_saisie_gestionnaire", "Peut saisir des PEC physiques"),
-            ("can_view_prestations", "Peut afficher les PEC"),
-            ("can_do_generation_bordereau_facturation", "Peut générer un bordereau de facturation"),
-            ("can_view_bordereaux_facturations", "Peut voir bordereaux de facturations"),
-            ("can_view_remboursements_validees", "Peut voir les remboursements validées"),
-            ("can_do_ordonnancement", "Peut faire un ordonnancement"),
-            ("can_view_bordereaux_ordonnancement", "Peut voir les bordereaux d'ordonnancements"),
-            ("can_do_annulation_sinistre", "Peut annuler des sinistres"),
-            ("can_do_annulation_facture", "Peut annuler des factures"),
-        ]
 
     @property
     def total_franchises(self):
@@ -397,8 +392,11 @@ class SinistreEtape(models.Model):
     sinistre = models.ForeignKey(Sinistre, null=True, on_delete=models.RESTRICT)
     etape_sinistre = models.ForeignKey(EtapeSinistre, null=True, on_delete=models.RESTRICT)
     numero_ordre = models.PositiveIntegerField(null=True)
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+
+    created_by = models.ForeignKey(User, null=True, on_delete=models.RESTRICT)
 
     class Meta:
         db_table = 'sinistre_etape'

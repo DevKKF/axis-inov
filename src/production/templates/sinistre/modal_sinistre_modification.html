@@ -7,40 +7,38 @@
 				{% csrf_token %}
 				<input type="hidden" name="sinistre_id" data-sinistre-id="{{ sinistre.id }}" id="sinistre_id" value="{{ sinistre.id }}">
 				<div class="modal-header">
-					<h4 class="modal-title">{{_("MODIFICATION DU SINISTRE")}} <b>N° {{ sinistre.numero }}</b> <span class="text-white">{{ sinistre.id }}</span></h4>
+					<h4 class="modal-title">MODIFICATION DU SINISTRE <b>N° {{ sinistre.numero }}</b> <span class="text-white">{{ sinistre.id }}</span></h4>
 					<button type="button" class="close" data-dismiss="modal" aria-label="Close">
 						<span aria-hidden="true">×</span>
 					</button>
 				</div>
 				<div class="modal-body">
 					<div class="alert  alert-dismissible fade show hidden" role="alert">
-					  <span class="message"> {{_("TRAITEMENT EN COURS")}}</span>
+					  <span class="message"> TRAITEMENT EN COURS</span>
 					</div>
 					<div class="col-md-12 offset-0">
 						<ul class="nav nav-tabs" id="myTab" role="tablist">
-                            <li class="nav-item text-uppercase"><a class="nav-link active" id="identity-tab" data-toggle="tab" href="#identity" role="tab" aria-controls="identity" aria-selected="true">{{_("Information du contrat")}}</a></li>
-                            <li class="nav-item text-uppercase"><a class="nav-link" id="declaration_sinistre-tab" data-toggle="tab" href="#declaration_sinistre" role="tab" aria-controls="declaration_sinistre" aria-selected="false">{{_("Déclaration du sinistre")}}</a></li>
-                            <li class="nav-item text-uppercase"><a class="nav-link" id=intervenant-tab" data-toggle="tab" href="#intervenant" role="tab" aria-controls="intervenant" aria-selected="false">{{_("Intervenants")}}</a></li>
-                            <li class="nav-item text-uppercase"><a class="nav-link" id=provision-tab" data-toggle="tab" href="#provision" role="tab" aria-controls="provision" aria-selected="false">{{_("Provision")}}</a></li>
+                            <li class="nav-item text-uppercase"><a class="nav-link active" id="identity-tab" data-toggle="tab" href="#identity" role="tab" aria-controls="identity" aria-selected="true">Information du contrat</a></li>
+                            <li class="nav-item text-uppercase"><a class="nav-link" id="etape_sinistre_suivi-tab" data-toggle="tab" href="#etape_sinistre_suivi" role="tab" aria-controls="etape_sinistre_suivi" aria-selected="false">Déclaration du sinistre</a></li>
                         </ul>
 						<div class="tab-content" id="myTabContent">
 							<div class="tab-pane fade show active mt-3" id="identity" role="tabpanel" aria-labelledby="identity-tab">
 								<div class="row">
 									<div class="col-md-6">
 										<div class="form-group row">
-											<label class="col-sm-5 col-form-label">{{_("Code assuré")}} </label>
+											<label class="col-sm-5 col-form-label">Code assuré </label>
 											<div class="col-sm-7">
 												<span class="form-control">{{ client.code|default:client.code_provisoire|default:"" }}</span>
 											</div>
 										</div>
 										<div class="form-group row">
-											<label class="col-sm-5 col-form-label">{{_("N° Contrat")}}</label>
+											<label class="col-sm-5 col-form-label">N° Contrat</label>
 											<div class="col-sm-7">
 												<span class="form-control">{{ police.numero|default:police.numero_provisoire|default:"" }}</span>
 											</div>
 										</div>
 										<div class="form-group row">
-											<label class="col-sm-5 col-form-label">{{_("Branche")}} </label>
+											<label class="col-sm-5 col-form-label">Branche </label>
 											<div class="col-sm-7">
 												<span class="form-control" title="{{ police.produit.branche.nom|default_if_none:'' }}">{{ police.produit.branche.nom|default_if_none:""|slice:":35" }}</span>
 											</div>
@@ -49,20 +47,20 @@
 									<div class="vl"></div>
 									<div class="col-md-5" style="border-left:0px;">
 										<div class="form-group row">
-											<label class="col-sm-5 col-form-label">{{_("Nom assuré")}} </label>
+											<label class="col-sm-5 col-form-label">Nom assuré </label>
 											<div class="col-sm-7">
 												<span class="form-control">{{ client.nom|default_if_none:'' }} {{ client.prenoms|default_if_none:'' }}</span>
 											</div>
 										</div>
 										<div class="form-group row">
-											<label class="col-sm-5 col-form-label">{{_("Compagnie")}} </label>
+											<label class="col-sm-5 col-form-label">Compagnie </label>
 											<div class="col-sm-7">
 												<input type="hidden" name="compagnie_id" id="compagnie_id" value="{{ assureur_police.compagnie_id }}" class="form-control">
 												<span class="form-control">{{ assureur_police.compagnie.nom|default_if_none:"" }}</span>
 											</div>
 										</div>
 										<div class="form-group row">
-											<label class="col-sm-5 col-form-label">{{_("Produit")}} </label>
+											<label class="col-sm-5 col-form-label">Produit </label>
 											<div class="col-sm-7">
 												<span class="form-control" title="{{ police.produit.nom|default_if_none:'' }}">{{ police.produit.nom|default_if_none:""|slice:":35" }}</span>
 											</div>
@@ -71,239 +69,30 @@
 								</div>
 							</div>
 
-							<div class="tab-pane fade mt-3" id="declaration_sinistre" role="tabpanel" aria-labelledby="declaration_sinistre-tab">
-								<div class="row" style="max-height:550px;">
-									<div class="col-md-12 text-uppercase" style="margin-bottom:10px !important; border-top:2px solid #F16623">
-										<h6><mark class="match">Evénement</mark></h6>
-									</div>
-									<div class="col-md-6">
-										<div class="form-group row">
-											<label class="col-sm-5 col-form-label">{{_("Recherche risque")}} </label>
-											<div class="col-sm-7">
-												{% if police.produit.code == '10001' or police.produit.code == '10002' %}
-													<select class="form-control tags-multiple vehicule" name="vehicule_id" id="vehicule_id">
-														<option value=""></option>
-														{% for aliment in aliments %}
-															<option value="{{ aliment.vehicule.id }}" {% if aliment.vehicule.id == alimentpolicesinistre.aliment_police.vehicule.id %} selected {% endif %}>{{ aliment.vehicule.marque|default_if_none:"" }}-{{ aliment.vehicule.numero_immatriculation|default_if_none:"" }}</option>
-														{% endfor %}
-													</select>
-												{% elif police.produit.code == '50001' or police.produit.code == '50002' %}
-													<select class="form-control tags-multiple marchandise" name="marchandise_id" id="marchandise_id">
-														<option value=""></option>
-														{% for aliment in aliments %}
-															<option value="{{ aliment.marchandise.id }}">{{ aliment.marchandise.num_certificat|default_if_none:"" }}</option>
-														{% endfor %}
-													</select>
-												{% else %}
-													<input type="text" class="form-control" readonly>
-													<input type="hidden" class="form-control" name="autre_risque_id" value="{{ aliment.autre_risque_id }}">
-												{% endif %}
-											</div>
-										</div>
-										<div class="form-group row">
-											<label class="col-sm-5 col-form-label">{{_("Date survenance")}} <span class="required">*</span></label>
-											<div class="col-sm-7">
-												<input type="date" class="form-control" name="date_survenance" id="date_survenance" autocomplete="off" value="{{ sinistre.date_survenance|date:'Y-m-d' }}" required>
-											</div>
-										</div>
-										<div class="form-group row">
-											<label class="col-sm-5 col-form-label">{{_("Date ouverture")}} <span class="required">*</span></label>
-											<div class="col-sm-7">
-												<input type="date" class="form-control" name="date_ouverture" id="date_ouverture" autocomplete="off" value="{{ sinistre.date_ouverture|date:'Y-m-d' }}" required>
-											</div>
-										</div>
-										<div class="form-group row">
-											<label class="col-sm-5 col-form-label">{{_("Date clôture")}}</label>
-											<div class="col-sm-7">
-												<input type="date" class="form-control" name="date_cloture" id="date_cloture" autocomplete="off" value="{{ sinistre.date_cloture|date:'Y-m-d' }}">
-											</div>
-										</div>
-										<div class="form-group row d-none">
-											<label class="col-sm-5 col-form-label">{{_("Numéro sinistre")}}</label>
-											<div class="col-sm-7">
-												<input type="text" class="form-control" name="numero" autocomplete="off" value="" />
-											</div>
-										</div>
-									</div>
-									<div class="vl"></div>
-									<div class="col-md-5" style="border-left:0px;">
-
-										<div class="form-group row">
-											<label class="col-sm-5 col-form-label">{{_("Risque")}} <span class="required">*</span></label>
-											<div class="col-sm-7">
-												{% if police.produit.code == '10001' or police.produit.code == '10002' %}
-													<input type="text" class="form-control" name="risque" id="risque" value="{{ alimentpolicesinistre.risque }}" readonly required>
-												{% elif police.produit.code == '50001' or police.produit.code == '50002' %}
-													<input type="text" class="form-control" name="risque" id="marchandise" value="{{ alimentpolicesinistre.risque }}" readonly required>
-												{% else %}
-													<input type="text" class="form-control" name="risque" id="risque" value="{{ aliment.autre_risque.libelle }}" required>
-												{% endif %}
-											</div>
-										</div>
-										<div class="form-group row">
-											<label class="col-sm-5 col-form-label">{{_("Date déclaration")}} <span class="required">*</span></label>
-											<div class="col-sm-7">
-												<input type="date" class="form-control" name="date_declaration" id="date_declaration" autocomplete="off" value="{{ sinistre.date_declaration|date:'Y-m-d' }}" required>
-											</div>
-										</div>
-										<div class="form-group row">
-											<label class="col-sm-5 col-form-label">{{_("Date réouverture")}}</label>
-											<div class="col-sm-7">
-												<input type="date" class="form-control" name="date_reouverture" id="date_reouverture" autocomplete="off" value="{{ sinistre.date_reouverture|date:'Y-m-d' }}">
-											</div>
-										</div>
-										<div class="form-group row">
-											<label class="col-sm-5 col-form-label">{{_("Sinistre en recours")}} ? <span class="required">*</span></label>
-											<div class="col-sm-7" style="margin-top:10px">
-												<input type="radio" value="OUI" name="sinistre_recours" id="sinistre_recours_oui" {% if sinistre.sinistre_recours == "OUI" %} checked {% endif %}>
-												<label class="form-check-label" for="sinistre_recours_oui">OUI</label>
-
-												<input type="radio" value="NON" name="sinistre_recours" id="sinistre_recours_non" class="ml-3" {% if sinistre.sinistre_recours == "NON" %} checked {% endif %}>
-												<label class="form-check-label" for="sinistre_recours_non">NON</label>
-											</div>
-										</div>
-									</div>
-
-									<div class="col-md-12 text-uppercase" style="margin-bottom:10px !important; border-top:2px solid #F16623">
-										<h6><mark class="match">Caractéristiques principales</mark></h6>
-									</div>
-									<div class="col-md-6">
-										<div class="form-group row">
-											<label class="col-sm-5 col-form-label">{{_("Circonstance")}} <span class="required">*</span></label>
-											<div class="col-sm-7">
-												<select class="form-control" name="circonstance_id" id="circonstance_id" required>
-													<option value="">Choisir</option>
-													{% for circonstance in circonstances %}
-														<option value="{{ circonstance.id }}" {% if circonstance.id == sinistre.circonstance_id %} selected {% endif %}>{{ circonstance.libelle|default_if_none:"" }}</option>
-													{% endfor %}
-												</select>
-											</div>
-										</div>
-										<div class="form-group row">
-											<label class="col-sm-5 col-form-label">{{_("Lieu de survenance")}}</label>
-											<div class="col-sm-7">
-												<input type="text" class="form-control" name="lieu_survenance" id="lieu_survenance" autocomplete="off" value="{{ sinistre.lieu_survenance|default_if_none:'' }}">
-											</div>
-										</div>
-										<div class="form-group row">
-											<label class="col-sm-5 col-form-label">{{_("TVA récupérée")}}</label>
-											<div class="col-sm-7">
-												<select class="form-control" name="tva_recuperee" id="tva_recuperee">
-													<option value="">Choisir</option>
-													<option value="OUI" {% if "OUI" == sinistre.tva_recuperee %} selected {% endif %}>OUI</option>
-													<option value="NON" {% if "NON" == sinistre.tva_recuperee %} selected {% endif %}>NON</option>
-												</select>
-											</div>
-										</div>
-									</div>
-									<div class="vl"></div>
-									<div class="col-md-5" style="border-left:0px;">
-
-										<div class="form-group row">
-											<label class="col-sm-5 col-form-label">{{_("Type sinistre")}} <span class="required">*</span></label>
-											<div class="col-sm-7">
-												<select class="form-control" name="type_sinistre_id" id="type_sinistre_id" required>
-													<option value="">Choisir</option>
-													{% for typesinistre in typesinistres %}
-														<option value="{{ typesinistre.id }}" {% if typesinistre.id == sinistre.type_sinistre_id %} selected {% endif %}>{{ typesinistre.libelle|default_if_none:"" }}</option>
-													{% endfor %}
-												</select>
-											</div>
-										</div>
-										<div class="form-group row">
-											<label class="col-sm-5 col-form-label">{{_("Franchise")}}</label>
-											<div class="col-sm-7">
-												<input type="text" class="form-control money_field" name="franchise" id="franchise" autocomplete="off" value="{{ sinistre.franchise|default_if_none:'' }}">
-											</div>
-										</div>
-										<div class="form-group row">
-											<label class="col-sm-5 col-form-label">{{_("Taux de responsabilité")}} <span class="required">*</span></label>
-											<div class="col-sm-7">
-												<select class="form-control" name="responsabilite_id" id="responsabilite_id" required>
-													<option value="">Choisir</option>
-													{% for responsabilite in responsabilites %}
-														<option value="{{ responsabilite.id }}" {% if responsabilite.id == sinistre.responsabilite_id %} selected {% endif %}>{{ responsabilite.libelle|default_if_none:"" }}</option>
-													{% endfor %}
-												</select>
-											</div>
-										</div>
-									</div>
-
-									<div class="col-md-12 text-uppercase" style="margin-bottom:10px !important; border-top:2px solid #F16623">
-										<h6><mark class="match">Description détaillée</mark></h6>
-									</div>
-									<div class="col-md-12">
-										<div class="form-group row">
-											<label class="col-sm-12 col-form-label">{{_("Fait générateur")}} </label>
-											<div class="col-sm-12">
-												<textarea class="form-control" name="fait_generateur" id="fait_generateur" cols="3" rows="1">{{ sinistre.fait_generateur|default_if_none:'' }}</textarea>
-											</div>
-										</div>
-										<div class="form-group row">
-											<label class="col-sm-12 col-form-label">{{_("Point de choc")}} </label>
-											<div class="col-sm-12">
-												<textarea class="form-control" name="point_de_choc" id="point_de_choc" cols="3" rows="2">{{ sinistre.point_de_choc|default_if_none:'' }}</textarea>
-											</div>
-										</div>
-										<div class="form-group row">
-											<label class="col-sm-12 col-form-label">{{_("Commentaire")}} </label>
-											<div class="col-sm-12">
-												<textarea class="form-control" name="commentaire" id="commentaire" cols="10" rows="5">{{ sinistre.commentaire|default_if_none:'' }}</textarea>
-											</div>
-										</div>
-									</div>
-
-									<div class="col-md-12 text-uppercase" style="margin-bottom:10px !important; border-top:2px solid #F16623">
-										<h6><mark class="match">Garanties mise en cause</mark></h6>
-									</div>
-									<div class="col-md-12" id="test_garantie_sinistre">
-										<span class="btn btn-success mb-2" id="btn_ajout_garantie"><i class="fa fa-plus-circle"></i> Ajout de garantie</span>
-										<table id="table_garantie_sinistre" style="width:100%;" class="table table-bordered table-striped dataTable_ dtr-inline">
-											<thead>
-												<tr>
-													<th style="width:5%"></th>
-													<th>{{_("Libellé")}}</th>
-													<th class="text-center" style="width:20%">{{_("Mouvement")}}</th>
-													<th class="text-center" style="width:20%;">{{_("Date")}}</th>
-												</tr>
-											</thead>
-											<tbody></tbody>
-										</table>
-									</div>
-								</div>
-							</div>
-
-							<div class="tab-pane fade mt-3" id="intervenant" role="tabpanel" aria-labelledby="intervenant-tab">
+							<div class="tab-pane fade mt-3" id="etape_sinistre_suivi" role="tabpanel" aria-labelledby="etape_sinistre_suivi-tab">
 								<div class="row">
-									<div class="col-md-12" id="test_intervenant_sinistre">
-										<span class="btn btn-success mb-2" data-toggle="modal" data-target="#modal-sinistre_intervenant_modification"><i class="fa fa-plus-circle"></i> Ajout d'intervenant</span>
-										<table id="table_intervenant_sinistre" style="width:100%;" class="table table-bordered table-striped dataTable_ dtr-inline">
-											<thead>
-												<tr>
-													<th></th>
-													<th>Nom</th>
-													<th>Prénoms</th>
-													<th>Catégorie</th>
-													<th>Portable</th>
-													<th>Email</th>
-													<th>Adresse</th>
-													<th>Ville</th>
-												</tr>
-											</thead>
-											<tbody></tbody>
-										</table>
-									</div>
-								</div>
-							</div>
-
-							<div class="tab-pane fade mt-3" id="provision" role="tabpanel" aria-labelledby="provision-tab">
-								<div class="row">
-									<div class="col-12 col-md-12 col-sm-12 table-responsive">
-										<div class="garantie_null" id="garantie_null">
-											<h5 class="text-center text-italic">Sélectionnez des garanties...</h5>
-										</div>
-										<div class="garantie_existe" id="garantie_existe">
-
+									<div class="col-12">
+										<div class="verification-garanties-container">
+											<h5 class="mb-4">Vérification des garanties</h5>
+											<div class="radio-buttons-container">
+												<div class="shadow-options">
+													<label class="custom-radio-btn success">
+														<input type="radio" name="verification_garanties" value="OUI" checked>
+														<span class="radio-btn">
+															<i class="fa fa-check-circle"></i>
+															<span class="radio-btn-text">Oui, je confirme avoir vérifié les garanties sur le contrat</span>
+														</span>
+													</label>
+													
+													<label class="custom-radio-btn warning">
+														<input type="radio" name="verification_garanties" value="NON">
+														<span class="radio-btn">
+															<i class="fa fa-ban"></i>
+															<span class="radio-btn-text">Non, je confirme n'avoir pas vérifié les garanties sur le contrat</span>
+														</span>
+													</label>
+												</div>
+											</div>
 										</div>
 									</div>
 								</div>

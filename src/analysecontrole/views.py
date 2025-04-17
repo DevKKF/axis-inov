@@ -114,8 +114,8 @@ def generate_excel_portefeuille_compagnie(compagnies, date_requete):
     sheet.title = "Portefeuille"
 
     headers = [
-        "POLICE", "COMPAGNIE", "CLIENT", "TYPE DE CLIENT", "BRANCHE", "PRODUIT", "ÉCHÉANCE",
-        "PRIME HT EX N-1", "PRIME HT EX N", "PRIME TTC EX N", "STATUT"
+        "POLICE", "COMPAGNIE", "CLIENT", "TYPE DE CLIENT", "BRANCHE", "PRODUIT",  "RECONDUCTION", "STATUT", "ÉCHÉANCE TACITE",
+        "DATE DE FIN", "PRIME HT EX N-1", "PRIME HT EX N", "PRIME TTC EX N"
     ]
     sheet.append(headers)  # Ajout de l'en-tête une seule fois
 
@@ -167,14 +167,24 @@ def generate_excel_portefeuille_compagnie(compagnies, date_requete):
                 elif difference_jours > 0:
                     nombre_total_mois = difference_jours // 30
                     jours_restants = difference_jours % 30
-                    statut = f"A renouveler dans {nombre_total_mois} mois et {jours_restants} jours" if nombre_total_mois else f"A renouveler dans {jours_restants} jours"
+                    statut = "A renouveler"
                 else:
                     difference_jours = abs(difference_jours)  # Convertir en positif
                     nombre_total_mois = difference_jours // 30
                     jours_ecoules = difference_jours % 30
-                    statut = f"NON renouvelé depuis {nombre_total_mois} mois et {jours_ecoules} jours" if nombre_total_mois else f"NON renouvelé depuis {jours_ecoules} jours"
+                    statut = "NON renouvelé"
             else:
                 statut = police.etat_police if dernier_mouvement else ''
+
+            date_fin_effet = ""
+            if dernier_historique.mode_renouvellement == "Tacite Reconduction":
+                date_fin_effet = dernier_historique.date_fin_effet.strftime(
+                    "%d/%m/%Y") if dernier_historique.date_fin_effet else ''
+
+            date_fin_police = ""
+            if dernier_historique.mode_renouvellement == "Sans Tacite Reconduction":
+                date_fin_police = dernier_historique.date_fin_police.strftime(
+                    "%d/%m/%Y") if dernier_historique.date_fin_police else ''
 
             sheet.append([
                 police.numero,
@@ -183,11 +193,13 @@ def generate_excel_portefeuille_compagnie(compagnies, date_requete):
                 police.client.type_personne.libelle if police.client else '',
                 police.produit.branche.nom if police.produit and police.produit.branche else '',
                 police.produit.nom if police.produit else '',
-                police.date_fin_effet.strftime("%d/%m/%Y") if police.date_fin_effet else '',
+                dernier_historique.mode_renouvellement,
+                statut,
+                date_fin_effet,
+                date_fin_police,
                 prime_ht_n,
                 prime_ht,
-                prime_ttc,
-                statut
+                prime_ttc
             ])
 
     # Générer le fichier en mémoire
@@ -329,12 +341,12 @@ def get_client_by_compagnie(request):
                     elif difference_jours > 0:
                         nombre_total_mois = difference_jours // 30
                         jours_restants = difference_jours % 30
-                        etat_police = f"A renouveler dans {nombre_total_mois} mois et {jours_restants} jours" if nombre_total_mois else f"A renouveler dans {jours_restants} jours"
+                        etat_police = "A renouveler"
                     else:
                         difference_jours = abs(difference_jours)
                         nombre_total_mois = difference_jours // 30
                         jours_ecoules = difference_jours % 30
-                        etat_police = f"NON renouvelé depuis {nombre_total_mois} mois et {jours_ecoules} jours" if nombre_total_mois else f"NON renouvelé depuis {jours_ecoules} jours"
+                        etat_police = "NON renouvelé"
                 else:
                     etat_police = plc.etat_police if dernier_mouvement else ''
 
@@ -393,12 +405,12 @@ def get_client_by_compagnie(request):
                 elif difference_jours > 0:
                     nombre_total_mois = difference_jours // 30
                     jours_restants = difference_jours % 30
-                    etat_police = f"A renouveler dans {nombre_total_mois} mois et {jours_restants} jours" if nombre_total_mois else f"A renouveler dans {jours_restants} jours"
+                    etat_police = "A renouveler"
                 else:
                     difference_jours = abs(difference_jours)
                     nombre_total_mois = difference_jours // 30
                     jours_ecoules = difference_jours % 30
-                    etat_police = f"NON renouvelé depuis {nombre_total_mois} mois et {jours_ecoules} jours" if nombre_total_mois else f"NON renouvelé depuis {jours_ecoules} jours"
+                    etat_police = "NON renouvelé"
             else:
                 etat_police = plc.etat_police if dernier_mouvement else ''
 
@@ -439,8 +451,8 @@ def generate_excel_portefeuille_commercial(commercials, date_requete, sans_comme
     sheet.title = "Portefeuille"
 
     headers = [
-        "POLICE", "COMMERCIAL", "CLIENT", "TYPE DE CLIENT", "BRANCHE", "PRODUIT", "ÉCHÉANCE",
-        "PRIME HT EX N-1", "PRIME HT EX N", "PRIME TTC EX N", "STATUT", "COM ENCAISSEE", "COM ATTENDUE"
+        "POLICE", "COMMERCIAL", "CLIENT", "TYPE DE CLIENT", "BRANCHE", "PRODUIT",  "RECONDUCTION", "STATUT", "ÉCHÉANCE TACITE",
+        "DATE DE FIN", "PRIME HT EX N-1", "PRIME HT EX N", "PRIME TTC EX N", "COM ENCAISSEE", "COM ATTENDUE"
     ]
     sheet.append(headers)  # Ajout de l'en-tête une seule fois
 
@@ -493,12 +505,12 @@ def generate_excel_portefeuille_commercial(commercials, date_requete, sans_comme
                 elif difference_jours > 0:
                     nombre_total_mois = difference_jours // 30
                     jours_restants = difference_jours % 30
-                    statut = f"A renouveler dans {nombre_total_mois} mois et {jours_restants} jours" if nombre_total_mois else f"A renouveler dans {jours_restants} jours"
+                    statut = "A renouveler"
                 else:
                     difference_jours = abs(difference_jours)
                     nombre_total_mois = difference_jours // 30
                     jours_ecoules = difference_jours % 30
-                    statut = f"NON renouvelé depuis {nombre_total_mois} mois et {jours_ecoules} jours" if nombre_total_mois else f"NON renouvelé depuis {jours_ecoules} jours"
+                    statut = "NON renouvelé"
             else:
                 statut = police.etat_police if dernier_mouvement else ''
 
@@ -511,6 +523,14 @@ def generate_excel_portefeuille_commercial(commercials, date_requete, sans_comme
 
             police_com_enc = sum_quittance
 
+            date_fin_effet = ""
+            if dernier_historique.mode_renouvellement == "Tacite Reconduction":
+                date_fin_effet = dernier_historique.date_fin_effet.strftime("%d/%m/%Y") if dernier_historique.date_fin_effet else ''
+
+            date_fin_police = ""
+            if dernier_historique.mode_renouvellement == "Sans Tacite Reconduction":
+                date_fin_police = dernier_historique.date_fin_police.strftime("%d/%m/%Y") if dernier_historique.date_fin_police else ''
+
             # Ajout des données dans la feuille Excel
             sheet.append([
                 police.numero,
@@ -519,11 +539,13 @@ def generate_excel_portefeuille_commercial(commercials, date_requete, sans_comme
                 police.client.type_personne.libelle if police.client else '',
                 police.produit.branche.nom if police.produit.branche else '',
                 police.produit.nom if police.produit else '',
-                police.date_fin_effet.strftime("%d/%m/%Y") if police.date_fin_effet else '',
+                dernier_historique.mode_renouvellement,
+                statut,
+                date_fin_effet,
+                date_fin_police,
                 prime_ht_n,
                 prime_ht,
                 prime_ttc,
-                statut,
                 police_com_enc,
                 police_com_att,
             ])
@@ -745,12 +767,12 @@ def get_client_by_commercial(request):
                     elif difference_jours > 0:
                         nombre_total_mois = difference_jours // 30
                         jours_restants = difference_jours % 30
-                        etat_police = f"A renouveler dans {nombre_total_mois} mois et {jours_restants} jours" if nombre_total_mois else f"A renouveler dans {jours_restants} jours"
+                        etat_police = "A renouveler"
                     else:
                         difference_jours = abs(difference_jours)
                         nombre_total_mois = difference_jours // 30
                         jours_ecoules = difference_jours % 30
-                        etat_police = f"NON renouvelé depuis {nombre_total_mois} mois et {jours_ecoules} jours" if nombre_total_mois else f"NON renouvelé depuis {jours_ecoules} jours"
+                        etat_police = "NON renouvelé"
                 else:
                     etat_police = plc.etat_police if dernier_mouvement else ''
 
@@ -810,12 +832,12 @@ def get_client_by_commercial(request):
                 elif difference_jours > 0:
                     nombre_total_mois = difference_jours // 30
                     jours_restants = difference_jours % 30
-                    etat_police = f"A renouveler dans {nombre_total_mois} mois et {jours_restants} jours" if nombre_total_mois else f"A renouveler dans {jours_restants} jours"
+                    etat_police = "A renouveler"
                 else:
                     difference_jours = abs(difference_jours)  # Convertir en positif
                     nombre_total_mois = difference_jours // 30
                     jours_ecoules = difference_jours % 30
-                    etat_police = f"NON renouvelé depuis {nombre_total_mois} mois et {jours_ecoules} jours" if nombre_total_mois else f"NON renouvelé depuis {jours_ecoules} jours"
+                    etat_police = "NON renouvelé"
             else:
                 etat_police = plc.etat_police if dernier_mouvement else ''
 
@@ -876,12 +898,12 @@ def get_client_by_commercial(request):
                 elif difference_jours > 0:
                     nombre_total_mois = difference_jours // 30
                     jours_restants = difference_jours % 30
-                    etat_police = f"A renouveler dans {nombre_total_mois} mois et {jours_restants} jours" if nombre_total_mois else f"A renouveler dans {jours_restants} jours"
+                    etat_police = "A renouveler"
                 else:
                     difference_jours = abs(difference_jours)  # Convertir en positif
                     nombre_total_mois = difference_jours // 30
                     jours_ecoules = difference_jours % 30
-                    etat_police = f"NON renouvelé depuis {nombre_total_mois} mois et {jours_ecoules} jours" if nombre_total_mois else f"NON renouvelé depuis {jours_ecoules} jours"
+                    etat_police = "NON renouvelé"
             else:
                 etat_police = plc.etat_police if dernier_mouvement else ''
 
@@ -944,12 +966,12 @@ def get_client_by_commercial(request):
                 elif difference_jours > 0:
                     nombre_total_mois = difference_jours // 30
                     jours_restants = difference_jours % 30
-                    etat_police = f"A renouveler dans {nombre_total_mois} mois et {jours_restants} jours" if nombre_total_mois else f"A renouveler dans {jours_restants} jours"
+                    etat_police = "A renouveler"
                 else:
                     difference_jours = abs(difference_jours)  # Convertir en positif
                     nombre_total_mois = difference_jours // 30
                     jours_ecoules = difference_jours % 30
-                    etat_police = f"NON renouvelé depuis {nombre_total_mois} mois et {jours_ecoules} jours" if nombre_total_mois else f"NON renouvelé depuis {jours_ecoules} jours"
+                    etat_police = "NON renouvelé"
             else:
                 etat_police = plc.etat_police if dernier_mouvement else ''
 
@@ -989,12 +1011,9 @@ def generate_excel_portefeuille_business_unit(business_units, date_requete, sans
     sheet = workbook.active
     sheet.title = "Portefeuille"
 
-    # En-tête du fichier
-    sheet.append(["", "DATE DE LA REQUÊTE", date_requete])
-
     headers = [
-        "POLICE", "BUSINESS UNIT", "CLIENT", "TYPE DE CLIENT", "BRANCHE", "PRODUIT", "ÉCHÉANCE",
-        "PRIME HT EX N-1", "PRIME HT EX N", "PRIME TTC EX N", "STATUT", "COM ENCAISSÉE", "COM ATTENDUE"
+        "POLICE", "BUSINESS UNIT", "CLIENT", "TYPE DE CLIENT", "BRANCHE", "PRODUIT",  "RECONDUCTION", "STATUT", "ÉCHÉANCE TACITE",
+        "DATE DE FIN", "PRIME HT EX N-1", "PRIME HT EX N", "PRIME TTC EX N", "COM ENCAISSÉE", "COM ATTENDUE"
     ]
     sheet.append(headers) # Ajout de l'en-tête une seule fois
 
@@ -1045,12 +1064,12 @@ def generate_excel_portefeuille_business_unit(business_units, date_requete, sans
                 elif difference_jours > 0:
                     nombre_total_mois = difference_jours // 30
                     jours_restants = difference_jours % 30
-                    statut = f"A renouveler dans {nombre_total_mois} mois et {jours_restants} jours" if nombre_total_mois else f"A renouveler dans {jours_restants} jours"
+                    statut = "A renouveler"
                 else:
                     difference_jours = abs(difference_jours)
                     nombre_total_mois = difference_jours // 30
                     jours_ecoules = difference_jours % 30
-                    statut = f"NON renouvelé depuis {nombre_total_mois} mois et {jours_ecoules} jours" if nombre_total_mois else f"NON renouvelé depuis {jours_ecoules} jours"
+                    statut = "NON renouvelé"
             else:
                 statut = police.etat_police if dernier_mouvement else ''
 
@@ -1064,6 +1083,14 @@ def generate_excel_portefeuille_business_unit(business_units, date_requete, sans
 
             police_com_enc = sum_quittance
 
+            date_fin_effet = ""
+            if dernier_historique.mode_renouvellement == "Tacite Reconduction":
+                date_fin_effet = dernier_historique.date_fin_effet.strftime("%d/%m/%Y") if dernier_historique.date_fin_effet else ''
+
+            date_fin_police = ""
+            if dernier_historique.mode_renouvellement == "Sans Tacite Reconduction":
+                date_fin_police = dernier_historique.date_fin_police.strftime("%d/%m/%Y") if dernier_historique.date_fin_police else ''
+
             sheet.append([
                 police.numero,
                 business_unit_label,
@@ -1071,11 +1098,13 @@ def generate_excel_portefeuille_business_unit(business_units, date_requete, sans
                 police.client.type_personne.libelle if police.client else '',
                 police.produit.branche.nom if police.produit.branche else '',
                 police.produit.nom if police.produit else '',
-                police.date_fin_effet.strftime("%d/%m/%Y") if police.date_fin_effet else '',
+                dernier_historique.mode_renouvellement,
+                statut,
+                date_fin_effet,
+                date_fin_police,
                 prime_ht_n,
                 prime_ht,
                 prime_ttc,
-                statut,
                 police_com_enc,
                 police_com_att,
             ])
@@ -1287,12 +1316,12 @@ def get_client_by_business_unit(request):
                     elif difference_jours > 0:
                         nombre_total_mois = difference_jours // 30
                         jours_restants = difference_jours % 30
-                        etat_police = f"A renouveler dans {nombre_total_mois} mois et {jours_restants} jours" if nombre_total_mois else f"A renouveler dans {jours_restants} jours"
+                        etat_police = "A renouveler"
                     else:
                         difference_jours = abs(difference_jours)  # Convertir en positif
                         nombre_total_mois = difference_jours // 30
                         jours_ecoules = difference_jours % 30
-                        etat_police = f"NON renouvelé depuis {nombre_total_mois} mois et {jours_ecoules} jours" if nombre_total_mois else f"NON renouvelé depuis {jours_ecoules} jours"
+                        etat_police = "NON renouvelé"
                 else:
                     etat_police = plc.etat_police if dernier_mouvement else ''
 
@@ -1349,12 +1378,12 @@ def get_client_by_business_unit(request):
                 elif difference_jours > 0:
                     nombre_total_mois = difference_jours // 30
                     jours_restants = difference_jours % 30
-                    etat_police = f"A renouveler dans {nombre_total_mois} mois et {jours_restants} jours" if nombre_total_mois else f"A renouveler dans {jours_restants} jours"
+                    etat_police = "A renouveler"
                 else:
                     difference_jours = abs(difference_jours)  # Convertir en positif
                     nombre_total_mois = difference_jours // 30
                     jours_ecoules = difference_jours % 30
-                    etat_police = f"NON renouvelé depuis {nombre_total_mois} mois et {jours_ecoules} jours" if nombre_total_mois else f"NON renouvelé depuis {jours_ecoules} jours"
+                    etat_police = "NON renouvelé"
             else:
                 etat_police = plc.etat_police if dernier_mouvement else ''
 
@@ -1412,12 +1441,12 @@ def get_client_by_business_unit(request):
                 elif difference_jours > 0:
                     nombre_total_mois = difference_jours // 30
                     jours_restants = difference_jours % 30
-                    etat_police = f"A renouveler dans {nombre_total_mois} mois et {jours_restants} jours" if nombre_total_mois else f"A renouveler dans {jours_restants} jours"
+                    etat_police = "A renouveler"
                 else:
                     difference_jours = abs(difference_jours)  # Convertir en positif
                     nombre_total_mois = difference_jours // 30
                     jours_ecoules = difference_jours % 30
-                    etat_police = f"NON renouvelé depuis {nombre_total_mois} mois et {jours_ecoules} jours" if nombre_total_mois else f"NON renouvelé depuis {jours_ecoules} jours"
+                    etat_police = "NON renouvelé"
             else:
                 etat_police = plc.etat_police if dernier_mouvement else ''
 
@@ -1478,12 +1507,12 @@ def get_client_by_business_unit(request):
                 elif difference_jours > 0:
                     nombre_total_mois = difference_jours // 30
                     jours_restants = difference_jours % 30
-                    etat_police = f"A renouveler dans {nombre_total_mois} mois et {jours_restants} jours" if nombre_total_mois else f"A renouveler dans {jours_restants} jours"
+                    etat_police = "A renouveler"
                 else:
                     difference_jours = abs(difference_jours)  # Convertir en positif
                     nombre_total_mois = difference_jours // 30
                     jours_ecoules = difference_jours % 30
-                    etat_police = f"NON renouvelé depuis {nombre_total_mois} mois et {jours_ecoules} jours" if nombre_total_mois else f"NON renouvelé depuis {jours_ecoules} jours"
+                    etat_police = "NON renouvelé"
             else:
                 etat_police = plc.etat_police if dernier_mouvement else ''
 

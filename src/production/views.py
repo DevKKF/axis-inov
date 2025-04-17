@@ -704,9 +704,11 @@ def add_police(request, client_id):
             numero = request.POST.get('numero')
             apporteur = request.POST.get('apporteur')
             garantie_reponse = request.POST.get('garantie')
+
             date_debut_effet = request.POST.get('date_debut_effet')
             date_fin_effet = request.POST.get('date_fin_effet')
             date_fin_police = request.POST.get('date_fin_police')
+
             preavis_de_resiliation = request.POST.get('preavis_de_resiliation')
             mode_renouvellement = request.POST.get('mode_renouvellement')
             fractionnement_id = request.POST.get('fractionnement')
@@ -801,7 +803,7 @@ def add_police(request, client_id):
                 numero=numero,
                 date_souscription=datetime.now(),
                 date_debut_effet=date_debut_effet if date_debut_effet else None,
-                date_fin_effet=date_fin_effet if date_fin_effet else None,
+                date_fin_effet=date_debut_effet if date_debut_effet else (date_fin_police if date_fin_police else None),
                 date_fin_police=date_fin_police if date_fin_police else None,
                 preavis_de_resiliation=preavis_de_resiliation,
                 date_prochaine_facture=date_prochaine_facture if date_prochaine_facture else None,
@@ -813,8 +815,7 @@ def add_police(request, client_id):
             police_created.save()
 
             code_bureau = request.user.bureau.code
-            police_created.numero_provisoire = str(code_bureau) + 'P' + str(Date.today().year)[-2:] + str(
-                police_created.pk).zfill(6)
+            police_created.numero_provisoire = str(code_bureau) + 'P' + str(Date.today().year)[-2:] + str(police_created.pk).zfill(6)
             if police_created.numero == "":
                 police_created.numero = police_created.numero_provisoire
 
@@ -828,7 +829,6 @@ def add_police(request, client_id):
             taux_com_affaire_nouvelle = request.POST.getlist('taux_com_affaire_nouvelle')
             taux_com_renouvelement = request.POST.getlist('taux_com_renouvelement')
 
-            pprint('len(intermediaires) : ' + str(len(intermediaires)))
             if len(intermediaires) > 0:  # pourquoi j'ai mis 3: à vérifier, en attendant je met à 0
                 i = 0
                 for apporteur_id in intermediaires:
@@ -850,7 +850,6 @@ def add_police(request, client_id):
 
             # enregistrer les autres taxes
             taxes = request.COOKIES.get('taxes')
-            print('Cookies : ', taxes)
             if taxes:
                 taxes = json.loads(taxes)
 
@@ -881,8 +880,8 @@ def add_police(request, client_id):
                 apporteur=apporteur,
                 garantie=garantie_reponse,
                 date_souscription=datetime.now(),
-                date_debut_effet=police.date_debut_effet,
-                date_fin_effet=date_fin_effet if date_fin_effet else None,
+                date_debut_effet=date_debut_effet if date_debut_effet else None,
+                date_fin_effet=date_debut_effet if date_debut_effet else (date_fin_police if date_fin_police else None),
                 date_fin_police=date_fin_police if date_fin_police else None,
                 preavis_de_resiliation=preavis_de_resiliation,
                 mode_renouvellement=mode_renouvellement,
@@ -929,7 +928,6 @@ def add_police(request, client_id):
                         'capital': capital,
                     })
 
-            print("Garantie transmis", garanties)
             # Enregistrer chaque garantie de la police
             for garantie in garanties:
                 franchise = garantie['franchise'].replace(' ', '')
@@ -985,7 +983,6 @@ def add_police(request, client_id):
             # TODO MISE EN PLACE DE LA PARTIE ALIMENT DE LA POLICE
             produit_code = Produit.objects.filter(id=request.POST.get('produit')).first()
             if produit_code.code == "10001":
-                print("Création police avec mono-véhicule")
                 vehicule_existant = Vehicule.objects.filter(numero_immatriculation=request.POST.get('immatriculation')).first()
 
                 if vehicule_existant:
@@ -1065,7 +1062,6 @@ def add_police(request, client_id):
                     aliment_police.save()
 
             elif produit_code.code == "10002":
-                print("Création police avec flotte-auto")
                 # Récupérer les aliments de la session
                 aliments_en_session = request.session.get('aliments', [])
 
@@ -1157,7 +1153,6 @@ def add_police(request, client_id):
                 print("Aliment transmis :", aliments)
 
             elif produit_code.code in ["50001", "50002"]:
-                print("Création police avec marchandise")
                 marchandise_created = Marchandise(
                     moyens_transport_id = moyens_transport_id,
                     conditions_assurance_id = conditions_assurance_id,
@@ -1220,7 +1215,6 @@ def add_police(request, client_id):
                 aliment_police.save()
 
             else:
-                print("Création police avec autres-risques")
                 autre_risque_created = AutreRisque(
                     created_by = request.user,
                     libelle = ar_libelle,
@@ -1510,7 +1504,6 @@ def modifier_police(request, police_id):
                     'franchise': franchise,
                     'capital': capital,
                 })
-        print("Garantie transmis", garanties)
 
         # Récupérer les garanties existantes associées à la police
         garanties_existantes = PoliceGarantie.objects.filter(police_id=police_old.id)
@@ -1576,7 +1569,7 @@ def modifier_police(request, police_id):
 
         # Création du monvement police
         movement_data_save = request.session.get('add_avenant')
-        print('movement_data_save : ', movement_data_save)
+
         if movement_data_save:
             date_fin_periode_garantie = movement_data_save.get('date_fin_periode_garantie')
             mouvement_police = MouvementPolice.objects.create(police_id=police_id,
@@ -1602,7 +1595,6 @@ def modifier_police(request, police_id):
                 motif = movement_data_save.get('motif')
 
                 if motif == "12":
-                    print('Avenant de retrait')
                     selected_aliments = []
                     today = now().date()  # Récupérer la date du jour
 
@@ -1622,7 +1614,6 @@ def modifier_police(request, police_id):
                     if not selected_aliments:
                         pass
                     else:
-                        print('selected_aliments ', selected_aliments)
                         for selected_aliment in selected_aliments:
                             aliment_id = selected_aliment['id'].strip()
                             date_sortie = parse_date(selected_aliment['date_sortie'].strip())
@@ -1633,12 +1624,6 @@ def modifier_police(request, police_id):
                                 if aliment:
                                     # Déterminer le statut en fonction de la date de sortie
                                     statut = "INACTIF" if date_sortie < today else "ACTIF"
-
-                                    print('aliment sélectionné ', aliment)
-                                    print('aliment_id ', aliment_id)
-                                    print('today ', today)
-                                    print('date_sortie ', date_sortie)
-                                    print('statut ', statut)
 
                                     aliment.date_sortie = date_sortie
                                     aliment.statut = statut
@@ -1673,7 +1658,6 @@ def modifier_police(request, police_id):
                                         updated_by_id=request.user.id,
                                     ).save()
 
-        print('autres_taxes ', autres_taxes)
 
         # Créer l'historique avant la mise à jour
         histtorique_police = HistoriquePolice.objects.create(
@@ -1691,7 +1675,7 @@ def modifier_police(request, police_id):
             garantie=garantie_reponse if garantie_reponse else dernier_historique.garantie,
             date_souscription=date_debut_effet if date_debut_effet else None,
             date_debut_effet=date_debut_effet if date_debut_effet else None,
-            date_fin_effet=date_fin_effet if date_fin_effet else None,
+            date_fin_effet=date_debut_effet if date_debut_effet else (date_fin_police if date_fin_police else None),
             date_fin_police=date_fin_police if date_fin_police else None,
             preavis_de_resiliation=preavis_de_resiliation,
             mode_renouvellement=mode_renouvellement,
@@ -1730,7 +1714,7 @@ def modifier_police(request, police_id):
             date_souscription=datetime.now(),
             preavis_de_resiliation=preavis_de_resiliation,
             date_debut_effet=date_debut_effet if date_debut_effet else None,
-            date_fin_effet=date_fin_effet if date_fin_effet else None,
+            date_fin_effet=date_debut_effet if date_debut_effet else (date_fin_police if date_fin_police else None),
             date_fin_police=date_fin_police if date_fin_police else None,
             date_prochaine_facture=date_prochaine_facture if date_prochaine_facture else None,
             participation=participation,
@@ -1773,8 +1757,6 @@ def modifier_police(request, police_id):
             if vehicule_id:
                 vehicule = Vehicule.objects.get(id=vehicule_id)
                 alimentpolice = AlimentPolice.objects.get(id=request.POST.get('mono_vehicule_aliment_id'))
-
-                print('aliment police id : ', alimentpolice.id)
 
                 # Créer une nouvelle ligne d'historique
                 historique_vehicule = HistoriqueAliment(
@@ -1977,8 +1959,6 @@ def modifier_police(request, police_id):
                 marchandise = Marchandise.objects.get(id=marchandise_id)
                 alimentpolice = AlimentPolice.objects.get(id=request.POST.get('marchandise_aliment_id'))
 
-                print('aliment police id : ', alimentpolice.id)
-
                 # Créer une nouvelle ligne d'historique
                 marchandise_historique_created = HistoriqueAliment(
                     marchandise_id=marchandise.id,
@@ -2143,7 +2123,6 @@ def modifier_police(request, police_id):
         else:
             autre_risque_id = request.POST.get('autre_risque_id')
 
-            print("autre_risque_id ", autre_risque_id)
             if autre_risque_id:
                 autrerisque = AutreRisque.objects.get(id=autre_risque_id)
 
@@ -3120,8 +3099,6 @@ class DetailsPoliceView(TemplateView):
                 else:
                     duree = "Indéfini"
 
-                print('Durée de la police :', duree)
-
             mouvement_police = MouvementPolice.objects.filter(police_id=police_id, statut_validite=StatutValidite.VALIDE).order_by('-id').first()
 
             apporteurs_police = ApporteurPolice.objects.filter(police_id=police_id, statut_validite=StatutValidite.VALIDE)
@@ -3205,8 +3182,6 @@ class DetailsHistoriquePoliceView(TemplateView):
                 else:
                     duree = "Indéfini"  # Gérer le cas où il n'y a pas de durée valide
 
-                print('Durée de la police :', duree)
-
 
             etat_police = ""
             hist_mouvement_police = MouvementPolice.objects.filter(historique_police_id=hist_police_id, statut_validite=StatutValidite.VALIDE).order_by('-id').first()
@@ -3277,8 +3252,6 @@ class PoliceQuittancesView(TemplateView):
         # Récupérer les assureurs associés à l'historique
         assureur_police = PoliceAssureur.objects.filter(historique_police_id=dernier_historique.id, type_compagnie_id=1).first()
         autre_assureur_police = PoliceAssureur.objects.filter(historique_police_id=dernier_historique.id).exclude(type_compagnie_id=1).first()
-
-        print("Police assureur : ", assureur_police)
 
         context_perso = {'police': police, 'client':client, 'types_quittances': types_quittances, 'quittances': quittances, 'documents': documents,
                          'quittances_payees': quittances_payees, 'quittances_impayees': quittances_impayees, 'quittances_honoraires': quittances_honoraires, 'quittances_emissions':quittances_emissions, 'dernier_historique': dernier_historique, 'assureur_police': assureur_police, 'autre_assureur_police': autre_assureur_police,
@@ -3406,11 +3379,6 @@ def add_quittance(request, police_id):
         # Récupérer les assureurs associés à l'historique
         assureur_police = PoliceAssureur.objects.filter(historique_police_id=dernier_historique.id,type_compagnie_id=1).first()
         autre_assureur_police = PoliceAssureur.objects.filter(historique_police_id=dernier_historique.id).exclude(type_compagnie_id=1).first()
-
-        print("Police assureur : ", assureur_police)
-
-        # print(nature_quittance_id == '3')
-        # dd(nature_quittance_id)
 
         # Create Quittance object
         quittance = Quittance.objects.create(police_id=police_id,
@@ -3542,8 +3510,6 @@ def add_quittance(request, police_id):
         # Récupérer les assureurs associés à l'historique
         assureur_police = PoliceAssureur.objects.filter(historique_police_id=dernier_historique.id,type_compagnie_id=1).first()
         autre_assureur_police = PoliceAssureur.objects.filter(historique_police_id=dernier_historique.id).exclude(type_compagnie_id=1).first()
-
-        print("Police assureur : ", assureur_police)
 
         natures_quittances = NatureQuittance.objects.filter(status=True).order_by('libelle')
         types_quittances = TypeQuittance.objects.filter(status=True).order_by('libelle')
@@ -4228,13 +4194,6 @@ class PoliceSinistresView(TemplateView):
         police = Police.objects.filter(id=police_id, bureau=request.user.bureau, statut_validite=StatutValidite.VALIDE).first()
         if police:
 
-            #TODO VIDER LES INTERVENANTS ET DES GARANTIES DU SINISTRE
-            if 'intervenants' in request.session:
-                del request.session['intervenants']
-
-            if 'garanties_sinistre' in request.session:
-                del request.session['garanties_sinistre']
-
             # Récupération de client
             client = Client.objects.filter(id=police.client_id).first()
 
@@ -4263,10 +4222,10 @@ class PoliceSinistresView(TemplateView):
                 aliment = AlimentPolice.objects.filter(police_id=police.id).first()
 
             date_jour = datetime.now(tz=timezone.utc).strftime('%Y-%m-%d')
-            date_fin_effet = police.date_fin_effet.strftime('%Y-%m-%d') if police.date_fin_effet else None
+            date_fin_effet = police.date_fin_effet.strftime('%Y-%m-%d') if police.date_fin_effet else police.date_fin_police.strftime('%Y-%m-%d') if police.date_fin_police else None
 
             border_date_color = ""
-            if police.date_fin_effet and date_fin_effet > date_jour:
+            if police.date_fin_effet or police.date_fin_police and date_fin_effet > date_jour:
                 border_date_color = "green"
             else:
                 border_date_color = "red"
@@ -4358,7 +4317,7 @@ def police_sinistres_datatable(request, police_id):
         actions_html = f'<a href="{detail_url}"><span class="badge btn-sm btn-details rounded-pill"><i class="fa fa-eye"></i> {_("Détails")}</span></a>&nbsp;&nbsp;'
 
         # etat sinistre = dernier motif
-        etat_sinistre = s.etat_sinistre
+        etat_sinistre = ""
         statut_html = f'<span class="badge badge-{transformer_statut(etat_sinistre)}">{etat_sinistre}</span>'
 
         data_iten = {
@@ -4479,19 +4438,12 @@ class SinistreAvenantsView(TemplateView):
         sinistre = Sinistre.objects.filter(id=sinistre_id).first()
         if sinistre:
             police = Police.objects.filter(id=sinistre.police_id).first()
-            mouvements = Mouvement.objects.filter(type_mouvement_id=2).exclude(code="OUVSIN").order_by('libelle')
+
             mouvements_sinistre = MouvementSinistre.objects.filter(sinistre_id=sinistre_id, statut_validite=StatutValidite.VALIDE).order_by('-id')
 
-            # etat sinistre = dernier motif
-            etat_sinistre = sinistre.etat_sinistre
+            mouvements = EtapeSinistre.objects.exclude(code="OUVSIN").order_by('id')
 
-            if etat_sinistre != "Suspendu":
-                # Retirer mise en vigueur (REMVIG) sauf cas de suspention
-                mouvements = mouvements.exclude(code="REMVIG").order_by('libelle')
-
-
-            context_perso = {'sinistre': sinistre, 'police': police, 'mouvements_sinistre': mouvements_sinistre, 'mouvements': mouvements,
-                             'etat_sinistre': etat_sinistre}
+            context_perso = {'sinistre': sinistre, 'police': police, 'mouvements_sinistre': mouvements_sinistre, 'mouvements': mouvements}
 
             context = {**context_original, **context_perso}
 
@@ -4515,7 +4467,7 @@ def add_sinistre_avenant(request, sinistre_id):
 
     if request.method == 'POST':
 
-        if request.POST.get('mouvement') in ["19", "20"]:
+        if request.POST.get('mouvement') in ["2", "17"]:
             request.session['add_sinistre_avenant'] = request.POST
             response = {
                 'statut': 1,
@@ -4535,19 +4487,13 @@ def add_sinistre_avenant(request, sinistre_id):
                 date_cloture_sinistre=date_cloture_sinistre if date_cloture_sinistre else None,
                 created_by=request.user
             )
-            mouvement_sinistre.save()
-
-            mouvement = Mouvement.objects.get(id=mouvement_sinistre.mouvement_id)
-
-            motif = Motif.objects.get(id=mouvement_sinistre.motif_id)
+            #mouvement_sinistre.save()
 
             response = {
                 'statut': 1,
                 'message': "Enregistrement effectuée avec succès !",
                 'data': {
                     'id': mouvement_sinistre.pk,
-                    'mouvement': mouvement.libelle,
-                    'motif': motif.libelle,
                     'date_effet': mouvement_sinistre.date_effet,
                     'date_cloture_sinistre': mouvement_sinistre.date_cloture_sinistre,
                 }
@@ -4600,141 +4546,6 @@ def sinistre_add_document(request, sinistre_id):
             return JsonResponse(response)
 
 
-def policesavesinistre(request, police_id):
-    police = Police.objects.get(id=police_id)
-    client = Client.objects.get(id=police.client_id)
-
-    if request.method == 'POST':
-
-        form = SinistreForm(request.POST)
-
-        if form.is_valid():
-            vehicule_id = request.POST.get('vehicule_id')
-            marchandise_id = request.POST.get('marchandise_id')
-            autre_risque_id = request.POST.get('autre_risque_id')
-            compagnie_id = request.POST.get('compagnie_id')
-            date_survenance = request.POST.get('date_survenance')
-            date_ouverture = request.POST.get('date_ouverture')
-            date_cloture = request.POST.get('date_cloture')
-            risque = request.POST.get('risque')
-            date_declaration = request.POST.get('date_declaration')
-            date_reouverture = request.POST.get('date_reouverture')
-            circonstance_id = request.POST.get('circonstance_id')
-            lieu_survenance = request.POST.get('lieu_survenance')
-            tva_recuperee = request.POST.get('tva_recuperee')
-            type_sinistre_id = request.POST.get('type_sinistre_id')
-            franchise = request.POST.get('franchise').replace(' ', '')
-            responsabilite_id = request.POST.get('responsabilite_id')
-            fait_generateur = request.POST.get('fait_generateur')
-            point_de_choc = request.POST.get('point_de_choc')
-            commentaire = request.POST.get('commentaire')
-            numero = request.POST.get('numero')
-
-            sinistre_created = Sinistre(
-                bureau_id=client.bureau_id,
-                client_id=client.id,
-                police_id=police.id,
-                compagnie_id=compagnie_id,
-                type_sinistre_id=type_sinistre_id,
-                responsabilite_id=responsabilite_id,
-                circonstance_id=circonstance_id,
-                created_by=request.user,
-                numero=numero,
-                created_at=datetime.now(),
-                date_survenance=date_survenance if date_survenance else None,
-                date_declaration=date_declaration if date_declaration else None,
-                date_ouverture=date_ouverture if date_ouverture else None,
-                date_cloture=date_cloture if date_cloture else None,
-                date_reouverture=date_reouverture if date_reouverture else None,
-                lieu_survenance=lieu_survenance,
-                tva_recuperee=tva_recuperee,
-                fait_generateur=fait_generateur,
-                point_de_choc=point_de_choc,
-                commentaire=commentaire,
-                franchise=supprimer_espaces(franchise) if franchise else 0,
-            )
-            sinistre_created.save()
-
-            code_bureau = request.user.bureau.code
-            sinistre_created.numero_provisoire = str(code_bureau) + 'P' + str(Date.today().year)[-2:] + str(
-                sinistre_created.pk).zfill(6)
-            if sinistre_created.numero == "":
-                sinistre_created.numero = sinistre_created.numero_provisoire
-
-            sinistre_created.save()
-
-            sinistre = Sinistre.objects.get(id=sinistre_created.pk)
-
-            # Créer une ligne de mouvement_sinistre avec le mouvement ouverture sinistre et le motif ouverture sinistre
-            ms = MouvementSinistre()
-            ms.sinistre = sinistre
-            ms.police = police
-            ms.mouvement = Mouvement.objects.get(code='OS')
-            ms.motif = Motif.objects.get(code='OS')
-            ms.date_effet = sinistre.date_ouverture
-            ms.created_by = request.user
-            ms.save()
-
-            # Créer la ligne de l'aliment lié au sinistre
-            aliment_police = None
-
-            if vehicule_id:
-                try:
-                    aliment_police = AlimentPolice.objects.get(vehicule_id=vehicule_id)
-                except AlimentPolice.DoesNotExist:
-                    pass  # Gérer l'absence de l'objet si nécessaire
-
-            if marchandise_id:
-                try:
-                    aliment_police = AlimentPolice.objects.get(marchandise_id=marchandise_id)
-                except AlimentPolice.DoesNotExist:
-                    pass  # Gérer l'absence de l'objet si nécessaire
-
-            if not aliment_police and autre_risque_id:
-                try:
-                    aliment_police = AlimentPolice.objects.get(autre_risque_id=autre_risque_id)
-                except AlimentPolice.DoesNotExist:
-                    pass  # Gérer l'absence de l'objet si nécessaire
-
-            if aliment_police:
-                aliment_sinitre_created = AlimentPoliceSinistre(
-                    police=police,
-                    sinistre=sinistre,
-                    aliment_police=aliment_police,
-                    risque=risque,
-                )
-                aliment_sinitre_created.save()
-            else:
-                # Ajouter une gestion si l'aliment_police n'existe pas.
-                print(f"Aucun AlimentPolice trouvé pour vehicule_id={vehicule_id} ou marchandise_id={marchandise_id} ou autre_risque_id={autre_risque_id}")
-
-            response = {
-                'statut': 1,
-                'message': "Sinistre enregistré avec succès !",
-                'data': {
-                    'id': sinistre.pk,
-                    'numero': sinistre.numero,
-                }
-            }
-
-            return JsonResponse(response)
-
-        else:
-            response = {
-                'statut': 0,
-                'message': "Veuillez renseigner correctement le formulaire",
-                'errors': form.errors,
-            }
-
-            return JsonResponse(response)
-    else:
-        response = {
-            'statut': 0,
-            'message': "Cette méthode n'est pas reconnue !",
-        }
-
-        return JsonResponse(response)
-
 
 def police_save_sinistre(request, police_id):
     police = Police.objects.get(id=police_id)
@@ -4748,6 +4559,7 @@ def police_save_sinistre(request, police_id):
             vehicule_id = request.POST.get('vehicule_id')
             marchandise_id = request.POST.get('marchandise_id')
             autre_risque_id = request.POST.get('autre_risque_id')
+            autre_risque = request.POST.get('autre_risque')
             compagnie_id = request.POST.get('compagnie_id')
             date_survenance = request.POST.get('date_survenance')
             date_ouverture = request.POST.get('date_ouverture')
@@ -4836,9 +4648,14 @@ def police_save_sinistre(request, police_id):
                 except AlimentPolice.DoesNotExist:
                     pass  # Gérer l'absence de l'objet si nécessaire
 
-            if not aliment_police and autre_risque_id:
+            print('autre_risque_id : ', autre_risque_id)
+            if autre_risque_id:
                 try:
                     aliment_police = AlimentPolice.objects.get(autre_risque_id=autre_risque_id)
+
+                    aliment_police.risque = autre_risque
+                    aliment_police.save()
+
                 except AlimentPolice.DoesNotExist:
                     pass  # Gérer l'absence de l'objet si nécessaire
 
@@ -4883,7 +4700,6 @@ def police_save_sinistre(request, police_id):
 
 
 # modification de sinistre
-@transaction.atomic  # open a transaction
 @login_required
 def modifier_sinistre(request, sinistre_id):
 
@@ -7813,7 +7629,7 @@ class PoliceClientView(TemplateView):
 
                 # Récupérer les assureurs associés à l'historique
                 assureur_police = PoliceAssureur.objects.filter(historique_police_id=dernier_historique.id, type_compagnie_id=1) .first() if dernier_historique else []
-                print("Police assureur : ", assureur_police)
+
                 polices_data.append({
                     'police': contrat,
                     'dernier_historique': dernier_historique,

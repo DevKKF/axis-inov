@@ -4575,7 +4575,7 @@ $(document).ready(function () {
                         resetFields('#' + formulaire.attr('id'));
                         console.log(mouvement);
                         console.log(typeof(mouvement));
-                        if(mouvement === '19' || mouvement === '20'){
+                        if (mouvement >= 2 && mouvement <= 17) {
                             helper_modification_sinistre(href_sinistre)
                         }else{
                             notifySuccess(response.message, function () {
@@ -4647,7 +4647,7 @@ $(document).ready(function () {
         });
 
         //
-        if (mouvement_id == 21) {
+        if (mouvement_id == 17) {
             $('#box_date_cloture_sinistre').show();
             $('#date_cloture_sinistre').attr('required', 'true');
         } else {
@@ -5795,7 +5795,7 @@ $(document).ready(function () {
             $('.tacide_reconduction input').attr('required', 'required');
         } else if (mode_renouvellement === "Sans Tacite Reconduction") {
             $('.sans_tacide_reconduction').show();
-            //$('.sans_tacide_reconduction input').attr('required', 'required');
+            $('.sans_tacide_reconduction input').attr('required', 'required');
         }
     }
 
@@ -6064,49 +6064,68 @@ $(document).ready(function () {
     // Créer une function
     function helper_modification_police(href, modal_title, model_name) {
         $('#olea_std_dialog_box').load(href, function () {
+            const $modal = $('#modal-modification_police');
+            const $btnSave = $("#btn_save_modification_police");
+            const formulaire = $('#form_update_police');
 
-            //appliquer le mask de saisie sur les champs montant
-            AppliquerMaskSaisie();
+            // 1. Fonction de validation des dates déclarée ici, disponible pour tout le scope
+            function validateDatesModification() {
+                const police_date_debut   = $modal.find('#date_debut_effet').val();
+                const police_date_fin     = $modal.find('#date_fin_effet').val();
+                const police_date_fin_police = $modal.find('#date_fin_police').val();
+                const mode_renouvellement = $modal.find('#mode_renouvellement').val();
 
-            $('#modal-modification_police').attr('data-backdrop', 'static').attr('data-keyboard', false);
+                // Réactiver le bouton au départ
+                $btnSave.prop('disabled', false);
 
-            $('#modal-modification_police').find('.modal-title').text(modal_title);
-            $('#modal-modification_police').find('#btn_valider').attr({ 'data-model_name': model_name, 'data-href': href });
-            $('#modal-modification_police').find('.modal-dialog').addClass('modal-xl').removeClass('modal-lg');
-
-            //
-            $('#modal-modification_police').modal();
-
-            $('#option_calcul_prime_modification').change();
-
-            //gestion du clique sur valider les modifications
-            $("#btn_save_modification_police").on('click', function (e) {
-
-                let formulaire = $('#form_update_police');
-                let href = formulaire.attr('action');
-
-                console.log(href);
-
-                let police_date_debut = $('#modal-modification_police #date_debut_effet').val();
-                let police_date_fin = $('#modal-modification_police #date_fin_effet').val();
-
-                console.log("Début :", police_date_debut, "Fin :", police_date_fin);
-
-                // Vérification des dates avant toute autre action
-                if (police_date_debut && police_date_fin) {
-                    if (new Date(police_date_debut) >= new Date(police_date_fin)) {
-                        notifyWarning('La date de fin de la police doit être strictement postérieure à la date de début.');
-                        return;
+                if (isValidDate(police_date_debut)) {
+                    if (mode_renouvellement === "Tacite Reconduction" && isValidDate(police_date_fin)) {
+                        if (new Date(police_date_debut) >= new Date(police_date_fin)) {
+                            notifyWarning("La date de renouvellement doit être strictement postérieure à la date de début.");
+                            $btnSave.prop('disabled', true);
+                            return false;
+                        }
+                    } else if (mode_renouvellement === "Sans Tacite Reconduction" && isValidDate(police_date_fin_police)) {
+                        if (new Date(police_date_debut) >= new Date(police_date_fin_police)) {
+                            notifyWarning("La date de fin du contrat doit être strictement postérieure à la date de début.");
+                            $btnSave.prop('disabled', true);
+                            return false;
+                        }
                     }
                 }
+                return true;
+            }
 
+            // 2. Appliquer le mask, titre, classes, etc.
+            AppliquerMaskSaisie();
+            $modal
+                .attr({ 'data-backdrop': 'static', 'data-keyboard': false })
+                .find('.modal-title').text(modal_title).end()
+                .find('#btn_valider').attr({ 'data-model_name': model_name, 'data-href': href }).end()
+                .find('.modal-dialog').addClass('modal-xl').removeClass('modal-lg');
+            $modal.modal();
+            $('#option_calcul_prime_modification').change();
+
+            // 3. Lier validateDatesModification aux changements des champs concernés
+            $modal.on('change', '#date_debut_effet, #date_fin_effet, #date_fin_police, #mode_renouvellement',
+                validateDatesModification
+            );
+
+            // 4. Gestion du clic “Valider”
+            $btnSave.off('click').on('click', function (e) {
+                e.preventDefault();
+
+                // Appel de la validation de dates
+                if (!validateDatesModification()) {
+                    return;
+                }
+
+                // Validation des champs obligatoires
                 let isValid = true;
-
-                // Validation des champs obligatoires dans les onglets "General", "Facturation" et "Garantie"
                 $('#general-tab_modification, #facturation-tab_modification, #garantie-tab_modification').each(function () {
-                    let tabId = $(this).attr('href');
-                    $(tabId).find('input[required], select[required]').each(function () {
-                        if (!$(this).val()) {
+                    const tabPane = $($(this).attr('href'));
+                    tabPane.find('input[required], select[required]').each(function () {
+                        if (!this.value) {
                             $(this).addClass('is-invalid');
                             isValid = false;
                         } else {
@@ -6114,150 +6133,88 @@ $(document).ready(function () {
                         }
                     });
                 });
-
-                // Validation des champs obligatoires dynamiques
+                // validations dynamiques
                 if ($('#vehicule-tab_modification').is(':visible')) {
                     $('.vehicule_champ_obligatoire_modification').each(function () {
-                        if (!$(this).val()) {
-                            isValid = false;
-                            $(this).addClass('is-invalid');
-                        } else {
-                            $(this).removeClass('is-invalid');
-                        }
+                        $(this).val() ? $(this).removeClass('is-invalid') : ($(this).addClass('is-invalid'), isValid = false);
                     });
                 }
-
                 if ($('#marchandise-tab_modification').is(':visible')) {
                     $('.marchandise_champ_obligatoire_modification').each(function () {
-                        if (!$(this).val()) {
-                            isValid = false;
-                            $(this).addClass('is-invalid');
-                        } else {
-                            $(this).removeClass('is-invalid');
-                        }
+                        $(this).val() ? $(this).removeClass('is-invalid') : ($(this).addClass('is-invalid'), isValid = false);
                     });
                 }
 
                 if (!isValid) {
-                    e.preventDefault(); // Empêcher la soumission
                     notifyWarning('Veuillez renseigner tous les champs obligatoires.');
                     return;
                 }
 
+                // forcer validation de tous les champs même cachés
                 $.validator.setDefaults({ ignore: [] });
 
-                let formData = new FormData();
-
-                if (formulaire.valid()) {
-
-                    //demander confirmation
-                    let n = noty({
-                        text: 'Voulez-vous vraiment modifier cette police ?',
-                        type: 'warning',
-                        dismissQueue: true,
-                        layout: 'center',
-                        theme: 'defaultTheme',
-                        buttons: [
-                            {
-                                addClass: 'btn btn-primary', text: 'OUI', onClick: function ($noty) {
-                                    $noty.close();
-
-                                    //confirmation obtenu
-                                    let data_serialized = formulaire.serialize();
-                                    $.each(data_serialized.split('&'), function (index, elem) {
-                                        let vals = elem.split('=');
-
-                                        let key = vals[0];
-                                        let valeur = decodeURIComponent(vals[1].replace(/\+/g, '  '));
-
-                                        formData.append(key, valeur);
-
-                                    });
-
-                                    $.ajax({
-                                        type: 'post',
-                                        url: href,
-                                        data: formData,
-                                        processData: false,
-                                        contentType: false,
-                                        xhrFields: {
-                                            withCredentials: true
-                                        },
-                                        success: function (response) {
-
-                                            if (response.statut == 1) {
-
-                                                notifySuccess(response.message, function () {
-                                                    location.reload();
-                                                });
-
-                                            }
-                                            if (response.statut == 0) {
-
-                                                notifyWarning(response.message, function () {
-                                                    //location.reload();
-                                                });
-
-                                            }else {
-
-                                                let errors = JSON.parse(JSON.stringify(response.errors));
-                                                let errors_list_to_display = '';
-                                                for (field in errors) {
-                                                    errors_list_to_display += '- ' + ucfirst(field) + ' : ' + errors[field] + '<br/>';
-                                                }
-
-                                                $('#modal-modification_police .alert .message').html(errors_list_to_display);
-
-                                                $('#modal-modification_police .alert ').fadeTo(2000, 500).slideUp(500, function () {
-                                                    $(this).slideUp(500);
-                                                }).removeClass('alert-success').addClass('alert-warning');
-
-                                            }
-
-                                        },
-                                        error: function (request, status, error) {
-
-                                            notifyWarning("Erreur lors de l'enregistrement");
-                                        }
-
-                                    });
-
-                                    //fin confirmation obtenue
-
-                                }
-                            },
-                            {
-                                addClass: 'btn btn-danger', text: 'Annuler', onClick: function ($noty) {
-                                    //confirmation refusée
-                                    $noty.close();
-
-                                }
-                            }
-                        ]
-                    });
-                    //fin demande confirmation
-
-                } else {
-
-                    $('label.error').css({ display: 'none', height: '0px' }).removeClass('error').text('');
-
-                    let validator = formulaire.validate();
-
-                    $.each(validator.errorMap, function (index, value) {
-
-                        console.log('Id: ' + index + ' Message: ' + value);
-
-                    });
-
+                if (!formulaire.valid()) {
                     notifyWarning('Il y a des erreurs de saisie dans le formulaire');
+                    return;
                 }
 
-
+                // Confirmation Noty
+                noty({
+                    text: 'Voulez-vous vraiment modifier cette police ?',
+                    type: 'warning',
+                    layout: 'center',
+                    theme: 'defaultTheme',
+                    buttons: [
+                        {
+                            addClass: 'btn btn-primary', text: 'OUI', onClick: function ($noty) {
+                                $noty.close();
+                                // Sérialisation vers FormData
+                                const formData = new FormData();
+                                formulaire.serializeArray().forEach(({ name, value }) => {
+                                    formData.append(name, value);
+                                });
+                                // Requête AJAX
+                                $.ajax({
+                                    type: 'POST',
+                                    url: formulaire.attr('action'),
+                                    data: formData,
+                                    processData: false,
+                                    contentType: false,
+                                    xhrFields: { withCredentials: true },
+                                    success(response) {
+                                        if (response.statut == 1) {
+                                            notifySuccess(response.message, () => location.reload());
+                                        } else if (response.statut == 0) {
+                                            notifyWarning(response.message);
+                                        } else {
+                                            let errors = response.errors || {};
+                                            let html = Object.entries(errors)
+                                                .map(([f, msg]) => `- ${ucfirst(f)} : ${msg}<br/>`)
+                                                .join('');
+                                            $modal.find('.alert .message').html(html);
+                                            $modal.find('.alert')
+                                                .fadeTo(2000, 500)
+                                                .slideUp(500, function () { $(this).slideUp(500); })
+                                                .removeClass('alert-success')
+                                                .addClass('alert-warning');
+                                        }
+                                    },
+                                    error() {
+                                        notifyWarning("Erreur lors de l'enregistrement");
+                                    }
+                                });
+                            }
+                        },
+                        {
+                            addClass: 'btn btn-danger', text: 'Annuler', onClick: function ($noty) {
+                                $noty.close();
+                            }
+                        }
+                    ]
+                });
             });
-
         });
     }
-
     //fin modification de police
 
     //TODO:modification de sinistre
@@ -25588,30 +25545,73 @@ $(document).ready(function () {
 
     //Récupération des polices
     function chargementPoliceCompagnieTable(compagnieId) {
-        $("#polices_compagnie").hide();
-        $("#police_compagnie_existe").empty();
+        $("#table_polices_compagnie tbody").empty();
+        $("#com_total_ht").text("");
+        $("#com_total_com_courtage").text("");
+        $("#btn_save_portefeuille_compagnie").prop("disabled", true);
 
         $('#message-error').text('').hide();
         $('#message-warning').text('').hide();
 
         if (!compagnieId) {
+            $("#polices_compagnie").hide();
             return;
         }
-
-        $("#polices_compagnie").show();
-        $("#police_compagnie_null").hide();
 
         $.ajax({
             url: "/analysecontrole/get_client_by_compagnie/",
             type: "GET",
             data: { compagnie_id: compagnieId },
-            success: function (response) {
-                $("#police_compagnie_existe").html(response.html);
-                $("#police_compagnie_existe").show();
-                console.log('response : ', response);
-            },
-            error: function(xhr, status, error) {
-                console.error("Erreur lors du chargement des polices :", error);
+            success: function (data) {
+                if (data && data.polices_par_compagnie) {
+                    $("#polices_compagnie").show();
+                    $("#table_polices_compagnie tbody").empty();
+
+                    let total_ht = 0;
+                    let total_com_courtage = 0;
+
+                    for (const [compagnie, details] of Object.entries(data.polices_par_compagnie)) {
+                        let polices = details.polices; // Extraire le tableau de polices
+
+                        let compagnieHeader = `
+                            <tr>
+                                <td colspan="5" class="fw-bold text-primary">${compagnie}</td>
+                                <td class="fw-bold text-inov_green">TOTAL</td>
+                                <td class="fw-bold text-inov_green">${details.compagnie_total_ht}</td>
+                                <td class="fw-bold text-inov_green">${details.compagnie_com_courtage}</td>
+                            </tr>
+                        `;
+                        $("#table_polices_compagnie tbody").append(compagnieHeader);
+
+                        polices.forEach(police => {
+                            total_ht += parseFloat(police.prime_ht.replace(/\s/g, '').replace(',', '.')) || 0;
+                            total_com_courtage += parseFloat(police.commission_courtage.replace(/\s/g, '').replace(',', '.')) || 0;
+
+                            let badgeClass = police.statut.includes("A renouveler") ? "badge-warning" :
+                                             police.statut.includes("NON renouvelé") ? "badge-danger" :
+                                             police.statut.includes("Résilié") ? "badge-yellow" :
+                                             "badge-success";
+
+                            let row = `
+                                <tr>
+                                    <td>${police.nom} ${police.prenoms}</td>
+                                    <td>${police.numero}</td>
+                                    <td>${police.date_fin_effet}</td>
+                                    <td><span class="badge ${badgeClass}">${police.statut}</span></td>
+                                    <td>${police.date_creation}</td>
+                                    <td>${police.date_resiliation}</td>
+                                    <td>${police.prime_ht}</td>
+                                    <td>${police.commission_courtage}</td>
+                                </tr>
+                            `;
+                            $("#table_polices_compagnie tbody").append(row);
+                        });
+                    }
+
+                    $("#com_total_ht").text(total_ht.toLocaleString("fr-FR"));
+                    $("#com_total_com_courtage").text(total_com_courtage.toLocaleString("fr-FR"));
+                    $("#btn_save_portefeuille_compagnie").prop("disabled", false);
+                }
             }
         });
     }
@@ -25622,7 +25622,7 @@ $(document).ready(function () {
         if (compagnieId) {
             chargementPoliceCompagnieTable(compagnieId);
         } else {
-            $("#polices_compagnie").hide();
+            $("#polices_compagnie").hide(); // Masquer le bloc si aucun compercial n'est sélectionnée
         }
     });
 
@@ -25901,7 +25901,6 @@ $(document).ready(function () {
 
         // L'obligation le champ taux de responsabilité en fonction de la branche
         const brancheId = $('#branche_id').data('branche-id');
-        console.log('brancheId', brancheId);
 
         // Cacher les deux types au départ
         $(".branche_auto").hide();
@@ -26036,7 +26035,6 @@ $(document).ready(function () {
             });
         }
         else {
-            console.log('Autres polices en cours...');
             // Afficher le champ pour les risques autres
             $(".branche_autre").show();
 

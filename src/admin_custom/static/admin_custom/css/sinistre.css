@@ -1,0 +1,77 @@
+.verification-garanties-container {
+    padding: 20px;
+}
+
+.radio-buttons-container {
+    display: flex;
+    gap: 15px;
+}
+
+.shadow-options {
+    display: flex;
+    gap: 20px;
+    width: 100%;
+}
+
+.custom-radio-btn {
+    display: block;
+    cursor: pointer;
+    user-select: none;
+    margin: 0;
+    flex: 1;
+}
+
+.custom-radio-btn input {
+    display: none;
+}
+
+.radio-btn {
+    display: flex;
+    align-items: center;
+    padding: 15px 20px;
+    border-radius: 8px;
+    transition: all 0.3s ease;
+    background: white;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.custom-radio-btn.success .radio-btn {
+    border-left: 4px solid green;
+}
+
+.custom-radio-btn.warning .radio-btn {
+    border-left: 4px solid red;
+}
+
+.custom-radio-btn input:checked + .radio-btn {
+    transform: translateY(-2px);
+    box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+}
+
+.custom-radio-btn.success input:checked + .radio-btn {
+    background-color: #ffffff;
+    border-left: 4px solid green;
+}
+
+.custom-radio-btn.warning input:checked + .radio-btn {
+    background-color: #ffffff;
+    border-left: 4px solid red;
+}
+
+.radio-btn i {
+    margin-right: 15px;
+    font-size: 1.2em;
+}
+
+.custom-radio-btn.success i {
+    color: green;
+}
+
+.custom-radio-btn.warning i {
+    color: red;
+}
+
+.radio-btn-text {
+    font-weight: 500;
+    color: #333;
+}

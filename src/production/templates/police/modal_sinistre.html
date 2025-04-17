@@ -182,7 +182,8 @@
 									<div class="form-group row">
 										<label class="col-sm-3 col-form-label">Risque définit sur la police <span class="required">*</span></label>
 										<div class="col-sm-9">
-											<input type="text" class="form-control" name="autre_risque_id" value="{{ aliment.autre_risque.risque }}">
+											<input type="hidden" class="form-control" name="autre_risque_id" value="{{ aliment.autre_risque.id }}">
+											<input type="text" class="form-control" name="autre_risque" value="{{ aliment.autre_risque.risque }}">
 										</div>
 									</div>
 									<div class="form-group row d-none">

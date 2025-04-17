@@ -90,6 +90,7 @@
              <table id="table_polices" class="table table-bordered table-striped dataTable dtr-inline" role="grid" aria-describedby="example1_info" style="width:100%;">
                 <thead>
                     <tr role="row">
+                        <th class="d-none"></th>
                         <th class="sorting" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-label="Browser: activate to sort column ascending">
                             {{_('Numero')}}
                         </th>
@@ -125,6 +126,7 @@
                 <tbody>
                     {% for data in polices_data %}
                         <tr class="odd">
+                            <td class="d-none"></td>
                             <td class="dtr-control" tabindex="0">
                                 <a href="{% url 'police.details' data.police.id %}">{{ data.police.numero|default_if_none:"" }}</a>
                             </td>

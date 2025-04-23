@@ -608,6 +608,7 @@ class AlimentPolice(models.Model):
 
 
 class PeriodeCouverture(models.Model):
+    created_by = models.ForeignKey(User, null=True, on_delete=models.RESTRICT)
     police = models.ForeignKey(Police, on_delete=models.RESTRICT)
     date_debut_effet = models.DateTimeField(blank=True, null=True)
     date_fin_effet = models.DateTimeField(blank=True, null=True)
@@ -1359,8 +1360,7 @@ class ApporteurPolice(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     deleted_at = models.DateTimeField(auto_now=True)
-    statut_validite = models.fields.CharField(choices=Statut.choices, default=StatutValidite.VALIDE, max_length=15,
-                                              null=True, blank=True)
+    statut_validite = models.fields.CharField(choices=Statut.choices, default=StatutValidite.VALIDE, max_length=15, null=True, blank=True)
 
     class Meta:
         db_table = 'apporteurs_police'
@@ -1504,8 +1504,7 @@ class MouvementPolice(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     deleted_at = models.DateTimeField(auto_now=True)
-    statut_validite = models.fields.CharField(choices=StatutValidite.choices, default=StatutValidite.VALIDE,
-                                              max_length=15, null=True)
+    statut_validite = models.fields.CharField(choices=StatutValidite.choices, default=StatutValidite.VALIDE, max_length=15, null=True)
     historique_police = models.ForeignKey(HistoriquePolice, null=True, on_delete=models.RESTRICT)
 
     def __str__(self):

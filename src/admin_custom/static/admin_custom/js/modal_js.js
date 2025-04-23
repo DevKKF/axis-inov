@@ -367,47 +367,42 @@ $(document).ready(function () {
 //TODO validation / Téléchargement de fichier / suppression session
 $(document).ready(function() {
 
-    function isValidDate(dateStr) {
-        return dateStr && !isNaN(Date.parse(dateStr));
+    function isValidDate(dateString) {
+        return !isNaN(Date.parse(dateString));
     }
 
     function manage_mode_renouvellement() {
-        let mode_renouvellement = $('#mode_renouvellement').val();
+        let mode_renouvellement = $('#modification_mode_renouvellement').val();
+        let police_date_debut = $('#modification_date_debut_effet').val();
+        let police_date_fin_effet = $('#modification_date_fin_effet').val();
+        let police_date_fin_police = $('#modification_date_fin_police').val();
+        let btn_submit = $('#btn_save_modification_police');
+
+        // Réactiver le bouton avant vérification
+        btn_submit.removeAttr('disabled');
 
         // Cacher tous les champs et enlever les attributs required
-        $('.tacide_reconduction, .sans_tacide_reconduction').hide();
-        $('.tacide_reconduction input, .sans_tacide_reconduction input').removeAttr('required');
+        $('.modification_tacide_reconduction, .modification_sans_tacide_reconduction').hide();
+        $('.modification_tacide_reconduction input, .modification_sans_tacide_reconduction input').removeAttr('required');
 
         if (mode_renouvellement === "Tacite Reconduction") {
-            $('.tacide_reconduction').show();
-            $('.tacide_reconduction input').attr('required', 'required');
+            $('.modification_tacide_reconduction').show();
+            $('.modification_tacide_reconduction input').attr('required', 'required');
         } else if (mode_renouvellement === "Sans Tacite Reconduction") {
-            $('.sans_tacide_reconduction').show();
-            $('.sans_tacide_reconduction input').attr('required', 'required');
+            $('.modification_sans_tacide_reconduction').show();
+            $('.modification_sans_tacide_reconduction input').attr('required', 'required');
         }
+
     }
-
-
 
     // Exécuter au chargement de la page
     $(document).ready(function () {
         manage_mode_renouvellement();
-        validateDatesModification();
     });
 
     // Déclencher la gestion des modes et la validation des dates
-    $(document).on('change', "#mode_renouvellement, #date_debut_effet, #date_fin_effet, #date_fin_police", function () {
+    $(document).on('change', "#modification_mode_renouvellement, #modification_date_debut_effet, #modification_date_fin_effet, #modification_date_fin_police", function () {
         manage_mode_renouvellement();
-        validateDatesModification();
-    });
-
-    // Gestion du bouton de modification avec validation des dates
-    $(document).ready(function() {
-        $("#btn_save_modification_police").on("click", function() {
-            if (!validateDatesModification()) {
-                return;
-            }
-        });
     });
 
     // Pour le téléchargement du fichier modèle de création d'aliment
@@ -867,6 +862,7 @@ $(document).ready(function () {
         if (garantieValue === "OUI" && policeId) {
             loadGarantiesPolice(policeId);
         }
+
     });
 
     $(document).on('change', '.aliment-checkbox', function () {

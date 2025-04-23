@@ -54,7 +54,7 @@
                       <td>{{ avenant.date_effet|date:"d/m/Y"|default_if_none:"" }}</td>
                       <td>{{ avenant.date_fin_periode_garantie|date:"d/m/Y"|default_if_none:"" }}</td>
                       <td>{{ avenant.created_at|date:"d/m/Y"|default_if_none:"" }}</td>
-                      <td>{{ avenant.created_by|default_if_none:"" }}</td>
+                      <td>{{ avenant.created_by|default_if_none:'' }}</td>
                       <td>
                         {% if avenant.historique_police_id %}
                             <a style="cursor:pointer;" href="{% url 'police.historique.details' avenant.police_id avenant.historique_police_id %}"><span class="badge btn-sm btn-details rounded-pill"><i class="fa fa-eye"></i> Détails</span></a>

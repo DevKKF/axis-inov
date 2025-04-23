@@ -6070,10 +6070,10 @@ $(document).ready(function () {
 
             // 1. Fonction de validation des dates déclarée ici, disponible pour tout le scope
             function validateDatesModification() {
-                const police_date_debut   = $modal.find('#date_debut_effet').val();
-                const police_date_fin     = $modal.find('#date_fin_effet').val();
-                const police_date_fin_police = $modal.find('#date_fin_police').val();
-                const mode_renouvellement = $modal.find('#mode_renouvellement').val();
+                const police_date_debut   = $modal.find('#modification_date_debut_effet').val();
+                const police_date_fin     = $modal.find('#modification_date_fin_effet').val();
+                const police_date_fin_police = $modal.find('#modification_date_fin_police').val();
+                const mode_renouvellement = $modal.find('#modification_mode_renouvellement').val();
 
                 // Réactiver le bouton au départ
                 $btnSave.prop('disabled', false);

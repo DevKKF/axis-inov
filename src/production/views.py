@@ -791,6 +791,14 @@ def add_police(request, client_id):
             statut_contrat = request.POST.get('statut_contrat')
             statut_contrat = "CONTRAT"
 
+            if mode_renouvellement == "Tacite Reconduction":
+                date_fin_effet = date_fin_effet
+                date_fin_police = None
+                pass
+            if mode_renouvellement == "Sans Tacite Reconduction":
+                date_fin_effet = None
+                date_fin_police = date_fin_police
+
             police_created = Police(
                 bureau_id=client.bureau_id,
                 client_id=client_id,
@@ -803,7 +811,7 @@ def add_police(request, client_id):
                 numero=numero,
                 date_souscription=datetime.now(),
                 date_debut_effet=date_debut_effet if date_debut_effet else None,
-                date_fin_effet=date_debut_effet if date_debut_effet else (date_fin_police if date_fin_police else None),
+                date_fin_effet=date_fin_effet if date_fin_effet else None,
                 date_fin_police=date_fin_police if date_fin_police else None,
                 preavis_de_resiliation=preavis_de_resiliation,
                 date_prochaine_facture=date_prochaine_facture if date_prochaine_facture else None,
@@ -842,7 +850,7 @@ def add_police(request, client_id):
 
                     # Insérer la ligne si renseignée
                     if apporteur_id > 0 and base_calcul > 0 and (taux_com_an > 0 or taux_com_renew > 0):
-                        ApporteurPolice.objects.create(police_id=police.id, apporteur_id=apporteur_id,
+                        ApporteurPolice.objects.create(police_id=police.id, apporteur_id=apporteur_id, added_by=request.user,
                                                        base_calcul_id=base_calcul,
                                                        taux_com_affaire_nouvelle=taux_com_an,
                                                        taux_com_renouvellement=taux_com_renew, ).save()
@@ -864,8 +872,9 @@ def add_police(request, client_id):
             # créer une ligne dans période de couverture
             periode_couverture = PeriodeCouverture(
                 police_id=police.id,
-                date_debut_effet=date_debut_effet,
-                date_fin_effet=date_fin_effet if date_fin_effet else None,
+                created_by=request.user,
+                date_debut_effet=date_debut_effet if date_debut_effet else None,
+                date_fin_effet=date_fin_effet if date_fin_effet else (date_fin_police if date_fin_police else None),
             )
             periode_couverture.save()
 
@@ -881,7 +890,7 @@ def add_police(request, client_id):
                 garantie=garantie_reponse,
                 date_souscription=datetime.now(),
                 date_debut_effet=date_debut_effet if date_debut_effet else None,
-                date_fin_effet=date_debut_effet if date_debut_effet else (date_fin_police if date_fin_police else None),
+                date_fin_effet=date_fin_effet if date_fin_effet else None,
                 date_fin_police=date_fin_police if date_fin_police else None,
                 preavis_de_resiliation=preavis_de_resiliation,
                 mode_renouvellement=mode_renouvellement,
@@ -977,7 +986,8 @@ def add_police(request, client_id):
             mp.mouvement = Mouvement.objects.get(code='AN')
             mp.motif = Motif.objects.get(code='AN')
             mp.date_effet = dernier_historique.date_debut_effet
-            mp.date_fin_periode_garantie = dernier_historique.date_fin_effet if dernier_historique.date_fin_effet else None
+            mp.date_fin_periode_garantie = dernier_historique.date_fin_effet if dernier_historique.date_fin_effet else (dernier_historique.date_fin_police if dernier_historique.date_fin_police else None)
+            mp.created_by = request.user
             mp.save()
 
             # TODO MISE EN PLACE DE LA PARTIE ALIMENT DE LA POLICE
@@ -1387,6 +1397,14 @@ def modifier_police(request, police_id):
         statut_contrat = request.POST.get('statut_contrat')
         statut_contrat = "CONTRAT"
 
+        if mode_renouvellement == "Tacite Reconduction":
+            date_fin_effet = date_fin_effet
+            date_fin_police = None
+            pass
+        if mode_renouvellement == "Sans Tacite Reconduction":
+            date_fin_effet = None
+            date_fin_police = date_fin_police
+
         dernier_historique = HistoriquePolice.objects.filter(police_id=police_old.id).order_by('-date_du_jour').first()
 
         # Historique apporteur police
@@ -1403,12 +1421,12 @@ def modifier_police(request, police_id):
                 created_at=apporteur_old.created_at,
                 updated_at=apporteur_old.updated_at,
                 deleted_at=apporteur_old.deleted_at,
-                added_by_id=apporteur_old.added_by_id,
+                added_by=apporteur_old.added_by,
             )
 
         # Suppression des apporteurs polices
         if apporteur == "NON":
-            ApporteurPolice.objects.filter(police_id=police_id).delete()
+            ApporteurPolice.objects.filter(police_id=police_id).update(statut_validite="SUPPRIME")
 
         # Enregistrer les intermédiaires si existants
         intermediaires = request.POST.getlist('intermediaires')
@@ -1454,15 +1472,17 @@ def modifier_police(request, police_id):
                 # Insérer la ligne si renseignée
                 if apporteur_id > 0 and base_calcul > 0 and (taux_com_an > 0 or taux_com_renew > 0):
                     apporteur_existant = ApporteurPolice.objects.filter(police_id=police_old.id, apporteur_id=apporteur_id,
+                                                                        added_by=request.user,
                                                                         base_calcul_id=base_calcul,
                                                                         taux_com_affaire_nouvelle=taux_com_an,
                                                                         taux_com_renouvellement=taux_com_renew).first()
                     if not apporteur_existant:
                         # Vider la table intermédiaire pour ajouter les nouveaux
-                        ApporteurPolice.objects.filter(police_id=police_id).update(
+                        ApporteurPolice.objects.filter(police_id=police_id).update(added_by=request.user,
                             statut_validite=StatutValidite.SUPPRIME, updated_at=datetime.now(tz=timezone.utc))
 
                         ApporteurPolice.objects.create(police_id=police_old.id, apporteur_id=apporteur_id,
+                                                       added_by=request.user,
                                                        base_calcul_id=base_calcul,
                                                        taux_com_affaire_nouvelle=taux_com_an,
                                                        taux_com_renouvellement=taux_com_renew, ).save()
@@ -1587,8 +1607,8 @@ def modifier_police(request, police_id):
                 # Créer une ligne dans période de couverture
                 periode_couverture = PeriodeCouverture.objects.create(
                     police_id=police_old.id,
-                    date_debut_effet=mouvement_police.date_effet if mouvement_police.date_effet else None,
-                    date_fin_effet=mouvement_police.date_fin_periode_garantie if mouvement_police.date_fin_periode_garantie else None,
+                    date_debut_effet=date_debut_effet if date_debut_effet else None,
+                    date_fin_effet=date_fin_effet if date_fin_effet else (date_fin_police if date_fin_police else None),
                 ).save()
 
                 # Mouvement de retrait d'un aliment
@@ -1675,7 +1695,7 @@ def modifier_police(request, police_id):
             garantie=garantie_reponse if garantie_reponse else dernier_historique.garantie,
             date_souscription=date_debut_effet if date_debut_effet else None,
             date_debut_effet=date_debut_effet if date_debut_effet else None,
-            date_fin_effet=date_debut_effet if date_debut_effet else (date_fin_police if date_fin_police else None),
+            date_fin_effet=date_fin_effet if date_fin_effet else None,
             date_fin_police=date_fin_police if date_fin_police else None,
             preavis_de_resiliation=preavis_de_resiliation,
             mode_renouvellement=mode_renouvellement,
@@ -1714,7 +1734,7 @@ def modifier_police(request, police_id):
             date_souscription=datetime.now(),
             preavis_de_resiliation=preavis_de_resiliation,
             date_debut_effet=date_debut_effet if date_debut_effet else None,
-            date_fin_effet=date_debut_effet if date_debut_effet else (date_fin_police if date_fin_police else None),
+            date_fin_effet=date_fin_effet if date_fin_effet else None,
             date_fin_police=date_fin_police if date_fin_police else None,
             date_prochaine_facture=date_prochaine_facture if date_prochaine_facture else None,
             participation=participation,
@@ -3526,7 +3546,7 @@ def add_quittance(request, police_id):
         police_dernier_mouvement = MouvementPolice.objects.filter(police=police, statut_validite=StatutValidite.VALIDE, motif__code__in=["AN", "RENOUV"]).last()
 
         #get apporteur : un seul apporteur par police
-        apporteurs_polices = ApporteurPolice.objects.filter(police=police)
+        apporteurs_polices = ApporteurPolice.objects.filter(police=police, statut_validite=StatutValidite.VALIDE)
 
         today = datetime.now(tz=timezone.utc)
 

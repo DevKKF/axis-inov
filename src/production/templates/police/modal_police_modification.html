@@ -521,7 +521,7 @@
 												<select class="form-control tags-multiple vehicule_champ_obligatoire_modification" name="categorie_id" id="categorie_id" autocomplete="off">
 													<option value="">Choisir</option>
 													{% for cat in catgories %}
-														<option value="{{ cat.id }}" {% if cat.id == mono_vehicule.vehicule.carosserie_id %} selected {% endif %}>{{ cat.libelle }}</option>
+														<option value="{{ cat.id }}" {% if cat.id == mono_vehicule.vehicule.categorie_vehicule_id %} selected {% endif %}>{{ cat.libelle }}</option>
 													{% endfor %}
 												</select>
 											</div>
@@ -913,13 +913,13 @@
 										<div class="form-group row">
 											<label class="col-sm-6 col-form-label">Taux com Courtage AN. <span class="required">*</span></label>
 											<div class="col-sm-6">
-												<input type="text" class="form-control money_field_avec_virgule calculs_handler_police_modification" name="taux_com_courtage" id="taux_com_courtage_modification" autocomplete="off" value="{{ dernier_historique.taux_com_courtage|default_if_none:'0' }}" required readonly0/>
+												<input type="text" class="form-control money_field_avec_virgule calculs_handler_police_modification" name="taux_com_courtage" id="taux_com_courtage" autocomplete="off" value="{{ dernier_historique.taux_com_courtage|default_if_none:'' }}" required>
 											</div>
 										</div>
 										<div class="form-group row">
 											<label class="col-sm-6 col-form-label">Taux com Courtage Terme <span class="required"></span></label>
 											<div class="col-sm-6">
-												<input type="text" class="form-control money_field_avec_virgule calculs_handler_police_modification" name="taux_com_courtage_terme" id="taux_com_courtage_terme_modification" autocomplete="off" value="{{ dernier_historique.taux_com_courtage_terme|default_if_none:'0' }}" readonly0/>
+												<input type="text" class="form-control money_field_avec_virgule calculs_handler_police_modification" name="taux_com_courtage_terme" id="taux_com_courtage_terme" autocomplete="off" value="{{ dernier_historique.taux_com_courtage_terme|default_if_none:'' }}">
 											</div>
 										</div>
 										<div class="form-group row">

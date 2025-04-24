@@ -794,7 +794,6 @@ def add_police(request, client_id):
             if mode_renouvellement == "Tacite Reconduction":
                 date_fin_effet = date_fin_effet
                 date_fin_police = None
-                pass
             if mode_renouvellement == "Sans Tacite Reconduction":
                 date_fin_effet = None
                 date_fin_police = date_fin_police
@@ -956,7 +955,6 @@ def add_police(request, client_id):
                     capital=capital if capital else None,
                 )
                 police_garantie.save()
-
 
             police_assureur = PoliceAssureur(
                 client_id=client_id,
@@ -1159,8 +1157,6 @@ def add_police(request, client_id):
                 # Vider les aliements enregistrer en session
                 if 'aliments' in request.session:
                     del request.session['aliments']
-
-                print("Aliment transmis :", aliments)
 
             elif produit_code.code in ["50001", "50002"]:
                 marchandise_created = Marchandise(
@@ -1404,6 +1400,10 @@ def modifier_police(request, police_id):
         if mode_renouvellement == "Sans Tacite Reconduction":
             date_fin_effet = None
             date_fin_police = date_fin_police
+
+        print('date_debut_effet : ', date_debut_effet)
+        print('date_fin_effet : ', date_fin_effet)
+        print('date_fin_police : ', date_fin_police)
 
         dernier_historique = HistoriquePolice.objects.filter(police_id=police_old.id).order_by('-date_du_jour').first()
 
@@ -3047,6 +3047,30 @@ def polices_restantes(request, police_id):
 def ajax_infos_compagnie(request, compagnie_id, produit_id):
     param_produit_compagnie = ParamProduitCompagnie.objects.filter(compagnie_id=compagnie_id,
                                                                    produit_id=produit_id).first()
+    print(param_produit_compagnie)
+    if (param_produit_compagnie is not None):
+        response = {
+            'id': param_produit_compagnie.compagnie.id,
+            'code': param_produit_compagnie.compagnie.code,
+            'nom': param_produit_compagnie.compagnie.nom,
+            'taux_com_courtage': param_produit_compagnie.taux_com_courtage,
+            'taux_com_courtage_terme': param_produit_compagnie.taux_com_courtage_terme,
+        }
+
+    else:
+        response = {
+            'taux_com_courtage': '',
+            'taux_com_courtage_terme': '',
+            'taux_com_gestion': '',
+        }
+
+    return JsonResponse(response)
+
+
+@login_required
+# récupère le taux paramétré sur le produit en fonction de la compagnie
+def ajax_infos_compagnie_modification(request, compagnie_id, produit_id):
+    param_produit_compagnie = ParamProduitCompagnie.objects.filter(compagnie_id=compagnie_id, produit_id=produit_id).first()
     print(param_produit_compagnie)
     if (param_produit_compagnie is not None):
         response = {
@@ -7640,8 +7664,6 @@ class PoliceClientView(TemplateView):
             if 'aliments' in request.session:
                 del request.session['aliments']
 
-            print("Aliment transmis :", aliments)
-
             polices_data = []
             for contrat in polices:
                 # Récupérer le dernier historique
@@ -7673,7 +7695,7 @@ class PoliceClientView(TemplateView):
             for user in utilisateur:
                 if user.is_production:
                     productions.append(user)
-            print('commercial id ', client.commercial_id)
+
             context_perso = {'client': client, 'contacts': contacts, 'polices': polices, 'quittances': quittances,
                              'acomptes': acomptes, 'typecompagnie': typecompagnie,
                              'filiales': filiales, 'documents': documents, 'types_documents': types_documents,
@@ -7727,8 +7749,7 @@ def get_compagnies(request):
     # Récupérer les paramètres de la requête
     type_id = request.GET.get('type_id')
     exclude_compagnie_id = request.GET.get('compagnie_id')
-    print("Compagnie choisie : ", exclude_compagnie_id)
-    print("Type de compagnie : ", type_id)
+
     # Vérifiez que le type_id est fourni
     if not type_id:
         return JsonResponse({'error': 'Type ID is required.'}, status=400)

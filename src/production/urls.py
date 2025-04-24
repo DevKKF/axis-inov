@@ -11,6 +11,7 @@ from .views import ClientsView, ExcelFileView, FormulesUniversellesView, Formule
 urlpatterns = [
     path('apporteurs/ajax_apporteurs', views.ajax_apporteurs, name='ajax_apporteurs'),
     path("compagnie/ajax_infos_compagnie/<int:compagnie_id>/<int:produit_id>/", views.ajax_infos_compagnie, name='ajax_infos_compagnie'),
+    path("compagnie/ajax_infos_compagnie_modification/<int:compagnie_id>/<int:produit_id>/", views.ajax_infos_compagnie_modification, name='ajax_infos_compagnie_modification'),
     path("ajax_produits/<int:branche_id>/", views.ajax_produits, name='ajax_produits'),
     path("modification_ajax_produits/<int:branche_id>/", views.modification_ajax_produits, name='modification_ajax_produits'),
     path("actes_by_rubrique/<int:rubrique_id>/", views.actes_by_rubrique, name='actes_by_rubrique'),

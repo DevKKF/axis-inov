@@ -10,6 +10,9 @@ git reset --hard origin/develop
 #Liste des branches distantes :
 git branch -r
 
+#Ouverture du dossier d'accès pour exécution de commande :
+cd src
+
 #Commande de récupération du css et js :
 python manage.py collectstatic
 

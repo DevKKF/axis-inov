@@ -9467,13 +9467,18 @@ def polices_en_cours_datatable(request):
         if not c.client.prenoms: c.client.prenoms = ''
         if not c.client.code: c.client.code = ''
 
+        if c.date_fin_effet:
+            date_fin = c.date_fin_effet
+        else:
+            date_fin = c.date_fin_police
+
         data.append({
             "id": c.id,
             "num_police": numero_html,
             "nom_client": c.client.nom + ' ' + c.client.prenoms+ '- (' + c.client.code + ')',
             "nom_produit": c.produit.nom if c.produit else "",
             "date_debut": c.avenant_encours.date_effet if c.avenant_encours else "",
-            "date_fin": c.avenant_encours.date_fin_periode_garantie if c.avenant_encours else "",
+            "date_fin": date_fin if date_fin else "",
             "actions": actions_html,
         })
 
@@ -9590,13 +9595,18 @@ def polices_arrivant_echeance_datatable(request):
         if not c.client.prenoms: c.client.prenoms = ''
         if not c.client.code: c.client.code = ''
 
+        if c.date_fin_effet:
+            date_fin = c.date_fin_effet
+        else:
+            date_fin = c.date_fin_police
+
         data.append({
             "id": c.id,
             "num_police": numero_html,
             "nom_client": c.client.nom + ' ' + c.client.prenoms+ '- (' + c.client.code + ')',
             "nom_produit": c.produit.nom if c.produit else "",
             "date_debut": c.avenant_encours.date_effet if c.avenant_encours else "",
-            "date_fin": c.avenant_encours.date_fin_periode_garantie if c.avenant_encours else "",
+            "date_fin": date_fin if date_fin else "",
             "actions": actions_html,
         })
 
@@ -9710,13 +9720,18 @@ def polices_non_renouvellees_resiliees_datatable(request):
         if not c.client.prenoms: c.client.prenoms = ''
         if not c.client.code: c.client.code = ''
 
+        if c.date_fin_effet:
+            date_fin = c.date_fin_effet
+        else:
+            date_fin = c.date_fin_police
+
         data.append({
             "id": c.id,
             "num_police": numero_html,
             "nom_client": c.client.nom + ' ' + c.client.prenoms+ '- (' + c.client.code + ')',
             "nom_produit": c.produit.nom if c.produit else "",
             "date_debut": c.avenant_encours.date_effet if c.avenant_encours else "",
-            "date_fin": c.avenant_encours.date_fin_periode_garantie if c.avenant_encours else "",
+            "date_fin": date_fin if date_fin else "",
             "actions": actions_html,
         })
 

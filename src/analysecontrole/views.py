@@ -1150,10 +1150,12 @@ def get_clientbycommercial(request):
 
 def get_client_by_commercial(request):
     commercial_id = request.GET.get('commercial_id')
+    search_mode_renouvellement = request.GET.get("mode_renouvellement")
+    search_date_debut = request.GET.get("date_debut")
+    search_date_fin = request.GET.get("date_fin")
+
     date_for_calcul = datetime.today().date()
     n_90_days = date_for_calcul + timedelta(days=90)
-    total_ht = 0
-    total_com_courtage = 0
     etat_police = ""
     polices_par_commercial = {}
 
@@ -1161,8 +1163,14 @@ def get_client_by_commercial(request):
         commercials = User.objects.all().order_by('first_name')
 
         for commercial in commercials:
-            commercial_total_ht = 0
-            commercial_com_courtage = 0
+
+            """polices_qs = Police.objects.filter(
+                id__in=Police.objects.filter(
+                    client__isnull=False,
+                    historique_polices__isnull=False,
+                    commercial_id=commercial.id
+                ).values_list('id', flat=True)
+            ).distinct()"""
 
             polices_qs = Police.objects.filter(
                 id__in=Police.objects.filter(
@@ -1170,36 +1178,44 @@ def get_client_by_commercial(request):
                     historique_polices__isnull=False,
                     commercial_id=commercial.id
                 ).values_list('id', flat=True)
-            ).distinct()
+            )
+
+            if search_mode_renouvellement:
+                polices_qs = polices_qs.filter(historique_polices__mode_renouvellement__exact=search_mode_renouvellement)
+                pprint(polices_qs)
+            if search_date_debut:
+                polices_qs = polices_qs.filter(historique_polices__date_debut_effet__gte=search_date_debut)
+
+            if search_date_fin:
+                polices_qs = polices_qs.filter(historique_polices__date_fin_effet__lte=search_date_fin)
+
+            polices_qs = polices_qs.distinct()
 
             polices = []
             for plc in polices_qs:
                 dernier_historique = HistoriquePolice.objects.filter(police_id=plc.id).order_by('-date_du_jour').first()
                 dernier_mouvement = MouvementPolice.objects.filter(police_id=plc.id).order_by('-created_at').first()
 
-                if dernier_historique:
-                    total_ht += dernier_historique.prime_ht
-                    total_com_courtage += dernier_historique.commission_courtage
-                    commercial_total_ht += dernier_historique.prime_ht
-                    commercial_com_courtage += dernier_historique.commission_courtage
-
                 if dernier_mouvement and dernier_mouvement.date_fin_periode_garantie:
                     date_fin = dernier_mouvement.date_fin_periode_garantie
                     difference_jours = (date_fin - date_for_calcul).days
 
                     if difference_jours > 90:
-                        etat_police = plc.etat_police
+                        etat_police = f'<span class="badge badge-success">{plc.etat_police}</span>'
                     elif difference_jours > 0:
                         nombre_total_mois = difference_jours // 30
                         jours_restants = difference_jours % 30
-                        etat_police = "A renouveler"
+                        etat_police = f'<span class="badge badge-warning">A renouveler</span>'
                     else:
                         difference_jours = abs(difference_jours)
                         nombre_total_mois = difference_jours // 30
                         jours_ecoules = difference_jours % 30
-                        etat_police = "NON renouvelé"
+                        etat_police = f'<span class="badge badge-danger">NON renouvelé</span>'
                 else:
-                    etat_police = plc.etat_police if dernier_mouvement else ''
+                    if plc.etat_police == "En cours":
+                        etat_police = f'<span class="badge badge-success">{plc.etat_police}</span>' if dernier_mouvement else ''
+                    else:
+                        etat_police = f'<span class="badge badge-danger">{plc.etat_police}</span>' if dernier_mouvement else ''
 
                 detail_url = reverse('police.details', args=[plc.id])
                 numero_html = f'<a href="{detail_url}" class="text-center bouton_action" style="color:#F16623;" target="_blank">{plc.numero}</a>&nbsp;&nbsp;'
@@ -1220,8 +1236,6 @@ def get_client_by_commercial(request):
             if polices:
                 polices_par_commercial[commercial.first_name + ' ' + commercial.last_name] = {
                     "polices": polices,
-                    "commercial_total_ht": money_field(commercial_total_ht),
-                    "commercial_com_courtage": money_field(commercial_com_courtage)
                 }
 
         # Récupération des polices sans commercial
@@ -1234,18 +1248,10 @@ def get_client_by_commercial(request):
         ).distinct()
 
         autres_polices = []
-        total_ht_autres = 0
-        total_com_courtage_autres = 0
 
         for plc in polices_sans_commercial_qs:
             dernier_historique = HistoriquePolice.objects.filter(police_id=plc.id).order_by('-date_du_jour').first()
             dernier_mouvement = MouvementPolice.objects.filter(police_id=plc.id).order_by('-created_at').first()
-
-            if dernier_historique:
-                total_ht += dernier_historique.prime_ht
-                total_com_courtage += dernier_historique.commission_courtage
-                total_ht_autres += dernier_historique.prime_ht
-                total_com_courtage_autres += dernier_historique.commission_courtage
 
             # Détermination du statut
             if dernier_mouvement and dernier_mouvement.date_fin_periode_garantie:
@@ -1253,18 +1259,21 @@ def get_client_by_commercial(request):
                 difference_jours = (date_fin - date_for_calcul).days  # Peut être négatif
 
                 if difference_jours > 90:
-                    etat_police = plc.etat_police  # Police active normalement
+                    etat_police = f'<span class="badge badge-success">{plc.etat_police}</span>'
                 elif difference_jours > 0:
                     nombre_total_mois = difference_jours // 30
                     jours_restants = difference_jours % 30
-                    etat_police = "A renouveler"
+                    etat_police = f'<span class="badge badge-warning">A renouveler</span>'
                 else:
-                    difference_jours = abs(difference_jours)  # Convertir en positif
+                    difference_jours = abs(difference_jours)
                     nombre_total_mois = difference_jours // 30
                     jours_ecoules = difference_jours % 30
-                    etat_police = "NON renouvelé"
+                    etat_police = f'<span class="badge badge-danger">NON renouvelé</span>'
             else:
-                etat_police = plc.etat_police if dernier_mouvement else ''
+                if plc.etat_police == "En cours":
+                    etat_police = f'<span class="badge badge-success">{plc.etat_police}</span>' if dernier_mouvement else ''
+                else:
+                    etat_police = f'<span class="badge badge-danger">{plc.etat_police}</span>' if dernier_mouvement else ''
 
             detail_url = reverse('police.details', args=[plc.id])
             numero_html = f'<a href="{detail_url}" class="text-center bouton_action" style="color:#F16623;" target="_blank">{plc.numero}</a>&nbsp;&nbsp;'
@@ -1285,8 +1294,6 @@ def get_client_by_commercial(request):
         if autres_polices:
             polices_par_commercial["Aucun commercial"] = {
                 "polices": autres_polices,
-                "commercial_total_ht": money_field(total_ht_autres),
-                "commercial_com_courtage": money_field(total_com_courtage_autres)
             }
 
     elif commercial_id == "AUCUN":
@@ -1300,18 +1307,10 @@ def get_client_by_commercial(request):
         ).distinct()
 
         autres_polices = []
-        total_ht_autres = 0
-        total_com_courtage_autres = 0
 
         for plc in polices_sans_commercial_qs:
             dernier_historique = HistoriquePolice.objects.filter(police_id=plc.id).order_by('-date_du_jour').first()
             dernier_mouvement = MouvementPolice.objects.filter(police_id=plc.id).order_by('-created_at').first()
-
-            if dernier_historique:
-                total_ht += dernier_historique.prime_ht
-                total_com_courtage += dernier_historique.commission_courtage
-                total_ht_autres += dernier_historique.prime_ht
-                total_com_courtage_autres += dernier_historique.commission_courtage
 
             # Détermination du statut
             if dernier_mouvement and dernier_mouvement.date_fin_periode_garantie:
@@ -1319,18 +1318,21 @@ def get_client_by_commercial(request):
                 difference_jours = (date_fin - date_for_calcul).days  # Peut être négatif
 
                 if difference_jours > 90:
-                    etat_police = plc.etat_police  # Police active normalement
+                    etat_police = f'<span class="badge badge-success">{plc.etat_police}</span>'
                 elif difference_jours > 0:
                     nombre_total_mois = difference_jours // 30
                     jours_restants = difference_jours % 30
-                    etat_police = "A renouveler"
+                    etat_police = f'<span class="badge badge-warning">A renouveler</span>'
                 else:
-                    difference_jours = abs(difference_jours)  # Convertir en positif
+                    difference_jours = abs(difference_jours)
                     nombre_total_mois = difference_jours // 30
                     jours_ecoules = difference_jours % 30
-                    etat_police = "NON renouvelé"
+                    etat_police = f'<span class="badge badge-danger">NON renouvelé</span>'
             else:
-                etat_police = plc.etat_police if dernier_mouvement else ''
+                if plc.etat_police == "En cours":
+                    etat_police = f'<span class="badge badge-success">{plc.etat_police}</span>' if dernier_mouvement else ''
+                else:
+                    etat_police = f'<span class="badge badge-danger">{plc.etat_police}</span>' if dernier_mouvement else ''
 
             detail_url = reverse('police.details', args=[plc.id])
             numero_html = f'<a href="{detail_url}" class="text-center bouton_action" style="color:#F16623;" target="_blank">{plc.numero}</a>&nbsp;&nbsp;'
@@ -1351,14 +1353,11 @@ def get_client_by_commercial(request):
         if autres_polices:
             polices_par_commercial["Aucun commercial"] = {
                 "polices": autres_polices,
-                "commercial_total_ht": money_field(total_ht_autres),
-                "commercial_com_courtage": money_field(total_com_courtage_autres)
             }
 
     else:
         commercial = User.objects.filter(id=commercial_id).first()
 
-        commercial_total_ht = 0
         commercial_com_courtage = 0
 
         polices_qs = Police.objects.filter(
@@ -1376,32 +1375,29 @@ def get_client_by_commercial(request):
             dernier_historique = HistoriquePolice.objects.filter(police_id=plc.id).order_by('-date_du_jour').first()
             dernier_mouvement = MouvementPolice.objects.filter(police_id=plc.id).order_by('-created_at').first()
 
-            if dernier_historique:
-                total_ht += dernier_historique.prime_ht
-                total_com_courtage += dernier_historique.commission_courtage
-                commercial_total_ht += dernier_historique.prime_ht
-                commercial_com_courtage += dernier_historique.commission_courtage
-
             if dernier_mouvement and dernier_mouvement.date_fin_periode_garantie:
                 date_fin = dernier_mouvement.date_fin_periode_garantie
-                difference_jours = (date_fin - date_for_calcul).days  # Peut être négatif
+                difference_jours = (date_fin - date_for_calcul).days
 
                 if difference_jours > 90:
-                    etat_police = plc.etat_police  # Police active normalement
+                    etat_police = f'<span class="badge badge-success">{plc.etat_police}</span>'
                 elif difference_jours > 0:
                     nombre_total_mois = difference_jours // 30
                     jours_restants = difference_jours % 30
-                    etat_police = "A renouveler"
+                    etat_police = f'<span class="badge badge-warning">A renouveler</span>'
                 else:
-                    difference_jours = abs(difference_jours)  # Convertir en positif
+                    difference_jours = abs(difference_jours)
                     nombre_total_mois = difference_jours // 30
                     jours_ecoules = difference_jours % 30
-                    etat_police = "NON renouvelé"
+                    etat_police = f'<span class="badge badge-danger">NON renouvelé</span>'
             else:
-                etat_police = plc.etat_police if dernier_mouvement else ''
+                if plc.etat_police == "En cours":
+                    etat_police = f'<span class="badge badge-success">{plc.etat_police}</span>' if dernier_mouvement else ''
+                else:
+                    etat_police = f'<span class="badge badge-danger">{plc.etat_police}</span>' if dernier_mouvement else ''
 
             detail_url = reverse('police.details', args=[plc.id])
-            numero_html = f'<a href="{detail_url}" class="text-center bouton_action" style="color:#F16623;" target="_blank">{plc.numero}</a>&nbsp;&nbsp;'
+            numero_html = f'<a href="{detail_url}" class="text-center bouton_action" style="color:#F16623;" target="_blank">{plc.numero}</a>'
 
             polices.append({
                 'id': plc.id,
@@ -1418,14 +1414,10 @@ def get_client_by_commercial(request):
 
         polices_par_commercial[commercial.first_name +' '+ commercial.last_name] = {
             "polices": polices,
-            "commercial_total_ht": money_field(commercial_total_ht),
-            "commercial_com_courtage": money_field(commercial_com_courtage)
         }
 
     return JsonResponse({
         'polices_par_commercial': polices_par_commercial,
-        'total_ht': money_field(total_ht),
-        'total_com_courtage': money_field(total_com_courtage)
     })
 
 

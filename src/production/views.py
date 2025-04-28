@@ -1401,10 +1401,6 @@ def modifier_police(request, police_id):
             date_fin_effet = None
             date_fin_police = date_fin_police
 
-        print('date_debut_effet : ', date_debut_effet)
-        print('date_fin_effet : ', date_fin_effet)
-        print('date_fin_police : ', date_fin_police)
-
         dernier_historique = HistoriquePolice.objects.filter(police_id=police_old.id).order_by('-date_du_jour').first()
 
         # Historique apporteur police

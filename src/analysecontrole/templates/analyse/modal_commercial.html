@@ -32,7 +32,7 @@
 									</div>
 									<div class="col-md-3">
 										<span class="text-right" style="margin-top:5px;">Mode renouvellement : </span>
-										<select class="form-control" name="search_mode_renouvellement" id="search_mode_renouvellement" autocomplete="off" required>
+										<select class="form-control" name="search_mode_renouvellement" id="search_mode_renouvellement" autocomplete="off">
 											<option selected value="">Choisir</option>
 											<option value="{{ mode_renouvellement.TACITE_RECONDUCTION }}">{{ mode_renouvellement.TACITE_RECONDUCTION }}</option>
 											<option value="{{ mode_renouvellement.SANS_TACITE_RECONDUCTION }}">{{ mode_renouvellement.SANS_TACITE_RECONDUCTION }}</option>
@@ -62,7 +62,9 @@
 												<tr>
 													<th>Client</th>
 													<th>Numero</th>
+													<th width="10%">Date début</th>
 													<th width="10%">Date échéance</th>
+													<th width="12%">Mode de renouvellement</th>
 													<th width="7%">Statut</th>
 													<th width="10%">Date création</th>
 													<th width="12%">Date résiliation</th>
@@ -81,7 +83,7 @@
 				</div>
 				<div class="modal-footer justify-content-between">
 					<button type="button" class="btn btn-danger" data-dismiss="modal"><i class="fa fa-remove"></i> Retour</button>
-					<button type="button" id="btn_save_portefeuille_commercial" class="btn btn-info" style="display:none"><i class="fa fa-check-circle"></i> Importer la requête</button>
+					<button type="button" id="btn_save_portefeuille_commercial" class="btn btn-info"><i class="fa fa-check-circle"></i> Importer la requête</button>
 				</div>
 			</div>
 			</form>
@@ -89,8 +91,101 @@
 	</div>
 </div>
 
+<!--script>
+	$(document).ready(function () {
+		$('#bouton_search_police_commercial').on('click', function () {
+			const commercial_id = $('#search_commercial').val();
+			const mode_renouvellement = $('#search_mode_renouvellement').val();
+			const date_debut = $('#search_date_debut').val();
+			const date_fin = $('#search_date_fin').val();
+
+			$('#polices_commercial').prepend('<div id="loading-msg" class="text-center mb-3 text-primary">Chargement en cours...</div>');
+
+			$.ajax({
+				url: "{% url 'get_client_by_commercial' %}",
+				type: "GET",
+				data: {
+					commercial_id: commercial_id,
+					mode_renouvellement: mode_renouvellement,
+					date_debut: date_debut,
+					date_fin: date_fin,
+				},
+				success: function (data) {
+					$('#loading-msg').remove();
+
+					const formattedData = [];
+
+					if (Object.keys(data.polices_par_commercial).length === 0) {
+						const table = $('#table_polices_commercial').DataTable();
+						table.clear().draw();
+						return;
+					}
+
+					$.each(data.polices_par_commercial, function (nom_commercial, info) {
+						$.each(info.polices, function (i, police) {
+							formattedData.push([
+								`${police.nom} ${police.prenoms}`,
+								police.numero,
+								police.date_debut_effet || '',
+								police.date_fin_effet || '',
+								police.mode_renouvellement || '',
+								police.statut || '',
+								police.date_creation || '',
+								police.date_resiliation || '',
+								police.prime_ht || '',
+								police.commission_courtage || ''
+							]);
+						});
+					});
+
+					if (!$.fn.DataTable.isDataTable('#table_polices_commercial')) {
+						$('#table_polices_commercial').DataTable({
+							data: formattedData,
+							columns: [
+								{ title: "Client" },
+								{ title: "Numéro" },
+								{ title: "Date début" },
+								{ title: "Date échéance" },
+								{ title: "Mode de renouvellement" },
+								{ title: "Statut" },
+								{ title: "Date création" },
+								{ title: "Date résiliation" },
+								{ title: "Prime HT" },
+								{ title: "Com Courtage" }
+							],
+							language: {
+								url: "../../static/admin_custom/js/French.json"
+							},
+							lengthMenu: [
+								[100, 250, 500, 1000, -1], [100, 250, 500, 1000, "Tout"]
+							],
+							paging: true,
+							searching: true,
+							lengthChange: true,
+							bSort: false
+						});
+					} else {
+						const table = $('#table_polices_commercial').DataTable();
+						table.clear();
+						table.rows.add(formattedData);
+						table.draw();
+					}
+				},
+				error: function (xhr, status, error) {
+					$('#loading-msg').remove();
+					$('#message-error').text("Erreur lors de la récupération des données.").show();
+				}
+			});
+		});
+	});
+</script-->
+
 <script>
 $(document).ready(function () {
+
+    // Désactiver le bouton au chargement
+    $('#btn_save_portefeuille_commercial').prop('disabled', true);
+
     $('#bouton_search_police_commercial').on('click', function () {
         const commercial_id = $('#search_commercial').val();
         const mode_renouvellement = $('#search_mode_renouvellement').val();
@@ -116,6 +211,9 @@ $(document).ready(function () {
                 if (Object.keys(data.polices_par_commercial).length === 0) {
                     const table = $('#table_polices_commercial').DataTable();
                     table.clear().draw();
+
+                    // Aucun résultat => bouton désactivé
+                    $('#btn_save_portefeuille_commercial').prop('disabled', true);
                     return;
                 }
 
@@ -124,7 +222,9 @@ $(document).ready(function () {
                         formattedData.push([
                             `${police.nom} ${police.prenoms}`,
                             police.numero,
+                            police.date_debut_effet || '',
                             police.date_fin_effet || '',
+                            police.mode_renouvellement || '',
                             police.statut || '',
                             police.date_creation || '',
                             police.date_resiliation || '',
@@ -140,7 +240,9 @@ $(document).ready(function () {
                         columns: [
                             { title: "Client" },
                             { title: "Numéro" },
+                            { title: "Date début" },
                             { title: "Date échéance" },
+                            { title: "Mode de renouvellement" },
                             { title: "Statut" },
                             { title: "Date création" },
                             { title: "Date résiliation" },
@@ -151,7 +253,7 @@ $(document).ready(function () {
                             url: "../../static/admin_custom/js/French.json"
                         },
                         lengthMenu: [
-                            [10, 25, 50, 100, -1], [10, 25, 50, 100, "Tout"]
+                            [100, 250, 500, 1000, -1], [100, 250, 500, 1000, "Tout"]
                         ],
                         paging: true,
                         searching: true,
@@ -164,13 +266,116 @@ $(document).ready(function () {
                     table.rows.add(formattedData);
                     table.draw();
                 }
+
+                // Des résultats => bouton activé
+                $('#btn_save_portefeuille_commercial').prop('disabled', false);
             },
             error: function (xhr, status, error) {
                 $('#loading-msg').remove();
                 $('#message-error').text("Erreur lors de la récupération des données.").show();
+
+                // En cas d'erreur => désactiver aussi par sécurité
+                $('#btn_save_portefeuille_commercial').prop('disabled', true);
             }
         });
     });
-});
 
+    // Code pour l'importation au clic sur le bouton
+    $(document).on('click', "#btn_save_portefeuille_commercial", function () {
+		let formulaire = $('#form_add_portefeuille_commercial');
+		let href = formulaire.attr('action');
+
+		$.validator.setDefaults({ ignore: [] });
+
+		let formData = new FormData();
+
+		if (formulaire.valid()) {
+
+			let n = noty({
+				text: 'Voulez-vous vraiment importer le portefeuille ?',
+				type: 'warning',
+				dismissQueue: true,
+				layout: 'center',
+				theme: 'defaultTheme',
+				buttons: [
+					{
+						addClass: 'btn btn-primary', text: 'OUI', onClick: function ($noty) {
+							$noty.close();
+
+							// Récupérer les données du formulaire
+							let data_serialized = formulaire.serialize();
+							$.each(data_serialized.split('&'), function (index, elem) {
+								let vals = elem.split('=');
+								let key = vals[0];
+								let valeur = decodeURIComponent(vals[1].replace(/\+/g, ' '));
+								formData.append(key, valeur);
+							});
+
+							// 🔥 Ajouter manuellement les champs de recherche au formData
+							formData.append('search_commercial', $('#search_commercial').val());
+							formData.append('search_mode_renouvellement', $('#search_mode_renouvellement').val());
+							formData.append('search_date_debut', $('#search_date_debut').val());
+							formData.append('search_date_fin', $('#search_date_fin').val());
+
+							$.ajax({
+								type: 'post',
+								url: href,
+								data: formData,
+								processData: false,
+								contentType: false,
+								success: function (response) {
+									if (response.statut == 1) {
+										let fileContent = response.data.file_base64;
+										let filename = response.data.filename;
+
+										let link = document.createElement("a");
+										link.href = "data:application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;base64," + fileContent;
+										link.download = filename;
+
+										document.body.appendChild(link);
+										link.click();
+										document.body.removeChild(link);
+
+										notifySuccess(response.message, function () {
+											location.reload();
+										});
+									}
+									else if (response.statut == 0){
+										notifyWarning(response.message);
+									}
+									else {
+										let errors = JSON.parse(JSON.stringify(response.errors));
+										let errors_list_to_display = '';
+										for (field in errors) {
+											errors_list_to_display += '- ' + ucfirst(field) + ' : ' + errors[field] + '<br/>';
+										}
+
+										$('#modal-commercial .alert .message').html(errors_list_to_display);
+										$('#modal-commercial .alert').fadeTo(2000, 500).slideUp(500).removeClass('alert-success').addClass('alert-warning');
+									}
+								},
+								error: function (request, status, error) {
+									notifyWarning("Erreur lors de l'enregistrement");
+								}
+							});
+						}
+					},
+					{
+						addClass: 'btn btn-danger', text: 'Annuler', onClick: function ($noty) {
+							$noty.close();
+						}
+					}
+				]
+			});
+
+		} else {
+			$('label.error').css({ display: 'none', height: '0px' }).removeClass('error').text('');
+			let validator = formulaire.validate();
+			$.each(validator.errorMap, function (index, value) {
+				console.log('Id: ' + index + ' Message: ' + value);
+			});
+			notifyWarning('Veuillez renseigner correctement le formulaire');
+		}
+	});
+});
 </script>

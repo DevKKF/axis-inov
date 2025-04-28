@@ -206,10 +206,6 @@ class Police(models.Model):
 
     def periode_couverture_encours_atdate(self, date_prise_en_charge=None):
         # Ajouter date_survenance - quand les sinistres seront saisi par les gestionnaires
-        pprint("TEST____________")
-        pprint("date_prise_en_charge")
-        pprint(date_prise_en_charge)
-        print(date_prise_en_charge)
         try:
 
             query = Q(police_id=self.id, date_debut_effet__date__lte=date_prise_en_charge) & (
@@ -218,9 +214,6 @@ class Police(models.Model):
             periode_couverture = PeriodeCouverture.objects.filter(statut_validite=StatutValidite.VALIDE).filter(
                 query).latest('id')  # remplacer statut=ACTIF par statut_validite=VALIDE
 
-            pprint("periode_couverture")
-            pprint(periode_couverture)
-            pprint(periode_couverture.pk)
 
             return periode_couverture
 
@@ -232,8 +225,6 @@ class Police(models.Model):
         date_du_jour = timezone.now().date()
 
         # date_du_jour = datetime.datetime.now(tz=timezone.utc).date()
-        pprint("date_du_jour")
-        pprint(date_du_jour)
         # try:
 
         query_cdt_dates = Q(date_effet__lte=date_du_jour) & (
@@ -246,9 +237,6 @@ class Police(models.Model):
             mouvement_avenants.filter(query_cdt_dates)
 
         mouvement_avenant = mouvement_avenants.latest('id')
-
-        pprint("mouvement_avenant")
-        pprint(len(mouvement_avenants))
 
         return mouvement_avenant
 

@@ -19,7 +19,7 @@
 						<div class="tab-pane fade show active mt-3" id="identity" role="tabpanel" aria-labelledby="identity-tab">
 							<div class="row" style="display:none__;background:#CCCCCC;padding:10px;border-bottom:1px solid #eee;padding-bottom:10px;margin-bottom:10px;">
 								<div class="col-12 col-md-12 col-sm-12 row">
-									<div class="col-md-4">
+									<div class="col-md-5">
 										<span class="text-right" style="margin-top:5px;">Commercial : </span>
 										<select class="form-control tags-multiple" name="search_commercial" id="search_commercial" style="border:1px solid rgba(0, 0, 0, 0.3);">
 											<option value="">Choisir</option>
@@ -39,16 +39,19 @@
 										</select>
 									</div>
 									<div class="col-md-2">
+										<button type="button" class="btn btn-sm btn-primary btn-block mt-30" id="bouton_search_police_commercial"><i class="fa fa-search"></i> Rechercher</button>
+									</div>
+									<div class="col-md-2">
+										<button type="button" id="btn_save_portefeuille_commercial" style="margin-left:15px" class="btn btn-sm btn-info btn-block mt-30"><i class="fa fa-check-circle"></i> Exporter vers Excel</button>
+									</div>
+									<!--div class="col-md-2">
 										<span class="text-right" style="margin-top:5px;">Date début : </span>
 										<input id="search_date_debut" class="form-control" type="date" name="search_date_debut" style="border-radius:3px;border:1px solid rgba(0, 0, 0, 0.3);text-transform:uppercase;">
 									</div>
 									<div class="col-md-2">
 										<span class="text-right" style="margin-top:5px;">Date fin : </span>
 										<input id="search_date_fin" class="form-control" type="date" name="search_date_fin" style="border-radius:3px;border:1px solid rgba(0, 0, 0, 0.3);text-transform:uppercase;">
-									</div>
-									<div class="col-md-1">
-										<button type="button" class="btn btn-sm btn-primary btn-block mt-30" id="bouton_search_police_commercial"><i class="fa fa-search"></i> </button>
-									</div>
+									</div-->
 								</div>
 							</div>
 							<div class="row">
@@ -62,6 +65,7 @@
 												<tr>
 													<th>Client</th>
 													<th>Numero</th>
+													<th>Produit</th>
 													<th width="10%">Date début</th>
 													<th width="10%">Date échéance</th>
 													<th width="12%">Mode de renouvellement</th>
@@ -83,7 +87,7 @@
 				</div>
 				<div class="modal-footer justify-content-between">
 					<button type="button" class="btn btn-danger" data-dismiss="modal"><i class="fa fa-remove"></i> Retour</button>
-					<button type="button" id="btn_save_portefeuille_commercial" class="btn btn-info"><i class="fa fa-check-circle"></i> Importer la requête</button>
+					<!--button type="button" id="btn_save_portefeuille_commercial" class="btn btn-info"><i class="fa fa-check-circle"></i> Importer la requête</button-->
 				</div>
 			</div>
 			</form>
@@ -118,6 +122,16 @@
 
 					const formattedData = [];
 
+					console.log("commercial_id", commercial_id);
+
+					// Vider le tableau si l'option "Choisir" est sélectionnée
+					if (commercial_id === "") {
+						const table = $('#table_polices_commercial').DataTable();
+						table.clear().draw();
+						$('#btn_save_portefeuille_commercial').prop('disabled', true);
+						return;
+					}
+
 					if (Object.keys(data.polices_par_commercial).length === 0) {
 						const table = $('#table_polices_commercial').DataTable();
 						table.clear().draw();
@@ -135,6 +149,7 @@
 								formattedData.push([
 									`${police.nom} ${police.prenoms}`,
 									police.numero,
+									police.produit,
 									police.date_debut_effet || '',
 									police.date_fin_effet || '',
 									police.mode_renouvellement || '',
@@ -161,6 +176,7 @@
 							columns: [
 								{ title: "Client" },
 								{ title: "Numéro" },
+								{ title: "Produit" },
 								{ title: "Date début" },
 								{ title: "Date échéance" },
 								{ title: "Mode de renouvellement" },

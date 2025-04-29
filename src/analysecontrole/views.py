@@ -1117,7 +1117,7 @@ def add_portefeuille_commercial(request):
 
 
 # Chargement des polices liées au commercial
-def get_client_by_commercial(request):
+def getclient_by_commercial(request):
     commercial_id = request.GET.get('commercial_id')
     search_mode_renouvellement = request.GET.get("mode_renouvellement")
     search_date_debut = request.GET.get("date_debut")
@@ -1189,17 +1189,15 @@ def get_client_by_commercial(request):
                     'nom': plc.client.nom if plc.client else '',
                     'prenoms': plc.client.prenoms if plc.client else '',
                     'numero': numero_html,
+                    'produit': plc.produit.nom,
                     'date_debut_effet': plc.date_debut_effet.strftime("%d/%m/%Y") if plc.date_debut_effet else '',
-                    'date_fin_effet': plc.date_fin_effet.strftime("%d/%m/%Y") if plc.date_fin_effet else (
-                        plc.date_fin_police.strftime("%d/%m/%Y") if plc.date_fin_police else None),
+                    'date_fin_effet': plc.date_fin_effet.strftime("%d/%m/%Y") if plc.date_fin_effet else (plc.date_fin_police.strftime("%d/%m/%Y") if plc.date_fin_police else None),
                     'date_creation': plc.created_at.strftime("%d/%m/%Y") if plc.created_at else '',
-                    'date_resiliation': dernier_mouvement.date_effet.strftime(
-                        "%d/%m/%Y") if plc.etat_police == "Résilié" and dernier_mouvement else '',
+                    'date_resiliation': dernier_mouvement.date_effet.strftime("%d/%m/%Y") if plc.etat_police == "Résilié" and dernier_mouvement else '',
                     'statut': etat_police,
                     'mode_renouvellement': dernier_historique.mode_renouvellement if dernier_historique else '',
                     'prime_ht': money_field(dernier_historique.prime_ht) if dernier_historique else '',
-                    'commission_courtage': money_field(
-                        dernier_historique.commission_courtage) if dernier_historique else '',
+                    'commission_courtage': money_field(dernier_historique.commission_courtage) if dernier_historique else '',
                 })
 
             if polices:
@@ -1262,17 +1260,15 @@ def get_client_by_commercial(request):
                 'nom': plc.client.nom if plc.client else '',
                 'prenoms': plc.client.prenoms if plc.client else '',
                 'numero': numero_html,
+                'produit': plc.produit.nom,
                 'date_debut_effet': plc.date_debut_effet.strftime("%d/%m/%Y") if plc.date_debut_effet else '',
-                'date_fin_effet': plc.date_fin_effet.strftime("%d/%m/%Y") if plc.date_fin_effet else (
-                    plc.date_fin_police.strftime("%d/%m/%Y") if plc.date_fin_police else None),
+                'date_fin_effet': plc.date_fin_effet.strftime("%d/%m/%Y") if plc.date_fin_effet else (plc.date_fin_police.strftime("%d/%m/%Y") if plc.date_fin_police else None),
                 'date_creation': plc.created_at.strftime("%d/%m/%Y") if plc.created_at else '',
-                'date_resiliation': dernier_mouvement.date_effet.strftime(
-                    "%d/%m/%Y") if plc.etat_police == "Résilié" and dernier_mouvement else '',
+                'date_resiliation': dernier_mouvement.date_effet.strftime("%d/%m/%Y") if plc.etat_police == "Résilié" and dernier_mouvement else '',
                 'statut': etat_police,
                 'mode_renouvellement': dernier_historique.mode_renouvellement if dernier_historique else '',
                 'prime_ht': money_field(dernier_historique.prime_ht) if dernier_historique else '',
-                'commission_courtage': money_field(
-                    dernier_historique.commission_courtage) if dernier_historique else '',
+                'commission_courtage': money_field(dernier_historique.commission_courtage) if dernier_historique else '',
             })
 
         polices_par_commercial["Aucun commercial"] = {
@@ -1334,17 +1330,15 @@ def get_client_by_commercial(request):
                 'nom': plc.client.nom if plc.client else '',
                 'prenoms': plc.client.prenoms if plc.client else '',
                 'numero': numero_html,
+                'produit': plc.produit.nom,
                 'date_debut_effet': plc.date_debut_effet.strftime("%d/%m/%Y") if plc.date_debut_effet else '',
-                'date_fin_effet': plc.date_fin_effet.strftime("%d/%m/%Y") if plc.date_fin_effet else (
-                    plc.date_fin_police.strftime("%d/%m/%Y") if plc.date_fin_police else None),
+                'date_fin_effet': plc.date_fin_effet.strftime("%d/%m/%Y") if plc.date_fin_effet else (plc.date_fin_police.strftime("%d/%m/%Y") if plc.date_fin_police else None),
                 'date_creation': plc.created_at.strftime("%d/%m/%Y") if plc.created_at else '',
-                'date_resiliation': dernier_mouvement.date_effet.strftime(
-                    "%d/%m/%Y") if plc.etat_police == "Résilié" and dernier_mouvement else '',
+                'date_resiliation': dernier_mouvement.date_effet.strftime("%d/%m/%Y") if plc.etat_police == "Résilié" and dernier_mouvement else '',
                 'statut': etat_police,
                 'mode_renouvellement': dernier_historique.mode_renouvellement if dernier_historique else '',
                 'prime_ht': money_field(dernier_historique.prime_ht) if dernier_historique else '',
-                'commission_courtage': money_field(
-                    dernier_historique.commission_courtage) if dernier_historique else '',
+                'commission_courtage': money_field(dernier_historique.commission_courtage) if dernier_historique else '',
             })
 
         polices_par_commercial["Aucun commercial"] = {
@@ -1408,6 +1402,313 @@ def get_client_by_commercial(request):
                 'nom': plc.client.nom if plc.client else '',
                 'prenoms': plc.client.prenoms if plc.client else '',
                 'numero': numero_html,
+                'produit': plc.produit.nom,
+                'date_debut_effet': plc.date_debut_effet.strftime("%d/%m/%Y") if plc.date_debut_effet else '',
+                'date_fin_effet': plc.date_fin_effet.strftime("%d/%m/%Y") if plc.date_fin_effet else (plc.date_fin_police.strftime("%d/%m/%Y") if plc.date_fin_police else None),
+                'date_creation': plc.created_at.strftime("%d/%m/%Y") if plc.created_at else '',
+                'date_resiliation': dernier_mouvement.date_effet.strftime("%d/%m/%Y") if plc.etat_police == "Résilié" and dernier_mouvement else '',
+                'statut': etat_police,
+                'mode_renouvellement': dernier_historique.mode_renouvellement if dernier_historique else '',
+                'prime_ht': money_field(dernier_historique.prime_ht) if dernier_historique else '',
+                'commission_courtage': money_field(dernier_historique.commission_courtage) if dernier_historique else '',
+            })
+
+        polices_par_commercial[commercial.first_name +' '+ commercial.last_name] = {
+            "polices": polices,
+        }
+
+    return JsonResponse({
+        'polices_par_commercial': polices_par_commercial,
+    })
+def get_client_by_commercial(request):
+    commercial_id = request.GET.get('commercial_id')
+    search_mode_renouvellement = request.GET.get("mode_renouvellement")
+    search_date_debut = request.GET.get("date_debut")
+    search_date_fin = request.GET.get("date_fin")
+
+    date_for_calcul = datetime.today().date()
+    n_90_days = date_for_calcul + timedelta(days=90)
+    etat_police = ""
+    polices_par_commercial = {}
+
+    dernier_historique_subquery = HistoriquePolice.objects.filter(
+        police_id=OuterRef('pk')
+    ).order_by('-date_du_jour').values('mode_renouvellement')[:1]
+
+    if commercial_id == "":
+        return JsonResponse({'polices_par_commercial': {}})
+
+    if commercial_id == "TOUT":
+        commercials = User.objects.all().order_by('first_name')
+        for commercial in commercials:
+            polices_qs = Police.objects.filter(
+                client__isnull=False,
+                historique_polices__isnull=False,
+                commercial_id=commercial.id
+            ).annotate(
+                dernier_mode_renouvellement=Subquery(dernier_historique_subquery)
+            ).distinct()
+
+            if search_mode_renouvellement:
+                polices_qs = polices_qs.filter(dernier_mode_renouvellement__iexact=search_mode_renouvellement)
+
+            if search_date_debut:
+                polices_qs = polices_qs.filter(date_debut_effet__gte=search_date_debut)
+
+            if search_date_fin:
+                polices_qs = polices_qs.filter(
+                    Q(date_fin_effet__lte=search_date_fin) |
+                    Q(date_fin_police__lte=search_date_fin)
+                )
+
+            polices = []
+            for plc in polices_qs:
+                dernier_historique = HistoriquePolice.objects.filter(police_id=plc.id).order_by('-date_du_jour').first()
+                dernier_mouvement = MouvementPolice.objects.filter(police_id=plc.id).order_by('-created_at').first()
+
+                if dernier_mouvement and dernier_mouvement.date_fin_periode_garantie:
+                    date_fin = dernier_mouvement.date_fin_periode_garantie
+                    difference_jours = (date_fin - date_for_calcul).days
+
+                    if difference_jours > 90:
+                        etat_police = f'<span class="badge badge-success">{plc.etat_police}</span>'
+                    elif difference_jours > 0:
+                        nombre_total_mois = difference_jours // 30
+                        jours_restants = difference_jours % 30
+                        etat_police = f'<span class="badge badge-warning">A renouveler</span>'
+                    else:
+                        difference_jours = abs(difference_jours)
+                        nombre_total_mois = difference_jours // 30
+                        jours_ecoules = difference_jours % 30
+                        etat_police = f'<span class="badge badge-danger">NON renouvelé</span>'
+                else:
+                    if plc.etat_police == "En cours":
+                        etat_police = f'<span class="badge badge-success">{plc.etat_police}</span>' if dernier_mouvement else ''
+                    else:
+                        etat_police = f'<span class="badge badge-danger">{plc.etat_police}</span>' if dernier_mouvement else ''
+
+                detail_url = reverse('police.details', args=[plc.id])
+                numero_html = f'<a href="{detail_url}" class="text-center bouton_action" style="color:#F16623;" target="_blank">{plc.numero}</a>'
+
+                polices.append({
+                    'id': plc.id,
+                    'nom': plc.client.nom if plc.client else '',
+                    'prenoms': plc.client.prenoms if plc.client else '',
+                    'numero': numero_html,
+                    'produit': plc.produit.nom,
+                    'date_debut_effet': plc.date_debut_effet.strftime("%d/%m/%Y") if plc.date_debut_effet else '',
+                    'date_fin_effet': plc.date_fin_effet.strftime("%d/%m/%Y") if plc.date_fin_effet else (plc.date_fin_police.strftime("%d/%m/%Y") if plc.date_fin_police else None),
+                    'date_creation': plc.created_at.strftime("%d/%m/%Y") if plc.created_at else '',
+                    'date_resiliation': dernier_mouvement.date_effet.strftime("%d/%m/%Y") if plc.etat_police == "Résilié" and dernier_mouvement else '',
+                    'statut': etat_police,
+                    'mode_renouvellement': dernier_historique.mode_renouvellement if dernier_historique else '',
+                    'prime_ht': money_field(dernier_historique.prime_ht) if dernier_historique else '',
+                    'commission_courtage': money_field(dernier_historique.commission_courtage) if dernier_historique else '',
+                })
+
+            if polices:
+                polices_par_commercial[commercial.first_name + ' ' + commercial.last_name] = {
+                    "polices": polices,
+                }
+
+        # Récupération des polices sans commercial
+        polices_qs = Police.objects.filter(
+            client__isnull=False,
+            historique_polices__isnull=False,
+            commercial_id__isnull=True
+        ).annotate(
+            dernier_mode_renouvellement=Subquery(dernier_historique_subquery)
+        ).distinct()
+
+        if search_mode_renouvellement:
+            polices_qs = polices_qs.filter(dernier_mode_renouvellement__iexact=search_mode_renouvellement)
+
+        if search_date_debut:
+            polices_qs = polices_qs.filter(date_debut_effet__gte=search_date_debut)
+
+        if search_date_fin:
+            polices_qs = polices_qs.filter(
+                Q(date_fin_effet__lte=search_date_fin) |
+                Q(date_fin_police__lte=search_date_fin)
+            )
+
+        autres_polices = []
+        for plc in polices_qs:
+            dernier_historique = HistoriquePolice.objects.filter(police_id=plc.id).order_by('-date_du_jour').first()
+            dernier_mouvement = MouvementPolice.objects.filter(police_id=plc.id).order_by('-created_at').first()
+
+            if dernier_mouvement and dernier_mouvement.date_fin_periode_garantie:
+                date_fin = dernier_mouvement.date_fin_periode_garantie
+                difference_jours = (date_fin - date_for_calcul).days
+
+                if difference_jours > 90:
+                    etat_police = f'<span class="badge badge-success">{plc.etat_police}</span>'
+                elif difference_jours > 0:
+                    nombre_total_mois = difference_jours // 30
+                    jours_restants = difference_jours % 30
+                    etat_police = f'<span class="badge badge-warning">A renouveler</span>'
+                else:
+                    difference_jours = abs(difference_jours)
+                    nombre_total_mois = difference_jours // 30
+                    jours_ecoules = difference_jours % 30
+                    etat_police = f'<span class="badge badge-danger">NON renouvelé</span>'
+            else:
+                if plc.etat_police == "En cours":
+                    etat_police = f'<span class="badge badge-success">{plc.etat_police}</span>' if dernier_mouvement else ''
+                else:
+                    etat_police = f'<span class="badge badge-danger">{plc.etat_police}</span>' if dernier_mouvement else ''
+
+            detail_url = reverse('police.details', args=[plc.id])
+            numero_html = f'<a href="{detail_url}" class="text-center bouton_action" style="color:#F16623;" target="_blank">{plc.numero}</a>'
+
+            autres_polices.append({
+                'id': plc.id,
+                'nom': plc.client.nom if plc.client else '',
+                'prenoms': plc.client.prenoms if plc.client else '',
+                'numero': numero_html,
+                'produit': plc.produit.nom,
+                'date_debut_effet': plc.date_debut_effet.strftime("%d/%m/%Y") if plc.date_debut_effet else '',
+                'date_fin_effet': plc.date_fin_effet.strftime("%d/%m/%Y") if plc.date_fin_effet else (plc.date_fin_police.strftime("%d/%m/%Y") if plc.date_fin_police else None),
+                'date_creation': plc.created_at.strftime("%d/%m/%Y") if plc.created_at else '',
+                'date_resiliation': dernier_mouvement.date_effet.strftime("%d/%m/%Y") if plc.etat_police == "Résilié" and dernier_mouvement else '',
+                'statut': etat_police,
+                'mode_renouvellement': dernier_historique.mode_renouvellement if dernier_historique else '',
+                'prime_ht': money_field(dernier_historique.prime_ht) if dernier_historique else '',
+                'commission_courtage': money_field(dernier_historique.commission_courtage) if dernier_historique else '',
+            })
+
+        polices_par_commercial["Aucun commercial"] = {
+            "polices": autres_polices,
+        }
+
+    elif commercial_id == "AUCUN":
+        polices_qs = Police.objects.filter(
+            client__isnull=False,
+            historique_polices__isnull=False,
+            commercial_id__isnull=True
+        ).annotate(
+            dernier_mode_renouvellement=Subquery(dernier_historique_subquery)
+        ).distinct()
+
+        if search_mode_renouvellement:
+            polices_qs = polices_qs.filter(dernier_mode_renouvellement__iexact=search_mode_renouvellement)
+
+        if search_date_debut:
+            polices_qs = polices_qs.filter(date_debut_effet__gte=search_date_debut)
+
+        if search_date_fin:
+            polices_qs = polices_qs.filter(
+                Q(date_fin_effet__lte=search_date_fin) |
+                Q(date_fin_police__lte=search_date_fin)
+            )
+
+        polices = []
+        for plc in polices_qs:
+            dernier_historique = HistoriquePolice.objects.filter(police_id=plc.id).order_by('-date_du_jour').first()
+            dernier_mouvement = MouvementPolice.objects.filter(police_id=plc.id).order_by('-created_at').first()
+
+            if dernier_mouvement and dernier_mouvement.date_fin_periode_garantie:
+                date_fin = dernier_mouvement.date_fin_periode_garantie
+                difference_jours = (date_fin - date_for_calcul).days
+
+                if difference_jours > 90:
+                    etat_police = f'<span class="badge badge-success">{plc.etat_police}</span>'
+                elif difference_jours > 0:
+                    nombre_total_mois = difference_jours // 30
+                    jours_restants = difference_jours % 30
+                    etat_police = f'<span class="badge badge-warning">A renouveler</span>'
+                else:
+                    difference_jours = abs(difference_jours)
+                    nombre_total_mois = difference_jours // 30
+                    jours_ecoules = difference_jours % 30
+                    etat_police = f'<span class="badge badge-danger">NON renouvelé</span>'
+            else:
+                if plc.etat_police == "En cours":
+                    etat_police = f'<span class="badge badge-success">{plc.etat_police}</span>' if dernier_mouvement else ''
+                else:
+                    etat_police = f'<span class="badge badge-danger">{plc.etat_police}</span>' if dernier_mouvement else ''
+
+            detail_url = reverse('police.details', args=[plc.id])
+            numero_html = f'<a href="{detail_url}" class="text-center bouton_action" style="color:#F16623;" target="_blank">{plc.numero}</a>'
+
+            polices.append({
+                'id': plc.id,
+                'nom': plc.client.nom if plc.client else '',
+                'prenoms': plc.client.prenoms if plc.client else '',
+                'numero': numero_html,
+                'produit': plc.produit.nom,
+                'date_debut_effet': plc.date_debut_effet.strftime("%d/%m/%Y") if plc.date_debut_effet else '',
+                'date_fin_effet': plc.date_fin_effet.strftime("%d/%m/%Y") if plc.date_fin_effet else (plc.date_fin_police.strftime("%d/%m/%Y") if plc.date_fin_police else None),
+                'date_creation': plc.created_at.strftime("%d/%m/%Y") if plc.created_at else '',
+                'date_resiliation': dernier_mouvement.date_effet.strftime("%d/%m/%Y") if plc.etat_police == "Résilié" and dernier_mouvement else '',
+                'statut': etat_police,
+                'mode_renouvellement': dernier_historique.mode_renouvellement if dernier_historique else '',
+                'prime_ht': money_field(dernier_historique.prime_ht) if dernier_historique else '',
+                'commission_courtage': money_field(dernier_historique.commission_courtage) if dernier_historique else '',
+            })
+
+        polices_par_commercial["Aucun commercial"] = {
+            "polices": polices,
+        }
+
+    else:
+        commercial = User.objects.filter(id=commercial_id).first()
+
+        polices_qs = Police.objects.filter(
+            client__isnull=False,
+            historique_polices__isnull=False,
+            commercial_id=commercial_id
+        ).annotate(
+            dernier_mode_renouvellement=Subquery(dernier_historique_subquery)
+        ).distinct()
+
+        if search_mode_renouvellement:
+            polices_qs = polices_qs.filter(dernier_mode_renouvellement__iexact=search_mode_renouvellement)
+
+        if search_date_debut:
+            polices_qs = polices_qs.filter(date_debut_effet__gte=search_date_debut)
+
+        if search_date_fin:
+            polices_qs = polices_qs.filter(
+                Q(date_fin_effet__lte=search_date_fin) |
+                Q(date_fin_police__lte=search_date_fin)
+            )
+
+        polices = []
+        for plc in polices_qs:
+            dernier_historique = HistoriquePolice.objects.filter(police_id=plc.id).order_by('-date_du_jour').first()
+            dernier_mouvement = MouvementPolice.objects.filter(police_id=plc.id).order_by('-created_at').first()
+
+            if dernier_mouvement and dernier_mouvement.date_fin_periode_garantie:
+                date_fin = dernier_mouvement.date_fin_periode_garantie
+                difference_jours = (date_fin - date_for_calcul).days
+
+                if difference_jours > 90:
+                    etat_police = f'<span class="badge badge-success">{plc.etat_police}</span>'
+                elif difference_jours > 0:
+                    nombre_total_mois = difference_jours // 30
+                    jours_restants = difference_jours % 30
+                    etat_police = f'<span class="badge badge-warning">A renouveler</span>'
+                else:
+                    difference_jours = abs(difference_jours)
+                    nombre_total_mois = difference_jours // 30
+                    jours_ecoules = difference_jours % 30
+                    etat_police = f'<span class="badge badge-danger">NON renouvelé</span>'
+            else:
+                if plc.etat_police == "En cours":
+                    etat_police = f'<span class="badge badge-success">{plc.etat_police}</span>' if dernier_mouvement else ''
+                else:
+                    etat_police = f'<span class="badge badge-danger">{plc.etat_police}</span>' if dernier_mouvement else ''
+
+            detail_url = reverse('police.details', args=[plc.id])
+            numero_html = f'<a href="{detail_url}" class="text-center bouton_action" style="color:#F16623;" target="_blank">{plc.numero}</a>'
+
+            polices.append({
+                'id': plc.id,
+                'nom': plc.client.nom if plc.client else '',
+                'prenoms': plc.client.prenoms if plc.client else '',
+                'numero': numero_html,
+                'produit': plc.produit.nom,
                 'date_debut_effet': plc.date_debut_effet.strftime("%d/%m/%Y") if plc.date_debut_effet else '',
                 'date_fin_effet': plc.date_fin_effet.strftime("%d/%m/%Y") if plc.date_fin_effet else (plc.date_fin_police.strftime("%d/%m/%Y") if plc.date_fin_police else None),
                 'date_creation': plc.created_at.strftime("%d/%m/%Y") if plc.created_at else '',

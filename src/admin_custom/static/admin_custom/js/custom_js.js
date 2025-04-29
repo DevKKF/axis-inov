@@ -23572,7 +23572,7 @@ $(document).ready(function () {
     });
 
     //Création d'un portefeuille par commercial
-    /*$(document).on('click', "#btn_save_portefeuille_commercial", function () {
+    $(document).on('click', "#btn_save_portefeuille_commercial", function () {
 
         let formulaire = $('#form_add_portefeuille_commercial');
         let href = formulaire.attr('action');
@@ -23694,7 +23694,7 @@ $(document).ready(function () {
             notifyWarning('Veuillez renseigner correctement le forumulaire');
         }
 
-    });*/
+    });
 
     //Création d'un portefeuille par business_unit
     $(document).on('click', "#btn_save_portefeuille_business_unit", function () {
@@ -26629,7 +26629,6 @@ $(document).ready(function () {
     });
 
 });
-
 
 
 

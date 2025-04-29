@@ -518,7 +518,7 @@ def get_client_by_compagnie(request):
 
 
 # Portefeuille par commercial
-def generate_excel_portefeuille_commercial(commercials, date_requete, sans_commercial):
+def generate_excel_portefeuillecommercial(commercials, date_requete, sans_commercial):
     workbook = Workbook()
     sheet = workbook.active
     sheet.title = "Portefeuille"
@@ -738,10 +738,17 @@ def generate_excel_portefeuille_commercial(commercials, date_requete, sans_comme
     return output
 
 
-def add_portefeuille_commercial(request):
-    commercial_id = request.POST.get('commercial_id')
+def add_portefeuillecommercial(request):
+    commercial_id = request.POST.get('search_commercial')
+    mode_renouvellement = request.POST.get("search_mode_renouvellement")
+    date_debut = request.POST.get("search_date_debut")
+    date_fin = request.POST.get("search_date_fin")
     date_requete = request.POST.get('date_requete') or datetime.today().strftime("%d/%m/%Y")
-    print("commercial id : ", commercial_id)
+
+    dernier_historique_subquery = HistoriquePolice.objects.filter(
+        police_id=OuterRef('pk')
+    ).order_by('-date_du_jour').values('mode_renouvellement')[:1]
+
     if commercial_id == "TOUT":
         commercials = User.objects.all()
         sans_commercial=1
@@ -752,23 +759,12 @@ def add_portefeuille_commercial(request):
                 'message': "Aucun commercial trouvé."
             })
 
-        output = generate_excel_portefeuille_commercial(commercials, date_requete, sans_commercial)
-
-        # Enregistrement de génération du portefeuille
-        """analyse_portefeuille = AnalysePortefeuille.objects.create(
-            type_portefeuille=TypePortefeuille.ALL_COM,
-            created_at=datetime.now(),
-            created_by=request.user
-        )"""
+        output = generate_excel_portefeuillecommercial(commercials, date_requete, sans_commercial)
 
         # Créer un fichier temporaire
         with tempfile.NamedTemporaryFile(delete=False, suffix='.xlsx') as tmp_file:
             tmp_file.write(output.getvalue())
             tmp_file_path = tmp_file.name
-
-        # Enregistrer le fichier dans le champ `fichier`
-        """with open(tmp_file_path, 'rb') as file:
-            analyse_portefeuille.fichier.save("Portefeuille_Global.xlsx", File(file))"""
 
         # Supprimer le fichier temporaire après l'avoir enregistré
         os.unlink(tmp_file_path)
@@ -786,23 +782,12 @@ def add_portefeuille_commercial(request):
         commercials = {}
         sans_commercial = 0
 
-        output = generate_excel_portefeuille_commercial(commercials, date_requete, sans_commercial)
-
-        # Enregistrement de génération du portefeuille
-        """analyse_portefeuille = AnalysePortefeuille.objects.create(
-            type_portefeuille=TypePortefeuille.ALL_COM,
-            created_at=datetime.now(),
-            created_by=request.user
-        )"""
+        output = generate_excel_portefeuillecommercial(commercials, date_requete, sans_commercial)
 
         # Créer un fichier temporaire
         with tempfile.NamedTemporaryFile(delete=False, suffix='.xlsx') as tmp_file:
             tmp_file.write(output.getvalue())
             tmp_file_path = tmp_file.name
-
-        # Enregistrer le fichier dans le champ `fichier`
-        """with open(tmp_file_path, 'rb') as file:
-            analyse_portefeuille.fichier.save("Portefeuille_Global_aucun_commercial.xlsx", File(file))"""
 
         # Supprimer le fichier temporaire après l'avoir enregistré
         os.unlink(tmp_file_path)
@@ -823,7 +808,7 @@ def add_portefeuille_commercial(request):
         polices_qs = Police.objects.filter(
             id__in=Police.objects.filter(
                 client__isnull=False,
-                historique_polices__isnull=False,  # Correction ici
+                historique_polices__isnull=False,
                 commercial_id=commercial.id
             ).values_list('id', flat=True)
         ).distinct()
@@ -834,24 +819,12 @@ def add_portefeuille_commercial(request):
                 'message': "Aucune police trouvée pour ce commercial."
             })
 
-        workbook = generate_excel_portefeuille_commercial([commercial], date_requete, sans_commercial)
-
-        # Enregistrement de génération du portefeuille
-        """analyse_portefeuille = AnalysePortefeuille.objects.create(
-            commercial=commercial,
-            type_portefeuille=TypePortefeuille.PAR_COM,
-            created_at=datetime.now(),
-            created_by=request.user
-        )"""
+        workbook = generate_excel_portefeuillecommercial([commercial], date_requete, sans_commercial)
 
         # Créer un fichier temporaire
         with tempfile.NamedTemporaryFile(delete=False, suffix='.xlsx') as tmp_file:
             tmp_file.write(workbook.getvalue())
             tmp_file_path = tmp_file.name
-
-        # Enregistrer le fichier dans le champ `fichier`
-        """with open(tmp_file_path, 'rb') as file:
-            analyse_portefeuille.fichier.save(f"Portefeuille_{commercial.first_name+'_'+commercial.last_name}.xlsx", File(file))"""
 
         # Supprimer le fichier temporaire après l'avoir enregistré
         os.unlink(tmp_file_path)
@@ -866,288 +839,284 @@ def add_portefeuille_commercial(request):
         })
 
 
-# Chargement des polices liées au commercial
-def get_clientbycommercial(request):
-    commercial_id = request.GET.get('commercial_id')
-    date_for_calcul = datetime.today().date()
-    n_90_days = date_for_calcul + timedelta(days=90)
-    total_ht = 0
-    total_com_courtage = 0
-    etat_police = ""
-    polices_par_commercial = {}
+def generate_excel_portefeuille_commercial(polices_qs, date_requete, commercial_nom=""):
+    workbook = Workbook()
+    sheet = workbook.active
+    sheet.title = "Portefeuille"
+
+    headers = [
+        "POLICE", "COMMERCIAL", "CLIENT", "TYPE DE CLIENT", "BRANCHE", "PRODUIT",
+        "RECONDUCTION", "STATUT", "DATE DE RENOUVELEMENT", "DATE DE FIN",
+        "PRIME HT EX N-1", "PRIME HT EX N", "PRIME TTC EX N", "COM ENCAISSEE", "COM ATTENDUE"
+    ]
+    sheet.append(headers)
+
+    # Style
+    thin_border = Border(
+        left=Side(style='thin'),
+        right=Side(style='thin'),
+        top=Side(style='thin'),
+        bottom=Side(style='thin')
+    )
+
+    # Largeur des colonnes
+    for col_idx, header in enumerate(headers, start=1):
+        col_letter = get_column_letter(col_idx)
+        if header in ["DATE DE RENOUVELLEMENT", "DATE DE FIN", "PRIME HT EX N-1", "PRIME HT EX N", "PRIME TTC EX N"]:
+            sheet.column_dimensions[col_letter].width = 23
+        else:
+            sheet.column_dimensions[col_letter].width = 28
+
+    # Style en-tête
+    for col_idx in range(1, len(headers) + 1):
+        cell = sheet.cell(row=1, column=col_idx)
+        cell.font = Font(bold=True)
+        cell.border = thin_border
+        cell.alignment = Alignment(horizontal="center", vertical="center")
+
+    # Ajout du filtre
+    sheet.auto_filter.ref = sheet.dimensions
+
+    row_index = 2
+    recap_data = {}
+
+    def ajouter_police_dans_excel(police, titre):
+        nonlocal row_index
+
+        # Init des données du commercial
+        if titre not in recap_data:
+            recap_data[titre] = {"count": 0, "ht": 0, "ttc": 0}
+
+        # Historique
+        dernier_historique = HistoriquePolice.objects.filter(police=police).order_by('-date_du_jour').first()
+
+        prime_ht_n = prime_ht = prime_ttc = police_com_att = 0
+        if dernier_historique:
+            annee_actuelle = dernier_historique.date_du_jour.year
+            historique_annee_precedente = HistoriquePolice.objects.filter(
+                police=police, date_du_jour__year__lt=annee_actuelle
+            ).order_by('-date_du_jour').first()
+            if historique_annee_precedente:
+                prime_ht_n = historique_annee_precedente.prime_ht or 0
+            prime_ht = dernier_historique.prime_ht or 0
+            prime_ttc = dernier_historique.prime_ttc or 0
+            police_com_att = dernier_historique.commission_courtage or 0
+
+        dernier_mouvement = MouvementPolice.objects.filter(police=police).order_by('-created_at').first()
+        date_for_calcul = datetime.today().date()
+
+        if dernier_mouvement and dernier_mouvement.date_fin_periode_garantie:
+            diff_jours = (dernier_mouvement.date_fin_periode_garantie - date_for_calcul).days
+            statut = (
+                police.etat_police if diff_jours > 90 else
+                "A renouveler" if diff_jours > 0 else
+                "NON renouvelé"
+            )
+        else:
+            statut = police.etat_police if dernier_mouvement else ''
+
+        police_com_enc = sum(
+            reglement.montant_com_courtage
+            for quittance in Quittance.objects.filter(police=police)
+            for reglement in Reglement.objects.filter(quittance=quittance, statut_commission="ENCAISSEE")
+        )
+
+        date_fin_effet = dernier_historique.date_fin_effet.strftime('%d/%m/%Y') \
+            if dernier_historique and dernier_historique.mode_renouvellement == "Tacite Reconduction" \
+            and dernier_historique.date_fin_effet else ''
+
+        date_fin_police = dernier_historique.date_fin_police.strftime('%d/%m/%Y') \
+            if dernier_historique and dernier_historique.mode_renouvellement == "Sans Tacite Reconduction" \
+            and dernier_historique.date_fin_police else ''
+
+        data = [
+            police.numero,
+            titre,
+            police.client.nom if police.client else '',
+            police.client.type_personne.libelle if police.client else '',
+            police.produit.branche.nom if police.produit and police.produit.branche else '',
+            police.produit.nom if police.produit else '',
+            dernier_historique.mode_renouvellement if dernier_historique else '',
+            statut,
+            date_fin_effet,
+            date_fin_police,
+            prime_ht_n,
+            prime_ht,
+            prime_ttc,
+            police_com_enc,
+            police_com_att,
+        ]
+        sheet.append(data)
+
+        # Formatage cellule
+        for col_idx, val in enumerate(data, start=1):
+            cell = sheet.cell(row=row_index, column=col_idx)
+            cell.border = thin_border
+            if col_idx in [11, 12, 13, 14, 15]:
+                cell.number_format = '#,##0'
+            if col_idx in [9, 10]:
+                cell.alignment = Alignment(horizontal="center")
+
+        # MAJ du récap
+        recap_data[titre]["count"] += 1
+        recap_data[titre]["ht"] += prime_ht
+        recap_data[titre]["ttc"] += prime_ttc
+
+        row_index += 1
+
+    # Remplissage des données
+    for police in polices_qs:
+        commercial_nom_police = police.commercial.first_name + " " + police.commercial.last_name if police.commercial else "Aucun commercial"
+        ajouter_police_dans_excel(police, commercial_nom_police)
+
+    # Récapitulatif
+    recap_start = row_index + 3
+
+    sheet.merge_cells(start_row=recap_start, start_column=2, end_row=recap_start, end_column=5)
+    title_cell = sheet.cell(row=recap_start, column=2)
+    title_cell.value = "RÉCAPITULATIF PAR COMMERCIAL"
+    title_cell.font = Font(bold=True, size=12)
+    title_cell.alignment = Alignment(horizontal="center")
+
+    recap_header_row = recap_start + 1
+    recap_headers = ["", "COMMERCIAL", "NOMBRE DE POLICE", "MONTANT TOTAL HT EX N", "MONTANT TTC EX N"]
+    sheet.append(recap_headers)
+
+    for col in range(2, 6):
+        cell = sheet.cell(row=recap_header_row, column=col)
+        cell.font = Font(bold=True)
+        cell.border = thin_border
+        cell.alignment = Alignment(horizontal="center")
+
+    total_polices = total_ht = total_ttc = 0
+    recap_data_row = recap_header_row
+
+    for commercial, vals in recap_data.items():
+        recap_data_row += 1
+        sheet.cell(row=recap_data_row, column=2, value=commercial)
+        sheet.cell(row=recap_data_row, column=3, value=vals['count'])
+        sheet.cell(row=recap_data_row, column=4, value=vals['ht']).number_format = '#,##0'
+        sheet.cell(row=recap_data_row, column=5, value=vals['ttc']).number_format = '#,##0'
+
+        for i in [4, 5]:  # Colonnes montants
+            sheet.cell(row=recap_data_row, column=i).number_format = '#,##0'
+
+        for col in range(2, 6):  # Appliquer bordure à toutes les cellules de la ligne
+            sheet.cell(row=recap_data_row, column=col).border = thin_border
+
+        total_polices += vals['count']
+        total_ht += vals['ht']
+        total_ttc += vals['ttc']
+
+    # Ligne TOTAL GENERAL
+    total_row = recap_data_row + 2
+    sheet.cell(row=total_row, column=2, value="TOTAL GENERAL").font = Font(bold=True)
+
+    cell_polices = sheet.cell(row=total_row, column=3, value=total_polices)
+    cell_polices.font = Font(bold=True)
+
+    cell_ht = sheet.cell(row=total_row, column=4, value=total_ht)
+    cell_ht.font = Font(bold=True)
+    cell_ht.number_format = '#,##0'  # Format en milliers
+
+    cell_ttc = sheet.cell(row=total_row, column=5, value=total_ttc)
+    cell_ttc.font = Font(bold=True)
+    cell_ttc.number_format = '#,##0'  # Format en milliers
+
+    for col in range(2, 6):
+        sheet.cell(row=total_row, column=col).border = thin_border
+
+    # Générer le fichier Excel
+    output = BytesIO()
+    workbook.save(output)
+    output.seek(0)
+
+    return output
+
+
+def add_portefeuille_commercial(request):
+    commercial_id = request.POST.get('search_commercial')
+    mode_renouvellement = request.POST.get("search_mode_renouvellement")
+    date_debut = request.POST.get("search_date_debut")
+    date_fin = request.POST.get("search_date_fin")
+    date_requete = request.POST.get('date_requete') or datetime.today().strftime("%d/%m/%Y")
+
+    dernier_historique_subquery = HistoriquePolice.objects.filter(
+        police_id=OuterRef('pk')
+    ).order_by('-date_du_jour').values('mode_renouvellement')[:1]
+
+    polices_qs = Police.objects.filter(
+        client__isnull=False,
+        historique_polices__isnull=False,
+    ).annotate(
+        dernier_mode_renouvellement=Subquery(dernier_historique_subquery)
+    )
 
     if commercial_id == "TOUT":
-        commercials = User.objects.all().order_by('first_name')
-
-        for commercial in commercials:
-            commercial_total_ht = 0
-            commercial_com_courtage = 0
-
-            polices_qs = Police.objects.filter(
-                id__in=Police.objects.filter(
-                    client__isnull=False,
-                    historique_polices__isnull=False,
-                    commercial_id=commercial.id
-                ).values_list('id', flat=True)
-            ).distinct()
-
-            polices = []
-            for plc in polices_qs:
-                dernier_historique = HistoriquePolice.objects.filter(police_id=plc.id).order_by('-date_du_jour').first()
-                dernier_mouvement = MouvementPolice.objects.filter(police_id=plc.id).order_by('-created_at').first()
-
-                if dernier_historique:
-                    total_ht += dernier_historique.prime_ht
-                    total_com_courtage += dernier_historique.commission_courtage
-                    commercial_total_ht += dernier_historique.prime_ht
-                    commercial_com_courtage += dernier_historique.commission_courtage
-
-                if dernier_mouvement and dernier_mouvement.date_fin_periode_garantie:
-                    date_fin = dernier_mouvement.date_fin_periode_garantie
-                    difference_jours = (date_fin - date_for_calcul).days
-
-                    if difference_jours > 90:
-                        etat_police = plc.etat_police
-                    elif difference_jours > 0:
-                        nombre_total_mois = difference_jours // 30
-                        jours_restants = difference_jours % 30
-                        etat_police = "A renouveler"
-                    else:
-                        difference_jours = abs(difference_jours)
-                        nombre_total_mois = difference_jours // 30
-                        jours_ecoules = difference_jours % 30
-                        etat_police = "NON renouvelé"
-                else:
-                    etat_police = plc.etat_police if dernier_mouvement else ''
-
-                detail_url = reverse('police.details', args=[plc.id])
-                numero_html = f'<a href="{detail_url}" class="text-center bouton_action" style="color:#F16623;" target="_blank">{plc.numero}</a>&nbsp;&nbsp;'
-
-                polices.append({
-                    'id': plc.id,
-                    'nom': plc.client.nom if plc.client else '',
-                    'prenoms': plc.client.prenoms if plc.client else '',
-                    'numero': numero_html,
-                    'date_fin_effet': plc.date_fin_effet.strftime("%d/%m/%Y") if plc.date_fin_effet else '',
-                    'date_creation': plc.created_at.strftime("%d/%m/%Y") if plc.created_at else '',
-                    'date_resiliation': dernier_mouvement.date_effet.strftime("%d/%m/%Y") if plc.etat_police == "Résilié" and dernier_mouvement else '',
-                    'statut': etat_police,
-                    'prime_ht': money_field(dernier_historique.prime_ht) if dernier_historique else '',
-                    'commission_courtage': money_field(dernier_historique.commission_courtage) if dernier_historique else '',
-                })
-
-            if polices:
-                polices_par_commercial[commercial.first_name + ' ' + commercial.last_name] = {
-                    "polices": polices,
-                    "commercial_total_ht": money_field(commercial_total_ht),
-                    "commercial_com_courtage": money_field(commercial_com_courtage)
-                }
-
-        # Récupération des polices sans commercial
-        polices_sans_commercial_qs = Police.objects.filter(
-            id__in=Police.objects.filter(
-                client__isnull=False,
-                historique_polices__isnull=False,
-                commercial_id__isnull=True
-            ).values_list('id', flat=True)
-        ).distinct()
-
-        autres_polices = []
-        total_ht_autres = 0
-        total_com_courtage_autres = 0
-
-        for plc in polices_sans_commercial_qs:
-            dernier_historique = HistoriquePolice.objects.filter(police_id=plc.id).order_by('-date_du_jour').first()
-            dernier_mouvement = MouvementPolice.objects.filter(police_id=plc.id).order_by('-created_at').first()
-
-            if dernier_historique:
-                total_ht += dernier_historique.prime_ht
-                total_com_courtage += dernier_historique.commission_courtage
-                total_ht_autres += dernier_historique.prime_ht
-                total_com_courtage_autres += dernier_historique.commission_courtage
-
-            # Détermination du statut
-            if dernier_mouvement and dernier_mouvement.date_fin_periode_garantie:
-                date_fin = dernier_mouvement.date_fin_periode_garantie
-                difference_jours = (date_fin - date_for_calcul).days  # Peut être négatif
-
-                if difference_jours > 90:
-                    etat_police = plc.etat_police  # Police active normalement
-                elif difference_jours > 0:
-                    nombre_total_mois = difference_jours // 30
-                    jours_restants = difference_jours % 30
-                    etat_police = "A renouveler"
-                else:
-                    difference_jours = abs(difference_jours)  # Convertir en positif
-                    nombre_total_mois = difference_jours // 30
-                    jours_ecoules = difference_jours % 30
-                    etat_police = "NON renouvelé"
-            else:
-                etat_police = plc.etat_police if dernier_mouvement else ''
-
-            detail_url = reverse('police.details', args=[plc.id])
-            numero_html = f'<a href="{detail_url}" class="text-center bouton_action" style="color:#F16623;" target="_blank">{plc.numero}</a>&nbsp;&nbsp;'
-
-            autres_polices.append({
-                'id': plc.id,
-                'nom': plc.client.nom if plc.client else '',
-                'prenoms': plc.client.prenoms if plc.client else '',
-                'numero': numero_html,
-                'date_fin_effet': plc.date_fin_effet.strftime("%d/%m/%Y") if plc.date_fin_effet else '',
-                'date_creation': plc.created_at.strftime("%d/%m/%Y") if plc.created_at else '',
-                'date_resiliation': dernier_mouvement.date_effet.strftime("%d/%m/%Y") if plc.etat_police == "Résilié" and dernier_mouvement else '',
-                'statut': etat_police,
-                'prime_ht': money_field(dernier_historique.prime_ht) if dernier_historique else '',
-                'commission_courtage': money_field(dernier_historique.commission_courtage) if dernier_historique else '',
-            })
-
-        if autres_polices:
-            polices_par_commercial["Aucun commercial"] = {
-                "polices": autres_polices,
-                "commercial_total_ht": money_field(total_ht_autres),
-                "commercial_com_courtage": money_field(total_com_courtage_autres)
-            }
-
+        pass  # On garde toutes les polices pour le récapitulatif dans l'Excel
     elif commercial_id == "AUCUN":
-        # Récupération des polices sans commercial
-        polices_sans_commercial_qs = Police.objects.filter(
-            id__in=Police.objects.filter(
-                client__isnull=False,
-                historique_polices__isnull=False,
-                commercial_id__isnull=True
-            ).values_list('id', flat=True)
-        ).distinct()
-
-        autres_polices = []
-        total_ht_autres = 0
-        total_com_courtage_autres = 0
-
-        for plc in polices_sans_commercial_qs:
-            dernier_historique = HistoriquePolice.objects.filter(police_id=plc.id).order_by('-date_du_jour').first()
-            dernier_mouvement = MouvementPolice.objects.filter(police_id=plc.id).order_by('-created_at').first()
-
-            if dernier_historique:
-                total_ht += dernier_historique.prime_ht
-                total_com_courtage += dernier_historique.commission_courtage
-                total_ht_autres += dernier_historique.prime_ht
-                total_com_courtage_autres += dernier_historique.commission_courtage
-
-            # Détermination du statut
-            if dernier_mouvement and dernier_mouvement.date_fin_periode_garantie:
-                date_fin = dernier_mouvement.date_fin_periode_garantie
-                difference_jours = (date_fin - date_for_calcul).days  # Peut être négatif
-
-                if difference_jours > 90:
-                    etat_police = plc.etat_police  # Police active normalement
-                elif difference_jours > 0:
-                    nombre_total_mois = difference_jours // 30
-                    jours_restants = difference_jours % 30
-                    etat_police = "A renouveler"
-                else:
-                    difference_jours = abs(difference_jours)  # Convertir en positif
-                    nombre_total_mois = difference_jours // 30
-                    jours_ecoules = difference_jours % 30
-                    etat_police = "NON renouvelé"
-            else:
-                etat_police = plc.etat_police if dernier_mouvement else ''
-
-            detail_url = reverse('police.details', args=[plc.id])
-            numero_html = f'<a href="{detail_url}" class="text-center bouton_action" style="color:#F16623;" target="_blank">{plc.numero}</a>&nbsp;&nbsp;'
-
-            autres_polices.append({
-                'id': plc.id,
-                'nom': plc.client.nom if plc.client else '',
-                'prenoms': plc.client.prenoms if plc.client else '',
-                'numero': numero_html,
-                'date_fin_effet': plc.date_fin_effet.strftime("%d/%m/%Y") if plc.date_fin_effet else '',
-                'date_creation': plc.created_at.strftime("%d/%m/%Y") if plc.created_at else '',
-                'date_resiliation': dernier_mouvement.date_effet.strftime("%d/%m/%Y") if plc.etat_police == "Résilié" and dernier_mouvement else '',
-                'statut': etat_police,
-                'prime_ht': money_field(dernier_historique.prime_ht) if dernier_historique else '',
-                'commission_courtage': money_field(dernier_historique.commission_courtage) if dernier_historique else '',
-            })
-
-        if autres_polices:
-            polices_par_commercial["Aucun commercial"] = {
-                "polices": autres_polices,
-                "commercial_total_ht": money_field(total_ht_autres),
-                "commercial_com_courtage": money_field(total_com_courtage_autres)
-            }
-
+        polices_qs = polices_qs.filter(commercial__isnull=True)
     else:
+        polices_qs = polices_qs.filter(commercial_id=commercial_id)
+
+    if mode_renouvellement:
+        polices_qs = polices_qs.filter(dernier_mode_renouvellement__iexact=mode_renouvellement)
+
+    if date_debut:
+        polices_qs = polices_qs.filter(date_debut_effet__gte=date_debut)
+
+    if date_fin:
+        polices_qs = polices_qs.filter(
+            Q(date_fin_effet__lte=date_fin) |
+            Q(date_fin_police__lte=date_fin)
+        )
+
+    if not polices_qs.exists():
+        return JsonResponse({
+            'statut': 0,
+            'message': "Aucune police trouvée avec ces critères."
+        })
+
+    workbook = generate_excel_portefeuille_commercial(polices_qs.distinct(), date_requete)
+
+    # Créer un fichier temporaire
+    with tempfile.NamedTemporaryFile(delete=False, suffix='.xlsx') as tmp_file:
+        tmp_file.write(workbook.getvalue())
+        tmp_file_path = tmp_file.name
+
+    # Supprimer le fichier temporaire après l'avoir enregistré
+    os.unlink(tmp_file_path)
+
+    filename = f"{date_requete}_Portefeuille_Commercial.xlsx"
+    if commercial_id and commercial_id != "TOUT":
         commercial = User.objects.filter(id=commercial_id).first()
+        if commercial:
+            filename = f"{date_requete}_Portefeuille_{commercial.first_name}_{commercial.last_name}.xlsx"
+        elif commercial_id == "AUCUN":
+            filename = f"{date_requete}_Portefeuille_Sans_Commercial.xlsx"
+    elif mode_renouvellement:
+        filename = f"{date_requete}_Portefeuille_Renouvellement_{mode_renouvellement}.xlsx"
+    elif date_debut and date_fin:
+        filename = f"{date_requete}_Portefeuille_Periode_{date_debut.replace('-', '')}_{date_fin.replace('-', '')}.xlsx"
+    elif date_debut:
+        filename = f"{date_requete}_Portefeuille_Debut_{date_debut.replace('-', '')}.xlsx"
+    elif date_fin:
+        filename = f"{date_requete}_Portefeuille_Fin_{date_fin.replace('-', '')}.xlsx"
+    elif commercial_id == "TOUT":
+        filename = f"{date_requete}_Portefeuille_Global.xlsx"
 
-        commercial_total_ht = 0
-        commercial_com_courtage = 0
-
-        polices_qs = Police.objects.filter(
-            id__in=Police.objects.filter(
-                client__isnull=False,
-                historique_polices__isnull=False,  # Correction ici
-                commercial_id=commercial_id
-            ).values_list('id', flat=True)
-        ).distinct()
-
-        print('polices', polices_qs)
-
-        polices = []
-        for plc in polices_qs:
-            dernier_historique = HistoriquePolice.objects.filter(police_id=plc.id).order_by('-date_du_jour').first()
-            dernier_mouvement = MouvementPolice.objects.filter(police_id=plc.id).order_by('-created_at').first()
-
-            if dernier_historique:
-                total_ht += dernier_historique.prime_ht
-                total_com_courtage += dernier_historique.commission_courtage
-                commercial_total_ht += dernier_historique.prime_ht
-                commercial_com_courtage += dernier_historique.commission_courtage
-
-            if dernier_mouvement and dernier_mouvement.date_fin_periode_garantie:
-                date_fin = dernier_mouvement.date_fin_periode_garantie
-                difference_jours = (date_fin - date_for_calcul).days  # Peut être négatif
-
-                if difference_jours > 90:
-                    etat_police = plc.etat_police  # Police active normalement
-                elif difference_jours > 0:
-                    nombre_total_mois = difference_jours // 30
-                    jours_restants = difference_jours % 30
-                    etat_police = "A renouveler"
-                else:
-                    difference_jours = abs(difference_jours)  # Convertir en positif
-                    nombre_total_mois = difference_jours // 30
-                    jours_ecoules = difference_jours % 30
-                    etat_police = "NON renouvelé"
-            else:
-                etat_police = plc.etat_police if dernier_mouvement else ''
-
-            detail_url = reverse('police.details', args=[plc.id])
-            numero_html = f'<a href="{detail_url}" class="text-center bouton_action" style="color:#F16623;" target="_blank">{plc.numero}</a>&nbsp;&nbsp;'
-
-            polices.append({
-                'id': plc.id,
-                'nom': plc.client.nom if plc.client else '',
-                'prenoms': plc.client.prenoms if plc.client else '',
-                'numero': numero_html,
-                'date_fin_effet': plc.date_fin_effet.strftime("%d/%m/%Y") if plc.date_fin_effet else '',
-                'date_creation': plc.created_at.strftime("%d/%m/%Y") if plc.created_at else '',
-                'date_resiliation': dernier_mouvement.date_effet.strftime("%d/%m/%Y") if plc.etat_police == "Résilié" and dernier_mouvement else '',
-                'statut': etat_police,
-                'prime_ht': money_field(dernier_historique.prime_ht) if dernier_historique else '',
-                'commission_courtage': money_field(dernier_historique.commission_courtage) if dernier_historique else '',
-            })
-
-        polices_par_commercial[commercial.first_name +' '+ commercial.last_name] = {
-            "polices": polices,
-            "commercial_total_ht": money_field(commercial_total_ht),
-            "commercial_com_courtage": money_field(commercial_com_courtage)
-        }
 
     return JsonResponse({
-        'polices_par_commercial': polices_par_commercial,
-        'total_ht': money_field(total_ht),
-        'total_com_courtage': money_field(total_com_courtage)
+        'statut': 1,
+        'message': "Portefeuille commercial généré avec succès !",
+        'data': {
+            'filename': filename,
+            'file_base64': base64.b64encode(workbook.getvalue()).decode()
+        }
     })
 
 
+# Chargement des polices liées au commercial
 def get_client_by_commercial(request):
     commercial_id = request.GET.get('commercial_id')
     search_mode_renouvellement = request.GET.get("mode_renouvellement")
@@ -1455,6 +1424,287 @@ def get_client_by_commercial(request):
 
     return JsonResponse({
         'polices_par_commercial': polices_par_commercial,
+    })
+
+
+def get_clientbycommercial(request):
+    commercial_id = request.GET.get('commercial_id')
+    date_for_calcul = datetime.today().date()
+    n_90_days = date_for_calcul + timedelta(days=90)
+    total_ht = 0
+    total_com_courtage = 0
+    etat_police = ""
+    polices_par_commercial = {}
+
+    if commercial_id == "TOUT":
+        commercials = User.objects.all().order_by('first_name')
+
+        for commercial in commercials:
+            commercial_total_ht = 0
+            commercial_com_courtage = 0
+
+            polices_qs = Police.objects.filter(
+                id__in=Police.objects.filter(
+                    client__isnull=False,
+                    historique_polices__isnull=False,
+                    commercial_id=commercial.id
+                ).values_list('id', flat=True)
+            ).distinct()
+
+            polices = []
+            for plc in polices_qs:
+                dernier_historique = HistoriquePolice.objects.filter(police_id=plc.id).order_by('-date_du_jour').first()
+                dernier_mouvement = MouvementPolice.objects.filter(police_id=plc.id).order_by('-created_at').first()
+
+                if dernier_historique:
+                    total_ht += dernier_historique.prime_ht
+                    total_com_courtage += dernier_historique.commission_courtage
+                    commercial_total_ht += dernier_historique.prime_ht
+                    commercial_com_courtage += dernier_historique.commission_courtage
+
+                if dernier_mouvement and dernier_mouvement.date_fin_periode_garantie:
+                    date_fin = dernier_mouvement.date_fin_periode_garantie
+                    difference_jours = (date_fin - date_for_calcul).days
+
+                    if difference_jours > 90:
+                        etat_police = plc.etat_police
+                    elif difference_jours > 0:
+                        nombre_total_mois = difference_jours // 30
+                        jours_restants = difference_jours % 30
+                        etat_police = "A renouveler"
+                    else:
+                        difference_jours = abs(difference_jours)
+                        nombre_total_mois = difference_jours // 30
+                        jours_ecoules = difference_jours % 30
+                        etat_police = "NON renouvelé"
+                else:
+                    etat_police = plc.etat_police if dernier_mouvement else ''
+
+                detail_url = reverse('police.details', args=[plc.id])
+                numero_html = f'<a href="{detail_url}" class="text-center bouton_action" style="color:#F16623;" target="_blank">{plc.numero}</a>&nbsp;&nbsp;'
+
+                polices.append({
+                    'id': plc.id,
+                    'nom': plc.client.nom if plc.client else '',
+                    'prenoms': plc.client.prenoms if plc.client else '',
+                    'numero': numero_html,
+                    'date_fin_effet': plc.date_fin_effet.strftime("%d/%m/%Y") if plc.date_fin_effet else '',
+                    'date_creation': plc.created_at.strftime("%d/%m/%Y") if plc.created_at else '',
+                    'date_resiliation': dernier_mouvement.date_effet.strftime("%d/%m/%Y") if plc.etat_police == "Résilié" and dernier_mouvement else '',
+                    'statut': etat_police,
+                    'prime_ht': money_field(dernier_historique.prime_ht) if dernier_historique else '',
+                    'commission_courtage': money_field(dernier_historique.commission_courtage) if dernier_historique else '',
+                })
+
+            if polices:
+                polices_par_commercial[commercial.first_name + ' ' + commercial.last_name] = {
+                    "polices": polices,
+                    "commercial_total_ht": money_field(commercial_total_ht),
+                    "commercial_com_courtage": money_field(commercial_com_courtage)
+                }
+
+        # Récupération des polices sans commercial
+        polices_sans_commercial_qs = Police.objects.filter(
+            id__in=Police.objects.filter(
+                client__isnull=False,
+                historique_polices__isnull=False,
+                commercial_id__isnull=True
+            ).values_list('id', flat=True)
+        ).distinct()
+
+        autres_polices = []
+        total_ht_autres = 0
+        total_com_courtage_autres = 0
+
+        for plc in polices_sans_commercial_qs:
+            dernier_historique = HistoriquePolice.objects.filter(police_id=plc.id).order_by('-date_du_jour').first()
+            dernier_mouvement = MouvementPolice.objects.filter(police_id=plc.id).order_by('-created_at').first()
+
+            if dernier_historique:
+                total_ht += dernier_historique.prime_ht
+                total_com_courtage += dernier_historique.commission_courtage
+                total_ht_autres += dernier_historique.prime_ht
+                total_com_courtage_autres += dernier_historique.commission_courtage
+
+            # Détermination du statut
+            if dernier_mouvement and dernier_mouvement.date_fin_periode_garantie:
+                date_fin = dernier_mouvement.date_fin_periode_garantie
+                difference_jours = (date_fin - date_for_calcul).days  # Peut être négatif
+
+                if difference_jours > 90:
+                    etat_police = plc.etat_police  # Police active normalement
+                elif difference_jours > 0:
+                    nombre_total_mois = difference_jours // 30
+                    jours_restants = difference_jours % 30
+                    etat_police = "A renouveler"
+                else:
+                    difference_jours = abs(difference_jours)  # Convertir en positif
+                    nombre_total_mois = difference_jours // 30
+                    jours_ecoules = difference_jours % 30
+                    etat_police = "NON renouvelé"
+            else:
+                etat_police = plc.etat_police if dernier_mouvement else ''
+
+            detail_url = reverse('police.details', args=[plc.id])
+            numero_html = f'<a href="{detail_url}" class="text-center bouton_action" style="color:#F16623;" target="_blank">{plc.numero}</a>&nbsp;&nbsp;'
+
+            autres_polices.append({
+                'id': plc.id,
+                'nom': plc.client.nom if plc.client else '',
+                'prenoms': plc.client.prenoms if plc.client else '',
+                'numero': numero_html,
+                'date_fin_effet': plc.date_fin_effet.strftime("%d/%m/%Y") if plc.date_fin_effet else '',
+                'date_creation': plc.created_at.strftime("%d/%m/%Y") if plc.created_at else '',
+                'date_resiliation': dernier_mouvement.date_effet.strftime("%d/%m/%Y") if plc.etat_police == "Résilié" and dernier_mouvement else '',
+                'statut': etat_police,
+                'prime_ht': money_field(dernier_historique.prime_ht) if dernier_historique else '',
+                'commission_courtage': money_field(dernier_historique.commission_courtage) if dernier_historique else '',
+            })
+
+        if autres_polices:
+            polices_par_commercial["Aucun commercial"] = {
+                "polices": autres_polices,
+                "commercial_total_ht": money_field(total_ht_autres),
+                "commercial_com_courtage": money_field(total_com_courtage_autres)
+            }
+
+    elif commercial_id == "AUCUN":
+        # Récupération des polices sans commercial
+        polices_sans_commercial_qs = Police.objects.filter(
+            id__in=Police.objects.filter(
+                client__isnull=False,
+                historique_polices__isnull=False,
+                commercial_id__isnull=True
+            ).values_list('id', flat=True)
+        ).distinct()
+
+        autres_polices = []
+        total_ht_autres = 0
+        total_com_courtage_autres = 0
+
+        for plc in polices_sans_commercial_qs:
+            dernier_historique = HistoriquePolice.objects.filter(police_id=plc.id).order_by('-date_du_jour').first()
+            dernier_mouvement = MouvementPolice.objects.filter(police_id=plc.id).order_by('-created_at').first()
+
+            if dernier_historique:
+                total_ht += dernier_historique.prime_ht
+                total_com_courtage += dernier_historique.commission_courtage
+                total_ht_autres += dernier_historique.prime_ht
+                total_com_courtage_autres += dernier_historique.commission_courtage
+
+            # Détermination du statut
+            if dernier_mouvement and dernier_mouvement.date_fin_periode_garantie:
+                date_fin = dernier_mouvement.date_fin_periode_garantie
+                difference_jours = (date_fin - date_for_calcul).days  # Peut être négatif
+
+                if difference_jours > 90:
+                    etat_police = plc.etat_police  # Police active normalement
+                elif difference_jours > 0:
+                    nombre_total_mois = difference_jours // 30
+                    jours_restants = difference_jours % 30
+                    etat_police = "A renouveler"
+                else:
+                    difference_jours = abs(difference_jours)  # Convertir en positif
+                    nombre_total_mois = difference_jours // 30
+                    jours_ecoules = difference_jours % 30
+                    etat_police = "NON renouvelé"
+            else:
+                etat_police = plc.etat_police if dernier_mouvement else ''
+
+            detail_url = reverse('police.details', args=[plc.id])
+            numero_html = f'<a href="{detail_url}" class="text-center bouton_action" style="color:#F16623;" target="_blank">{plc.numero}</a>&nbsp;&nbsp;'
+
+            autres_polices.append({
+                'id': plc.id,
+                'nom': plc.client.nom if plc.client else '',
+                'prenoms': plc.client.prenoms if plc.client else '',
+                'numero': numero_html,
+                'date_fin_effet': plc.date_fin_effet.strftime("%d/%m/%Y") if plc.date_fin_effet else '',
+                'date_creation': plc.created_at.strftime("%d/%m/%Y") if plc.created_at else '',
+                'date_resiliation': dernier_mouvement.date_effet.strftime("%d/%m/%Y") if plc.etat_police == "Résilié" and dernier_mouvement else '',
+                'statut': etat_police,
+                'prime_ht': money_field(dernier_historique.prime_ht) if dernier_historique else '',
+                'commission_courtage': money_field(dernier_historique.commission_courtage) if dernier_historique else '',
+            })
+
+        if autres_polices:
+            polices_par_commercial["Aucun commercial"] = {
+                "polices": autres_polices,
+                "commercial_total_ht": money_field(total_ht_autres),
+                "commercial_com_courtage": money_field(total_com_courtage_autres)
+            }
+
+    else:
+        commercial = User.objects.filter(id=commercial_id).first()
+
+        commercial_total_ht = 0
+        commercial_com_courtage = 0
+
+        polices_qs = Police.objects.filter(
+            id__in=Police.objects.filter(
+                client__isnull=False,
+                historique_polices__isnull=False,  # Correction ici
+                commercial_id=commercial_id
+            ).values_list('id', flat=True)
+        ).distinct()
+
+        print('polices', polices_qs)
+
+        polices = []
+        for plc in polices_qs:
+            dernier_historique = HistoriquePolice.objects.filter(police_id=plc.id).order_by('-date_du_jour').first()
+            dernier_mouvement = MouvementPolice.objects.filter(police_id=plc.id).order_by('-created_at').first()
+
+            if dernier_historique:
+                total_ht += dernier_historique.prime_ht
+                total_com_courtage += dernier_historique.commission_courtage
+                commercial_total_ht += dernier_historique.prime_ht
+                commercial_com_courtage += dernier_historique.commission_courtage
+
+            if dernier_mouvement and dernier_mouvement.date_fin_periode_garantie:
+                date_fin = dernier_mouvement.date_fin_periode_garantie
+                difference_jours = (date_fin - date_for_calcul).days  # Peut être négatif
+
+                if difference_jours > 90:
+                    etat_police = plc.etat_police  # Police active normalement
+                elif difference_jours > 0:
+                    nombre_total_mois = difference_jours // 30
+                    jours_restants = difference_jours % 30
+                    etat_police = "A renouveler"
+                else:
+                    difference_jours = abs(difference_jours)  # Convertir en positif
+                    nombre_total_mois = difference_jours // 30
+                    jours_ecoules = difference_jours % 30
+                    etat_police = "NON renouvelé"
+            else:
+                etat_police = plc.etat_police if dernier_mouvement else ''
+
+            detail_url = reverse('police.details', args=[plc.id])
+            numero_html = f'<a href="{detail_url}" class="text-center bouton_action" style="color:#F16623;" target="_blank">{plc.numero}</a>&nbsp;&nbsp;'
+
+            polices.append({
+                'id': plc.id,
+                'nom': plc.client.nom if plc.client else '',
+                'prenoms': plc.client.prenoms if plc.client else '',
+                'numero': numero_html,
+                'date_fin_effet': plc.date_fin_effet.strftime("%d/%m/%Y") if plc.date_fin_effet else '',
+                'date_creation': plc.created_at.strftime("%d/%m/%Y") if plc.created_at else '',
+                'date_resiliation': dernier_mouvement.date_effet.strftime("%d/%m/%Y") if plc.etat_police == "Résilié" and dernier_mouvement else '',
+                'statut': etat_police,
+                'prime_ht': money_field(dernier_historique.prime_ht) if dernier_historique else '',
+                'commission_courtage': money_field(dernier_historique.commission_courtage) if dernier_historique else '',
+            })
+
+        polices_par_commercial[commercial.first_name +' '+ commercial.last_name] = {
+            "polices": polices,
+            "commercial_total_ht": money_field(commercial_total_ht),
+            "commercial_com_courtage": money_field(commercial_com_courtage)
+        }
+
+    return JsonResponse({
+        'polices_par_commercial': polices_par_commercial,
+        'total_ht': money_field(total_ht),
+        'total_com_courtage': money_field(total_com_courtage)
     })
 
 

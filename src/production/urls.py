@@ -64,6 +64,7 @@ urlpatterns = [
     path("acompte/<int:acompte_id>/modifier", views.modifier_acompte, name='modifier_acompte'),
     path("acompte/<int:acompte_id>/delete", views.supprimer_acompte, name='supprimer_acompte'),
     path('mouvement/<int:mouvement_id>/motifs',views.motifs_by_mouvement, name='mouvement_motifs'),
+    path('sinsitre/<int:sinistre_id>/<int:mouvement_id>/etapes',views.etapes_by_mouvement, name='mouvement_etapes'),
 
     path("client/<int:client_id>/quittance", QuittancesClientView.as_view(), name='client_quittances'),
     path("client/<int:client_id>/<int:police_id>/exporter-quittance", views.exporter_quittance, name='exporter_quittance'),

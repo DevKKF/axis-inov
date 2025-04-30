@@ -19,7 +19,7 @@
 					<div class="col-md-12 offset-0">
 						<ul class="nav nav-tabs" id="myTab" role="tablist">
                             <li class="nav-item text-uppercase"><a class="nav-link active" id="identity-tab" data-toggle="tab" href="#identity" role="tab" aria-controls="identity" aria-selected="true">Information du contrat</a></li>
-                            <li class="nav-item text-uppercase"><a class="nav-link" id="etape_sinistre_suivi-tab" data-toggle="tab" href="#etape_sinistre_suivi" role="tab" aria-controls="etape_sinistre_suivi" aria-selected="false">Déclaration du sinistre</a></li>
+                            <li class="nav-item text-uppercase"><a class="nav-link" id="etape_sinistre_suivi-tab" data-toggle="tab" href="#etape_sinistre_suivi" role="tab" aria-controls="etape_sinistre_suivi" aria-selected="false"><span id="titre_mouvement"></span></a></li>
                         </ul>
 						<div class="tab-content" id="myTabContent">
 							<div class="tab-pane fade show active mt-3" id="identity" role="tabpanel" aria-labelledby="identity-tab">
@@ -41,6 +41,18 @@
 											<label class="col-sm-5 col-form-label">Branche </label>
 											<div class="col-sm-7">
 												<span class="form-control" title="{{ police.produit.branche.nom|default_if_none:'' }}">{{ police.produit.branche.nom|default_if_none:""|slice:":35" }}</span>
+											</div>
+										</div>
+										<div class="form-group row">
+											<label class="col-sm-5 col-form-label">Date début</label>
+											<div class="col-sm-7">
+												<span class="form-control" style="border: 2px solid {{ border_date_color }} " >{{ police.date_debut_effet|date:'d/m/Y' }}</span>
+											</div>
+										</div>
+										<div class="form-group row">
+											<label class="col-sm-5 col-form-label">Commercial</label>
+											<div class="col-sm-7">
+												<span class="form-control" title="{{ police.commercial.first_name|default_if_none:'' }} {{ police.commercial.last_name|default_if_none:'' }}">{{ police.commercial.last_name|default_if_none:'' }} {{ police.commercial.first_name|default_if_none:'' }}</span>
 											</div>
 										</div>
 									</div>
@@ -65,6 +77,18 @@
 												<span class="form-control" title="{{ police.produit.nom|default_if_none:'' }}">{{ police.produit.nom|default_if_none:""|slice:":35" }}</span>
 											</div>
 										</div>
+										<div class="form-group row">
+											<label class="col-sm-5 col-form-label">Date échéance ou fin</label>
+											<div class="col-sm-7">
+												<span class="form-control" style="border: 2px solid {{ border_date_color }}">{{ police.date_echeance }}</span>
+											</div>
+										</div>
+										<div class="form-group row">
+											<label class="col-sm-5 col-form-label">Etat de la police</label>
+											<div class="col-sm-7">
+												<span class="form-control" title="{{ police.etat_police }}">{{ police.etat_police }}</span>
+											</div>
+										</div>
 									</div>
 								</div>
 							</div>
@@ -73,7 +97,6 @@
 								<div class="row">
 									<div class="col-12">
 										<div class="verification-garanties-container">
-											<h5 class="mb-4">Vérification des garanties</h5>
 											<div class="radio-buttons-container">
 												<div class="shadow-options">
 													<label class="custom-radio-btn success">
@@ -120,6 +143,8 @@
     }
 </script>
 <script src="{% static "admin_custom/js/modal_js.js" %}"></script>
+
+console.log("Accès autorisé à l'opération.");
 
 {% include 'sinistre/modal_sinistre_modification_garantie.html' %}
 {% include 'sinistre/modal_sinistre_modification_intervenant.html' %}

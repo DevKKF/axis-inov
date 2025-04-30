@@ -48,6 +48,7 @@ class StatutSinistre(models.TextChoices):
     ATTENTE = 'EN ATTENTE'
     REJETE = 'REJETE'
     EN_RECOURS = 'EN RECOURS'
+    CLOTURE = 'CLOTURE'
     SOLDE = 'SOLDE'
 
 class StatutSinistrePrestation(models.TextChoices):

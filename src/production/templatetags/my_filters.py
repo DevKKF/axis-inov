@@ -243,4 +243,3 @@ def transformer_statut(statut):
         return slugify(statut)
     else:
         return ""  # Retourne une chaîne vide si le statut est None
-

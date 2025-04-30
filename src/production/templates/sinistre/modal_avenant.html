@@ -3,6 +3,7 @@
 		<div class="modal-content">
 			<form id="form_add_avenant_sinistre" action="{% url 'add_sinistre_avenant' sinistre.id %}" method="post">
 				{% csrf_token %}
+                <input type="hidden" name="sinistre_id" data-sinistre-id="{{ sinistre.id }}" id="sinistre_id" value="{{ sinistre.id }}">
 				<div class="modal-header">
 					<h4 class="modal-title">{{_('MOUVEMENT')}}</h4>
 					<button type="button"class="close"data-dismiss="modal"aria-label="Close">
@@ -23,7 +24,7 @@
                                 <select class="form-control mouvement_sinistre" name="mouvement" id="mouvement_sinistre" autocomplete="off" required>
                                     <option value="">{{_('Choisir')}}</option>
                                     {% for mouvement in mouvements %}
-                                        <option value="{{ mouvement.id }}" data-code="{{ mouvement.code }}">{{ mouvement.libelle }}</option>
+                                        <option value="{{ mouvement.id }}" data-code="{{ mouvement.code }}" data-movement_nom="{{ mouvement.libelle }}">{{ mouvement.libelle }}</option>
                                     {% endfor %}
                                 </select>
                             </div>

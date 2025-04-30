@@ -4575,7 +4575,7 @@ $(document).ready(function () {
                         resetFields('#' + formulaire.attr('id'));
                         console.log(mouvement);
                         console.log(typeof(mouvement));
-                        if (mouvement >= 2 && mouvement <= 17) {
+                        if (mouvement >= 18 && mouvement <= 32) {
                             helper_modification_sinistre(href_sinistre)
                         }else{
                             notifySuccess(response.message, function () {
@@ -4628,26 +4628,35 @@ $(document).ready(function () {
     //Changement de mouvement, charger les motifs liés
     $('#mouvement_sinistre').on('change', function () {
 
+        $('#btn_save_avenant_sinistre').prop('disabled', true);
+
         let mouvement_id = $(this).val();
-        $('#motif').html('<option value="">---------------------------</option>');
+        let sinistre_id = $('#sinistre_id').val();
 
         $.ajax({
             type: 'get',
-            url: '/production/mouvement/' + mouvement_id + '/motifs',
-            success: function (motifs) {
-
-                $('#motif').html('').append('<option value="">Sélectionnez un motif</option>');
-
-                motifs.forEach(function (motif) {
-                    $('#motif').append('<option value="' + motif.pk + '">' + motif.fields.libelle + '</option>');
-                });
-
+            url: '/production/sinsitre/' + sinistre_id + '/' + mouvement_id + '/etapes',
+            success: function (response) {
+                if (response.statut != 0) {
+                    $('#btn_save_avenant_sinistre').prop('disabled', false);
+                } else {
+                    $('#btn_save_avenant_sinistre').prop('disabled', true);
+                    notifyWarning(response.message, function () {});
+                }
             },
-            error: function () { }
+            error: function () {
+                console.error("Erreur lors de la requête AJAX");
+                $('#btn_save_avenant_sinistre').prop('disabled', false);
+            }
         });
 
+        let selectedOption = $(this).find(':selected');
+        let mouvement_nom = selectedOption.data('movement_nom');
+
+        $('#modal-modification_sinistre #titre_mouvement').text(mouvement_nom);
+
         //
-        if (mouvement_id == 17) {
+        if (mouvement_id == 33) {
             $('#box_date_cloture_sinistre').show();
             $('#date_cloture_sinistre').attr('required', 'true');
         } else {
@@ -25797,6 +25806,7 @@ $(document).ready(function () {
 
         // L'obligation le champ taux de responsabilité en fonction de la branche
         const brancheId = $('#branche_id').data('branche-id');
+        const produitId = $('#produit_id').data('produit-id');
 
         // Cacher les deux types au départ
         $(".branche_auto").hide();
@@ -25806,13 +25816,7 @@ $(document).ready(function () {
         $('#search_vehicule, #vehicule_id, #num_serie, #marque, #modele, #immatriculation, #date_entree, #usage, #date_sortie, #autre_risque_id')
         .prop('required', false);
 
-        if (brancheId == 1) {
-            $("#responsabilite").hide();
-            $('#autre_risque_id').prop('required', false);
-            $('#responsabilite_id').prop('required', false);
-
-            console.log('Police auto en cours...');
-
+        if (produitId == 1 || produitId == 2) {
             // Afficher les champs pour les véhicules
             $(".branche_auto").show();
 
@@ -25933,7 +25937,14 @@ $(document).ready(function () {
         else {
             // Afficher le champ pour les risques autres
             $(".branche_autre").show();
+        }
 
+        if (brancheId == 1) {
+            $("#responsabilite").hide();
+            $('#autre_risque_id').prop('required', false);
+            $('#responsabilite_id').prop('required', false);
+        }
+        else {
             // Rendre les champ obligatoire
             $('#autre_risque_id').prop('required', true);
             $("#responsabilite").show();

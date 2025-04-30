@@ -1021,3 +1021,18 @@ $(document).ready(function () {
         loadProduits(branche_id);
     });
 });
+
+$(document).ready(function () {
+
+    $('#mouvement_sinistre').on('change', function () {
+        let mouvement_id = $(this).val();
+        let selectedOption = $(this).find(':selected');
+        let mouvement_nom = selectedOption.data('movement_nom');
+
+        $('#modal-modification_sinistre #titre_mouvement').text(mouvement_nom);
+
+    });
+
+    // Déclencher manuellement l'événement 'change' au chargement de la page
+    $('#mouvement_sinistre').trigger('change');
+});

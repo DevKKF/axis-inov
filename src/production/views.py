@@ -4264,11 +4264,16 @@ class PoliceSinistresView(TemplateView):
             date_jour = datetime.now(tz=timezone.utc).strftime('%Y-%m-%d')
             date_fin_effet = police.date_fin_effet.strftime('%Y-%m-%d') if police.date_fin_effet else police.date_fin_police.strftime('%Y-%m-%d') if police.date_fin_police else None
 
+            print('date_jour : ', date_jour)
+            print('date_fin_effet : ', date_fin_effet)
+
             border_date_color = ""
-            if police.date_fin_effet or police.date_fin_police and date_fin_effet > date_jour:
+            if date_fin_effet and date_fin_effet > date_jour:
                 border_date_color = "green"
+                print('green : ', border_date_color)
             else:
                 border_date_color = "red"
+                print('red : ', border_date_color)
 
             context_perso = {
                 'police': police,
@@ -4481,7 +4486,7 @@ class SinistreAvenantsView(TemplateView):
 
             mouvements_sinistre = MouvementSinistre.objects.filter(sinistre_id=sinistre_id, statut_validite=StatutValidite.VALIDE).order_by('-id')
 
-            mouvements = EtapeSinistre.objects.exclude(code="OUVSIN").order_by('id')
+            mouvements = Mouvement.objects.filter(type="SINISTRE").exclude(code="OUVSIN").order_by('id')
 
             context_perso = {'sinistre': sinistre, 'police': police, 'mouvements_sinistre': mouvements_sinistre, 'mouvements': mouvements}
 
@@ -4507,7 +4512,8 @@ def add_sinistre_avenant(request, sinistre_id):
 
     if request.method == 'POST':
 
-        if request.POST.get('mouvement') in ["2", "17"]:
+        if 18 <= int(request.POST.get('mouvement')) <= 32:
+            print('Affichage du modal')
             request.session['add_sinistre_avenant'] = request.POST
             response = {
                 'statut': 1,
@@ -4516,18 +4522,35 @@ def add_sinistre_avenant(request, sinistre_id):
             }
 
         else:
+            print('On enregistre')
             date_cloture_sinistre = request.POST.get('date_cloture_sinistre')
 
             mouvement_sinistre = MouvementSinistre.objects.create(
                 sinistre=sinistre,
                 police_id=sinistre.police_id,
                 mouvement_id=request.POST.get('mouvement'),
-                motif_id=request.POST.get('motif'),
+                #motif_id=request.POST.get('motif'),
                 date_effet=request.POST.get('date_effet'),
                 date_cloture_sinistre=date_cloture_sinistre if date_cloture_sinistre else None,
                 created_by=request.user
             )
-            #mouvement_sinistre.save()
+            mouvement_sinistre.save()
+
+            Sinistre.objects.filter(id=sinistre).update(
+                statut=StatutSinistre.CLOTURE,
+                statut_validite=StatutValidite.CLOTURE,
+                date_cloture=date_cloture_sinistre if date_cloture_sinistre else None,
+            )
+
+            sinistre_etape = SinistreEtape.objects.create(
+                sinistre=sinistre,
+                police = sinistre.police_id,
+                mouvement_id=request.POST.get('mouvement'),
+                #motif_id=request.POST.get('motif'),
+                date_effet=request.POST.get('date_effet'),
+                created_by = request.user
+            )
+            sinistre_etape.save()
 
             response = {
                 'statut': 1,
@@ -4664,7 +4687,7 @@ def police_save_sinistre(request, police_id):
             ms.created_by = request.user
             ms.save()
 
-            # Créer une ligne de mouvement_sinistre avec le mouvement ouverture sinistre et le motif ouverture sinistre
+            # Créer une ligne de sinistre_etape avec le mouvement ouverture sinistre et le motif ouverture sinistre
             sinetap = SinistreEtape()
             sinetap.sinistre = sinistre
             sinetap.etape_sinistre = EtapeSinistre.objects.get(code='OUVSIN')
@@ -4742,6 +4765,105 @@ def police_save_sinistre(request, police_id):
 # modification de sinistre
 @login_required
 def modifier_sinistre(request, sinistre_id):
+
+    if request.method == 'POST':
+        sinistre_old = Sinistre.objects.get(id=sinistre_id)
+        alimentpolicesinistre = AlimentPoliceSinistre.objects.filter(sinistre_id=sinistre_old.id).first()
+
+        commentaire = request.POST.get('commentaire')
+
+        historiq_sinistre_created = HistoriqueSinistre(
+            sinistre_id=sinistre_old.id,
+            bureau_id=sinistre_old.bureau_id,
+            client_id=sinistre_old.client_id,
+            police_id=sinistre_old.police_id,
+            compagnie_id=sinistre_old.compagnie_id,
+            type_sinistre_id=sinistre_old.type_sinistre_id,
+            responsabilite_id=sinistre_old.responsabilite_id,
+            circonstance_id=sinistre_old.circonstance_id,
+            created_by=sinistre_old.created_by,
+            numero=sinistre_old.numero,
+            numero_provisoire=sinistre_old.numero_provisoire,
+            created_at=sinistre_old.created_at,
+            date_survenance=sinistre_old.date_survenance,
+            date_declaration=sinistre_old.date_declaration,
+            date_ouverture=sinistre_old.date_ouverture,
+            date_cloture=sinistre_old.date_cloture,
+            date_reouverture=sinistre_old.date_reouverture,
+            lieu_survenance=sinistre_old.lieu_survenance,
+            tva_recuperee=sinistre_old.tva_recuperee,
+            fait_generateur=sinistre_old.fait_generateur,
+            point_de_choc=sinistre_old.point_de_choc,
+            commentaire=sinistre_old.commentaire,
+            franchise=sinistre_old.franchise,
+        )
+        historiq_sinistre_created.save()
+        historiq_sinistre = HistoriqueSinistre.objects.get(id=historiq_sinistre_created.pk)
+
+        # Mise à jour du sinistre
+        sinistre = Sinistre.objects.filter(id=sinistre_id).update(
+            updated_at=datetime.now(),
+            commentaire=commentaire,
+            updated_by=request.user
+        )
+        sinistre = Sinistre.objects.get(id=sinistre_id)
+
+        # Obtenir l'avant-dernier mouvement de sinistre
+        mouvement_sinistre = MouvementSinistre.objects.filter(sinistre_id=sinistre_id, historique_sinistre_id__isnull=True).order_by('-id').first()
+        if mouvement_sinistre:
+            mouvement_sinistre.historique_sinistre_id = historiq_sinistre.id
+            mouvement_sinistre.save()
+
+        # Création du monvement sinistre
+        movement_data_save = request.session.get('add_sinistre_avenant')
+
+        if movement_data_save:
+            mouvement_sinistre = MouvementSinistre.objects.create(sinistre_id=sinistre.id,
+                                                                  mouvement_id=movement_data_save.get('mouvement'),
+                                                                  motif_id=movement_data_save.get('motif'),
+                                                                  date_effet=movement_data_save.get(
+                                                                      'date_effet') if movement_data_save.get(
+                                                                      'date_effet') else None,
+                                                                  created_by=request.user
+                                                                  )
+            mouvement_sinistre.save()
+
+        response = {
+            'statut': 1,
+            'message': "Sinistre modifié avec succès !",
+            'data': {
+            }
+        }
+
+        return JsonResponse(response)
+
+    else:
+
+        sinistre = Sinistre.objects.get(id=sinistre_id)
+        police = Police.objects.filter(id=sinistre.police_id, bureau=request.user.bureau, statut_validite=StatutValidite.VALIDE).first()
+        client = Client.objects.filter(id=police.client_id).first()
+
+        # Récupérer le dernier historique
+        dernier_historique = HistoriquePolice.objects.filter(police_id=police.id).order_by('-date_du_jour').first()
+
+        # Récupérer les assureurs associés à l'historique
+        assureur_police = PoliceAssureur.objects.filter(historique_police_id=dernier_historique.id,
+                                                        type_compagnie_id=1).first() if dernier_historique else []
+        today = datetime.now(tz=timezone.utc)
+
+        return render(request, 'sinistre/modal_sinistre_modification.html',{
+          'sinistre': sinistre,
+          'police': police,
+          'client': client,
+          'dernier_historique': dernier_historique,
+          'assureur_police': assureur_police,
+          'today': today,
+        })
+
+
+# modification de sinistre
+@login_required
+def modifiersinistre(request, sinistre_id):
 
     if request.method == 'POST':
         sinistre_old = Sinistre.objects.get(id=sinistre_id)
@@ -5117,6 +5239,138 @@ def modifier_sinistre(request, sinistre_id):
           'responsabilites': responsabilites,
           'circonstances': circonstances,
           'pays': pays,
+          'aliments': aliments,
+          'aliment': aliment,
+          'alimentpolicesinistre': alimentpolicesinistre,
+        })
+
+
+# modification de sinistre
+@login_required
+def modifiersinistre(request, sinistre_id):
+
+    if request.method == 'POST':
+        sinistre_old = Sinistre.objects.get(id=sinistre_id)
+
+        commentaire = request.POST.get('commentaire')
+
+        historiq_sinistre_created = HistoriqueSinistre(
+            sinistre_id=sinistre_old.id,
+            bureau_id=sinistre_old.bureau_id,
+            client_id=sinistre_old.client_id,
+            police_id=sinistre_old.police_id,
+            compagnie_id=sinistre_old.compagnie_id,
+            type_sinistre_id=sinistre_old.type_sinistre_id,
+            responsabilite_id=sinistre_old.responsabilite_id,
+            circonstance_id=sinistre_old.circonstance_id,
+            created_by=sinistre_old.created_by,
+            numero=sinistre_old.numero,
+            numero_provisoire=sinistre_old.numero_provisoire,
+            created_at=sinistre_old.created_at,
+            date_survenance=sinistre_old.date_survenance,
+            date_declaration=sinistre_old.date_declaration,
+            date_ouverture=sinistre_old.date_ouverture,
+            date_cloture=sinistre_old.date_cloture,
+            date_reouverture=sinistre_old.date_reouverture,
+            lieu_survenance=sinistre_old.lieu_survenance,
+            tva_recuperee=sinistre_old.tva_recuperee,
+            fait_generateur=sinistre_old.fait_generateur,
+            point_de_choc=sinistre_old.point_de_choc,
+            commentaire=sinistre_old.commentaire,
+            franchise=sinistre_old.franchise,
+        )
+        historiq_sinistre_created.save()
+        historiq_sinistre = HistoriqueSinistre.objects.get(id=historiq_sinistre_created.pk)
+
+        # Mise à jour du sinistre
+        sinistre = Sinistre.objects.filter(id=sinistre_id).update(
+            type_sinistre_id=type_sinistre_id,
+            responsabilite_id=responsabilite_id,
+            circonstance_id=circonstance_id,
+            updated_at=datetime.now(),
+            date_survenance=date_survenance if date_survenance else None,
+            date_declaration=date_declaration if date_declaration else None,
+            date_ouverture=date_ouverture if date_ouverture else None,
+            date_cloture=date_cloture if date_cloture else None,
+            date_reouverture=date_reouverture if date_reouverture else None,
+            lieu_survenance=lieu_survenance,
+            tva_recuperee=tva_recuperee,
+            fait_generateur=fait_generateur,
+            point_de_choc=point_de_choc,
+            commentaire=commentaire,
+            franchise=supprimer_espaces(franchise) if franchise else 0,
+            updated_by=request.user
+        )
+        sinistre = Sinistre.objects.get(id=sinistre_id)
+
+        # Obtenir l'avant-dernier mouvement de sinistre
+        mouvement_sinistre = MouvementSinistre.objects.filter(sinistre_id=sinistre_id, historique_sinistre_id__isnull=True).order_by('-id').first()
+        if mouvement_sinistre:
+            mouvement_sinistre.historique_sinistre_id = historiq_sinistre.id
+            mouvement_sinistre.save()
+
+        # Création du monvement sinistre
+        movement_data_save = request.session.get('add_sinistre_avenant')
+        print('movement_data_save : ', movement_data_save)
+        if movement_data_save:
+            mouvement_sinistre = MouvementSinistre.objects.create(
+              sinistre_id=sinistre.id,
+              mouvement_id=movement_data_save.get('mouvement'),
+              motif_id=movement_data_save.get('motif'),
+              date_effet=movement_data_save.get('date_effet') if movement_data_save.get('date_effet') else None,
+              created_by=request.user
+            )
+            mouvement_sinistre.save()
+
+        response = {
+            'statut': 1,
+            'message': "Sinistre modifié avec succès !",
+            'data': {
+            }
+        }
+
+        return JsonResponse(response)
+
+    else:
+
+        sinistre = Sinistre.objects.get(id=sinistre_id)
+        police = Police.objects.filter(id=sinistre.police_id, bureau=request.user.bureau, statut_validite=StatutValidite.VALIDE).first()
+        client = Client.objects.filter(id=police.client_id).first()
+
+        # Récupérer le dernier historique
+        dernier_historique = HistoriquePolice.objects.filter(police_id=police.id).order_by('-date_du_jour').first()
+
+        # Récupérer les assureurs associés à l'historique
+        assureur_police = PoliceAssureur.objects.filter(historique_police_id=dernier_historique.id, type_compagnie_id=1).first() if dernier_historique else []
+        today = datetime.now(tz=timezone.utc)
+
+        mouvements = Mouvement.objects.filter(type_mouvement_id=2).order_by('libelle')
+        typesinistres = TypeSinistre.objects.filter(statut=1).order_by('libelle')
+        typedocuments = TypeDocument.objects.filter(is_sinistre=1).order_by('libelle')
+        responsabilites = Responsabilite.objects.filter(statut=1)
+        circonstances = Circonstance.objects.filter(statut=1, branche_id=police.produit.branche_id).order_by('libelle')
+
+        aliments = 0
+        aliment = 0
+        if police.produit.code == '10001' or police.produit.code == '10002' or police.produit.code == '50001' or police.produit.code == '50002':
+            aliments = AlimentPolice.objects.filter(police_id=police.id)
+        else:
+            aliment = AlimentPolice.objects.filter(police_id=police.id).first()
+
+        alimentpolicesinistre = AlimentPoliceSinistre.objects.filter(sinistre_id=sinistre.id).first()
+
+        return render(request, 'sinistre/modal_sinistre_modification.html',{
+          'sinistre': sinistre,
+          'police': police,
+          'client': client,
+          'dernier_historique': dernier_historique,
+          'assureur_police': assureur_police,
+          'today': today,
+          'mouvements': mouvements,
+          'typesinistres': typesinistres,
+          'typedocuments': typedocuments,
+          'responsabilites': responsabilites,
+          'circonstances': circonstances,
           'aliments': aliments,
           'aliment': aliment,
           'alimentpolicesinistre': alimentpolicesinistre,
@@ -7169,6 +7423,82 @@ def motifs_by_mouvement(request, mouvement_id):
     motifs = Motif.objects.filter(mouvement_id=mouvement_id)
     motifs_serialize = serializers.serialize('json', motifs)
     return HttpResponse(motifs_serialize, content_type='application/json')
+
+
+def etapes_bymouvement(request, sinistre_id, mouvement_id):
+    mouvement_selectionne = Mouvement.objects.filter(id=mouvement_id).first()
+    etape_actuelle_sinistre = SinistreEtape.objects.filter(sinistre_id=sinistre_id).first()
+
+    etape_sinistre = EtapeSinistre.objects.filter(code=mouvement_selectionne.code).first()
+
+    if etape_sinistre.type_etape == "OBLIGATOIRE":
+        if etape_actuelle_sinistre.numero_ordre > etape_sinistre.numero_ordre:
+            print("Le niveau du sinistre est supérieur à l'étape sélectionnée")
+        else:
+            response = {
+                'statut': 1,
+                'message': f"Accès autorisé à l'opération"
+            }
+    else:
+        response = {
+            'statut': 1,
+            'message': f"Accès autorisé à l'opération"
+        }
+
+    return JsonResponse(response)
+
+
+def etapes_by_mouvement(request, sinistre_id, mouvement_id):
+    try:
+        mouvement_selectionne = Mouvement.objects.get(id=mouvement_id)
+    except Mouvement.DoesNotExist:
+        return JsonResponse({'statut': 0, 'message': f"Le mouvement avec l'ID {mouvement_id} n'existe pas."}, status=404)
+
+    try:
+        etape_actuelle_sinistre = SinistreEtape.objects.get(sinistre_id=sinistre_id)
+    except SinistreEtape.DoesNotExist:
+        return JsonResponse({'statut': 0, 'message': f"Aucune étape actuelle n'est définie pour le sinistre avec l'ID {sinistre_id}."}, status=404)
+
+    try:
+        etape_sinistre_cible = EtapeSinistre.objects.get(code=mouvement_selectionne.code)
+    except EtapeSinistre.DoesNotExist:
+        return JsonResponse({'statut': 0, 'message': f"L'étape de sinistre avec le code '{mouvement_selectionne.code}' n'existe pas."}, status=404)
+
+    if etape_sinistre_cible.type_etape == "OBLIGATOIRE":
+        if etape_actuelle_sinistre.numero_ordre > etape_sinistre_cible.numero_ordre:
+            response = {
+                'statut': 0,
+                'message': "Le niveau actuel du sinistre est supérieur à l'étape sélectionnée."
+            }
+        elif etape_actuelle_sinistre.numero_ordre < etape_sinistre_cible.numero_ordre:
+            # Récupérer l'étape obligatoire précédente
+            etape_obligatoire_precedente = EtapeSinistre.objects.filter(
+                type_etape="OBLIGATOIRE",
+                numero_ordre__lt=etape_sinistre_cible.numero_ordre
+            ).order_by('-numero_ordre').first()
+
+            if etape_obligatoire_precedente and etape_actuelle_sinistre.numero_ordre < etape_obligatoire_precedente.numero_ordre:
+                response = {
+                    'statut': 0,
+                    'message': f"Pour passer à l'étape '{etape_sinistre_cible.libelle}', vous devez d'abord valider l'étape obligatoire '{etape_obligatoire_precedente.libelle}'."
+                }
+            else:
+                response = {
+                    'statut': 1,
+                    'message': f"Accès autorisé à l'opération."
+                }
+        else:
+            response = {
+                'statut': 1,
+                'message': f"Accès autorisé à l'opération."
+            }
+    else:
+        response = {
+            'statut': 1,
+            'message': f"Accès autorisé à l'opération (étape facultative)."
+        }
+
+    return JsonResponse(response)
 
 
 # upload du fichier

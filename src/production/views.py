@@ -128,7 +128,7 @@ class DetailsClientView(TemplateView):
         context_original = self.get_context_data(**kwargs)
 
 
-        clients = Client.objects.filter(id=client_id, bureau=request.user.bureau)
+        clients = Client.objects.filter(id=client_id)
         if clients:
             client = clients.first()
 
@@ -3103,7 +3103,7 @@ class DetailsPoliceView(TemplateView):
         context_original = self.get_context_data(**kwargs)
 
         police_id = kwargs['police_id']
-        polices = Police.objects.filter(id=police_id, bureau=request.user.bureau, statut_validite=StatutValidite.VALIDE)
+        polices = Police.objects.filter(id=police_id, statut_validite=StatutValidite.VALIDE)
         if polices:
             police = polices.first()
 
@@ -4110,7 +4110,7 @@ class PoliceAvenantsView(TemplateView):
     def get(self, request, police_id, *args, **kwargs):
         context_original = self.get_context_data(**kwargs)
 
-        police = Police.objects.filter(id=police_id, bureau=request.user.bureau, statut_validite=StatutValidite.VALIDE).first()
+        police = Police.objects.filter(id=police_id, statut_validite=StatutValidite.VALIDE).first()
         if police:
             mouvements = Mouvement.objects.filter(type="POLICE").exclude(code="AN").order_by('libelle')
             mouvements_police = MouvementPolice.objects.filter(police_id=police_id, statut_validite=StatutValidite.VALIDE).order_by('-id') #, statut_validite=StatutValidite.VALIDE
@@ -4151,7 +4151,7 @@ class PoliceGedView(TemplateView):
     def get(self, request, police_id, *args, **kwargs):
         context_original = self.get_context_data(**kwargs)
 
-        police = Police.objects.filter(id=police_id, bureau=request.user.bureau, statut_validite=StatutValidite.VALIDE).first()
+        police = Police.objects.filter(id=police_id, statut_validite=StatutValidite.VALIDE).first()
         if police:
             types_documents = TypeDocument.objects.filter(is_production=1).order_by('libelle')
             documents = Document.objects.filter(police_id=police_id)
@@ -4231,7 +4231,7 @@ class PoliceSinistresView(TemplateView):
     def get(self, request, police_id, *args, **kwargs):
         context_original = self.get_context_data(**kwargs)
 
-        police = Police.objects.filter(id=police_id, bureau=request.user.bureau, statut_validite=StatutValidite.VALIDE).first()
+        police = Police.objects.filter(id=police_id, statut_validite=StatutValidite.VALIDE).first()
         if police:
 
             # Récupération de client
@@ -4444,11 +4444,11 @@ class SinistreGedView(TemplateView):
     def get(self, request, sinistre_id, *args, **kwargs):
         context_original = self.get_context_data(**kwargs)
 
-        sinistre = Sinistre.objects.filter(id=sinistre_id, bureau=request.user.bureau).first()
+        sinistre = Sinistre.objects.filter(id=sinistre_id).first()
         if sinistre:
-            police = Police.objects.filter(id=sinistre.police_id, bureau=request.user.bureau).first()
+            police = Police.objects.filter(id=sinistre.police_id).first()
             types_documents = TypeDocument.objects.filter(is_sinistre=1).order_by('libelle')
-            documents = Document.objects.filter(sinistre_id=sinistre_id)
+            documents = "" #Document.objects.filter(sinistre_id=sinistre_id)
 
             context_perso = {
                 'sinistre': sinistre,
@@ -4840,7 +4840,7 @@ def modifier_sinistre(request, sinistre_id):
     else:
 
         sinistre = Sinistre.objects.get(id=sinistre_id)
-        police = Police.objects.filter(id=sinistre.police_id, bureau=request.user.bureau, statut_validite=StatutValidite.VALIDE).first()
+        police = Police.objects.filter(id=sinistre.police_id, statut_validite=StatutValidite.VALIDE).first()
         client = Client.objects.filter(id=police.client_id).first()
 
         # Récupérer le dernier historique
@@ -5196,7 +5196,7 @@ def modifiersinistre(request, sinistre_id):
     else:
 
         sinistre = Sinistre.objects.get(id=sinistre_id)
-        police = Police.objects.filter(id=sinistre.police_id, bureau=request.user.bureau, statut_validite=StatutValidite.VALIDE).first()
+        police = Police.objects.filter(id=sinistre.police_id, statut_validite=StatutValidite.VALIDE).first()
         client = Client.objects.filter(id=police.client_id).first()
 
         # Récupérer le dernier historique
@@ -5334,7 +5334,7 @@ def modifiersinistre(request, sinistre_id):
     else:
 
         sinistre = Sinistre.objects.get(id=sinistre_id)
-        police = Police.objects.filter(id=sinistre.police_id, bureau=request.user.bureau, statut_validite=StatutValidite.VALIDE).first()
+        police = Police.objects.filter(id=sinistre.police_id, statut_validite=StatutValidite.VALIDE).first()
         client = Client.objects.filter(id=police.client_id).first()
 
         # Récupérer le dernier historique
@@ -7449,7 +7449,7 @@ def etapes_bymouvement(request, sinistre_id, mouvement_id):
 
 
 def etapes_by_mouvement(request, sinistre_id, mouvement_id):
-    try:
+    """try:
         mouvement_selectionne = Mouvement.objects.get(id=mouvement_id)
     except Mouvement.DoesNotExist:
         return JsonResponse({'statut': 0, 'message': f"Le mouvement avec l'ID {mouvement_id} n'existe pas."}, status=404)
@@ -7498,7 +7498,8 @@ def etapes_by_mouvement(request, sinistre_id, mouvement_id):
             'message': f"Accès autorisé à l'opération (étape facultative)."
         }
 
-    return JsonResponse(response)
+    return JsonResponse(response)"""
+    pass
 
 
 # upload du fichier
@@ -7915,7 +7916,7 @@ class PoliceClientView(TemplateView):
         context_original = self.get_context_data(**kwargs)
 
 
-        clients = Client.objects.filter(id=client_id, bureau=request.user.bureau)
+        clients = Client.objects.filter(id=client_id)
         if clients:
             client = clients.first()
 
@@ -8117,7 +8118,7 @@ class ContactClientView(TemplateView):
         context_original = self.get_context_data(**kwargs)
 
 
-        clients = Client.objects.filter(id=client_id, bureau=request.user.bureau)
+        clients = Client.objects.filter(id=client_id)
         if clients:
             client = clients.first()
 
@@ -8159,7 +8160,7 @@ class FilialeClientView(TemplateView):
         context_original = self.get_context_data(**kwargs)
 
 
-        clients = Client.objects.filter(id=client_id, bureau=request.user.bureau)
+        clients = Client.objects.filter(id=client_id)
         if clients:
             client = clients.first()
 
@@ -8205,7 +8206,7 @@ class AcompteClientView(TemplateView):
         context_original = self.get_context_data(**kwargs)
 
 
-        clients = Client.objects.filter(id=client_id, bureau=request.user.bureau)
+        clients = Client.objects.filter(id=client_id)
         if clients:
             client = clients.first()
 
@@ -8264,7 +8265,7 @@ class QuittancesClientView(TemplateView):
         context_original = self.get_context_data(**kwargs)
 
 
-        clients = Client.objects.filter(id=client_id, bureau=request.user.bureau)
+        clients = Client.objects.filter(id=client_id)
         if clients:
             client = clients.first()
 
@@ -8596,7 +8597,7 @@ class GEDClientView(TemplateView):
     def get(self, request, client_id, *args, **kwargs):
         context_original = self.get_context_data(**kwargs)
 
-        clients = Client.objects.filter(id=client_id, bureau=request.user.bureau)
+        clients = Client.objects.filter(id=client_id)
         if clients:
             client = clients.first()
 
@@ -8682,7 +8683,7 @@ class FormulesUniversellesView(TemplateView):
 
         # police = Police.objects.get(id=police_id)
         bureau = request.user.bureau
-        formules = FormuleGarantie.objects.filter(police__isnull=True, bureau=request.user.bureau, statut=Statut.ACTIF)
+        formules = FormuleGarantie.objects.filter(police__isnull=True, statut=Statut.ACTIF)
         territorialites = Territorialite.objects.all().order_by('libelle')
         types_tarifs = TypeTarif.objects.all().order_by('libelle')
         reseaux_soins = ""
@@ -8870,7 +8871,7 @@ class FormulesView(TemplateView):
 
         police_id = kwargs['police_id']
 
-        police = Police.objects.filter(id=police_id, bureau=request.user.bureau, statut_validite=StatutValidite.VALIDE).first()
+        police = Police.objects.filter(id=police_id, statut_validite=StatutValidite.VALIDE).first()
         if police:
             formules = FormuleGarantie.objects.filter(police_id=police_id, statut=Statut.ACTIF)
             territorialites = Territorialite.objects.all().order_by('libelle')
@@ -9277,7 +9278,7 @@ class AnnulerQuittanceView(TemplateView):
 
         # cette condition précise que nous venons faire la recherche
         if btn_recherche and numero_quittance:
-            quittance = Quittance.objects.filter(numero=numero_quittance, bureau=request.user.bureau, statut_validite=StatutValiditeQuittance.VALIDE).first()
+            quittance = Quittance.objects.filter(numero=numero_quittance, statut_validite=StatutValiditeQuittance.VALIDE).first()
             # dd(quittance)
 
             context['numero_quittance'] = numero_quittance
@@ -9287,12 +9288,12 @@ class AnnulerQuittanceView(TemplateView):
         # cette condition précise que nous venons faire l'annulation de la quittance
         if submit_delete_item and id_item:
 
-            quittance = Quittance.objects.filter(id=id_item, bureau=request.user.bureau, statut=StatutQuittance.IMPAYE).first()
+            quittance = Quittance.objects.filter(id=id_item, statut=StatutQuittance.IMPAYE).first()
 
             if quittance:
 
                 #récupérer les règlements sur la quittance
-                reglements = Reglement.objects.filter(quittance=quittance, bureau=request.user.bureau)
+                reglements = Reglement.objects.filter(quittance=quittance)
 
                 if reglements:
                     context['reglements_existants'] = True
@@ -9364,7 +9365,7 @@ def add_annuler_quittance(request):
         motif_delete_item = request.POST.get('motif_delete_item')
         type_commission = "GESTION" if type == "courtage" else "COURTAGE"
 
-        quittance = Quittance.objects.filter(id=id_item, bureau=request.user.bureau).first()
+        quittance = Quittance.objects.filter(id=id_item).first()
 
         if quittance:
             # Date de paiement
@@ -9374,7 +9375,7 @@ def add_annuler_quittance(request):
             police = Police.objects.filter(id=quittance.police_id).first()
 
             # Récupérer les règlements sur la quittance
-            reglements = Reglement.objects.filter(quittance=quittance, bureau=request.user.bureau)
+            reglements = Reglement.objects.filter(quittance=quittance)
 
             if reglements:
                 # Annuler les règlements sur la quittance

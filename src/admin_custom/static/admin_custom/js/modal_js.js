@@ -1031,8 +1031,25 @@ $(document).ready(function () {
 
         $('#modal-modification_sinistre #titre_mouvement').text(mouvement_nom);
 
-    });
+        let VerificationGarantie = $('#modal-modification_sinistre .verification_garantie');
+        let AccuseReceptionClient = $('#modal-modification_sinistre .accuse_reception_client');
+        let NominationExpert = $('#modal-modification_sinistre .nomination_expert');
 
+        if(mouvement_id == 18){
+            VerificationGarantie.show();
+        }
+        else if(mouvement_id == 19){
+            AccuseReceptionClient.show();
+        }
+        else if(mouvement_id == 24){
+            NominationExpert.show();
+        }
+        else{
+            console.log('en cours...');
+        }
+
+    });
     // Déclencher manuellement l'événement 'change' au chargement de la page
     $('#mouvement_sinistre').trigger('change');
+
 });

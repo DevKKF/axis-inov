@@ -712,6 +712,11 @@ $(document).ready(function () {
             return;
         }
 
+        let VehiculePage = $('.vehicule');
+        let AlimentPage = $('.aliment');
+        let MarchandisePage = $('.marchandise');
+        let RisquePage = $('.risque');
+
         $.ajax({
             type: 'get',
             url: '/production/produit/' + produit_id + '/sous-menu',
@@ -721,12 +726,16 @@ $(document).ready(function () {
                 initialiserOnglets();
 
                 if (produit_code == 10001) {
+                    VehiculePage.show();
                     afficherOngletAvecChamps('#vehicule-tab_modification', '.vehicule_champ_obligatoire');
                 } else if (produit_code == 10002) {
+                    AlimentPage.show();
                     afficherOngletAvecChamps('#aliment-tab_modification', '.mod_aliment_champ_obligatoire');
                 } else if (produit_code == 50001 || produit_code == 50002) {
+                    MarchandisePage.show();
                     afficherOngletAvecChamps('#marchandise-tab_modification', '.marchandise_champ_obligatoire');
                 } else {
+                    RisquePage.show();
                     afficherOngletAvecChamps('#risque-tab_modification');
                 }
             },
@@ -1022,6 +1031,7 @@ $(document).ready(function () {
     });
 });
 
+//TODO SINISTRE
 $(document).ready(function () {
 
     $('#mouvement_sinistre').on('change', function () {

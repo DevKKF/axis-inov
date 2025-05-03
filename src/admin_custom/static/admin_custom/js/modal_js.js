@@ -712,6 +712,11 @@ $(document).ready(function () {
             return;
         }
 
+        let VehiculePage = $('.vehicule');
+        let AlimentPage = $('.aliment');
+        let MarchandisePage = $('.marchandise');
+        let RisquePage = $('.risque');
+
         $.ajax({
             type: 'get',
             url: '/production/produit/' + produit_id + '/sous-menu',
@@ -721,12 +726,16 @@ $(document).ready(function () {
                 initialiserOnglets();
 
                 if (produit_code == 10001) {
+                    VehiculePage.show();
                     afficherOngletAvecChamps('#vehicule-tab_modification', '.vehicule_champ_obligatoire');
                 } else if (produit_code == 10002) {
+                    AlimentPage.show();
                     afficherOngletAvecChamps('#aliment-tab_modification', '.mod_aliment_champ_obligatoire');
                 } else if (produit_code == 50001 || produit_code == 50002) {
+                    MarchandisePage.show();
                     afficherOngletAvecChamps('#marchandise-tab_modification', '.marchandise_champ_obligatoire');
                 } else {
+                    RisquePage.show();
                     afficherOngletAvecChamps('#risque-tab_modification');
                 }
             },
@@ -1022,6 +1031,7 @@ $(document).ready(function () {
     });
 });
 
+//TODO SINISTRE
 $(document).ready(function () {
 
     $('#mouvement_sinistre').on('change', function () {
@@ -1031,8 +1041,25 @@ $(document).ready(function () {
 
         $('#modal-modification_sinistre #titre_mouvement').text(mouvement_nom);
 
-    });
+        let VerificationGarantie = $('#modal-modification_sinistre .verification_garantie');
+        let AccuseReceptionClient = $('#modal-modification_sinistre .accuse_reception_client');
+        let NominationExpert = $('#modal-modification_sinistre .nomination_expert');
 
+        if(mouvement_id == 18){
+            VerificationGarantie.show();
+        }
+        else if(mouvement_id == 19){
+            AccuseReceptionClient.show();
+        }
+        else if(mouvement_id == 24){
+            NominationExpert.show();
+        }
+        else{
+            console.log('en cours...');
+        }
+
+    });
     // Déclencher manuellement l'événement 'change' au chargement de la page
     $('#mouvement_sinistre').trigger('change');
+
 });

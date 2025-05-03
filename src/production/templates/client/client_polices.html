@@ -138,7 +138,13 @@
                             <td class="text-right">{{ data.dernier_historique.prime_ttc|default_if_none:""|money_field }}</td>
                             <td class="text-right">{{ data.dernier_historique.commission_courtage|default_if_none:""|money_field }}</td>
                             <td class="">{{ data.dernier_historique.date_debut_effet|date:'d/m/Y'|default_if_none:"" }}</td>
-                            <td class="">{{ data.dernier_historique.date_fin_effet|date:'d/m/Y'|default_if_none:"" }}</td>
+                            <td class="">
+                                {% if data.dernier_historique.date_fin_effet %}
+                                    {{ data.dernier_historique.date_fin_effet|date:'d/m/Y'|default_if_none:"" }}
+                                {% else %}
+                                    {{ data.dernier_historique.date_fin_police|date:'d/m/Y'|default_if_none:"" }}
+                                {% endif %}
+                            </td>
                             <td class="">
                                 <span class="badge badge-{{ data.police.etat_police|default_if_none:''|slugify }}">
                                     {{ data.police.etat_police|default_if_none:"" }}

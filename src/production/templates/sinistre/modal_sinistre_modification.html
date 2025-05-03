@@ -94,7 +94,7 @@
 							</div>
 
 							<div class="tab-pane fade mt-3" id="etape_sinistre_suivi" role="tabpanel" aria-labelledby="etape_sinistre_suivi-tab">
-								<div class="row">
+								<div class="row verification_garantie" style="display:none">
 									<div class="col-12">
 										<div class="verification-garanties-container">
 											<div class="radio-buttons-container">
@@ -115,6 +115,97 @@
 														</span>
 													</label>
 												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+								<div class="row accuse_reception_client" style="display:none">
+									<div class="col-12">
+										<h3>Conception en cours...</h3>
+									</div>
+								</div>
+								<div class="row nomination_expert" style="display:none">
+									<div class="col-md-12 text-uppercase" style="margin-bottom:10px !important; border-top:2px solid #F16623">
+										<h6><mark class="match">Coordonnées</mark></h6>
+									</div>
+									<div class="col-md-6">
+
+										<div class="form-group row">
+											<label class="col-sm-5 col-form-label">{{_("Nom")}} <span class="required">*</span></label>
+											<div class="col-sm-7">
+												<input type="text" class="form-control champ_obligatoire" name="nom" id="nom" autocomplete="off" value="" required>
+											</div>
+										</div>
+										<div class="form-group row">
+											<label class="col-sm-5 col-form-label">{{_("Téléphone")}}</label>
+											<div class="col-sm-7">
+												<input type="text" class="form-control" name="telephone" id="telephone" autocomplete="off" value="" onkeypress="isInputNumber(event)">
+											</div>
+										</div>
+										<div class="form-group row">
+											<label class="col-sm-5 col-form-label">{{_("Email")}}</label>
+											<div class="col-sm-7">
+												<input type="email" class="form-control" name="email" id="email" autocomplete="off" value="">
+											</div>
+										</div>
+									</div>
+									<div class="vl"></div>
+									<div class="col-md-5" style="border-left:0px;">
+
+										<div class="form-group row">
+											<label class="col-sm-5 col-form-label">{{_("Prénoms")}} <span class="required">*</span></label>
+											<div class="col-sm-7">
+												<input type="text" class="form-control champ_obligatoire" name="prenoms" id="prenoms" autocomplete="off" value="" required>
+											</div>
+										</div>
+										<div class="form-group row">
+											<label class="col-sm-5 col-form-label">{{_("Portable")}} <span class="required">*</span></label>
+											<div class="col-sm-7">
+												<input type="text" class="form-control champ_obligatoire" name="portable" id="portable" autocomplete="off" value="" onkeypress="isInputNumber(event)" required>
+											</div>
+										</div>
+										<div class="form-group row">
+											<label class="col-sm-5 col-form-label">{{_("Fax")}}</label>
+											<div class="col-sm-7">
+												<input type="text" class="form-control" name="fax" id="fax" autocomplete="off" onkeypress="isInputNumber(event)" value="">
+											</div>
+										</div>
+									</div>
+
+									<div class="col-md-12 text-uppercase" style="margin-bottom:10px !important; border-top:2px solid #F16623">
+										<h6><mark class="match">Adresses</mark></h6>
+									</div>
+									<div class="col-md-6">
+										<div class="form-group row">
+											<label class="col-sm-5 col-form-label">{{_("Code postal")}}</label>
+											<div class="col-sm-7">
+												<input type="text" class="form-control" name="code_postal" id="code_postal" autocomplete="off" value="">
+											</div>
+										</div>
+										<div class="form-group row">
+											<label class="col-sm-5 col-form-label">{{_('Pays')}} <span class="required">*</span></label>
+											<div class="col-sm-7">
+												<select class="form-control tags-multiple champ_obligatoire" name="pays_id" id="pays_id" autocomplete="off" required>
+													<option value="">{{_('Choisir')}}</option>
+													{% for p in pays %}
+														<option value="{{ p.id }}" {% if p.code == "CI" %} selected {% endif %}>{{ p.nom }}</option>
+													{% endfor %}
+												</select>
+											</div>
+										</div>
+									</div>
+									<div class="vl"></div>
+									<div class="col-md-5" style="border-left:0px;">
+										<div class="form-group row">
+											<label class="col-sm-5 col-form-label">{{_("Boite postale")}}</label>
+											<div class="col-sm-7">
+												<input type="text" class="form-control" name="boite_postale" id="boite_postale" autocomplete="off" value="">
+											</div>
+										</div>
+										<div class="form-group row">
+											<label class="col-sm-5 col-form-label">{{_("Ville")}}</label>
+											<div class="col-sm-7">
+												<input type="text" class="form-control" name="ville" id="ville" autocomplete="off" value="">
 											</div>
 										</div>
 									</div>

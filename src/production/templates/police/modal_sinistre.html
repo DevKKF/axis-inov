@@ -1,21 +1,5 @@
 {% load i18n static jazzmin admin_urls %}
 {% load my_filters %}
-<style>
-	.suggestion {
-		border: 1px solid #ddd;
-		background: #fff;
-		position: absolute;
-		width: 100%;
-		max-height: 250px;
-		overflow-y: auto;
-		z-index: 1000;
-		box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-	}
-
-	.suggest-item:hover {
-		background-color: #f0f0f0;
-	}
-</style>
 <div  class="modal fade" id="modal-sinistre" data-backdrop="static" data-keyboard="false" aria-hidden="true"  style="display: none">
 	<div class="modal-dialog modal-xl">
 		<div class="modal-content">
@@ -23,21 +7,21 @@
 			{% csrf_token %}
 			<input type="hidden" id="police_id" data-police-id="{{ police.id }}" value="{{ police.id }}">
 			<div class="modal-header">
-				<h4 class="modal-title">CREER UN SINISTRE</h4>
+				<h4 class="modal-title">{{_("CREER UN SINISTRE")}}</h4>
 				<button type="button" class="close"data-dismiss="modal"aria-label="Close">
 					<span aria-hidden="true">×</span>
 				</button>
 			</div>
 			<div class="modal-body">
 				<div class="alert  alert-dismissible fade show hidden" role="alert">
-				  <span class="message">TRAITEMENT EN COURS</span>
+				  <span class="message">{{_("TRAITEMENT EN COURS")}}</span>
 				</div>
 				<div class="col-md-12 offset-0">
 					<ul class="nav nav-tabs" id="myTab" role="tablist">
-						<li class="nav-item text-uppercase"><a class="nav-link active" id="identity-tab" data-toggle="tab" href="#identity" role="tab" aria-controls="identity" aria-selected="true">Information du contrat</a></li>
-						<li class="nav-item text-uppercase"><a class="nav-link" id="declaration_sinistre-tab" data-toggle="tab" href="#declaration_sinistre" role="tab" aria-controls="declaration_sinistre" aria-selected="false">Déclaration du sinistre</a></li>
-						<!--li class="nav-item text-uppercase"><a class="nav-link" id=intervenant-tab" data-toggle="tab" href="#intervenant" role="tab" aria-controls="intervenant" aria-selected="false">Intervenants</a></li>
-						<li class="nav-item text-uppercase"><a class="nav-link" id=provision-tab" data-toggle="tab" href="#provision" role="tab" aria-controls="provision" aria-selected="false">Provision</a></li-->
+						<li class="nav-item text-uppercase"><a class="nav-link active" id="identity-tab" data-toggle="tab" href="#identity" role="tab" aria-controls="identity" aria-selected="true">{{_("Information du contrat")}}</a></li>
+						<li class="nav-item text-uppercase"><a class="nav-link" id="declaration_sinistre-tab" data-toggle="tab" href="#declaration_sinistre" role="tab" aria-controls="declaration_sinistre" aria-selected="false">{{_("Déclaration du sinistre")}}</a></li>
+						<li class="nav-item text-uppercase"><a class="nav-link" id=intervenant-tab" data-toggle="tab" href="#intervenant" role="tab" aria-controls="intervenant" aria-selected="false">{{_("Intervenants")}}</a></li>
+						<li class="nav-item text-uppercase"><a class="nav-link" id=provision-tab" data-toggle="tab" href="#provision" role="tab" aria-controls="provision" aria-selected="false">{{_("Provision")}}</a></li>
 					</ul>
 					<div class="tab-content" id="myTabContent">
 
@@ -45,69 +29,44 @@
 							<div class="row">
 								<div class="col-md-6">
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">Code assuré</label>
+										<label class="col-sm-5 col-form-label">{{_("Code assuré")}} </label>
 										<div class="col-sm-7">
 											<span class="form-control">{{ client.code|default:client.code_provisoire|default:"" }}</span>
 										</div>
 									</div>
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">N° Contrat</label>
+										<label class="col-sm-5 col-form-label">{{_("N° Contrat")}}</label>
 										<div class="col-sm-7">
 											<span class="form-control">{{ police.numero|default:police.numero_provisoire|default:"" }}</span>
 										</div>
 									</div>
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">Branche</label>
+										<label class="col-sm-5 col-form-label">{{_("Branche")}} </label>
 										<div class="col-sm-7">
 											<input type="hidden" name="branche_id" id="branche_id" data-branche-id="{{ police.produit.branche_id }}" value="{{ police.produit.branche_id }}" class="form-control">
 											<span class="form-control" title="{{ police.produit.branche.nom|default_if_none:'' }}">{{ police.produit.branche.nom|default_if_none:""|slice:":35" }}</span>
-										</div>
-									</div>
-									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">Date début</label>
-										<div class="col-sm-7">
-											<span class="form-control" style="border: 2px solid {{ border_date_color }} " >{{ police.date_debut_effet|date:'d/m/Y' }}</span>
-										</div>
-									</div>
-									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">Commercial</label>
-										<div class="col-sm-7">
-											<span class="form-control" title="{{ police.commercial.first_name|default_if_none:'' }} {{ police.commercial.last_name|default_if_none:'' }}">{{ police.commercial.last_name|default_if_none:'' }} {{ police.commercial.first_name|default_if_none:'' }}</span>
 										</div>
 									</div>
 								</div>
 								<div class="vl"></div>
 								<div class="col-md-5" style="border-left:0px;">
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">Nom assuré</label>
+										<label class="col-sm-5 col-form-label">{{_("Nom assuré")}} </label>
 										<div class="col-sm-7">
 											<span class="form-control">{{ client.nom|default_if_none:'' }} {{ client.prenoms|default_if_none:'' }}</span>
 										</div>
 									</div>
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">Compagnie</label>
+										<label class="col-sm-5 col-form-label">{{_("Compagnie")}} </label>
 										<div class="col-sm-7">
 											<input type="hidden" name="compagnie_id" id="compagnie_id" value="{{ assureur_police.compagnie_id }}" class="form-control">
 											<span class="form-control">{{ assureur_police.compagnie.nom|default_if_none:"" }}</span>
 										</div>
 									</div>
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">Produit</label>
+										<label class="col-sm-5 col-form-label">{{_("Produit")}} </label>
 										<div class="col-sm-7">
-											<input type="hidden" name="produit_id" id="produit_id" data-produit-id="{{ police.produit_id }}" value="{{ police.produit_id }}" class="form-control">
 											<span class="form-control" title="{{ police.produit.nom|default_if_none:'' }}">{{ police.produit.nom|default_if_none:""|slice:":35" }}</span>
-										</div>
-									</div>
-									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">Date échéance ou fin</label>
-										<div class="col-sm-7">
-											<span class="form-control" style="border: 2px solid {{ border_date_color }}">{{ police.date_echeance }}</span>
-										</div>
-									</div>
-									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">Etat de la police</label>
-										<div class="col-sm-7">
-											<span class="form-control" title="{{ police.etat_police }}">{{ police.etat_police }}</span>
 										</div>
 									</div>
 								</div>
@@ -116,109 +75,53 @@
 
 						<div class="tab-pane fade mt-3" id="declaration_sinistre" role="tabpanel" aria-labelledby="declaration_sinistre-tab">
 							<div class="row" style="max-height:550px;">
-								<!-- POLICE AUTOMOBILE INFORMATIONS -->
-								<div class="col-md-12 text-uppercase branche_auto" style="margin-bottom:10px !important; border-top:2px solid #F16623">
-									<h6><mark class="match">Véhicules et informations</mark></h6>
-								</div>
-								<div class="col-md-6 branche_auto branche_auto_left">
-									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">Recherche un véhicule</label>
-										<div class="col-sm-7">
-											<input type="text" class="form-control" id="search_vehicule" value="" required>
-											<input type="hidden" name="vehicule_id" id="vehicule_id">
-											<div class="suggestion"></div>
-										</div>
-									</div>
-									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">N° série</label>
-										<div class="col-sm-7">
-											<input type="text" class="form-control" name="num_serie" id="num_serie" readonly style="background:#fff !important">
-										</div>
-									</div>
-									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">Marque</label>
-										<div class="col-sm-7">
-											<input type="text" class="form-control" name="marque" id="marque" readonly style="background:#fff !important">
-										</div>
-									</div>
-									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">Date d'entrée</label>
-										<div class="col-sm-7">
-											<input type="text" class="form-control" name="date_entree" id="date_entree" readonly style="background:#fff !important">
-										</div>
-									</div>
-								</div>
-								<div class="vl branche_auto"></div>
-								<div class="col-md-5 branche_auto branche_auto_right" style="border-left:0px;">
-									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">N° Immatriculation</label>
-										<div class="col-sm-7">
-											<input type="text" class="form-control" name="immatriculation" id="immatriculation" readonly style="background:#fff !important">
-										</div>
-									</div>
-									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">Modèle</label>
-										<div class="col-sm-7">
-											<input type="text" class="form-control" name="modele" id="modele" readonly style="background:#fff !important">
-										</div>
-									</div>
-									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">Usage</label>
-										<div class="col-sm-7">
-											<input type="text" class="form-control" name="usage" id="usage" readonly style="background:#fff !important">
-										</div>
-									</div>
-									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">Date de sortie</label>
-										<div class="col-sm-7">
-											<input type="text" class="form-control" name="date_sortie" id="date_sortie" readonly style="background:#fff !important">
-										</div>
-									</div>
-								</div>
-
-								<div class="col-md-12 text-uppercase branche_autre" style="margin-bottom:10px !important; border-top:2px solid #F16623">
-									<h6><mark class="match">Information risque sur la police</mark></h6>
-								</div>
-								<div class="col-md-11 branche_autre">
-									<div class="form-group row">
-										<label class="col-sm-3 col-form-label">Risque définit sur la police <span class="required">*</span></label>
-										<div class="col-sm-9">
-											<input type="hidden" class="form-control" name="autre_risque_id" value="{{ aliment.autre_risque.id }}">
-											<input type="text" class="form-control" name="autre_risque" value="{{ aliment.autre_risque.risque }}">
-										</div>
-									</div>
-									<div class="form-group row d-none">
-										<label class="col-sm-5 col-form-label">Numéro sinistre</label>
-										<div class="col-sm-7">
-											<input type="text" class="form-control" name="numero" autocomplete="off" value="" />
-										</div>
-									</div>
-								</div>
-
 								<div class="col-md-12 text-uppercase" style="margin-bottom:10px !important; border-top:2px solid #F16623">
-									<h6><mark class="match">Date et lieu</mark></h6>
+									<h6><mark class="match">Evénement</mark></h6>
 								</div>
 								<div class="col-md-6">
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">Lieu de survenance</label>
+										<label class="col-sm-5 col-form-label">{{_("Recherche risque")}} </label>
 										<div class="col-sm-7">
-											<input type="text" class="form-control" name="lieu_survenance" id="lieu_survenance" autocomplete="off" value="">
+											{% if police.produit.code == '10001' or police.produit.code == '10002' %}
+												<select class="form-control tags-multiple vehicule" name="vehicule_id" id="vehicule_id">
+													<option value=""></option>
+													{% for aliment in aliments %}
+														<option value="{{ aliment.vehicule.id }}">{{ aliment.vehicule.marque|default_if_none:"" }}-{{ aliment.vehicule.numero_immatriculation|default_if_none:"" }}</option>
+													{% endfor %}
+												</select>
+											{% elif police.produit.code == '50001' or police.produit.code == '50002' %}
+												<select class="form-control tags-multiple marchandise" name="marchandise_id" id="marchandise_id">
+													<option value=""></option>
+													{% for aliment in aliments %}
+														<option value="{{ aliment.marchandise.id }}">{{ aliment.marchandise.num_certificat|default_if_none:"" }}</option>
+													{% endfor %}
+												</select>
+											{% else %}
+												<input type="text" class="form-control" readonly>
+												<input type="hidden" class="form-control" name="autre_risque_id" value="{{ aliment.autre_risque_id }}">
+											{% endif %}
 										</div>
 									</div>
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">Date déclaration <span class="required">*</span></label>
+										<label class="col-sm-5 col-form-label">{{_("Date survenance")}} <span class="required">*</span></label>
 										<div class="col-sm-7">
-											<input type="date" class="form-control" name="date_declaration" id="date_declaration" autocomplete="off" value="" required>
+											<input type="date" class="form-control" name="date_survenance" id="date_survenance" autocomplete="off" value="" required>
 										</div>
 									</div>
-									<div class="form-group row d-none">
-										<label class="col-sm-5 col-form-label">Date clôture</label>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Date ouverture")}} <span class="required">*</span></label>
+										<div class="col-sm-7">
+											<input type="date" class="form-control" name="date_ouverture" id="date_ouverture" autocomplete="off" value="{{ today|date:'Y-m-d' }}" max="{{ today|date:'Y-m-d' }}" required>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Date clôture")}}</label>
 										<div class="col-sm-7">
 											<input type="date" class="form-control" name="date_cloture" id="date_cloture" autocomplete="off" value="">
 										</div>
 									</div>
-									<div class="form-group row d-none">
-										<label class="col-sm-5 col-form-label">Numéro sinistre</label>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Numéro sinistre")}}</label>
 										<div class="col-sm-7">
 											<input type="text" class="form-control" name="numero" autocomplete="off" value="" />
 										</div>
@@ -226,32 +129,49 @@
 								</div>
 								<div class="vl"></div>
 								<div class="col-md-5" style="border-left:0px;">
+
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">Date survenance <span class="required">*</span></label>
+										<label class="col-sm-5 col-form-label">{{_("Risque")}} <span class="required">*</span></label>
 										<div class="col-sm-7">
-											<input type="date" class="form-control" name="date_survenance" id="date_survenance" autocomplete="off" value="" required>
+											{% if police.produit.code == '10001' or police.produit.code == '10002' %}
+												<input type="text" class="form-control" name="risque" id="risque" readonly required>
+											{% elif police.produit.code == '50001' or police.produit.code == '50002' %}
+												<input type="text" class="form-control" name="risque" id="marchandise" value="{{ aliment.marchandise.num_certificat }}" required>
+											{% else %}
+												<input type="text" class="form-control" name="risque" id="risque" value="{{ aliment.autre_risque.libelle }}" required>
+											{% endif %}
 										</div>
 									</div>
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">Date ouverture <span class="required">*</span></label>
+										<label class="col-sm-5 col-form-label">{{_("Date déclaration")}} <span class="required">*</span></label>
 										<div class="col-sm-7">
-											<input type="date" class="form-control" name="date_ouverture" id="date_ouverture" autocomplete="off" value="{{ today|date:'Y-m-d' }}" max="{{ today|date:'Y-m-d' }}" required>
+											<input type="date" class="form-control" name="date_declaration" id="date_declaration" autocomplete="off" value="" required>
 										</div>
 									</div>
-									<div class="form-group row d-none">
-										<label class="col-sm-5 col-form-label">Date réouverture</label>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Date réouverture")}}</label>
 										<div class="col-sm-7">
 											<input type="date" class="form-control" name="date_reouverture" id="date_reouverture" autocomplete="off" value="">
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Sinistre avec recours")}} ? <span class="required">*</span></label>
+										<div class="col-sm-7" style="margin-top:10px">
+											<input type="radio" value="OUI" name="sinistre_recours" id="sinistre_recours_oui">
+											<label class="form-check-label" for="sinistre_recours_oui">OUI</label>
+
+											<input type="radio" value="NON" name="sinistre_recours" id="sinistre_recours_non" class="ml-3" checked>
+											<label class="form-check-label" for="sinistre_recours_non">NON</label>
 										</div>
 									</div>
 								</div>
 
 								<div class="col-md-12 text-uppercase" style="margin-bottom:10px !important; border-top:2px solid #F16623">
-									<h6><mark class="match">Caractéristiques</mark></h6>
+									<h6><mark class="match">Caractéristiques principales</mark></h6>
 								</div>
 								<div class="col-md-6">
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">Circonstance <span class="required">*</span></label>
+										<label class="col-sm-5 col-form-label">{{_("Circonstance")}} <span class="required">*</span></label>
 										<div class="col-sm-7">
 											<select class="form-control" name="circonstance_id" id="circonstance_id" required>
 												<option value="">Choisir</option>
@@ -261,8 +181,20 @@
 											</select>
 										</div>
 									</div>
+									<div class="form-group row" id="saisie_circonstance_bloc" style="display:none">
+										<label class="col-sm-5 col-form-label">{{_("Saisie la circonstance")}} <span class="required">*</span></label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control" name="saisie_circonstance" id="saisie_circonstance" autocomplete="off" value="">
+										</div>
+									</div>
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">TVA récupérée</label>
+										<label class="col-sm-5 col-form-label">{{_("Lieu de survenance")}}</label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control" name="lieu_survenance" id="lieu_survenance" autocomplete="off" value="">
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("TVA récupérée")}}</label>
 										<div class="col-sm-7">
 											<select class="form-control" name="tva_recuperee" id="tva_recuperee">
 												<option value="">Choisir</option>
@@ -271,24 +203,12 @@
 											</select>
 										</div>
 									</div>
-									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">Franchise</label>
-										<div class="col-sm-7">
-											<input type="text" class="form-control money_field" name="franchise" id="franchise" autocomplete="off" value="">
-										</div>
-									</div>
 								</div>
 								<div class="vl"></div>
 								<div class="col-md-5" style="border-left:0px;">
 
-									<div class="form-group row" id="saisie_circonstance_bloc" style="display:none">
-										<label class="col-sm-5 col-form-label">Saisie la circonstance <span class="required">*</span></label>
-										<div class="col-sm-7">
-											<input type="text" class="form-control" name="saisie_circonstance" id="saisie_circonstance" autocomplete="off" value="">
-										</div>
-									</div>
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">Type sinistre <span class="required">*</span></label>
+										<label class="col-sm-5 col-form-label">{{_("Type sinistre")}} <span class="required">*</span></label>
 										<div class="col-sm-7">
 											<select class="form-control" name="type_sinistre_id" id="type_sinistre_id" required>
 												<option value="">Choisir</option>
@@ -298,8 +218,14 @@
 											</select>
 										</div>
 									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">{{_("Franchise")}}</label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control money_field" name="franchise" id="franchise" autocomplete="off" value="">
+										</div>
+									</div>
 									<div class="form-group row" id="responsabilite" style="display:none">
-										<label class="col-sm-5 col-form-label">Taux de responsabilité <span class="required">*</span></label>
+										<label class="col-sm-5 col-form-label">{{_("Taux de responsabilité")}} <span class="required">*</span></label>
 										<div class="col-sm-7">
 											<select class="form-control" name="responsabilite_id" id="responsabilite_id">
 												<option value="">Choisir</option>
@@ -309,18 +235,6 @@
 											</select>
 										</div>
 									</div>
-									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">Statut ouverture <span class="required">*</span></label>
-										<div class="col-sm-7">
-											{% if border_date_color == 'green' %}
-												<input type="hidden" name="statut_ouverture_sinistre" class="form-control" value="OUI">
-												<input type="text" class="form-control" value="Ouverture sinistre possible" readonly>
-											{% else %}
-												<input type="hidden" name="statut_ouverture_sinistre" class="form-control" value="NON">
-												<input type="text" class="form-control" value="Passera en rejet système" readonly>
-											{% endif %}
-										</div>
-									</div>
 								</div>
 
 								<div class="col-md-12 text-uppercase" style="margin-bottom:10px !important; border-top:2px solid #F16623">
@@ -328,37 +242,37 @@
 								</div>
 								<div class="col-md-12">
 									<div class="form-group row">
-										<label class="col-sm-12 col-form-label">Fait générateur </label>
-										<div class="col-sm-11">
+										<label class="col-sm-12 col-form-label">{{_("Fait générateur")}} </label>
+										<div class="col-sm-12">
 											<textarea class="form-control" name="fait_generateur" id="fait_generateur" cols="3" rows="1"></textarea>
 										</div>
 									</div>
 									<div class="form-group row">
-										<label class="col-sm-12 col-form-label">Point de choc </label>
-										<div class="col-sm-11">
+										<label class="col-sm-12 col-form-label">{{_("Point de choc")}} </label>
+										<div class="col-sm-12">
 											<textarea class="form-control" name="point_de_choc" id="point_de_choc" cols="3" rows="2"></textarea>
 										</div>
 									</div>
 									<div class="form-group row">
-										<label class="col-sm-12 col-form-label">Commentaire </label>
-										<div class="col-sm-11">
+										<label class="col-sm-12 col-form-label">{{_("Commentaire")}} </label>
+										<div class="col-sm-12">
 											<textarea class="form-control" name="commentaire" id="commentaire" cols="10" rows="5"></textarea>
 										</div>
 									</div>
 								</div>
 
-								<div class="col-md-12 text-uppercase d-none" style="margin-bottom:10px !important; border-top:2px solid #F16623">
+								<div class="col-md-12 text-uppercase" style="margin-bottom:10px !important; border-top:2px solid #F16623">
 									<h6><mark class="match">Garanties mise en cause</mark></h6>
 								</div>
-								<div class="col-md-12 d-none" id="test_garantie_sinistre">
+								<div class="col-md-12" id="test_garantie_sinistre">
 									<span class="btn btn-success mb-2" id="btn-ajout-garantie"><i class="fa fa-plus-circle"></i> Ajout de garantie</span>
 									<table id="table_garantie_sinistre" style="width:100%;" class="table table-bordered table-striped dataTable_ dtr-inline">
 										<thead>
 											<tr>
 												<th style="width:5%"></th>
-												<th>Libellé</th>
-												<th class="text-center" style="width:20%">Mouvement</th>
-												<th class="text-center" style="width:20%;">Date</th>
+												<th>{{_("Libellé")}}</th>
+												<th class="text-center" style="width:20%">{{_("Mouvement")}}</th>
+												<th class="text-center" style="width:20%;">{{_("Date")}}</th>
 											</tr>
 										</thead>
 										<tbody></tbody>
@@ -426,5 +340,6 @@
         }
     }
 </script>
+
 {% include 'police/modal_sinistre_garantie.html' %}
 {% include 'police/modal_sinistre_intervenant.html' %}

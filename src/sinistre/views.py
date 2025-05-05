@@ -97,7 +97,7 @@ class SaisieSinistreView(TemplateView):
 
 
 @csrf_exempt
-def recherche_client_police(request):
+def recherche_clientpolice(request):
     if request.method == 'POST':
         numero_client = request.POST.get('nc', '').strip().upper()
         nom_client = request.POST.get('nomc', '').strip().upper()
@@ -167,6 +167,91 @@ def recherche_client_police(request):
         ]
 
         return JsonResponse({'success': True, 'polices': police_list})
+
+    return JsonResponse({'success': False, 'message': 'Méthode non autorisée.'})
+
+
+@csrf_exempt
+def recherche_client_police(request):
+    if request.method == 'POST':
+        client_id = request.POST.get('search_client_id', '').strip().upper()
+        numero_police = request.POST.get('search_numero_police', '').strip().upper()
+
+        if not client_id and not numero_police:
+            return JsonResponse({'success': False, 'message': 'Aucun champ de recherche saisi.'})
+
+        # Recherche stricte par id
+        if client_id:
+
+            client = Client.objects.filter(id=client_id).first()
+
+            polices_qs = (Police.objects.filter(client=client).exclude(Q(statut="ANNULE") | Q(statut="INACTIF")))
+
+            # Vérification si des polices existent
+            if not polices_qs.exists():
+                return JsonResponse({'success': False, 'message': 'Aucune police active trouvée pour ce client.'})
+
+            polices = []
+            for plc in polices_qs:
+                dernier_historique = HistoriquePolice.objects.filter(police_id=plc.id).order_by('-date_du_jour').first()
+                assureur_police = PoliceAssureur.objects.filter(historique_police_id=dernier_historique.id, type_compagnie_id=1).first() if dernier_historique else []
+                polices.append({
+                    'id': plc.id,
+                    'numero': plc.numero,
+                    'produit': plc.produit.nom,
+                    'assureur': assureur_police.compagnie.nom,
+                    'date_debut': plc.date_debut_effet.strftime("%d/%m/%Y") if plc.date_debut_effet else '',
+                    'date_echeance': plc.date_fin_effet.strftime("%d/%m/%Y") if plc.date_fin_effet else (plc.date_fin_police.strftime("%d/%m/%Y") if plc.date_fin_police else None),
+                })
+        if numero_police:
+            polices_qs = (Police.objects.filter(numero=numero_police).exclude(Q(statut="ANNULE") | Q(statut="INACTIF")))
+
+            # Vérification si des polices existent
+            if not polices_qs.exists():
+                return JsonResponse({'success': False, 'message': 'Aucune police active trouvée pour ce client.'})
+
+            polices = []
+            for plc in polices_qs:
+                dernier_historique = HistoriquePolice.objects.filter(police_id=plc.id).order_by('-date_du_jour').first()
+                assureur_police = PoliceAssureur.objects.filter(historique_police_id=dernier_historique.id,
+                                                                type_compagnie_id=1).first() if dernier_historique else []
+                polices.append({
+                    'id': plc.id,
+                    'numero': plc.numero,
+                    'produit': plc.produit.nom,
+                    'assureur': assureur_police.compagnie.nom,
+                    'date_debut': plc.date_debut_effet.strftime("%d/%m/%Y") if plc.date_debut_effet else '',
+                    'date_echeance': plc.date_fin_effet.strftime("%d/%m/%Y") if plc.date_fin_effet else (
+                        plc.date_fin_police.strftime("%d/%m/%Y") if plc.date_fin_police else None),
+                })
+
+        if client_id and numero_police:
+            client = Client.objects.filter(id=client_id).first()
+
+            polices_qs = (Police.objects.filter(client=client, numero=numero_police).exclude(Q(statut="ANNULE") | Q(statut="INACTIF")))
+
+            # Vérification si des polices existent
+            if not polices_qs.exists():
+                return JsonResponse({'success': False, 'message': 'Aucune police active trouvée pour ce client.'})
+
+            polices = []
+            for plc in polices_qs:
+                dernier_historique = HistoriquePolice.objects.filter(police_id=plc.id).order_by('-date_du_jour').first()
+                assureur_police = PoliceAssureur.objects.filter(historique_police_id=dernier_historique.id,
+                                                                type_compagnie_id=1).first() if dernier_historique else []
+                polices.append({
+                    'id': plc.id,
+                    'numero': plc.numero,
+                    'produit': plc.produit.nom,
+                    'assureur': assureur_police.compagnie.nom,
+                    'date_debut': plc.date_debut_effet.strftime("%d/%m/%Y") if plc.date_debut_effet else '',
+                    'date_echeance': plc.date_fin_effet.strftime("%d/%m/%Y") if plc.date_fin_effet else (
+                        plc.date_fin_police.strftime("%d/%m/%Y") if plc.date_fin_police else None),
+                })
+        else:
+            pass
+
+        return JsonResponse({'success': True, 'polices': polices})
 
     return JsonResponse({'success': False, 'message': 'Méthode non autorisée.'})
 

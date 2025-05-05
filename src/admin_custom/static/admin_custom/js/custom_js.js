@@ -26507,8 +26507,8 @@ $(document).ready(function () {
     $('#btn_search_client_police').click(function() {
         let formulaire = $('#form_choose_client');
         let href = formulaire.attr('action');
-        var numeroClient = $('#search_numero_client').val().toUpperCase();
-        var nomClient = $('#search_nom_client').val().toUpperCase();
+        var ClientId = $('#search_client_id').val().toUpperCase();
+        var NumeroPolice = $('#search_numero_police').val().toUpperCase();
         var $tableBody = $('#table_liste_police tbody');
         $tableBody.empty();
         $('#loading_gif').show();
@@ -26517,8 +26517,8 @@ $(document).ready(function () {
             url: href,
             type: 'POST',
             data: {
-                'nc': numeroClient,
-                'nomc': nomClient,
+                'search_client_id': ClientId,
+                'search_numero_police': NumeroPolice,
                 'csrfmiddlewaretoken': $('input[name=csrfmiddlewaretoken]').val()
             },
             dataType: 'json',
@@ -26549,7 +26549,7 @@ $(document).ready(function () {
                                     "url": "../../static/admin_custom/js/French.json"
                                 },
                                 lengthMenu: [
-                                    [10, 25, 50, 100, -1], [10, 25, 50, 100, "Tout"]
+                                    [100, 250, 500, 1000, -1], [100, 250, 500, 1000, "Tout"]
                                 ],
                                 paging: true,
                                 searching: true,
@@ -26593,8 +26593,8 @@ $(document).ready(function () {
         var police_id = selectedPoliceId;
         if (selectedPoliceId) {
             // Vider le tableau et les champs
-            $('#search_numero_client').val('');
-            $('#search_nom_client').val('');
+            $('#search_client_id').val('');
+            $('#search_numero_police').val('');
             $('#table_liste_police tbody').empty();
 
             // Cacher le tableau

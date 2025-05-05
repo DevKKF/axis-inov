@@ -17,16 +17,21 @@
 					</div>
 					<div class="col-md-12 offset-0">
 						<div class="row">
-							<div class="col-md-6">
+							<div class="col md-8">
 								<div class="form-group">
-									<label>{% trans 'N° Client' %} : </label>
-									<input id="search_numero_client" class="form-control" type="text" name="nc" style="border-radius:3px;border:1px solid rgba(0, 0, 0, 0.3);text-transform:uppercase;" placeholder="N° Client">
+									<label>Client</label>
+									<select class="form-control tags-multiple" id="search_client_id" name="search_client_id" style="border:2px solid var(--colorJauneOlea);">
+										<option value="">Choisir</option>
+										{% for client in clients %}
+											<option  value="{{client.id}}">{{client.nom}} {{client.prenoms}} - ({{client.code}})</option>
+										{% endfor %}
+									</select>
 								</div>
 							</div>
-							<div class="col-md-6">
+							<div class="col-md-4">
 								<div class="form-group">
-									<label>{% trans 'Nom ou Prénoms complet' %} : </label>
-									<input id="search_nom_client" class="form-control" type="text" name="nomc" style="border-radius:3px;border:1px solid rgba(0, 0, 0, 0.3);text-transform:uppercase;" placeholder="{% trans 'Nom ou Prénoms complet' %}">
+									<label>N° Police</label>
+									<input id="search_numero_police" class="form-control" type="text" name="search_numero_police" style="border-radius:3px;border:1px solid rgba(0, 0, 0, 0.3);text-transform:uppercase;" placeholder="Numéro de police">
 								</div>
 							</div>
 							<div class="col-md-12">
@@ -39,12 +44,12 @@
                         <table id="table_liste_police" style="width:100%;" class="table table-bordered table-striped dataTable dtr-inline">
                             <thead>
                                 <tr>
-                                    <th style="width:5%">##</th>
+                                    <th style="width:2%"></th>
                                     <th>{{_("Numéro")}}</th>
                                     <th class="text-center">{{_("Produit")}}</th>
                                     <th class="text-center">{{_("Assureur")}}</th>
-                                    <th class="text-center">{{_("Date début")}}</th>
-                                    <th class="text-center">{{_("Date échéance")}}</th>
+                                    <th class="text-center" style="width:3%">{{_("Date début")}}</th>
+                                    <th class="text-center" style="width:3%">{{_("Date échéance")}}</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -63,9 +68,3 @@
 		</div>
 	</div>
 </div>
-
-<script>
-$(document).ready(function() {
-
-});
-</script>

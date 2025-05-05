@@ -712,10 +712,10 @@ $(document).ready(function () {
             return;
         }
 
-        let VehiculePage = $('.vehicule');
-        let AlimentPage = $('.aliment');
-        let MarchandisePage = $('.marchandise');
-        let RisquePage = $('.risque');
+        let VehiculePage = $('#modal-modification_police .vehicule');
+        let AlimentPage = $('#modal-modification_police .aliment');
+        let MarchandisePage = $('#modal-modification_police .marchandise');
+        let RisquePage = $('#modal-modification_police .risque');
 
         $.ajax({
             type: 'get',
@@ -726,15 +726,19 @@ $(document).ready(function () {
                 initialiserOnglets();
 
                 if (produit_code == 10001) {
+                    console.log("Mono-Véhicule");
                     VehiculePage.show();
                     afficherOngletAvecChamps('#vehicule-tab_modification', '.vehicule_champ_obligatoire');
                 } else if (produit_code == 10002) {
+                    console.log("Flotte-Autos");
                     AlimentPage.show();
                     afficherOngletAvecChamps('#aliment-tab_modification', '.mod_aliment_champ_obligatoire');
                 } else if (produit_code == 50001 || produit_code == 50002) {
+                    console.log("Marchandises");
                     MarchandisePage.show();
                     afficherOngletAvecChamps('#marchandise-tab_modification', '.marchandise_champ_obligatoire');
                 } else {
+                    console.log("Autres Risques");
                     RisquePage.show();
                     afficherOngletAvecChamps('#risque-tab_modification');
                 }

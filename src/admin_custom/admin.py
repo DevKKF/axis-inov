@@ -15,6 +15,7 @@ from production.models import Police
 from shared.enum import StatutSinistre, Statut, StatutValidite
 # Register your models here.
 from sinistre.models import DossierSinistre
+import pandas as pd
 
 
 class CustomAdminSite(admin.AdminSite):

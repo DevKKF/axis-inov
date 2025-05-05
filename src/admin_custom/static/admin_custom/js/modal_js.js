@@ -712,11 +712,11 @@ $(document).ready(function () {
             return;
         }
 
-        let VehiculePage = $('#modal-modification_police .vehicule');
-        let AlimentPage = $('#modal-modification_police .aliment');
-        let MarchandisePage = $('#modal-modification_police .marchandise');
-        let RisquePage = $('#modal-modification_police .risque');
-
+        let VehiculePage = $('#modal-modification_police .vehicule_menu');
+        let AlimentPage = $('#modal-modification_police .aliment_menu');
+        let MarchandisePage = $('#modal-modification_police .marchandise_menu');
+        let RisquePage = $('#modal-modification_police .risque_menu');
+        alert('Vehicule Page');
         $.ajax({
             type: 'get',
             url: '/production/produit/' + produit_id + '/sous-menu',
@@ -726,19 +726,15 @@ $(document).ready(function () {
                 initialiserOnglets();
 
                 if (produit_code == 10001) {
-                    console.log("Mono-Véhicule");
                     VehiculePage.show();
                     afficherOngletAvecChamps('#vehicule-tab_modification', '.vehicule_champ_obligatoire');
                 } else if (produit_code == 10002) {
-                    console.log("Flotte-Autos");
                     AlimentPage.show();
                     afficherOngletAvecChamps('#aliment-tab_modification', '.mod_aliment_champ_obligatoire');
                 } else if (produit_code == 50001 || produit_code == 50002) {
-                    console.log("Marchandises");
                     MarchandisePage.show();
                     afficherOngletAvecChamps('#marchandise-tab_modification', '.marchandise_champ_obligatoire');
                 } else {
-                    console.log("Autres Risques");
                     RisquePage.show();
                     afficherOngletAvecChamps('#risque-tab_modification');
                 }
@@ -1059,7 +1055,7 @@ $(document).ready(function () {
             NominationExpert.show();
         }
         else{
-            console.log('en cours...');
+            console.log('Chargement en cours...');
         }
 
     });

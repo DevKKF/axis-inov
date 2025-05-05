@@ -712,32 +712,25 @@ $(document).ready(function () {
             return;
         }
 
-        let VehiculePage = $('#modal-modification_police .vehicule_menu');
-        let AlimentPage = $('#modal-modification_police .aliment_menu');
-        let MarchandisePage = $('#modal-modification_police .marchandise_menu');
-        let RisquePage = $('#modal-modification_police .risque_menu');
-        alert('Vehicule Page');
         $.ajax({
             type: 'get',
             url: '/production/produit/' + produit_id + '/sous-menu',
             success: function (produit) {
                 let produit_code = produit[0].fields.code;
 
-                initialiserOnglets();
+                console.log('produit_code : ', produit_code);
 
-                if (produit_code == 10001) {
-                    VehiculePage.show();
+                if (produit_code == 10001){
                     afficherOngletAvecChamps('#vehicule-tab_modification', '.vehicule_champ_obligatoire');
                 } else if (produit_code == 10002) {
-                    AlimentPage.show();
-                    afficherOngletAvecChamps('#aliment-tab_modification', '.mod_aliment_champ_obligatoire');
+                     afficherOngletAvecChamps('#aliment-tab_modification', '.mod_aliment_champ_obligatoire');
                 } else if (produit_code == 50001 || produit_code == 50002) {
-                    MarchandisePage.show();
                     afficherOngletAvecChamps('#marchandise-tab_modification', '.marchandise_champ_obligatoire');
                 } else {
-                    RisquePage.show();
                     afficherOngletAvecChamps('#risque-tab_modification');
                 }
+
+                initialiserOnglets();
             },
             error: function () {
                 console.error('Erreur lors du chargement des sous-menus pour la modification.');
@@ -758,7 +751,29 @@ $(document).ready(function () {
         if (produit_id_initial) {
             handleProduitChange(produit_id_initial);
         }
+
+
+
+        let VehiculePage = $('#modal-modification_police .vehicule_menu').hide();
+        let AlimentPage = $('#modal-modification_police .aliment_menu').hide();
+        let MarchandisePage = $('#modal-modification_police .marchandise_menu').hide();
+        let RisquePage = $('#modal-modification_police .risque_menu').hide();
+        console.log('Ouverture du modal');
+
+        /*if(produit_modif_code){
+            if (produit_modif_code == 10001) {
+                VehiculePage.show();
+            } else if (produit_modif_code == 10002) {
+                AlimentPage.show();
+            } else if (produit_modif_code == 50001 || produit_modif_code == 50002) {
+                MarchandisePage.show();
+            } else {
+                RisquePage.show();
+            }
+        }*/
+
     });
+
 });
 
 

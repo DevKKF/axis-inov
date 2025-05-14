@@ -5528,6 +5528,7 @@ def add_fractionnement(request):
         # Créer une nouveau fractionnement
         fractionnement_created = Fractionnement.objects.create(
             libelle=request.POST.get('libelle'),
+            duree_en_mois=request.POST.get('duree_en_mois'),
             status=request.POST.get('status'),
             created_at=datetime.now(),
         )
@@ -5538,6 +5539,7 @@ def add_fractionnement(request):
             'data': {
                 'id': fractionnement_created.pk,
                 'libelle': fractionnement_created.libelle,
+                'duree_en_mois': fractionnement_created.duree_en_mois,
                 'status': fractionnement_created.status,
             }
         }
@@ -5555,6 +5557,7 @@ def modifier_fractionnement(request, fractionnement_id):
 
         Fractionnement.objects.filter(id=fractionnement_id).update(
                                                     libelle=request.POST.get('libelle'),
+                                                    duree_en_mois=request.POST.get('duree_en_mois'),
                                                     status=request.POST.get('status'),
                                                    )
         response = {
@@ -5563,6 +5566,7 @@ def modifier_fractionnement(request, fractionnement_id):
             'data': {
                 'id': fractionnement.pk,
                 'libelle': fractionnement.libelle,
+                'duree_en_mois': fractionnement.duree_en_mois,
                 'status': fractionnement.status,
             }
         }

@@ -81,19 +81,16 @@ class Client(models.Model):
     ville = models.CharField(max_length=50, blank=True, null=True)
     adresse_postale = models.CharField(max_length=50, blank=True, null=True)
     adresse = models.CharField(max_length=100, blank=True, null=True)
-    commercial = models.ForeignKey(User, related_name='commercial_client', blank=True, null=True,
-                                     on_delete=models.RESTRICT)
+    commercial = models.ForeignKey(User, related_name='commercial_client', blank=True, null=True, on_delete=models.RESTRICT)
     site_web = models.URLField(max_length=100, blank=True, null=True)
     twitter = models.CharField(max_length=100, blank=True, null=True)
     instagram = models.CharField(max_length=100, blank=True, null=True)
     facebook = models.CharField(max_length=100, blank=True, null=True)
-    secteur_activite = models.ForeignKey(SecteurActivite, blank=True, null=True, default=None,
-                                         on_delete=models.SET_NULL)
+    secteur_activite = models.ForeignKey(SecteurActivite, blank=True, null=True, default=None, on_delete=models.SET_NULL)
     ancienne_ref = models.CharField(max_length=100, blank=True, null=True)
     logo = models.ImageField(upload_to=upload_location_client, null=True, blank=True, )
     statut = models.fields.CharField(choices=Statut.choices, default=Statut.ACTIF, max_length=15, null=True)
-    statut_relation = models.fields.CharField(choices=StatutRelation.choices, default=StatutRelation.PROSPECT,
-                                              max_length=15, null=True)
+    statut_relation = models.fields.CharField(choices=StatutRelation.choices, default=StatutRelation.PROSPECT, max_length=15, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     created_by = models.ForeignKey(User, blank=True, null=True, default=None, on_delete=models.RESTRICT)
@@ -139,11 +136,9 @@ class Police(models.Model):
 
     observation = models.CharField(max_length=255, null=True)
 
-    statut_contrat = models.fields.CharField(choices=StatutContrat.choices, default=StatutContrat.PROJET, max_length=15,
-                                             null=True)
+    statut_contrat = models.fields.CharField(choices=StatutContrat.choices, default=StatutContrat.PROJET, max_length=15, null=True)
     statut = models.fields.CharField(choices=StatutPolice.choices, default=StatutPolice.ACTIF, max_length=15, null=True)
-    statut_validite = models.fields.CharField(choices=StatutValidite.choices, default=StatutValidite.VALIDE,
-                                              max_length=15, null=True)
+    statut_validite = models.fields.CharField(choices=StatutValidite.choices, default=StatutValidite.VALIDE, max_length=15, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -171,8 +166,7 @@ class Police(models.Model):
 
     @property
     def is_echue(self):
-        last_mouvement_avenant = MouvementPolice.objects.filter(police_id=self.id,
-                                                                statut_validite=StatutValidite.VALIDE).filter(
+        last_mouvement_avenant = MouvementPolice.objects.filter(police_id=self.id, statut_validite=StatutValidite.VALIDE).filter(
             Q(motif__code='AN') | Q(motif__code='RENOUV')).latest('id')
 
         today = datetime.datetime.now(tz=timezone.utc).date()
@@ -195,8 +189,7 @@ class Police(models.Model):
     def periode_couverture_encours(self, date_survenance=None):
         # Ajouter date_survenance - quand les sinistres seront saisi par les gestionnaires
         try:
-            periode_couverture = PeriodeCouverture.objects.filter(police_id=self.id,
-                                                                  statut_validite=StatutValidite.VALIDE).latest(
+            periode_couverture = PeriodeCouverture.objects.filter(police_id=self.id, statut_validite=StatutValidite.VALIDE).latest(
                 'id')  # remplacer statut=ACTIF par statut_validite=VALIDE
 
             return periode_couverture
@@ -230,8 +223,7 @@ class Police(models.Model):
         query_cdt_dates = Q(date_effet__lte=date_du_jour) & (
                     Q(date_fin_periode_garantie__isnull=True) | Q(date_fin_periode_garantie__gte=date_du_jour))
 
-        mouvement_avenants = MouvementPolice.objects.filter(police_id=self.id,
-                                                            statut_validite=StatutValidite.VALIDE).filter(
+        mouvement_avenants = MouvementPolice.objects.filter(police_id=self.id, statut_validite=StatutValidite.VALIDE).filter(
             Q(motif__code='AN') | Q(motif__code='RENOUV'))  #
         if len(mouvement_avenants) > 1:
             mouvement_avenants.filter(query_cdt_dates)
@@ -249,8 +241,7 @@ class Police(models.Model):
         # today = datetime.datetime.now(tz=timezone.utc).date()
         today = timezone.now().date()
 
-        mouvement = MouvementPolice.objects.filter(police_id=self.id, date_effet__lte=today,
-                                                   statut_validite=StatutValidite.VALIDE).order_by('-id').first()
+        mouvement = MouvementPolice.objects.filter(police_id=self.id, date_effet__lte=today, statut_validite=StatutValidite.VALIDE).order_by('-id').first()
 
         if mouvement:
             return mouvement.motif.etat_police
@@ -261,8 +252,7 @@ class Police(models.Model):
     def etat_police_atdate(self, date_prise_en_charge=None):
         # tenir compte de la date du jour pour déterminer l'état de la police
         today = datetime.datetime.now(tz=timezone.utc).date()
-        mouvement = MouvementPolice.objects.filter(police_id=self.id, date_effet__lte=date_prise_en_charge,
-                                                   statut_validite=StatutValidite.VALIDE).order_by('-id').first()
+        mouvement = MouvementPolice.objects.filter(police_id=self.id, date_effet__lte=date_prise_en_charge, statut_validite=StatutValidite.VALIDE).order_by('-id').first()
 
         if mouvement:
             return mouvement.motif.etat_police
@@ -286,11 +276,9 @@ class HistoriquePolice(models.Model):
     police = models.ForeignKey(Police, related_name="historique_polices", on_delete=models.RESTRICT)
 
     created_by = models.ForeignKey(User, null=True, on_delete=models.RESTRICT)
-    updated_by = models.ForeignKey(User, related_name="historique_police_updated_by", null=True,
-                                   on_delete=models.RESTRICT)
+    updated_by = models.ForeignKey(User, related_name="historique_police_updated_by", null=True, on_delete=models.RESTRICT)
     commercial = models.ForeignKey(User, related_name="histo_commercial", null=True, on_delete=models.RESTRICT)
-    gestionnaire = models.ForeignKey(User, related_name="histo_gestionnaire_sinistre", null=True,
-                                     on_delete=models.RESTRICT)
+    gestionnaire = models.ForeignKey(User, related_name="histo_gestionnaire_sinistre", null=True, on_delete=models.RESTRICT)
     production = models.ForeignKey(User, related_name="histo_production", null=True, on_delete=models.RESTRICT)
     produit = models.ForeignKey(Produit, null=True, on_delete=models.RESTRICT)
     bureau = models.ForeignKey(Bureau, on_delete=models.RESTRICT)
@@ -338,11 +326,9 @@ class HistoriquePolice(models.Model):
 
     logo_partenaire = models.ImageField(upload_to='clients/polices/logos_partenaires/', blank=True, null=True)
 
-    statut_contrat = models.fields.CharField(choices=StatutContrat.choices, default=StatutContrat.PROJET, max_length=15,
-                                             null=True)
+    statut_contrat = models.fields.CharField(choices=StatutContrat.choices, default=StatutContrat.PROJET, max_length=15, null=True)
     statut = models.fields.CharField(choices=StatutPolice.choices, default=StatutPolice.ACTIF, max_length=15, null=True)
-    statut_validite = models.fields.CharField(choices=StatutValidite.choices, default=StatutValidite.VALIDE,
-                                              max_length=15, null=True)
+    statut_validite = models.fields.CharField(choices=StatutValidite.choices, default=StatutValidite.VALIDE, max_length=15, null=True)
     date_du_jour = models.DateTimeField(null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -602,8 +588,7 @@ class PeriodeCouverture(models.Model):
     date_fin_effet = models.DateTimeField(blank=True, null=True)
     observation = models.CharField(max_length=255, null=True, blank=True)
     statut = models.fields.CharField(choices=Statut.choices, default=Statut.ACTIF, max_length=15, null=True, blank=True)
-    statut_validite = models.fields.CharField(choices=StatutValidite.choices, default=StatutValidite.VALIDE,
-                                              max_length=15, null=True, blank=True)
+    statut_validite = models.fields.CharField(choices=StatutValidite.choices, default=StatutValidite.VALIDE, max_length=15, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -814,13 +799,11 @@ class Bareme(models.Model):
 class TauxCouvertureVariable(models.Model):
     created_by = models.ForeignKey(User, null=True, on_delete=models.RESTRICT)
     formulegarantie = models.ForeignKey(FormuleGarantie, on_delete=models.RESTRICT)
-    secteur = models.ForeignKey(Secteur,
-                                on_delete=models.RESTRICT)  # Pour une même formule, le taux de couverture varie selon le secteur (public/privé) du prestataire
+    secteur = models.ForeignKey(Secteur, on_delete=models.RESTRICT)  # Pour une même formule, le taux de couverture varie selon le secteur (public/privé) du prestataire
     taux_couverture = models.IntegerField(null=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    statut_validite = models.fields.CharField(choices=StatutValidite.choices, default=StatutValidite.VALIDE,
-                                              max_length=15, null=True)
+    statut_validite = models.fields.CharField(choices=StatutValidite.choices, default=StatutValidite.VALIDE, max_length=15, null=True)
 
     def __str__(self):
         return f'{self.formulegarantie.libelle} - {self.taux_couverture} %'
@@ -837,8 +820,7 @@ class FormuleRubriquePrefinance(models.Model):
     rubrique = models.ForeignKey(Rubrique, null=True, on_delete=models.RESTRICT)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    statut_validite = models.fields.CharField(choices=StatutValidite.choices, default=StatutValidite.VALIDE,
-                                              max_length=15, null=True)
+    statut_validite = models.fields.CharField(choices=StatutValidite.choices, default=StatutValidite.VALIDE, max_length=15, null=True)
 
     def __str__(self):
         return f'{self.formulegarantie.libelle} - {self.rubrique.name}'
@@ -878,8 +860,7 @@ class Aliment(models.Model):
     civilite = models.ForeignKey(Civilite, null=True, on_delete=models.RESTRICT)
     pays_naissance = models.ForeignKey(Pays, related_name='pays_naissance', null=True, on_delete=models.RESTRICT)
     pays_residence = models.ForeignKey(Pays, related_name='pays_residence', null=True, on_delete=models.RESTRICT)
-    pays_activite_professionnelle = models.ForeignKey(Pays, related_name='pays_activite_professionnelle', null=True,
-                                                      on_delete=models.RESTRICT)
+    pays_activite_professionnelle = models.ForeignKey(Pays, related_name='pays_activite_professionnelle', null=True, on_delete=models.RESTRICT)
     profession = models.ForeignKey(Profession, null=True, on_delete=models.RESTRICT)
     profession_libelle = models.CharField(max_length=50, blank=False, null=True)
     nom = models.CharField(max_length=50, blank=False, null=True)
@@ -900,8 +881,7 @@ class Aliment(models.Model):
     date_affiliation = models.DateField(blank=True, null=True)
     date_sortie = models.DateField(blank=True, null=True)
     photo = models.ImageField(max_length=255, blank=True, null=True, upload_to=upload_location_aliment)
-    statut_familiale = models.fields.CharField(choices=StatutFamilial.choices, default=StatutFamilial.CHOISIR,
-                                               max_length=15, null=True)
+    statut_familiale = models.fields.CharField(choices=StatutFamilial.choices, default=StatutFamilial.CHOISIR, max_length=15, null=True)
     numero_piece = models.CharField(max_length=50, blank=True, null=True)
 
     code_postal = models.CharField(max_length=20, blank=True, null=True)
@@ -921,8 +901,7 @@ class Aliment(models.Model):
 
     commentaire = models.CharField(max_length=20, blank=True, null=True)
     statut = models.fields.CharField(choices=Statut.choices, default=Statut.ACTIF, max_length=15, null=True)
-    statut_incorporation = models.fields.CharField(choices=StatutIncorporation.choices,
-                                                   default=StatutIncorporation.INCORPORE, max_length=15, null=True)
+    statut_incorporation = models.fields.CharField(choices=StatutIncorporation.choices, default=StatutIncorporation.INCORPORE, max_length=15, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -1299,8 +1278,7 @@ class AlimentFormule(models.Model):
     date_debut = models.DateTimeField(blank=True, null=True)
     date_fin = models.DateTimeField(blank=True, null=True)
     statut = models.fields.CharField(choices=Statut.choices, default=Statut.ACTIF, max_length=15, null=True, blank=True)
-    statut_validite = models.fields.CharField(choices=Statut.choices, default=StatutValidite.VALIDE, max_length=15,
-                                              null=True, blank=True)
+    statut_validite = models.fields.CharField(choices=Statut.choices, default=StatutValidite.VALIDE, max_length=15, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -1548,6 +1526,7 @@ class Quittance(models.Model):
     montant_compagnie = models.BigIntegerField(null=True)
     taux_com_gestion = models.FloatField(blank=True, default=None, null=True)
     taux_com_courtage = models.FloatField(blank=True, default=None, null=True)
+    montant_cout_police_courtier_regle = models.FloatField(blank=True, default=None, null=True)
     commission_courtage = models.BigIntegerField(null=True)
     commission_gestion = models.BigIntegerField(null=True)
     commission_intermediaires = models.BigIntegerField(null=True)
@@ -1667,10 +1646,8 @@ class Reglement(models.Model):
     banque = models.ForeignKey(Banque, null=True, on_delete=models.RESTRICT)
     banque_emettrice = models.CharField(max_length=255, blank=True, null=True)
     compte_tresorerie = models.ForeignKey(CompteTresorerie, null=True, on_delete=models.RESTRICT)
-    quittance = models.ForeignKey(Quittance, on_delete=models.RESTRICT, related_name="ses_quittances",
-                                  related_query_name="quittance")
-    compagnie = models.ForeignKey(Compagnie, null=True, on_delete=models.RESTRICT, related_name="reglements",
-                                  related_query_name="reglement")
+    quittance = models.ForeignKey(Quittance, on_delete=models.RESTRICT, related_name="ses_quittances", related_query_name="quittance")
+    compagnie = models.ForeignKey(Compagnie, null=True, on_delete=models.RESTRICT, related_name="reglements", related_query_name="reglement")
     devise = models.ForeignKey(Devise, null=True, on_delete=models.CASCADE)
     montant = models.DecimalField(max_digits=20, decimal_places=0, blank=True, null=True)
     montant_compagnie = models.DecimalField(max_digits=20, decimal_places=0, blank=True, null=True)
@@ -1683,9 +1660,7 @@ class Reglement(models.Model):
     statut_reversement_compagnie = models.fields.CharField(choices=StatutReversementCompagnie.choices,
                                                            default=StatutReversementCompagnie.NON_REVERSE,
                                                            max_length=15, null=True)
-    statut_commission = models.fields.CharField(choices=StatutEncaissementCommission.choices,
-                                                default=StatutEncaissementCommission.NON_ENCAISSEE, max_length=15,
-                                                null=True)
+    statut_commission = models.fields.CharField(choices=StatutEncaissementCommission.choices, default=StatutEncaissementCommission.NON_ENCAISSEE, max_length=15, null=True)
     statut_reglement_apporteurs = models.fields.CharField(choices=StatutReglementApporteurs.choices,
                                                           default=StatutReglementApporteurs.NON_REGLE, max_length=15,
                                                           null=True)
@@ -1828,8 +1803,7 @@ class OperationReglement(models.Model):
     reglement = models.ForeignKey(Reglement, on_delete=models.RESTRICT)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-    statut_validite = models.fields.CharField(choices=StatutValidite.choices, default=StatutValidite.VALIDE,
-                                              max_length=15, null=True)
+    statut_validite = models.fields.CharField(choices=StatutValidite.choices, default=StatutValidite.VALIDE, max_length=15, null=True)
 
     class Meta:
         db_table = 'operation_reglement'
@@ -1890,8 +1864,7 @@ class Document(models.Model):
     quittance = models.ForeignKey(Quittance, null=True, on_delete=models.RESTRICT)
     nom = models.CharField(max_length=255, blank=True, null=True)
     fichier = models.FileField(upload_to=upload_location_document, blank=True, default=None, null=True)
-    confidentialite = models.fields.CharField(choices=OptionYesNo.choices, default=OptionYesNo.OUI, max_length=15,
-                                              null=True)
+    confidentialite = models.fields.CharField(choices=OptionYesNo.choices, default=OptionYesNo.OUI, max_length=15, null=True)
     commentaire = models.CharField(max_length=255, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -1948,8 +1921,7 @@ class VehiculePolice(models.Model):
     formule = models.ForeignKey(FormuleGarantie, null=True, on_delete=models.RESTRICT)
     motif = models.CharField(max_length=255, blank=True, null=True)
     date_mouvement = models.DateTimeField(blank=True, null=True)
-    statut = models.fields.CharField(choices=Statut.choices, default=Statut.ACTIF, max_length=15, null=True,
-                                     blank=True)
+    statut = models.fields.CharField(choices=Statut.choices, default=Statut.ACTIF, max_length=15, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -1969,8 +1941,7 @@ class TarifPrestataireClient(models.Model):
     prestataire = models.ForeignKey(Prestataire, on_delete=models.RESTRICT, null=True)
     client = models.ForeignKey(Client, on_delete=models.RESTRICT, null=True)
     formule = models.ForeignKey(FormuleGarantie, on_delete=models.RESTRICT, null=True)
-    fichier_tarification = models.FileField(upload_to=upload_location_tarifprestataireclient, blank=True, default=None,
-                                            null=True)
+    fichier_tarification = models.FileField(upload_to=upload_location_tarifprestataireclient, blank=True, default=None, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     statut = models.BooleanField(default=True)
@@ -1982,8 +1953,7 @@ class TarifPrestataireClient(models.Model):
 
     @property
     def fichier_tarifs(self):
-        return mark_safe('<a href="{0}" download>{1}</a>'.format(self.fichier_tarification.url,
-                                                                 'Télécharger')) if self.fichier_tarification else ""
+        return mark_safe('<a href="{0}" download>{1}</a>'.format(self.fichier_tarification.url, 'Télécharger')) if self.fichier_tarification else ""
 
 
 ## INOV API MOBILE

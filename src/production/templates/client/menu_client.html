@@ -536,38 +536,6 @@
 {% endif %}
 
 {% block extrajs %}
-<script>
-    /*
-    var time = new Date().getTime();
-     $(document.body).bind("mousemove keypress", function(e) {
-         time = new Date().getTime();
-         console.log(time);
-     });
-
-     function refresh() {
-     console.log(new Date().getTime() - time);
-         if(new Date().getTime() - time >= 60000)
-             window.location.reload(true);
-         else
-             setTimeout(refresh, 10000);
-     }
-
-     setTimeout(refresh, 10000);
-    */
-
-</script>
-<script>
-    $(document).ready(function() {
-
-        {% if request.user.is_ges %}
-
-        //Si un gestionnaire sinistre, cacher l'item liste-des-prises-en-charge
-        //$('.nav-item_liste-des-prises-en-charge').hide();
-
-        {% endif %}
-
-    });
-</script>
 
 <script>
     function formatMontant(input) {

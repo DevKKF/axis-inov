@@ -36,6 +36,12 @@
                                             <textarea name="description" id="description" cols="30" rows="10" class="form-control">{{ autrerisque.description|default_if_none:'' }}</textarea>
 										</div>
 									</div>
+									<div class="form-group row">
+										<label class="col-sm-12 col-form-label">{{_("Charger le contrat")}}</label>
+										<div class="col-sm-12">
+											<input type="file" class="form-control" name="fichier_contrat" id="fichier_contrat" accept=".png, .jpg, .jpeg, .docx, .pdf, .xlsx">
+										</div>
+									</div>
 								</div>
 							</div>
 						</div>

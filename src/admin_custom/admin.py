@@ -1,4 +1,4 @@
-import datetime
+#import datetime
 
 from django.contrib import admin
 from django.contrib.admin.sites import AdminSite
@@ -7,11 +7,12 @@ from django.shortcuts import redirect
 from django.utils import timezone
 from django.utils.timezone import now
 from datetime import timedelta
+from datetime import datetime, date
 from django.db.models import Q
 
 from api.serializers import BureauSerializer
 from configurations.models import Rubrique, User, Bureau, TypeRemboursement, AdminGroupeBureau
-from production.models import Police
+from production.models import Police, HistoriquePolice
 from shared.enum import StatutSinistre, Statut, StatutValidite
 # Register your models here.
 from sinistre.models import DossierSinistre
@@ -75,15 +76,6 @@ class CustomAdminSite(admin.AdminSite):
         extra_context['count_polices_a_echeance'] = count_polices_a_echeance
         extra_context['count_polices_non_renouvelees_resilies'] = count_polices_non_renouvelees_resilies
 
-        sinistres = []
-
-        request.session['bureaux'] = bureaux_serializer
-        # extra_context['bureaux'] = bureaux
-        extra_context['sinistres'] = sinistres
-
-        extra_context['yesterday'] = datetime.datetime.now(tz=timezone.utc) - datetime.timedelta(days=1)
-        extra_context['today'] = datetime.datetime.now(tz=timezone.utc)
-#
         return super(CustomAdminSite, self).index(request, extra_context)
 
 

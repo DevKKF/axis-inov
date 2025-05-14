@@ -29,11 +29,11 @@
 						<ul class="nav nav-tabs" id="myTab" role="tablist">
 							<li class="nav-item"><a class="nav-link active" id="general-tab_modification" data-toggle="tab" href="#general_modification" role="tab" aria-controls="general_modification" aria-selected="true">GENERAL</a></li>
 							<li class="nav-item"><a class="nav-link" id="intermediaire-tab_modification" data-toggle="tab" href="#intermediaire_modification" role="tab" aria-controls="intermediaire_modification" aria-selected="false">APPORTEURS</a></li>
-							<li class="nav-item"><a class="nav-link" id="garantie-tab_modification" data-toggle="tab" href="#garantie_modification" role="tab" aria-controls="garantie_modification" aria-selected="false">GARANTIES</a></li>
-							<li class="nav-item risque_menu" style="display:none"><a class="nav-link" id="risque-tab_modification" data-toggle="tab" href="#risque_modification" role="tab" aria-controls="risque_modification" aria-selected="false">RISQUE</a></li>
-							<li class="nav-item marchandise_menu" style="display:none"><a class="nav-link" id="marchandise-tab_modification" data-toggle="tab" href="#marchandise_modification" role="tab" aria-controls="marchandise_modification" aria-selected="false">MARCHANDISES TRANSPORTEES</a></li>
-							<li class="nav-item aliment_menu" style="display:none"><a class="nav-link" id="aliment-tab_modification" data-toggle="tab" href="#aliment_modification" role="tab" aria-controls="aliment_modification" aria-selected="false">ALIMENTS</a></li>
-							<li class="nav-item vehicule_menu" style="display:none"><a class="nav-link" id="vehicule-tab_modification" data-toggle="tab" href="#vehicule_modification" role="tab" aria-controls="vehicule_modification" aria-selected="false">VEHICULE</a></li>
+							<li class="nav-item garantie" style="display:none"><a class="nav-link" id="garantie-tab_modification" data-toggle="tab" href="#garantie_modification" role="tab" aria-controls="garantie_modification" aria-selected="false">GARANTIES</a></li>
+							<li class="nav-item risque" style="display:none"><a class="nav-link" id="risque-tab_modification" data-toggle="tab" href="#risque_modification" role="tab" aria-controls="risque_modification" aria-selected="false">RISQUE</a></li>
+							<li class="nav-item marchandise" style="display:none"><a class="nav-link" id="marchandise-tab_modification" data-toggle="tab" href="#marchandise_modification" role="tab" aria-controls="marchandise_modification" aria-selected="false">MARCHANDISES TRANSPORTEES</a></li>
+							<li class="nav-item aliment" style="display:none"><a class="nav-link" id="aliment-tab_modification" data-toggle="tab" href="#aliment_modification" role="tab" aria-controls="aliment_modification" aria-selected="false">ALIMENTS</a></li>
+							<li class="nav-item vehicule" style="display:none"><a class="nav-link" id="vehicule-tab_modification" data-toggle="tab" href="#vehicule_modification" role="tab" aria-controls="vehicule_modification" aria-selected="false">VEHICULE</a></li>
 							<li class="nav-item"><a class="nav-link" id="facturation-tab_modification" data-toggle="tab" href="#facturation_modification" role="tab" aria-controls="facturation_modification" aria-selected="false">FACTURATION</a></li>
 							<li class="nav-item"><a class="nav-link" id="prime-tab_modification" data-toggle="tab" href="#prime_modification" role="tab" aria-controls="prime_modification" aria-selected="false">PRIME</a></li>
 						</ul>
@@ -60,7 +60,6 @@
 													<option value="">Choisir un produit</option>
 												</select>
 												<input type="hidden" id="police_produit_id" name="police_produit_id" value="{{ police.produit.id }}">
-												<input type="hidden" id="produit_modif_code" name="produit_modif_code" value="{{ police.produit.code }}">
 											</div>
 										</div>
 										<div class="form-group row">
@@ -914,13 +913,13 @@
 										<div class="form-group row">
 											<label class="col-sm-6 col-form-label">Taux com Courtage AN. <span class="required">*</span></label>
 											<div class="col-sm-6">
-												<input type="text" class="form-control money_field_avec_virgule calculs_handler_police_modification" name="taux_com_courtage" id="taux_com_courtage_modification" autocomplete="off" value="" required>
+												<input type="text" class="form-control money_field_avec_virgule calculs_handler_police_modification" name="taux_com_courtage" id="taux_com_courtage" autocomplete="off" value="{{ dernier_historique.taux_com_courtage|default_if_none:'' }}" required>
 											</div>
 										</div>
 										<div class="form-group row">
 											<label class="col-sm-6 col-form-label">Taux com Courtage Terme <span class="required"></span></label>
 											<div class="col-sm-6">
-												<input type="text" class="form-control money_field_avec_virgule calculs_handler_police_modification" name="taux_com_courtage_terme" id="taux_com_courtage_terme_modification" autocomplete="off" value="">
+												<input type="text" class="form-control money_field_avec_virgule calculs_handler_police_modification" name="taux_com_courtage_terme" id="taux_com_courtage_terme" autocomplete="off" value="{{ dernier_historique.taux_com_courtage_terme|default_if_none:'' }}">
 											</div>
 										</div>
 										<div class="form-group row">
@@ -970,19 +969,19 @@
 										<div class="form-group row">
 											<label class="col-sm-5 col-form-label">Taxe <span class="required"></span></label>
 											<div class="col-sm-7">
-												<input type="text" class="form-control money_field calculs_handler_police_modification" name="taxe" id="taxe_modification" value="{{ dernier_historique.taxe|default_if_none:'' }}" />
+												<input type="text" class="form-control money_field calculs_handler_police_modification" name="taxe" id="taxe_modification" value="{{ dernier_historique.taxe|default_if_none:'0' }}" />
 											</div>
 										</div>
                                         <div class="form-group row">
                                             <label class="col-sm-5 col-form-label">Autres Taxes <span class="required"></span></label>
                                             <div class="col-sm-7">
-                                                <input style="border-top-right-radius:0px;border-bottom-right-radius:0px;" type="text" class="form-control money_field calculs_handler_police_modification" name="autres_taxes" id="autres_taxes_modification" autocomplete="off" value="{{ dernier_historique.autres_taxes|default_if_none:'' }}">
+                                                <input style="border-top-right-radius:0px;border-bottom-right-radius:0px;" type="text" class="form-control money_field calculs_handler_police" name="autres_taxes" id="autres_taxes" autocomplete="off" value="{{ dernier_historique.autres_taxes|default_if_none:'' }}">
                                             </div>
                                         </div>
 										<div class="form-group row d-none">
 											<label class="col-sm-5 col-form-label">Autres Taxes<span class="required"></span></label>
 											<div class="col-sm-6" style="padding-right:0px;">
-												<input style="border-top-right-radius:0px;border-bottom-right-radius:0px;" type="text" class="form-control money_field calculs_handler_police_modification" name="" id="autres_taxes_modification_" value="{{ dernier_historique.autres_taxes|default_if_none:'' }}" readonly/>
+												<input style="border-top-right-radius:0px;border-bottom-right-radius:0px;" type="text" class="form-control money_field calculs_handler_police_modification" name="" id="autres_taxes_modification" value="{{ dernier_historique.autres_taxes|default_if_none:'' }}" readonly/>
 											</div>
 											<div class="col-sm-1" style="padding-left:0px;">
 												<span class="btn " style="background:gray;color:white;border-top-left-radius:0px;border-bottom-left-radius:0px;" data-toggle="modal" data-target="#modal-autres_taxes_modification">+</span>

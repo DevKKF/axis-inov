@@ -551,10 +551,7 @@ def modifier_document(request, document_id):
     else:
 
         document = Document.objects.get(id=document_id)
-        if document.sinistre:
-            typedocuments = TypeDocument.objects.filter(is_sinistre=1).order_by('libelle')
-        else:
-            typedocuments = TypeDocument.objects.filter(is_production=1).order_by('libelle')
+        typedocuments = TypeDocument.objects.filter(is_production=1).order_by('libelle')
         confidentialite = Confidentialite
 
         form = DocumentForm()
@@ -1221,6 +1218,7 @@ def add_police(request, client_id):
                 aliment_police.save()
 
             else:
+
                 autre_risque_created = AutreRisque(
                     created_by = request.user,
                     libelle = ar_libelle,
@@ -1242,6 +1240,18 @@ def add_police(request, client_id):
                     statut=Statut.ACTIF
                 )
                 aliment_police.save()
+
+                # Upload fichier du contrat
+                document_police_file = request.FILES.get('fichier_contrat')
+                if document_police_file:
+                    document_police = Document.objects.create(
+                        police_id=police.id,
+                        client_id=police.client_id,
+                        type_document_id=1,
+                        nom= f"Document du contrat de la police N°{police.numero}",
+                        fichier=document_police_file
+                    )
+                    document_police.save()
 
             response = {
                 'statut': 1,
@@ -2161,6 +2171,18 @@ def modifier_police(request, police_id):
                 autrerisque.updated_by = request.user
                 autrerisque.save()
 
+                # Upload fichier du contrat
+                document_police_file = request.FILES.get('fichier_contrat')
+                if document_police_file:
+                    document_police = Document.objects.create(
+                        police_id=police.id,
+                        client_id=police.client_id,
+                        type_document_id=1,
+                        nom=f"Document du contrat de la police N°{police.numero}",
+                        fichier=document_police_file
+                    )
+                    document_police.save()
+
             else:
                 autre_risque_created = AutreRisque(
                     created_by=request.user,
@@ -2280,6 +2302,23 @@ def modifier_police(request, police_id):
         # Récupérer les véhicules associés à la police
         vehicules = AlimentPolice.objects.filter(police_id=police_id, vehicule_id__isnull=False, statut=Statut.ACTIF)
 
+        #calcul des dates de renouvellement :
+        movement_data = request.session.get('add_avenant')
+        motif_mouvement = Motif.objects.filter(id=movement_data.get('motif')).first()
+
+        nouv_date_debut_effet=""
+        nouv_date_fin_effet=""
+
+        if motif_mouvement.code == "RENOUV":
+            if dernier_historique.mode_renouvellement == "Tacite Reconduction":
+                if dernier_historique.fractionnement:
+                    from dateutil.relativedelta import relativedelta
+                    duree = dernier_historique.fractionnement.duree_en_mois or 0  # Sécurité si None
+
+                    nouv_date_debut_effet = dernier_historique.date_debut_effet + relativedelta(months=duree)
+                    nouv_date_fin_effet = dernier_historique.date_fin_effet + relativedelta(months=duree)
+
+
         return render(request, 'police/modal_police_modification.html',
                       {'police': police, 'periode_couverture':periode_couverture,
                        'branches': branches, 'produits': produits,
@@ -2299,7 +2338,7 @@ def modifier_police(request, police_id):
                        'moyens_transports': moyens_transports, 'today':today, 'vehicules':vehicules,
                        'mono_vehicule': mono_vehicule, 'marchandise_first': marchandise_first,
                        'autresrisque': autresrisque, 'commercials': commercials,
-                       'gestionnaires': gestionnaires, 'productions': productions,
+                       'gestionnaires': gestionnaires, 'productions': productions, 'nouv_date_debut_effet': nouv_date_debut_effet, 'nouv_date_fin_effet': nouv_date_fin_effet,
                        })
 
 
@@ -3087,8 +3126,14 @@ def ajax_infos_compagnie_modification(request, compagnie_id, produit_id):
     return JsonResponse(response)
 
 
-def motifs_by_mouvement(request, mouvement_id):
-    motifs = Motif.objects.filter(mouvement_id=mouvement_id)
+def motifs_by_mouvement(request, police_id, mouvement_id):
+    police = Police.objects.filter(id=police_id).first()
+
+    if police.produit.code == "10002":
+        motifs = Motif.objects.filter(mouvement_id=mouvement_id)
+    else:
+        motifs = Motif.objects.filter(mouvement_id=mouvement_id).exclude(code__in=["INCOR", "RETRAIT"])
+
     motifs_serialize = serializers.serialize('json', motifs)
     return HttpResponse(motifs_serialize, content_type='application/json')
 
@@ -3376,6 +3421,7 @@ def add_quittance(request, police_id):
     error_message = ""
 
     if request.method == 'POST':
+
         commission_intermediaires = supprimer_espaces(request.POST.get('commission_intermediaire'))
         nature_quittance_id = request.POST.get('nature_quittance')
         type_quittance_id = request.POST.get('type_quittance')
@@ -3435,7 +3481,7 @@ def add_quittance(request, police_id):
                                             montant_cout_police_courtier_regle=0,
                                             montant_regle=0,
                                             solde=solde,
-                                            taux_com_courtage=taux_com_courtage,
+                                            taux_com_courtage=taux_com_courtage_formatted,
                                             commission_courtage=commission_courtage,
                                             commission_intermediaires=commission_intermediaires,
                                             date_emission=date_emission,
@@ -7285,6 +7331,18 @@ def update_autrerisque(request, police_id, autre_risque_id):
         autrerisque.updated_by=request.user
         autrerisque.save()
 
+        # Upload fichier du contrat
+        document_police_file = request.FILES.get('fichier_contrat')
+        if document_police_file:
+            document_police = Document.objects.create(
+                police_id=police.id,
+                client_id=police.client_id,
+                type_document_id=1,
+                nom=f"Document du contrat de la police N°{police.numero}",
+                fichier=document_police_file
+            )
+            document_police.save()
+
         response = {
             'statut': 1,
             'message': "Modification effectuée avec succès !",
@@ -7417,12 +7475,6 @@ def add_avenant(request, police_id):
             }
 
         return JsonResponse(response)
-
-
-def motifs_by_mouvement(request, mouvement_id):
-    motifs = Motif.objects.filter(mouvement_id=mouvement_id)
-    motifs_serialize = serializers.serialize('json', motifs)
-    return HttpResponse(motifs_serialize, content_type='application/json')
 
 
 def etapes_bymouvement(request, sinistre_id, mouvement_id):

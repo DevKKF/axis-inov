@@ -28,11 +28,11 @@
             </div>
 
             <div class="card-tools">
-                 <div class="button-link pull-right mb-2">
+                 <!--div class="button-link pull-right mb-2">
                     {% if request.user.is_production and police.etat_police == "En cours" or police.etat_police == "En attente" %}
                         <a class="btn btn-sm btn-primary mb-1 " data-toggle="modal" data-target="#modal-document"><i class="fas fa-plus-circle"></i> {{_('Ajouter un document')}}</a>
                     {% endif %}
-                </div>
+                </div-->
                 <div class="card-body">
                     <div class="row table-responsive">
                          <table id="table_documents" class="table table-bordered table-striped dataTable dtr-inline" role="grid" aria-describedby="example1_info" style="width:100%;">
@@ -65,7 +65,7 @@
                                             <td class="dtr-control" tabindex="0">{{ document.created_at|date:'d/m/Y'|default_if_none:"" }}</td>
                                             <td class="text-center">
                                                 <span style="cursor:pointer;" class="btn_modifier_document badge badge-warning text-white rounded-pill text-center" data-document_id="{document.id}" data-model_name="document" data-modal_title="MODIFICATION D'UN DOCUMENT" data-href="{% url 'modifier_document' document.id %}"><i class="fas fa-edit"></i></span>
-                                                <span class="badge badge-danger text-white btn_supprimer_document" data-document_id="{{ document.id }}" data-href="{% url 'supprimer_document' document.id %}" style="cursor:pointer;"><i class="fa fa-trash"></i></span>
+                                                <!--span class="badge badge-danger text-white btn_supprimer_document" data-document_id="{{ document.id }}" data-href="{% url 'supprimer_document' document.id %}" style="cursor:pointer;"><i class="fa fa-trash"></i></span-->
                                             </td>
                                         </tr>
                                     {% endif %}

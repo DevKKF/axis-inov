@@ -3,6 +3,7 @@
 		<div class="modal-content">
 			<form id="form_add_avenant" action="{% url 'add_avenant' police.id %}" method="post">
 				{% csrf_token %}
+                <input type="hidden" name="police_id" data-police-id="{{ police.id }}" id="police_id" value="{{ police.id }}">
 				<div class="modal-header">
 					<h4 class="modal-title">MOUVEMENT</h4>
 					<button type="button"class="close"data-dismiss="modal"aria-label="Close">

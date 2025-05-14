@@ -27,11 +27,11 @@
         <div class="card-tools"></div>
     </div>
     <div class="card-body">
-      <div class="button-link pull-right mb-2">
+      <!--div class="button-link pull-right mb-2">
           {% if request.user.is_production %}
             <a class="btn btn-sm btn-primary" data-toggle="modal" data-target="#modal-marchandise_add"><i class="fas fa-plus-circle"></i> {{_("Nouvelle marchandise")}}</a>
           {% endif %}
-      </div>
+      </div-->
       <div id="example1_wrapper" class="dataTables_wrapper dt-bootstrap4">
         <div class="row">
           <div class="col-12 col-md-12 col-sm-12 table-responsive">
@@ -72,7 +72,7 @@
                     <span style="cursor:pointer;" class="btn_details_marchandise" data-marchandise_id="{{ mr.marchandise.id }}" data-model_name="marchandise" data-modal_title="INFORMATIONS MARCHANDISE - {{ mr.marchandise.num_certificat }}" data-href="{% url 'details_marchandise' police.id mr.marchandise.id %}"><i class="fas fa-eye text-info"></i></span>&nbsp;&nbsp;
                     {% if request.user.is_production %}
                         <span style="cursor:pointer;" class="btn_modifier_marchandise" data-marchandise_id="{{ mr.marchandise.id }}" data-model_name="marchandise" data-modal_title="MODIFICATION D'UNE MARCHANDISE" data-href="{% url 'update_marchandise' police.id mr.marchandise.id %}"><i class="fas fa-edit text-warning"></i></span>&nbsp;&nbsp;
-                        <span style="cursor:pointer;" class="btn_supprimer_marchandise" data-marchandise_id="{{ mr.marchandise.id }}" data-police_id="{{ police.id }}" data-href="{% url 'supprimer_marchandise' police.id mr.marchandise.id %}"><i class="fas fa-times text-danger"></i></span>
+                        <!--span style="cursor:pointer;" class="btn_supprimer_marchandise" data-marchandise_id="{{ mr.marchandise.id }}" data-police_id="{{ police.id }}" data-href="{% url 'supprimer_marchandise' police.id mr.marchandise.id %}"><i class="fas fa-times text-danger"></i></span-->
                     {% endif %}
                   </td>
                 </tr>

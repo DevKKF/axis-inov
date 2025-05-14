@@ -91,7 +91,7 @@ passenger_wsgi.py
 # Fichier de documentation
 requete.txt
 requete_html.html
-requete_views.py
+requete_views.js
 github.txt
 touch
 

@@ -2,14 +2,14 @@
 	<div class="modal-dialog modal-xl">
 		<div class="modal-content">
 			<form enctype="multipart/form-data" id="form_add_police" action="{% url 'add_police' client.id %}" method="post">
-			{% csrf_token %}
-			<div class="modal-header">
-				<h4 class="modal-title">CREATION D'UNE POLICE DU CLIENT <b>{{ client.nom }}</b> <span class="text-white">- by EMI</span></h4>
-				<button type="button"class="close"data-dismiss="modal"aria-label="Close">
-					<span aria-hidden="true">×</span>
-				</button>
-			</div>
-			<div class="modal-body">
+				{% csrf_token %}
+				<div class="modal-header">
+					<h4 class="modal-title">CREATION D'UNE POLICE DU CLIENT <b>{{ client.nom }}</b> <span class="text-white">- by EMI</span></h4>
+					<button type="button"class="close"data-dismiss="modal"aria-label="Close">
+						<span aria-hidden="true">×</span>
+					</button>
+				</div>
+				<div class="modal-body">
 				<div class="alert  alert-dismissible fade show hidden" role="alert">
 				  <span class="message"> TRAITEMENT EN COURS</span>
 				</div>
@@ -300,6 +300,12 @@
 									<div class="form-group">
 										<label class="form-label">Description</label>
 										<textarea class="form-control" name="risque_description" id="risque_description" cols="30" rows="5"></textarea>
+									</div>
+								</div>
+								<div class="col-md-12">
+									<div class="form-group">
+										<label>Charger le contrat</label>
+										<input type="file" class="form-control" name="fichier_contrat" id="fichier_contrat" accept=".png, .jpg, .jpeg, .docx, .pdf, .xlsx">
 									</div>
 								</div>
 							</div>

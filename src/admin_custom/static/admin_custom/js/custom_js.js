@@ -4276,8 +4276,14 @@ $(document).ready(function () {
                 $.validator.setDefaults({ ignore: [] });
 
                 let formData = new FormData();
+                let files = $('#form_update_autrerisque #fichier_contrat')[0].files;
+                console.log('files : ', files);
 
                 if (formulaire.valid()) {
+
+                    if (files.length > 0) {
+                        formData.append('fichier_contrat', files[0]);
+                    }
 
                     let data_serialized = formulaire.serialize();
                     $.each(data_serialized.split('&'), function (index, elem) {
@@ -4521,11 +4527,13 @@ $(document).ready(function () {
     $('#mouvement').on('change', function () {
 
         let mouvement_id = $(this).val();
+        let police_id = $('#police_id').val();
+
         $('#motif').html('<option value="">---------------------------</option>');
 
         $.ajax({
             type: 'get',
-            url: '/production/mouvement/' + mouvement_id + '/motifs',
+            url: '/production/mouvement/' + police_id + '/' + mouvement_id + '/motifs',
             success: function (motifs) {
 
                 $('#motif').html('').append('<option value="">Sélectionnez un motif</option>');
@@ -5870,6 +5878,8 @@ $(document).ready(function () {
         gererApporteurChamps();
     });
 
+
+
     // Gestion de la soumission du formulaire
     $("#btn_save_police").on('click', function (e) {
         let btn_submit = $(this);
@@ -5894,18 +5904,26 @@ $(document).ready(function () {
             });
         });
 
-        // Validation des champs intermediaires
+        // Gestion des champs intermediaires selon apporteur
         if ($('#yes_apporteur').is(':checked')) {
-            $('.intermediaire_champ_obligatoire').each(function() {
+            console.log('avec apporteur');
+            $('.intermediaire_champ_obligatoire').each(function () {
+                $(this).attr('required', true);
                 if (!$(this).val()) {
-                    event.preventDefault(); // Empêcher la soumission
-                    $(this).addClass('is-invalid'); // Ajouter une classe d'erreur
-                    return false; // Sortir de la boucle each
+                    $(this).addClass('is-invalid');
+                    isValid = false;
                 } else {
                     $(this).removeClass('is-invalid');
                 }
             });
+        } else {
+            console.log('sans apporteur');
+            $('.intermediaire_champ_obligatoire').each(function () {
+                $(this).removeAttr('required');
+                $(this).removeClass('is-invalid');
+            });
         }
+
 
         // Validation des champs obligatoires dynamiques
         if ($('#vehicule-tab').is(':visible')) {
@@ -5940,9 +5958,18 @@ $(document).ready(function () {
 
         let formulaire = $('#form_add_police');
         let href = formulaire.attr('action');
-        let formData = new FormData();
 
+        $.validator.setDefaults({ ignore: [] });
+
+        let formData = new FormData();
+        let files = $('#form_add_police #fichier_contrat')[0].files;
+        console.log('files : ', files);
         if (formulaire.valid()) {
+
+            if (files.length > 0) {
+                formData.append('fichier_contrat', files[0]);
+            }
+
             let data_serialized = formulaire.serialize();
             $.each(data_serialized.split('&'), function (index, elem) {
                 let vals = elem.split('=');
@@ -6162,6 +6189,9 @@ $(document).ready(function () {
                 // forcer validation de tous les champs même cachés
                 $.validator.setDefaults({ ignore: [] });
 
+                let files = $('#form_update_police #fichier_contrat')[0].files;
+                console.log('files : ', files);
+
                 if (!formulaire.valid()) {
                     notifyWarning('Il y a des erreurs de saisie dans le formulaire');
                     return;
@@ -6177,11 +6207,18 @@ $(document).ready(function () {
                         {
                             addClass: 'btn btn-primary', text: 'OUI', onClick: function ($noty) {
                                 $noty.close();
+
                                 // Sérialisation vers FormData
                                 const formData = new FormData();
+
+                                if (files.length > 0 && files[0]) {
+                                    formData.append('fichier_contrat', files[0], files[0].name);
+                                }
+
                                 formulaire.serializeArray().forEach(({ name, value }) => {
                                     formData.append(name, value);
                                 });
+
                                 // Requête AJAX
                                 $.ajax({
                                     type: 'POST',
@@ -26640,6 +26677,3 @@ $(document).ready(function () {
     });
 
 });
-
-
-

@@ -1462,6 +1462,7 @@ class Langue(models.Model):
 
 class Fractionnement(models.Model):
     libelle = models.CharField(max_length=100, blank=True, null=True)
+    duree_en_mois = models.IntegerField(null=True)
     status = models.BooleanField(default=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

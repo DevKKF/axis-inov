@@ -1654,18 +1654,14 @@ class Reglement(models.Model):
     montant_com_courtage = models.DecimalField(max_digits=20, decimal_places=0, blank=True, null=True)
     montant_com_gestion = models.DecimalField(max_digits=20, decimal_places=0, blank=True, null=True)
     montant_com_intermediaire = models.DecimalField(max_digits=20, decimal_places=0, blank=True, null=True)
+    montant_police_courtier = models.DecimalField(max_digits=20, decimal_places=0, blank=True, null=True)
     date_paiement = models.DateField(blank=True, null=True)
     observation = models.CharField(max_length=255, null=True)
     motif_annulation = models.CharField(max_length=255, null=True)
-    statut_reversement_compagnie = models.fields.CharField(choices=StatutReversementCompagnie.choices,
-                                                           default=StatutReversementCompagnie.NON_REVERSE,
-                                                           max_length=15, null=True)
+    statut_reversement_compagnie = models.fields.CharField(choices=StatutReversementCompagnie.choices, default=StatutReversementCompagnie.NON_REVERSE, max_length=15, null=True)
     statut_commission = models.fields.CharField(choices=StatutEncaissementCommission.choices, default=StatutEncaissementCommission.NON_ENCAISSEE, max_length=15, null=True)
-    statut_reglement_apporteurs = models.fields.CharField(choices=StatutReglementApporteurs.choices,
-                                                          default=StatutReglementApporteurs.NON_REGLE, max_length=15,
-                                                          null=True)
-    statut_validite = models.fields.CharField(choices=StatutValidite.choices, default=StatutValidite.VALIDE,
-                                              max_length=15, null=True)
+    statut_reglement_apporteurs = models.fields.CharField(choices=StatutReglementApporteurs.choices, default=StatutReglementApporteurs.NON_REGLE, max_length=15, null=True)
+    statut_validite = models.fields.CharField(choices=StatutValidite.choices, default=StatutValidite.VALIDE, max_length=15, null=True)
     date_reversement_compagnie = models.DateTimeField(null=True)
     date_encaissement_commission = models.DateTimeField(null=True)
     created_at = models.DateTimeField(auto_now=True)

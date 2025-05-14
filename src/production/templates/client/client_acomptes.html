@@ -157,6 +157,7 @@
                   <thead>
                     <tr>
                       <th scope="col">{{_("N° Quittance")}}</th>
+                      <th scope="col">{{_("N° Police")}}</th>
                       <th scope="col">{{_("Nature")}}</th>
                       <th scope="col">{{_("Type")}}</th>
                       <th scope="col">{{_("Date d'émission")}}</th>
@@ -171,13 +172,14 @@
                     {% for quittance in quittances %}
                       <tr>
                         <td>{{ quittance.numero|default_if_none:"" }}</td>
+                        <td style="font-weight:bold">{{ quittance.police.numero|default_if_none:"" }}</td>
                         <td>{{ quittance.nature_quittance|default_if_none:"" }}</td>
                         <td>{{ quittance.type_quittance|default_if_none:"" }}</td>
                         <td>{{ quittance.date_emission|date:'d/m/Y'|default_if_none:"" }}</td>
                         <td>{{ quittance.date_debut|date:'d/m/Y'|default_if_none:"" }}</td>
                         <td class="text-right">{{ quittance.prime_ht|money_field }}</td>
                         <td class="text-right">{{ quittance.prime_ttc|money_field }}</td>
-                        <td class="text-right">{{ quittance.solde|money_field }}</td>
+                        <td class="text-right" style="font-weight:bold">{{ quittance.solde|money_field }}</td>
                         <td>{{ quittance.police.client.pays.devise.code|default_if_none:"" }}</td>
                       </tr>
                     {% endfor %}
@@ -215,7 +217,7 @@
                             <td class="">{{ acompte.periode_fin|date:'d/m/Y'|default_if_none:"" }}</td>
                             <td class="text-right">{{ acompte.debit|default_if_none:"0"|money_field }}</td>
                             <td class="text-right">{{ acompte.credit|default_if_none:"0"|money_field }}</td>
-                            <td class="text-right">{{ acompte.solde|default_if_none:"0"|money_field }}</td>
+                            <td class="text-right" style="font-weight:bold">{{ acompte.solde|default_if_none:"0"|money_field }}</td>
                             <td class="text-center">
                                 {% if request.user.is_production %}
                                     {% if not acompte.quittance_id %}

@@ -34,8 +34,9 @@
                                 {% for acompte in acomptes %}
                                     <tr>
                                         <td>
-											<input type="checkbox" class="checkbox_acompte_a_utiliser" name="checkbox_acompte_a_utiliser_{{ acompte.id }}">
-											<input type="hidden" name="montant_acompte_{{acompte.id}}" value="{{acompte.id}}"/>
+											<input type="checkbox" name="checkbox_acompte_a_utiliser_{{ acompte.id }}" class="checkbox_acompte_a_utiliser" />
+											<input type="hidden" name="montant_acompte_{{ acompte.id }}" class="montant_acompte_utilise" value="0.00" />
+											<input type="hidden" name="solde_acompte_{{ acompte.id }}" class="solde_acompte" value="{{ acompte.solde }}" />
 										</td>
                                         <td>{{ acompte.date_versement|date:'d/m/Y'|default_if_none:"" }}</td>
                                         <td>{{ acompte.quittance.numero|default_if_none:"" }}</td>

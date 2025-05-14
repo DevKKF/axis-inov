@@ -3938,7 +3938,7 @@ def imprimer_recu_reglement(request, quittance_id, reglement_id):
 
 
 @login_required
-def add_lettrage(request, police_id):
+def add_lettrage_1(request, police_id):
 
     police = Police.objects.get(id=police_id)
     acomptes = Acompte.objects.filter(client_id=police.client_id, solde__gt=0)
@@ -4145,6 +4145,138 @@ def add_lettrage(request, police_id):
 
         return render(request, 'police/modal_add_lettrage.html',
                       {'police': police, 'today': today, 'quittances_impayees': quittances_impayees, 'acomptes': acomptes, 'uuid_reglement': uuid_reglement})
+
+
+@login_required
+def add_lettrage(request, police_id):
+    police = get_object_or_404(Police, id=police_id)
+    acomptes = Acompte.objects.filter(client_id=police.client_id, solde__gt=0)
+    quittances_impayees = Quittance.objects.filter(
+        police_id=police_id,
+        statut=StatutQuittance.IMPAYE,
+        statut_validite=StatutValidite.VALIDE,
+        import_stats=False
+    )
+    uuid_reglement = uuid.uuid4()
+    today = datetime.now(tz=timezone.utc)
+
+    if request.method == 'POST':
+        uuid_reglement = request.POST.get('uuid_reglement')
+        date_paiement = datetime.now(tz=timezone.utc)
+
+        acomptes_lettrage = []
+        for key, value in request.POST.items():
+            if key.startswith('checkbox_acompte_a_utiliser_'):
+                acompte_id = key.split('_')[-1]
+                try:
+                    acomptes_lettrage.append({
+                        'acompte_id': acompte_id,
+                        'montant_utilise': Decimal(
+                            request.POST.get(f'montant_acompte_{acompte_id}', '0').replace(' ', '')),
+                        'solde_restant': Decimal(
+                            request.POST.get(f'solde_restant_acompte_{acompte_id}', '0').replace(' ', ''))
+                    })
+                except (InvalidOperation, ValueError):
+                    continue
+        print('acomptes_lettrage ', acomptes_lettrage)
+        quittances_lettrage = []
+        for key, value in request.POST.items():
+            if key.startswith('quittance_a_solde_'):
+                quittance_id = key.split('_')[-1]
+                if f"checkbox_quittance_a_regler_{quittance_id}" in request.POST:
+                    try:
+                        quittances_lettrage.append({
+                            'quittance_id': quittance_id,
+                            'solde_quittance': Decimal(request.POST.get(f'solde_quittance_{quittance_id}', '0').replace(' ', '')),
+                            'solde_apres_transmit': Decimal(request.POST.get(f'solde_apres_transmit_{quittance_id}', '0').replace(' ', '')),
+                            'montant_a_regler_transmit': Decimal(request.POST.get(f'montant_a_regler_transmit_{quittance_id}', '0').replace(' ', ''))
+                        })
+                    except:
+                        continue
+
+        if not Operation.objects.filter(uuid=uuid_reglement).exists():
+            montant_total_regle = 0
+            nombre_quittances = 0
+            operation = Operation.objects.create(
+                montant_total=0,
+                date_operation=date_paiement,
+                created_by=request.user,
+                uuid=uuid_reglement
+            )
+
+            # Traitement des quittances
+            for quittance in quittances_lettrage:
+                obj_quittance = Quittance.objects.filter(id=quittance['quittance_id']).first()
+                if obj_quittance:
+                    montant_regle = quittance['montant_a_regler_transmit']
+                    if quittance['solde_apres_transmit'] == 0:
+                        obj_quittance.montant_regle += obj_quittance.solde
+                        obj_quittance.solde = Decimal(0)
+                        obj_quittance.statut = StatutQuittance.PAYE
+                    else:
+                        obj_quittance.montant_regle += montant_regle
+                        obj_quittance.solde = quittance['solde_apres_transmit']
+                    obj_quittance.updated_at = datetime.now(tz=timezone.utc)
+                    obj_quittance.save()
+
+                    # Calcul des taux sous forme Decimal pour éviter l'erreur
+                    tx_com_courtage = (Decimal(obj_quittance.commission_courtage) * 100) / Decimal(obj_quittance.prime_ttc)
+                    tx_com_intermediaire = (Decimal(obj_quittance.commission_intermediaires) * 100) / Decimal(obj_quittance.prime_ttc)
+
+                    montant_com_courtage = (tx_com_courtage / Decimal(100)) * Decimal(obj_quittance.montant_regle)
+                    montant_com_intermediaire = (tx_com_intermediaire / Decimal(100)) * Decimal(obj_quittance.montant_regle)
+                    montant_compagnie = Decimal(obj_quittance.montant_regle) - (
+                            montant_com_courtage + Decimal(obj_quittance.cout_police_courtier)
+                    )
+
+                    reglement = Reglement.objects.create(
+                        quittance=obj_quittance,
+                        montant=obj_quittance.montant_regle,
+                        montant_compagnie=montant_compagnie,
+                        compagnie=obj_quittance.compagnie,
+                        montant_com_courtage=montant_com_courtage,
+                        montant_com_intermediaire=montant_com_intermediaire,
+                        date_paiement=date_paiement,
+                        created_by=request.user,
+                        bureau=request.user.bureau
+                    )
+                    reglement.numero = f'R{Date.today().year}{str(reglement.pk).zfill(6)}'
+                    reglement.save()
+
+                    OperationReglement.objects.create(
+                        operation=operation,
+                        reglement=reglement,
+                        created_by=request.user
+                    )
+
+                    montant_total_regle += montant_regle
+                    nombre_quittances += 1
+
+            operation.montant_total = montant_total_regle
+            operation.nombre_quittances = nombre_quittances
+            operation.numero = f'OP{Date.today().year}{str(operation.pk).zfill(6)}'
+            operation.save()
+
+            # Mise à jour des soldes
+            print('acomptes_lettrage : ', acomptes_lettrage)
+            for acompte_data in acomptes_lettrage:
+                print('acompte_data : ', acompte_data)
+                acompte = Acompte.objects.get(id=acompte_data['acompte_id'])
+                solde_restant = acompte_data['solde_restant']
+                acompte.solde = max(acompte.solde - solde_restant, 0)
+                acompte.save()
+
+            return JsonResponse({'statut': 1, 'message': "Lettrage effectué avec succès", 'data': {}})
+        else:
+            return JsonResponse({'statut': 0, 'message': "Lettrage déjà effectué", 'data': {}})
+
+    return render(request, 'police/modal_add_lettrage.html', {
+        'police': police,
+        'today': today,
+        'quittances_impayees': quittances_impayees,
+        'acomptes': acomptes,
+        'uuid_reglement': uuid_reglement
+    })
 
 
 # all police avenants

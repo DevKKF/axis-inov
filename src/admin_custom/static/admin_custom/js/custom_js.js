@@ -7605,174 +7605,299 @@ $(document).ready(function () {
 
     //********* FAIRE UN LETTRAGE ***********//
 
-    $("#btnOpenDialogAddLettrage").on('click', function () {
-        let model_name = $(this).data('model_name');
-        let modal_title = $(this).data('modal_title');
-        let href = $(this).data('href');
+    $("#btnOpenDialogAddLettrage").on('click', function() {
+    let model_name = $(this).data('model_name');
+    let modal_title = $(this).data('modal_title');
+    let href = $(this).data('href');
 
-        $('#olea_std_dialog_box').load(href, function () {
-            AppliquerMaskSaisie();
+    $('#olea_std_dialog_box').load(href, function() {
+        AppliquerMaskSaisie();
 
-            $('#modal-lettrage').attr('data-backdrop', 'static').attr('data-keyboard', false);
-            $('#modal-lettrage').find('.modal-title').text(modal_title);
-            $('#modal-lettrage').find('#btn_valider').attr({ 'data-model_name': model_name, 'data-href': href });
-            $('#modal-lettrage').find('.modal-dialog').addClass('modal-xl').removeClass('modal-lg');
-            $('#modal-lettrage').modal();
+        $('#modal-lettrage').attr('data-backdrop', 'static').attr('data-keyboard', false);
+        $('#modal-lettrage').find('.modal-title').text(modal_title);
+        $('#modal-lettrage').find('#btn_valider').attr({'data-model_name': model_name, 'data-href': href});
+        $('#modal-lettrage').find('.modal-dialog').addClass('modal-xl').removeClass('modal-lg');
+        $('#modal-lettrage').modal();
 
-            function updateTotalARegler() {
-                let total = 0;
-                $('.montant_a_regler').each(function () {
-                    total += parseFloat($(this).val().replace(/\s/g, '').replace(',', '.')) || 0;
-                });
-                $('.montant_total_a_regler').val(total.toFixed(2));
-            }
+        function updateTotalARegler() {
+            let total = 0;
+            $('.montant_a_regler').each(function() {
+                total += parseFloat($(this).val().replace(/\s/g, '').replace(',', '.')) || 0;
+            });
+            $('.montant_total_a_regler').val(total.toFixed(2));
+            console.log('Montant total à régler :', total.toFixed(2));
+        }
 
-            function updateAcompteCumulEtRestant() {
-                let montant_cumul = 0;
+        function calculerMontantTotalAcomptes() {
+            // Cette fonction calcule seulement le total des acomptes cochés
+            let total_acomptes = 0;
+            $('.checkbox_acompte_a_utiliser:checked').each(function() {
+                const row = $(this).closest('tr');
+                const solde = parseFloat(row.find('.solde_acompte').val().replace(/\s/g, '').replace(',', '.')) || 0;
+                total_acomptes += solde;
+            });
+            return total_acomptes;
+        }
 
-                $('.checkbox_acompte_a_utiliser').each(function () {
-                    const row = $(this).closest('tr');
-                    const solde = parseFloat(row.find('.solde_acompte').val().replace(',', '.')) || 0;
-                    const solde_restant_field = row.find('.solde_restant_acompte');
+        function updateAcompteCumulEtRestant() {
+            // On calcule d'abord le total des acomptes cochés
+            let montant_total_acomptes = calculerMontantTotalAcomptes();
+            console.log('Total des acomptes cochés:', montant_total_acomptes.toFixed(2));
 
-                    if ($(this).is(':checked')) {
-                        montant_cumul += solde;
-                        solde_restant_field.val('0.00');
-                    } else {
-                        solde_restant_field.val(solde.toFixed(2));
-                    }
-                });
+            // Réinitialiser tous les soldes restants d'acompte
+            $('.checkbox_acompte_a_utiliser').each(function() {
+                const row = $(this).closest('tr');
+                const solde = parseFloat(row.find('.solde_acompte').val().replace(/\s/g, '').replace(',', '.')) || 0;
 
-                $('#hidden_select_montant_acompte_cumul').val(montant_cumul.toFixed(2));
-                $('#montant_acompte_cumul').val(montant_cumul.toFixed(2));
-            }
-
-            function updateMontantsQuittances() {
-                let montant_disponible = parseFloat($('#hidden_select_montant_acompte_cumul').val()) || 0;
-
-                $('.checkbox_quittance_a_regler').each(function () {
-                    const row = $(this).closest('tr');
-                    const solde = parseFloat(row.find('.solde_quittance').val()) || 0;
-                    const montant_field = row.find('.montant_a_regler');
-                    const montant_transmit_field = row.find('.montant_a_regler_transmit');
-                    const solde_apres_field = row.find('.solde_apres');
-                    const solde_apres_transmit = row.find('.solde_apres_transmit');
-
-                    if ($(this).is(':checked')) {
-                        if (montant_disponible >= solde) {
-                            montant_field.val(solde).attr('readonly', true);
-                            solde_apres_field.val('0.00');
-                            montant_disponible -= solde;
-                        } else {
-                            montant_field.val(montant_disponible.toFixed(2)).attr('readonly', true);
-                            solde_apres_field.val((solde - montant_disponible).toFixed(2));
-                            montant_disponible = 0;
-                        }
-                    } else {
-                        const montant_retire = parseFloat(montant_field.val()) || 0;
-                        montant_disponible += montant_retire;
-                        montant_field.val('0.00').attr('readonly', true);
-                        solde_apres_field.val(solde.toFixed(2));
-                    }
-
-                    montant_transmit_field.val(montant_field.val());
-                    solde_apres_transmit.val(solde_apres_field.val());
-                });
-
-                $('#hidden_select_montant_acompte_cumul').val(montant_disponible.toFixed(2));
-                $('#montant_acompte_cumul').val(montant_disponible.toFixed(2));
-            }
-
-            function verifier_activation_bouton_lettrage() {
-                const acompte_cumul = parseFloat($('#hidden_select_montant_acompte_cumul').val()) || 0;
-                const montant_total = parseFloat($('.montant_total_a_regler').val().replace(',', '.')) || 0;
-                const has_quittance = $('.checkbox_quittance_a_regler:checked').length > 0;
-                const has_acompte = $('.checkbox_acompte_a_utiliser:checked').length > 0;
-
-                $('#btn_save_lettrage').prop('disabled', !(has_acompte && has_quittance && montant_total > 0));
-            }
-
-            function refreshAll() {
-                updateAcompteCumulEtRestant();
-                updateMontantsQuittances();
-                updateTotalARegler();
-                verifier_activation_bouton_lettrage();
-            }
-
-            $(document).on('change', '.checkbox_acompte_a_utiliser, .checkbox_quittance_a_regler', refreshAll);
-
-            // Enregistrement
-            $('#btn_save_lettrage').on('click', function () {
-                const btn = $(this);
-                const form = $('#form_add_lettrage');
-                const href = form.attr('action');
-
-                $.validator.setDefaults({ ignore: [] });
-
-                if (form.valid()) {
-                    btn.attr('disabled', true);
-                    const n = noty({
-                        text: 'Voulez-vous vraiment effectuer ce lettrage de compte ?',
-                        type: 'warning',
-                        dismissQueue: true,
-                        layout: 'center',
-                        theme: 'defaultTheme',
-                        buttons: [
-                            {
-                                addClass: 'btn btn-primary',
-                                text: 'OUI',
-                                onClick: function ($noty) {
-                                    $noty.close();
-                                    $.ajax({
-                                        type: 'post',
-                                        url: href,
-                                        data: form.serialize(),
-                                        success: function (response) {
-                                            if (response.statut == 1) {
-                                                notifySuccess(response.message, function () {
-                                                    location.reload();
-                                                });
-                                            } else {
-                                                let errors = '';
-                                                $.each(response.errors, function (field, message) {
-                                                    errors += `- ${ucfirst(field)} : ${message}<br/>`;
-                                                });
-                                                $('#modal-lettrage .alert .message').html(errors);
-                                                $('#modal-lettrage .alert')
-                                                    .fadeTo(2000, 500)
-                                                    .slideUp(500)
-                                                    .removeClass('alert-success')
-                                                    .addClass('alert-warning');
-                                            }
-                                        },
-                                        error: function () {
-                                            notifyWarning("Erreur lors de l'enregistrement");
-                                            btn.removeAttr('disabled');
-                                        }
-                                    });
-                                }
-                            },
-                            {
-                                addClass: 'btn btn-danger',
-                                text: 'Annuler',
-                                onClick: function ($noty) {
-                                    $noty.close();
-                                    btn.removeAttr('disabled');
-                                }
-                            }
-                        ]
-                    });
+                if ($(this).is(':checked')) {
+                    // Par défaut, on considère que tout l'acompte sera utilisé
+                    row.find('.solde_restant_acompte').val('0.00');
                 } else {
-                    $('label.error').hide().removeClass('error').text('');
-                    notifyWarning('Veuillez renseigner tous les champs obligatoires');
-                    btn.removeAttr('disabled');
+                    // Si l'acompte n'est pas coché, le solde restant est égal au solde initial
+                    row.find('.solde_restant_acompte').val(solde.toFixed(2));
                 }
             });
 
-            // Initialisation
-            refreshAll();
+            // Maintenant calculons le total des quittances cochées pour savoir combien d'acomptes seront utilisés
+            let montant_total_quittances = 0;
+            $('.checkbox_quittance_a_regler:checked').each(function() {
+                const row = $(this).closest('tr');
+                const solde = parseFloat(row.find('.solde_quittance').val().replace(/\s/g, '').replace(',', '.')) || 0;
+                montant_total_quittances += solde;
+            });
+            console.log('Total des quittances cochées:', montant_total_quittances.toFixed(2));
+
+            // Calculer le montant restant après affectation aux quittances
+            let montant_restant = montant_total_acomptes;
+
+            // Si le total des quittances est inférieur au total des acomptes,
+            // nous devons ajuster le solde restant du dernier acompte
+            if (montant_total_quittances < montant_total_acomptes) {
+                const montant_a_utiliser = montant_total_quittances;
+                let montant_deja_utilise = 0;
+
+                // On parcourt les acomptes cochés sauf le dernier
+                const acomptes_coches = $('.checkbox_acompte_a_utiliser:checked');
+                const nb_acomptes = acomptes_coches.length;
+
+                if (nb_acomptes > 0) {
+                    acomptes_coches.each(function(index) {
+                        const row = $(this).closest('tr');
+                        const solde = parseFloat(row.find('.solde_acompte').val().replace(/\s/g, '').replace(',', '.')) || 0;
+
+                        // Pour tous les acomptes sauf le dernier
+                        if (index < nb_acomptes - 1) {
+                            if (montant_deja_utilise + solde <= montant_a_utiliser) {
+                                // Cet acompte est entièrement utilisé
+                                row.find('.solde_restant_acompte').val('0.00');
+                                montant_deja_utilise += solde;
+                            } else {
+                                // Cet acompte n'est que partiellement utilisé
+                                const montant_utilise = montant_a_utiliser - montant_deja_utilise;
+                                const solde_restant = solde - montant_utilise;
+                                row.find('.solde_restant_acompte').val(solde_restant.toFixed(2));
+                                montant_deja_utilise = montant_a_utiliser; // On a tout utilisé
+                            }
+                        } else {
+                            // Pour le dernier acompte coché
+                            const montant_restant_a_utiliser = montant_a_utiliser - montant_deja_utilise;
+                            if (montant_restant_a_utiliser < solde) {
+                                // Le dernier acompte n'est que partiellement utilisé
+                                const solde_restant = solde - montant_restant_a_utiliser;
+                                row.find('.solde_restant_acompte').val(solde_restant.toFixed(2));
+                            } else {
+                                // Le dernier acompte est entièrement utilisé
+                                row.find('.solde_restant_acompte').val('0.00');
+                            }
+                        }
+                    });
+                }
+
+                // Le montant disponible est le total des acomptes moins ce qui est utilisé pour les quittances
+                montant_restant = montant_total_acomptes - montant_total_quittances;
+            } else {
+                // Si le total des quittances est supérieur ou égal au total des acomptes,
+                // tous les acomptes sont entièrement utilisés (déjà mis à 0.00 au début)
+                montant_restant = 0;
+            }
+
+            // Maintenant mettons à jour le montant cumulé des acomptes disponibles
+            // (c'est-à-dire le montant total des acomptes moins ce qui est affecté aux quittances)
+            let montant_disponible = montant_total_acomptes
+
+            // Mise à jour des champs de cumul d'acomptes
+            const montant_format = montant_disponible.toFixed(2);
+            $('#hidden_select_montant_acompte_cumul').val(montant_format);
+            $('#montant_acompte_cumul').val(montant_format);
+
+            // Mise à jour de la couleur de fond en fonction du montant disponible
+            if (montant_disponible > 0) {
+                $('#montant_acompte_cumul').css('background', 'green');
+            } else {
+                $('#montant_acompte_cumul').css('background', '#dc3545'); // Rouge pour 0 ou négatif
+            }
+
+            console.log('Montant acompte cumulé disponible:', montant_format);
+            return montant_disponible; // Retourne le montant disponible pour être utilisé par d'autres fonctions
+        }
+
+        function updateMontantsQuittances() {
+            // Obtenir le montant disponible des acomptes
+            let montant_disponible = parseFloat($('#hidden_select_montant_acompte_cumul').val().replace(/\s/g, '').replace(',', '.')) || 0;
+            console.log('Début traitement quittances. Montant disponible initial :', montant_disponible.toFixed(2));
+
+            // On recalcule ce montant disponible car il pourrait avoir changé si de nouveaux acomptes ont été cochés
+            if (montant_disponible === 0) {
+                montant_disponible = calculerMontantTotalAcomptes();
+            }
+
+            // Traiter chaque ligne de quittance
+            $('.checkbox_quittance_a_regler').each(function() {
+                const row = $(this).closest('tr');
+                const solde = parseFloat(row.find('.solde_quittance').val().replace(/\s/g, '').replace(',', '.')) || 0;
+                const montant_field = row.find('.montant_a_regler');
+                const montant_transmit_field = row.find('.montant_a_regler_transmit');
+                const solde_apres_field = row.find('.solde_apres');
+                const solde_apres_transmit = row.find('.solde_apres_transmit');
+
+                if ($(this).is(':checked')) {
+                    if (montant_disponible >= solde) {
+                        // On peut régler toute la quittance
+                        montant_field.val(solde.toFixed(2)).attr('readonly', true);
+                        solde_apres_field.val('0.00');
+                        montant_disponible -= solde;
+                    } else {
+                        // On ne peut régler que partiellement la quittance
+                        montant_field.val(montant_disponible.toFixed(2)).attr('readonly', true);
+                        solde_apres_field.val((solde - montant_disponible).toFixed(2));
+                        montant_disponible = 0;
+                    }
+                } else {
+                    // Quittance non cochée, donc pas de montant à régler
+                    montant_field.val('0.00').attr('readonly', true);
+                    solde_apres_field.val(solde.toFixed(2));
+                }
+
+                // Mettre à jour les champs cachés pour la transmission
+                montant_transmit_field.val(montant_field.val());
+                solde_apres_transmit.val(solde_apres_field.val());
+
+                console.log('Quittance - Solde: ' + solde +
+                    ', Montant à régler: ' + montant_field.val() +
+                    ', Solde après: ' + solde_apres_field.val());
+            });
+
+            // Le montant disponible d'acomptes est maintenant mis à jour
+            // après avoir réglé les quittances cochées
+            const montant_format = montant_disponible.toFixed(2);
+            $('#hidden_select_montant_acompte_cumul').val(montant_format);
+            $('#montant_acompte_cumul').val(montant_format);
+
+            // Mettre à jour la couleur du fond en fonction du montant
+            if (montant_disponible > 0) {
+                $('#montant_acompte_cumul').css('background', 'green');
+            } else {
+                $('#montant_acompte_cumul').css('background', '#dc3545'); // Rouge pour 0 ou négatif
+            }
+
+            console.log('Montant restant disponible après affectation quittances :', montant_format);
+        }
+
+        function verifier_activation_bouton_lettrage() {
+            const acompte_cumul = parseFloat($('#hidden_select_montant_acompte_cumul').val()) || 0;
+            const montant_total = parseFloat($('.montant_total_a_regler').val().replace(',', '.')) || 0;
+            const has_quittance = $('.checkbox_quittance_a_regler:checked').length > 0;
+            const has_acompte = $('.checkbox_acompte_a_utiliser:checked').length > 0;
+
+            const is_enabled = has_acompte && has_quittance && montant_total > 0;
+            $('#btn_save_lettrage').prop('disabled', !is_enabled);
+        }
+
+        function refreshAll() {
+            // On recalcule d'abord le montant total des acomptes disponibles
+            // puis on affecte ce montant aux quittances cochées
+            updateAcompteCumulEtRestant();
+            updateMontantsQuittances();
+            updateTotalARegler();
+            verifier_activation_bouton_lettrage();
+        }
+
+        $(document).on('change', '.checkbox_acompte_a_utiliser, .checkbox_quittance_a_regler', refreshAll);
+
+        $('#btn_save_lettrage').on('click', function() {
+            const btn = $(this);
+            const form = $('#form_add_lettrage');
+            const href = form.attr('action');
+
+            $.validator.setDefaults({
+                ignore: []
+            });
+
+            if (form.valid()) {
+                btn.attr('disabled', true);
+                const n = noty({
+                    text: 'Voulez-vous effectuer ce lettrage de compte ?',
+                    type: 'warning',
+                    dismissQueue: true,
+                    layout: 'center',
+                    theme: 'defaultTheme',
+                    buttons: [{
+                            addClass: 'btn btn-primary',
+                            text: 'OUI',
+                            onClick: function($noty) {
+                                $noty.close();
+                                // 🔍 Log des données envoyées
+                                console.log('Données envoyées :', form.serialize());
+                                $.ajax({
+                                    type: 'post',
+                                    url: href,
+                                    data: form.serialize(),
+                                    success: function(response) {
+                                        if (response.statut == 1) {
+                                            notifySuccess(response.message, function() {
+                                                location.reload();
+                                            });
+                                        } else {
+                                            let errors = '';
+                                            $.each(response.errors, function(field, message) {
+                                                errors += '- ' + ucfirst(field) + ': ' + message + '<br/>';
+                                            });
+                                            $('#modal-lettrage .alert .message').html(errors);
+                                            $('#modal-lettrage .alert')
+                                                .fadeTo(2000, 500)
+                                                .slideUp(500)
+                                                .removeClass('alert-success')
+                                                .addClass('alert-warning');
+                                        }
+                                    },
+                                    error: function() {
+                                        notifyWarning("Erreur lors de l'enregistrement");
+                                        btn.removeAttr('disabled');
+                                    }
+                                });
+                            }
+                        },
+                        {
+                            addClass: 'btn btn-danger',
+                            text: 'Annuler',
+                            onClick: function($noty) {
+                                $noty.close();
+                                btn.removeAttr('disabled');
+                            }
+                        }
+                    ]
+                });
+            } else {
+                $('label.error').hide().removeClass('error').text('');
+                notifyWarning('Veuillez renseigner tous les champs obligatoires');
+                btn.removeAttr('disabled');
+            }
         });
+
+        // Initialisation
+        refreshAll();
     });
+});
 
     //********* FIN FAIRE UN LETTRAGE ***********//
 

@@ -4151,12 +4151,7 @@ def add_lettrage_1(request, police_id):
 def add_lettrage(request, police_id):
     police = get_object_or_404(Police, id=police_id)
     acomptes = Acompte.objects.filter(client_id=police.client_id, solde__gt=0)
-    quittances_impayees = Quittance.objects.filter(
-        police_id=police_id,
-        statut=StatutQuittance.IMPAYE,
-        statut_validite=StatutValidite.VALIDE,
-        import_stats=False
-    )
+    quittances_impayees = Quittance.objects.filter(police_id=police_id, statut=StatutQuittance.IMPAYE, statut_validite=StatutValidite.VALIDE, import_stats=False)
     uuid_reglement = uuid.uuid4()
     today = datetime.now(tz=timezone.utc)
 
@@ -4168,17 +4163,16 @@ def add_lettrage(request, police_id):
         for key, value in request.POST.items():
             if key.startswith('checkbox_acompte_a_utiliser_'):
                 acompte_id = key.split('_')[-1]
-                try:
-                    acomptes_lettrage.append({
-                        'acompte_id': acompte_id,
-                        'montant_utilise': Decimal(
-                            request.POST.get(f'montant_acompte_{acompte_id}', '0').replace(' ', '')),
-                        'solde_restant': Decimal(
-                            request.POST.get(f'solde_restant_acompte_{acompte_id}', '0').replace(' ', ''))
-                    })
-                except (InvalidOperation, ValueError):
-                    continue
-        print('acomptes_lettrage ', acomptes_lettrage)
+                if request.POST.get(key) == 'on':  # Vérifie si la checkbox est cochée
+                    try:
+                        acomptes_lettrage.append({
+                            'acompte_id': acompte_id,
+                            'solde_acompte': Decimal(request.POST.get(f'solde_acompte_{acompte_id}', '0').replace(' ', '').replace(',','.')),
+                            'solde_restant_acompte': Decimal(request.POST.get(f'solde_restant_acompte_{acompte_id}', '0').replace(' ', '').replace(',', '.'))
+                        })
+                    except:
+                        continue
+
         quittances_lettrage = []
         for key, value in request.POST.items():
             if key.startswith('quittance_a_solde_'):
@@ -4193,6 +4187,9 @@ def add_lettrage(request, police_id):
                         })
                     except:
                         continue
+
+        print('acomptes_lettrage : ', acomptes_lettrage)
+        print('quittances_lettrage : ', quittances_lettrage)
 
         if not Operation.objects.filter(uuid=uuid_reglement).exists():
             montant_total_regle = 0
@@ -4258,25 +4255,25 @@ def add_lettrage(request, police_id):
             operation.save()
 
             # Mise à jour des soldes
-            print('acomptes_lettrage : ', acomptes_lettrage)
             for acompte_data in acomptes_lettrage:
-                print('acompte_data : ', acompte_data)
                 acompte = Acompte.objects.get(id=acompte_data['acompte_id'])
-                solde_restant = acompte_data['solde_restant']
-                acompte.solde = max(acompte.solde - solde_restant, 0)
+                solde_restant_acompte = acompte_data['solde_restant_acompte']
+
+                acompte.solde = solde_restant_acompte
                 acompte.save()
 
             return JsonResponse({'statut': 1, 'message': "Lettrage effectué avec succès", 'data': {}})
         else:
             return JsonResponse({'statut': 0, 'message': "Lettrage déjà effectué", 'data': {}})
 
-    return render(request, 'police/modal_add_lettrage.html', {
-        'police': police,
-        'today': today,
-        'quittances_impayees': quittances_impayees,
-        'acomptes': acomptes,
-        'uuid_reglement': uuid_reglement
-    })
+    else:
+        return render(request, 'police/modal_add_lettrage.html', {
+            'police': police,
+            'today': today,
+            'quittances_impayees': quittances_impayees,
+            'acomptes': acomptes,
+            'uuid_reglement': uuid_reglement
+        })
 
 
 # all police avenants

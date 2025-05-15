@@ -3,119 +3,117 @@
 	<div class="modal-dialog modal-xl">
 		<div class="modal-content">
 			<form enctype="multipart/form-data" id="form_add_lettrage" action="{% url 'add_lettrage' police.id %}" method="post">
-			{% csrf_token %}
-			<input type="hidden" name="uuid_reglement" value="{{uuid_reglement}}"/>
-			<div class="modal-header">
-				<h4 class="modal-title">{{_("FORMULAIRE DE LETTRAGE")}}</b></h4>
-				<button type="button"class="close"data-dismiss="modal"aria-label="Close">
-					<span aria-hidden="true">×</span>
-				</button>
-			</div>
-			<div class="modal-body">
-				<div class="alert  alert-dismissible fade show hidden" role="alert">
-				  <span class="message"> {{_("TRAITEMENT EN COURS")}}</span>
+				{% csrf_token %}
+				<input type="hidden" name="uuid_reglement" value="{{uuid_reglement}}"/>
+				<div class="modal-header">
+					<h4 class="modal-title">{{_("FORMULAIRE DE LETTRAGE")}}</b></h4>
+					<button type="button"class="close"data-dismiss="modal"aria-label="Close">
+						<span aria-hidden="true">×</span>
+					</button>
 				</div>
-				<div class="col-md-12 offset-0">
-                    <div class="row table-responsive"><span>{{_("Liste des acomptes")}}</span>
-                        <table id="table_acomptes" class="table table-bordered table-striped dataTable dtr-inline" role="grid" aria-describedby="example1_info" style="width:100%;">
-                            <thead>
-                                <tr>
-                                    <th>##</th>
-                                    <th>{{_("Date création")}}</th>
-                                    <th>{{_("N° Quittance")}}</th>
-                                    <th>{{_("Période début")}}</th>
-                                    <th>{{_("Période fin")}}</th>
-                                    <th>{{_("Débit")}}</th>
-                                    <th>{{_("Crédit")}}</th>
-                                    <th>{{_("Solde")}}</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for acompte in acomptes %}
-                                    <tr>
-                                        <td>
-											<input type="checkbox" name="checkbox_acompte_a_utiliser_{{ acompte.id }}" class="checkbox_acompte_a_utiliser" />
-											<input type="hidden" name="montant_acompte_{{ acompte.id }}" class="montant_acompte_utilise" value="0.00" />
-											<input type="hidden" name="solde_acompte_{{ acompte.id }}" class="solde_acompte" value="{{ acompte.solde }}" />
-										</td>
-                                        <td>{{ acompte.date_versement|date:'d/m/Y'|default_if_none:"" }}</td>
-                                        <td>{{ acompte.quittance.numero|default_if_none:"" }}</td>
-                                        <td>{{ acompte.periode_debut|date:'d/m/Y'|default_if_none:"" }}</td>
-                                        <td>{{ acompte.periode_fin|date:'d/m/Y'|default_if_none:"" }}</td>
-                                        <td class="text-right">{{ acompte.debit|default_if_none:"0"|money_field }}</td>
-                                        <td class="text-right">{{ acompte.credit|default_if_none:"0"|money_field }}</td>
-                                        <td class="text-right f-bold">{{ acompte.solde|default_if_none:"0"|money_field }}
-											<input type="hidden" class="form-control solde_acompte" name="solde_acompte_{{acompte.id}}" value="{{acompte.solde}}"/>
-											<input type="hidden" class="form-control solde_restant_acompte" name="solde_restant_acompte_{{acompte.id}}" value=""/>
-										</td>
-                                    </tr>
-                                {% endfor %}
-                            </tbody>
-                            <tfoot>
-                                <tr>
-                                    <td colspan="7" class="f-bold">Total disponible</td>
-                                    <td>
-										<input type="hidden" value="0" id="hidden_select_montant_acompte_cumul" readonly="">
-										<input type="text" class="form-control money_field_negative text-white montant_acompte_cumul" name="montant_acompte_cumul" value="0" id="montant_acompte_cumul" readonly style="background:green;font-weight:bold;">
-									</td>
-                                </tr>
-                            </tfoot>
-                        </table>
-                    </div>
-                    <br><br>
-					<div class="row table-responsive"><span>{{_("Liste des quittances impayées")}}</span>
-						<!-- LISTE DES QUITTANCES IMPAYEES  -->
-						<table class="table table-bordered table-striped dataTable0 dtr-inline" id="table_quittances_impayees">
-						  <thead>
-							<tr>
-								<th scope="col">##</th>
-								<th scope="col" style="width:200px;">{{_("Montant à régler")}}</th>
-								<th scope="col">{{_("Numéro Quittance")}}</th>
-								<th scope="col">{{_("Début période")}}</th>
-								<th scope="col">{{_('Type')}}</th>
-								<th scope="col">{{_("Prime TTC")}}</th>
-								<th scope="col">{{_("Solde actuel")}}</th>
-								<th scope="col" style="width:150px;">{{_("Solde après")}}</th>
-							</tr>
-						  </thead>
-						  <tbody>
-							  {% for quittance_imp in quittances_impayees %}
-								<tr>
-  									<td>
-									  <input type="checkbox" class="checkbox_quittance_a_regler" name="checkbox_quittance_a_regler_{{ quittance_imp.id }}">
-									  <input type="hidden" name="quittance_a_solde_{{quittance_imp.id}}" value="{{quittance_imp.id}}"/>
-									</td>
-									<td>
-										<input type="text" class="form-control money_field_negative montant_a_regler" name="montant_a_regler_{{quittance_imp.id}}" value="0" readonly>
-										<input type="hidden" class="form-control montant_a_regler_transmit" name="montant_a_regler_transmit_{{quittance_imp.id}}" value="0">
-									</td>
-									<td>{{ quittance_imp.numero|default_if_none:"" }}</td>
-									<td>{{ quittance_imp.date_debut|default_if_none:"" }}</td>
-									<td>{{ quittance_imp.type_quittance.libelle|default_if_none:"" }}</td>
-									<td class="text-right">{{ quittance_imp.prime_ttc|money_field }}
-										<input type="hidden" class="form-control montant_quittance" value="{{quittance_imp.prime_ttc}}">
-									</td>
-									<td class="text-right">{{ quittance_imp.solde|money_field }}
-										<input type="hidden" class="form-control solde_quittance" name="solde_quittance_{{quittance_imp.id}}" value="{{quittance_imp.solde}}">
-									</td>
-									<td class="text-right">
-										<input type="text" class="form-control money_field_negative solde_apres" id="solde_apres" name="solde_apres_{{quittance_imp.id}}" value="{{quittance_imp.solde}}" readonly>
-										<input type="hidden" class="form-control solde_apres_transmit" id="solde_apres_transmit" name="solde_apres_transmit_{{quittance_imp.id}}" value="0">
-									</td>
-								</tr>
-							  {% endfor %}
-						  </tbody>
-						</table>
-						<!-- FIN LISTE DES QUITTANCES IMPAYEE -->
+				<div class="modal-body">
+					<div class="alert  alert-dismissible fade show hidden" role="alert">
+					  <span class="message"> {{_("TRAITEMENT EN COURS")}}</span>
 					</div>
-
+					<div class="col-md-12 offset-0">
+						<div class="row table-responsive"><span>{{_("Liste des acomptes")}}</span>
+							<table id="table_acomptes" class="table table-bordered table-striped dataTable dtr-inline" role="grid" aria-describedby="example1_info" style="width:100%;">
+								<thead>
+									<tr>
+										<th>##</th>
+										<th>{{_("Date création")}}</th>
+										<th>{{_("N° Quittance")}}</th>
+										<th>{{_("Période début")}}</th>
+										<th>{{_("Période fin")}}</th>
+										<th>{{_("Débit")}}</th>
+										<th>{{_("Crédit")}}</th>
+										<th>{{_("Solde")}}</th>
+									</tr>
+								</thead>
+								<tbody>
+									{% for acompte in acomptes %}
+										<tr>
+											<td>
+												<input type="checkbox" name="checkbox_acompte_a_utiliser_{{ acompte.id }}" class="checkbox_acompte_a_utiliser" />
+										  		<input type="hidden" name="acompte_a_solde_{{acompte.id}}" value="{{acompte.id}}"/>
+											</td>
+											<td>{{ acompte.date_versement|date:'d/m/Y'|default_if_none:"" }}</td>
+											<td>{{ acompte.quittance.numero|default_if_none:"" }}</td>
+											<td>{{ acompte.periode_debut|date:'d/m/Y'|default_if_none:"" }}</td>
+											<td>{{ acompte.periode_fin|date:'d/m/Y'|default_if_none:"" }}</td>
+											<td class="text-right">{{ acompte.debit|default_if_none:"0"|money_field }}</td>
+											<td class="text-right">{{ acompte.credit|default_if_none:"0"|money_field }}</td>
+											<td class="text-right f-bold">{{ acompte.solde|default_if_none:"0"|money_field }}
+												<input type="hidden" class="form-control solde_acompte" name="solde_acompte_{{acompte.id}}" value="{{acompte.solde}}"/>
+												<input type="hidden" class="form-control solde_restant_acompte" name="solde_restant_acompte_{{acompte.id}}" value=""/>
+											</td>
+										</tr>
+									{% endfor %}
+								</tbody>
+								<tfoot>
+									<tr>
+										<td colspan="7" class="f-bold">Total disponible</td>
+										<td>
+											<input type="hidden" value="0" id="hidden_select_montant_acompte_cumul" readonly="">
+											<input type="text" class="form-control money_field_negative text-white montant_acompte_cumul" name="montant_acompte_cumul" value="0" id="montant_acompte_cumul" readonly style="background:green;font-weight:bold;">
+										</td>
+									</tr>
+								</tfoot>
+							</table>
+						</div>
+						<br><br>
+						<div class="row table-responsive"><span>{{_("Liste des quittances impayées")}}</span>
+							<!-- LISTE DES QUITTANCES IMPAYEES  -->
+							<table class="table table-bordered table-striped dataTable0 dtr-inline" id="table_quittances_impayees">
+							  <thead>
+								<tr>
+									<th scope="col">##</th>
+									<th scope="col" style="width:200px;">{{_("Montant à régler")}}</th>
+									<th scope="col">{{_("Numéro Quittance")}}</th>
+									<th scope="col">{{_("Début période")}}</th>
+									<th scope="col">{{_('Type')}}</th>
+									<th scope="col">{{_("Prime TTC")}}</th>
+									<th scope="col">{{_("Solde actuel")}}</th>
+									<th scope="col" style="width:150px;">{{_("Solde après")}}</th>
+								</tr>
+							  </thead>
+							  <tbody>
+								  {% for quittance_imp in quittances_impayees %}
+									<tr>
+										<td>
+										  <input type="checkbox" class="checkbox_quittance_a_regler" name="checkbox_quittance_a_regler_{{ quittance_imp.id }}">
+										  <input type="hidden" name="quittance_a_solde_{{quittance_imp.id}}" value="{{quittance_imp.id}}"/>
+										</td>
+										<td>
+											<input type="text" class="form-control money_field_negative montant_a_regler" name="montant_a_regler_{{quittance_imp.id}}" value="0" readonly>
+											<input type="hidden" class="form-control montant_a_regler_transmit" name="montant_a_regler_transmit_{{quittance_imp.id}}" value="0">
+										</td>
+										<td>{{ quittance_imp.numero|default_if_none:"" }}</td>
+										<td>{{ quittance_imp.date_debut|default_if_none:"" }}</td>
+										<td>{{ quittance_imp.type_quittance.libelle|default_if_none:"" }}</td>
+										<td class="text-right">{{ quittance_imp.prime_ttc|money_field }}
+											<input type="hidden" class="form-control montant_quittance" value="{{quittance_imp.prime_ttc}}">
+										</td>
+										<td class="text-right">{{ quittance_imp.solde|money_field }}
+											<input type="hidden" class="form-control solde_quittance" name="solde_quittance_{{quittance_imp.id}}" value="{{quittance_imp.solde}}">
+										</td>
+										<td class="text-right">
+											<input type="text" class="form-control money_field_negative solde_apres" id="solde_apres" name="solde_apres_{{quittance_imp.id}}" value="{{quittance_imp.solde}}" readonly>
+											<input type="hidden" class="form-control solde_apres_transmit" id="solde_apres_transmit" name="solde_apres_transmit_{{quittance_imp.id}}" value="0">
+										</td>
+									</tr>
+								  {% endfor %}
+							  </tbody>
+							</table>
+							<!-- FIN LISTE DES QUITTANCES IMPAYEE -->
+						</div>
+					</div>
+					<div class="modal-footer justify-content-between">
+						<button type="button" class="btn btn-danger" data-dismiss="modal"><i class="fa fa-remove"></i> {{_('Retour')}}</button>
+						<div>{{_("Montant Total")}} : <input type="text" class="money_field_negative montant_total_a_regler" readonly style="background:none;border:none;font-size:18px;"/> {{police.client.pays.devise.code}}</div>
+						<button disabled type="button" id="btn_save_lettrage" class="btn btn-info"><i class="fa fa-check-circle"></i> {{_('Valider')}}</button>
+					</div>
 				</div>
-				<div class="modal-footer justify-content-between">
-					<button type="button" class="btn btn-danger" data-dismiss="modal"><i class="fa fa-remove"></i> {{_('Retour')}}</button>
-					<div>{{_("Montant Total")}} : <input type="text" class="money_field_negative montant_total_a_regler" readonly style="background:none;border:none;font-size:18px;"/> {{police.client.pays.devise.code}}</div>
-					<button disabled type="button" id="btn_save_lettrage" class="btn btn-info"><i class="fa fa-check-circle"></i> {{_('Valider')}}</button>
-				</div>
-			</div>
 			</form>
 		</div>
 	</div>

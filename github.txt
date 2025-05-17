@@ -24,3 +24,7 @@ python manage.py migrate
 
 #Commande seeders :
 python manage.py seed_all
+
+#Plugins à installer :
+pip install reportlab==3.5.68
+

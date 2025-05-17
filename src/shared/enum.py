@@ -177,6 +177,7 @@ class PlacementEtGestion(models.TextChoices):
 class ModeRenouvellement(models.TextChoices):
     TACITE_RECONDUCTION = 'Tacite Reconduction'
     SANS_TACITE_RECONDUCTION = 'Sans Tacite Reconduction'
+    TEMPORAIRE = 'Temporaire'
     CHOISIR = ''
 
 class CalculTM(models.TextChoices):

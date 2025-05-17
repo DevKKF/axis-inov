@@ -49,7 +49,6 @@ from shared.enum import MoyenPaiement, SatutBordereauDossierSinistres, StatutPai
     StatutReversementCompagnie, StatutEncaissementCommission, StatutReglementApporteurs, \
     StatutValidite, Statut
 from shared.helpers import generate_random_string, render_pdf
-from shared.veos import get_taux_euro_by_devise
 from sinistre.helper_sinistre import requete_analyse_prime_compta
 from sinistre.models import FactureCompagnie, ReglementCompagnie, Sinistre, BordereauOrdonnancement, PaiementComptable
 from sinistre.helper_sinistre import requete_analyse_prime_compta, requete_analyse_prime_compta_apporteur

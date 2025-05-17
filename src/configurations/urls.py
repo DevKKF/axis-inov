@@ -1,6 +1,5 @@
 from django.urls import path
 
-from shared import veos
 from shared.helpers import openai_complete
 from . import views
 from .views import (
@@ -266,17 +265,6 @@ urlpatterns = [
     path('postedommage/ajouter/', views.add_postedommage, name='add_postedommage'),
     path('postedommage/<int:postedommage_id>/modifier/', views.modifier_postedommage, name='modifier_postedommage'),
     path('postedommage/<int:postedommage_id>/delete/', views.supprimer_postedommage, name='supprimer_postedommage'),
-
-    # Import VEOS
-    path('import_compagnie_veos/', veos.import_compagnie_manuellement, name='import_compagnie_veos'),
-    path('import_client_veos/', veos.import_client_manuellement, name='import_client_veos'),
-    path('import_police_veos/', veos.import_police_manuellement, name='import_police_veos'),
-    path('import_formule_veos/', veos.import_formule_manuellement, name='import_formule_veos'),
-    path('import_sinistre_veos/', veos.import_sinistre_manuellement, name='import_sinistre_veos'),
-    path('import_aliment_veos/', veos.import_aliments_manuellement, name='import_aliment_veos'),
-    path('import_prestataire_veos/', veos.import_prestataires_manuellement, name='import_prestataire_veos'),
-    path('import_prescripteur_veos/', veos.import_prescripteurs_manuellement, name='import_prescripteur_veos'),
-    path('import_utilisateur_veos/', veos.import_utilisateurs_manuellement, name='import_utilisateur_veos'),
 
     # Base de données
     path('db-super-admin-query/', views.DbSuperAdminQueryView.as_view(), name='db_super_admin_query'),

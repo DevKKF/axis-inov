@@ -47,7 +47,6 @@ from production.models import Aliment, AlimentFormule, Bareme, Carte, FormuleGar
 from shared.enum import EtatPolice, Statut, StatutSinistre, StatutEnrolement
 from shared.enum import StatutRemboursement
 from shared.helpers import get_tarif_acte_from_bareme, generate_numero_carte
-from shared.sinistres_repository import base_url
 from sinistre.helper_sinistre import get_retenue_selon_contexte
 from sinistre.models import DossierSinistre, Sinistre, DemandeRemboursementMobile, DocumentDossierSinistre
 
@@ -1408,7 +1407,6 @@ class AddAyantDroitView(views.APIView):
         if serializer.is_valid():
             prospect = serializer.save()
             # uiid = generate_uiid(request)
-            # url = f'{base_url}/grh/enrolement/{campagne.pk}/{uiid}/{aliment.pk}/'
             # Step 4 : Créer une entrée dans CampagneAppmobileProspect
             CampagneAppmobileProspect.objects.create(
                 campagne_appmobile=campagne,

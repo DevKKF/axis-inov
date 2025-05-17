@@ -110,23 +110,26 @@
 												<option selected value="">Choisir</option>
 												<option value="{{ mode_renouvellement.TACITE_RECONDUCTION }}">{{ mode_renouvellement.TACITE_RECONDUCTION }}</option>
 												<option value="{{ mode_renouvellement.SANS_TACITE_RECONDUCTION }}">{{ mode_renouvellement.SANS_TACITE_RECONDUCTION }}</option>
+												<option value="{{ mode_renouvellement.TEMPORAIRE }}">{{ mode_renouvellement.TEMPORAIRE }}</option>
 											</select>
 										</div>
 									</div>
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">Date début <span class="required">*</span></label>
+										<label class="col-sm-5 col-form-label">Date début période <span class="required">*</span></label>
 										<div class="col-sm-7">
-											<input type="date" class="form-control" name="date_debut_effet" id="date_debut_effet" autocomplete="off" value="" required/>
+											<input type="date" class="form-control" name="date_debut_effet" id="date_debut_effet" autocomplete="off" value=""/>
 										</div>
 									</div>
-									<div class="form-group row tacide_reconduction">
-										<label class="col-sm-5 col-form-label">Date de renouvellement <span class="required">*</span></label>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">Date fin période</label>
 										<div class="col-sm-7">
 											<input type="date" class="form-control" name="date_fin_effet" id="date_fin_effet" autocomplete="off" value="">
 										</div>
 									</div>
-									<div class="form-group row sans_tacide_reconduction">
-										<label class="col-sm-5 col-form-label">Date fin contrat <span class="required">*</span></label>
+									<div class="form-group row temporaire">
+										<label id="label_date_fin_police" class="col-sm-5 col-form-label">
+											Date fin contrat <span class="required" style="display:none">*</span>
+										</label>
 										<div class="col-sm-7">
 											<input type="date" class="form-control" name="date_fin_police" id="date_fin_police" autocomplete="off" value="">
 										</div>
@@ -854,6 +857,13 @@
 											<input type="text" class="form-control money_field" name="taux_participation" id="taux_participation" value="0"/>
 										</div>
 									</div>
+								</div>
+							</div>
+							<div class="row">
+								<div class="col-md-12">
+									<small id="fractionnement_hint" class="form-text text-muted" style="color:red !important; font-style:italic; display:none;">
+										<i class="fa fa-hand-o-right"></i> Le fractionnement est imposé à "Échéance unique" pour les contrats temporaires.
+									</small>
 								</div>
 							</div>
 						</div>

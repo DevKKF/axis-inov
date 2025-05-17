@@ -21,7 +21,6 @@ from django.db import transaction
 from django.db.models import Sum, Q
 from django.template.loader import get_template
 from django_dump_die.middleware import dd
-from xhtml2pdf import pisa
 import secrets
 
 from configurations.models import Acte, Prestataire, Prescripteur, JourFerie, Periodicite, Tarif, \

@@ -390,13 +390,15 @@ class PoliceGarantie(models.Model):
     police = models.ForeignKey(Police, on_delete=models.RESTRICT, null=True)
     garantie = models.ForeignKey(Garantie, on_delete=models.RESTRICT, null=True)
     formule = models.ForeignKey(Formule, on_delete=models.RESTRICT, null=True)
-    created_by = models.ForeignKey(User, null=True, on_delete=models.RESTRICT)
+    created_by = models.ForeignKey(User, related_name="pg_created_by", null=True, on_delete=models.RESTRICT)
     updated_by = models.ForeignKey(User, related_name="pg_updated_by", null=True, on_delete=models.RESTRICT)
+    deleted_by = models.ForeignKey(User, related_name="pg_deleted_by", null=True, on_delete=models.RESTRICT)
     franchise = models.FloatField(blank=True, null=True)
     capital = models.FloatField(blank=True, null=True)
     statut = models.fields.CharField(choices=Statut.choices, default=Statut.ACTIF, max_length=15, null=True, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=False, null=True)
+    updated_at = models.DateTimeField(auto_now=False, null=True)
+    deleted_at = models.DateTimeField(auto_now=False, null=True)
 
     class Meta:
         db_table = 'police_garantie'
@@ -406,15 +408,19 @@ class PoliceGarantie(models.Model):
 
 class HistoriquePoliceGarantie(models.Model):
     police = models.ForeignKey(Police, on_delete=models.RESTRICT, null=True)
+    historique_police = models.ForeignKey(HistoriquePolice, on_delete=models.RESTRICT, null=True)
     police_garantie = models.ForeignKey(PoliceGarantie, on_delete=models.RESTRICT, null=True)
     garantie = models.ForeignKey(Garantie, on_delete=models.RESTRICT, null=True)
     formule = models.ForeignKey(Formule, on_delete=models.RESTRICT, null=True)
-    created_by = models.ForeignKey(User, null=True, on_delete=models.RESTRICT)
+    created_by = models.ForeignKey(User, related_name="hpg_created_by", null=True, on_delete=models.RESTRICT)
+    updated_by = models.ForeignKey(User, related_name="hpg_updated_by", null=True, on_delete=models.RESTRICT)
+    deleted_by = models.ForeignKey(User, related_name="hpg_deleted_by", null=True, on_delete=models.RESTRICT)
     franchise = models.FloatField(blank=True, null=True)
     capital = models.FloatField(blank=True, null=True)
     statut = models.fields.CharField(choices=Statut.choices, default=Statut.ACTIF, max_length=15, null=True, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True, null=True)
+    updated_at = models.DateTimeField(auto_now=True, null=True)
+    deleted_at = models.DateTimeField(auto_now=True, null=True)
 
     class Meta:
         db_table = 'historique_police_garantie'

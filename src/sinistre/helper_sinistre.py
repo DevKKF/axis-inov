@@ -5,7 +5,6 @@ from configurations.helper_config import send_notification_background_task_mail,
 from configurations.models import ActionLog, BackgroundQueryTask, CronLog, Prestataire, Retenue
 from production.models import MouvementPolice, Reglement, Quittance, ApporteurPolice
 from shared.enum import StatutReversementCompagnie, StatutEncaissementCommission, StatutValidite
-from shared.veos import get_taux_euro_by_devise
 import openpyxl
 from django.http import JsonResponse, HttpResponse
 import openpyxl
@@ -585,7 +584,7 @@ def requete_analyse_prime_compta(request):
     # queryset = Sinistre.objects.filter(bordereau_ordonnancement__isnull=False).order_by('-id')
     queryset = Quittance.objects.select_related('police').filter(statut_validite=StatutValidite.VALIDE,
                                                                  bureau_id=request.user.bureau.id, import_stats=False).order_by('-id')
-    default_taux_euro = get_taux_euro_by_devise(request.user.bureau.pays.devise.code)
+    default_taux_euro = 0
     print(default_taux_euro)
     # dd(queryset)
     pprint(queryset.count())
@@ -857,7 +856,7 @@ def requete_analyse_prime_compta_apporteur(request):
     # queryset = Sinistre.objects.filter(bordereau_ordonnancement__isnull=False).order_by('-id')
     queryset = Quittance.objects.select_related('police','compagnie').filter(statut_validite=StatutValidite.VALIDE,
                                                                  bureau_id=request.user.bureau.id, import_stats=False).order_by('-id')
-    default_taux_euro = get_taux_euro_by_devise(request.user.bureau.pays.devise.code)
+    default_taux_euro = 0
     print(default_taux_euro)
     # dd(queryset)
     pprint(queryset.count())

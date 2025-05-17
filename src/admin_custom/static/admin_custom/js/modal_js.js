@@ -364,256 +364,6 @@ $(document).ready(function () {
     });
     //TODO FIN RECUPERATION DES MOTIFS VIA LE MODAL AVENANT
 
-
-    //TODO DEBUT CHARGEMENT DES TAUX ET CALCUL DE LA PRIME
-    /*
-    $("#modal-modification_police #compagnie_modification, #modal-modification_police #produit_modification").on('change', function () {
-
-			let compagnie_id = $("#modal-modification_police #compagnie_modification").val();
-			let produit_id = $('#modal-modification_police #produit_modification').val();
-
-			// Réinitialiser les champs si l'un des sélecteurs est modifié
-			$('#modal-modification_police #taux_com_courtage_modification').val('');
-			$('#modal-modification_police #taux_com_courtage_terme_modification').val('');
-			$('#modal-modification_police #taux_com_gestion').val('');
-
-			if (compagnie_id && produit_id) {
-				$.ajax({
-					type: 'get',
-					url: '/production/compagnie/ajax_infos_compagnie_modification/' + compagnie_id + '/' + produit_id,
-					dataType: 'json',
-					success: function (data) {
-
-						let taux_com_courtage = parseFloat(data.taux_com_courtage);
-						let taux_com_courtage_terme = parseFloat(data.taux_com_courtage_terme);
-
-						$('#modal-modification_police #taux_com_courtage_modification').val(taux_com_courtage);
-						$('#modal-modification_police #taux_com_courtage_terme_modification').val(taux_com_courtage_terme);
-
-						calculer_montant_divers_police_modification();
-					},
-					error: function () {
-						console.log('Erreur de chargement : ajax_infos_compagnie_modification ');
-					}
-				});
-			}
-
-		});
-
-    $(document).on("keyup change", "#modal-modification_police .calculs_handler_police_modification", function (event) {
-
-        if (event.which == 13) {
-            event.preventDefault();
-        }
-
-        calculer_montant_divers_police_modification();
-
-    });
-
-    function calculer_montant_divers_police_modification() {
-
-        let prime_ht = parseInt($('#modal-modification_police #prime_ht_modification').val().replaceAll(' ', ''));
-        let cout_police_compagnie = parseInt($('#modal-modification_police #cout_police_compagnie_modification').val().replaceAll(' ', ''));
-        let cout_police_courtier = parseInt($('#modal-modification_police #cout_police_courtier_modification').val().replaceAll(' ', ''));
-        let taxe = parseInt($('#modal-modification_police #taxe_modification').val().replaceAll(' ', ''));
-        let autres_taxes = parseInt($('#modal-modification_police #autres_taxes_modification').val().replaceAll(' ', ''));
-
-        let taux_com_gestion = parseFloat($('#modal-modification_police #taux_com_gestion').val());
-        let taux_com_courtage = parseFloat($('#modal-modification_police #taux_com_courtage_modification').val());
-        let taux_com_courtage_terme = parseFloat($('#modal-modification_police #taux_com_courtage_terme_modification').val());
-
-        if (isNaN(prime_ht)) { prime_ht = 0; }
-        if (isNaN(cout_police_compagnie)) { cout_police_compagnie = 0; }
-        if (isNaN(cout_police_courtier)) { cout_police_courtier = 0; }
-        if (isNaN(taxe)) { taxe = 0; }
-        if (isNaN(autres_taxes)) { autres_taxes = 0; }
-        if (isNaN(taux_com_gestion)) { taux_com_gestion = 0; }
-        if (isNaN(taux_com_courtage)) { taux_com_courtage = 0; }
-
-        let prime_ttc = prime_ht + cout_police_compagnie + cout_police_courtier + taxe + autres_taxes;
-
-        console.log('prime_ht_modification : ', prime_ht);
-        console.log('cout_police_compagnie_modification : ', cout_police_compagnie);
-        console.log('cout_police_courtier_modification : ', cout_police_courtier);
-        console.log('taxe_modification : ', taxe);
-        console.log('autres_taxes_modification : ', autres_taxes);
-        console.log('taux_com_gestion_modification : ', taux_com_gestion);
-        console.log('taux_com_courtage_modification : ', taux_com_courtage);
-        console.log('prime_ttc_modification : ', prime_ttc);
-
-
-        let montant_commission_gestion = (taux_com_gestion / 100) * prime_ht;
-        let montant_commission_courtage = (taux_com_courtage / 100) * prime_ht;
-
-
-        let total_taux_com_affaire_nouvelle = 0;
-        let total_taux_com_renouvelement = 0;
-        let montant_commission_intermediaire = 0;
-        let total_montant_commission_intermediaire = 0;
-
-        $('.taux_com_affaire_nouvelle_modification').each(function () {
-
-            let taux_com_affaire_nouvelle = parseFloat($(this).val());
-            let taux_com_renouvelement = parseFloat($(this).closest('tr').find('.taux_com_renouvelement_modification').val());
-            let base_calcul_taux_retrocession = $(this).closest('tr').find('.base_calcul_taux_retrocession_modification').val();
-            let intermediaire = $(this).closest('tr').find('.intermediaire_modification').val();
-
-            if (intermediaire != "" && base_calcul_taux_retrocession != "" && taux_com_affaire_nouvelle > 0) {
-
-                if (base_calcul_taux_retrocession == 1) {//sur prime ht
-
-                    montant_commission_intermediaire = (taux_com_affaire_nouvelle / 100) * prime_ht;
-
-                } else if (base_calcul_taux_retrocession == 2) {//sur com courtage
-
-                    montant_commission_intermediaire = (taux_com_affaire_nouvelle / 100) * montant_commission_courtage;
-
-                } else if (base_calcul_taux_retrocession == 3) {//sur com gestion
-
-                    montant_commission_intermediaire = (taux_com_affaire_nouvelle / 100) * montant_commission_gestion;
-
-                } else if (base_calcul_taux_retrocession == 4) {//sur com total (courtage + gestion)
-
-                    montant_commission_intermediaire = (taux_com_affaire_nouvelle / 100) * (montant_commission_courtage + montant_commission_gestion);
-
-                }
-
-                console.log(montant_commission_intermediaire);
-
-                total_montant_commission_intermediaire = total_montant_commission_intermediaire + montant_commission_intermediaire;
-
-                console.log(total_montant_commission_intermediaire);
-
-            }
-
-        });
-
-        $('#modal-modification_police #prime_ttc_modification').val(prime_ttc);
-
-        $('#modal-modification_police #commission_courtage_modification').val(montant_commission_courtage);
-
-        $('#modal-modification_police #commission_gestion_modification').val(montant_commission_gestion);
-
-        $('#modal-modification_police #total_commission_intermediaire_modification').val(total_montant_commission_intermediaire);
-
-    }
-    */
-    function chargerInfosCompagnieProduit() {
-        let compagnie_id = $("#modal-modification_police #compagnie_modification").val();
-        let produit_id = $('#modal-modification_police #produit_modification').val();
-
-        // Réinitialiser les champs
-        $('#modal-modification_police #taux_com_courtage_modification').val('');
-        $('#modal-modification_police #taux_com_courtage_terme_modification').val('');
-        $('#modal-modification_police #taux_com_gestion').val('');
-
-        if (compagnie_id && produit_id) {
-            $.ajax({
-                type: 'get',
-                url: '/production/compagnie/ajax_infos_compagnie_modification/' + compagnie_id + '/' + produit_id,
-                dataType: 'json',
-                success: function (data) {
-                    let taux_com_courtage = parseFloat(data.taux_com_courtage);
-                    let taux_com_courtage_terme = parseFloat(data.taux_com_courtage_terme);
-
-                    console.log('taux_com_courtage : ', taux_com_courtage);
-                    console.log('taux_com_courtage_terme : ', taux_com_courtage_terme);
-
-                    $('#modal-modification_police #taux_com_courtage_modification').val(taux_com_courtage);
-                    $('#modal-modification_police #taux_com_courtage_terme_modification').val(taux_com_courtage_terme);
-
-                    calculer_montant_divers_police_modification();
-                },
-                error: function () {
-                    console.log('Erreur de chargement : ajax_infos_compagnie_modification ');
-                }
-            });
-        }
-    }
-
-    $("#modal-modification_police #compagnie_modification, #modal-modification_police #produit_modification").on('change', function () {
-        chargerInfosCompagnieProduit();
-    });
-
-    $(document).on("keyup change", "#modal-modification_police .calculs_handler_police_modification", function (event) {
-        if (event.which == 13) {
-            event.preventDefault();
-        }
-        calculer_montant_divers_police_modification();
-    });
-
-    function calculer_montant_divers_police_modification() {
-        let prime_ht = parseInt($('#modal-modification_police #prime_ht_modification').val().replaceAll(' ', ''));
-        let cout_police_compagnie = parseInt($('#modal-modification_police #cout_police_compagnie_modification').val().replaceAll(' ', ''));
-        let cout_police_courtier = parseInt($('#modal-modification_police #cout_police_courtier_modification').val().replaceAll(' ', ''));
-        let taxe = parseInt($('#modal-modification_police #taxe_modification').val().replaceAll(' ', ''));
-        let autres_taxes = parseInt($('#modal-modification_police #autres_taxes_modification').val().replaceAll(' ', ''));
-
-        let taux_com_gestion = parseFloat($('#modal-modification_police #taux_com_gestion').val());
-        let taux_com_courtage = parseFloat($('#modal-modification_police #taux_com_courtage_modification').val());
-        let taux_com_courtage_terme = parseFloat($('#modal-modification_police #taux_com_courtage_terme_modification').val());
-
-        if (isNaN(prime_ht)) { prime_ht = 0; }
-        if (isNaN(cout_police_compagnie)) { cout_police_compagnie = 0; }
-        if (isNaN(cout_police_courtier)) { cout_police_courtier = 0; }
-        if (isNaN(taxe)) { taxe = 0; }
-        if (isNaN(autres_taxes)) { autres_taxes = 0; }
-        if (isNaN(taux_com_gestion)) { taux_com_gestion = 0; }
-        if (isNaN(taux_com_courtage)) { taux_com_courtage = 0; }
-
-        let prime_ttc = prime_ht + cout_police_compagnie + cout_police_courtier + taxe + autres_taxes;
-
-        console.log('prime_ht_modification : ', prime_ht);
-        console.log('cout_police_compagnie_modification : ', cout_police_compagnie);
-        console.log('cout_police_courtier_modification : ', cout_police_courtier);
-        console.log('taxe_modification : ', taxe);
-        console.log('autres_taxes_modification : ', autres_taxes);
-        console.log('taux_com_gestion_modification : ', taux_com_gestion);
-        console.log('taux_com_courtage_modification : ', taux_com_courtage);
-        console.log('prime_ttc_modification : ', prime_ttc);
-
-        let montant_commission_gestion = (taux_com_gestion / 100) * prime_ht;
-        let montant_commission_courtage = (taux_com_courtage / 100) * prime_ht;
-
-        let total_taux_com_affaire_nouvelle = 0;
-        let total_taux_com_renouvelement = 0;
-        let montant_commission_intermediaire = 0;
-        let total_montant_commission_intermediaire = 0;
-
-        $('.taux_com_affaire_nouvelle_modification').each(function () {
-            let taux_com_affaire_nouvelle = parseFloat($(this).val());
-            let taux_com_renouvelement = parseFloat($(this).closest('tr').find('.taux_com_renouvelement_modification').val());
-            let base_calcul_taux_retrocession = $(this).closest('tr').find('.base_calcul_taux_retrocession_modification').val();
-            let intermediaire = $(this).closest('tr').find('.intermediaire_modification').val();
-
-            if (intermediaire != "" && base_calcul_taux_retrocession != "" && taux_com_affaire_nouvelle > 0) {
-                if (base_calcul_taux_retrocession == 1) {//sur prime ht
-                    montant_commission_intermediaire = (taux_com_affaire_nouvelle / 100) * prime_ht;
-                } else if (base_calcul_taux_retrocession == 2) {//sur com courtage
-                    montant_commission_intermediaire = (taux_com_affaire_nouvelle / 100) * montant_commission_courtage;
-                } else if (base_calcul_taux_retrocession == 3) {//sur com gestion
-                    montant_commission_intermediaire = (taux_com_affaire_nouvelle / 100) * montant_commission_gestion;
-                } else if (base_calcul_taux_retrocession == 4) {//sur com total (courtage + gestion)
-                    montant_commission_intermediaire = (taux_com_affaire_nouvelle / 100) * (montant_commission_courtage + montant_commission_gestion);
-                }
-                console.log(montant_commission_intermediaire);
-                total_montant_commission_intermediaire = total_montant_commission_intermediaire + montant_commission_intermediaire;
-                console.log(total_montant_commission_intermediaire);
-            }
-        });
-
-        $('#modal-modification_police #prime_ttc_modification').val(prime_ttc);
-        $('#modal-modification_police #commission_courtage_modification').val(montant_commission_courtage);
-        $('#modal-modification_police #commission_gestion_modification').val(montant_commission_gestion);
-        $('#modal-modification_police #total_commission_intermediaire_modification').val(total_montant_commission_intermediaire);
-    }
-
-    $('#modal-modification_police').on('shown.bs.modal', function () {
-        chargerInfosCompagnieProduit(); // Appeler la fonction au chargement du modal
-    });
-    //TODO FIN CHARGEMENT DES TAUX ET CALCUL DE LA PRIME
-
-
     //TODO DEBUT DU CALCUL DES TAUX ET DES PRIMES DE LA MARCHANDISE
     $(document).on("keyup change", "#modal-modification_police .calculs_marchandise_montant_police_modification", function (event) {
         if (event.which == 13) {
@@ -699,42 +449,98 @@ $(document).ready(function () {
 //TODO validation / Téléchargement de fichier / suppression session
 $(document).ready(function() {
 
-    function isValidDate(dateString) {
-        return !isNaN(Date.parse(dateString));
+    function isValidDate(dateStr) {
+        return dateStr && !isNaN(Date.parse(dateStr));
     }
 
-    function manage_mode_renouvellement() {
-        let mode_renouvellement = $('#modification_mode_renouvellement').val();
-        let police_date_debut = $('#modification_date_debut_effet').val();
-        let police_date_fin_effet = $('#modification_date_fin_effet').val();
-        let police_date_fin_police = $('#modification_date_fin_police').val();
-        let btn_submit = $('#btn_save_modification_police');
+    function manageModeRenouvellement() {
+        let modeRenouvellement = $('#modification_mode_renouvellement').val();
+        let dateDebutPoliceInput = $('#modification_date_debut_effet');
+        let dateFinPoliceInput = $('#modification_date_fin_police');
+        let dateFinPoliceLabelStar = $('#modification_label_date_fin_police .required');
+        let fractionnementSelect = $('select[name="fractionnement"]');
+        let fractionnement_hint = $('#modification_fractionnement_hint');
 
-        // Réactiver le bouton avant vérification
-        btn_submit.removeAttr('disabled');
+        // 1. Réinitialiser champ "Date fin contrat"
+        dateFinPoliceInput.removeAttr('required');
+        dateFinPoliceLabelStar.hide();
 
-        // Cacher tous les champs et enlever les attributs required
-        $('.modification_tacide_reconduction, .modification_sans_tacide_reconduction').hide();
-        $('.modification_tacide_reconduction input, .modification_sans_tacide_reconduction input').removeAttr('required');
+        // 2. Réinitialiser champ "Fractionnement"
+        fractionnementSelect.val(''); // vide la sélection
+        fractionnementSelect.prop('disabled', false); // réactive le champ
 
-        if (mode_renouvellement === "Tacite Reconduction") {
-            $('.modification_tacide_reconduction').show();
-            $('.modification_tacide_reconduction input').attr('required', 'required');
-        } else if (mode_renouvellement === "Sans Tacite Reconduction") {
-            $('.modification_sans_tacide_reconduction').show();
-            $('.modification_sans_tacide_reconduction input').attr('required', 'required');
+        // 3. Si mode = Temporaire → forcer "Échéance unique" et désactiver
+        if (modeRenouvellement === "Temporaire") {
+            dateDebutPoliceInput.removeAttr('required');
+            dateFinPoliceInput.attr('required', 'required');
+            dateFinPoliceLabelStar.show();
+            fractionnement_hint.show();
+
+            // Trouver et sélectionner "Échéance unique"
+            let optionUnique = fractionnementSelect.find('option').filter(function () {
+                return $(this).text().trim() === "Echéance unique";
+            });
+
+            if (optionUnique.length) {
+                fractionnementSelect.val(optionUnique.val());
+                fractionnementSelect.prop('disabled', true);
+            }
+        }
+        else {
+            dateFinPoliceLabelStar.hide();
+            dateDebutPoliceInput.removeAttr('required');
+            dateFinPoliceInput.removeAttr('required');
+            fractionnement_hint.hide();
+
+            // Réactiver et vider le champ "Fractionnement"
+            fractionnementSelect.prop('disabled', false);
+            fractionnementSelect.val('');
+
+            // Cacher "Échéance unique" dans les autres cas
+            fractionnementSelect.find('option').filter(function () {
+                return $(this).text().trim() === "Echéance unique";
+            }).hide();
+        }
+    }
+
+    function validateDates() {
+        let dateDebut = $('#modification_date_debut_effet').val();
+        let dateFinEffet = $('#modification_date_fin_effet').val();
+        let dateFinPolice = $('#modification_date_fin_police').val();
+        let mode = $('#modification_mode_renouvellement').val();
+        let btnSubmit = $('#btn_save_modification_police');
+
+        btnSubmit.removeAttr('disabled');
+
+        if (isValidDate(dateDebut)) {
+            if (mode === "Tacite Reconduction" && isValidDate(dateFinEffet)) {
+                if (new Date(dateDebut) >= new Date(dateFinEffet)) {
+                    notifyWarning("La date de renouvellement doit être strictement postérieure à la date de début.");
+                    btnSubmit.attr('disabled', 'disabled');
+                    return false;
+                }
+            } else if ((mode === "Sans Tacite Reconduction" || mode === "Temporaire") && isValidDate(dateFinPolice)) {
+                if (new Date(dateDebut) >= new Date(dateFinPolice)) {
+                    notifyWarning("La date de fin du contrat doit être strictement postérieure à la date de début.");
+                    btnSubmit.attr('disabled', 'disabled');
+                    return false;
+                }
+            }
         }
 
+        return true;
     }
 
-    // Exécuter au chargement de la page
+    // Initialisation
     $(document).ready(function () {
-        manage_mode_renouvellement();
+        manageModeRenouvellement();
+        validateDates();
     });
 
-    // Déclencher la gestion des modes et la validation des dates
-    $(document).on('change', "#modification_mode_renouvellement, #modification_date_debut_effet, #modification_date_fin_effet, #modification_date_fin_police", function () {
-        manage_mode_renouvellement();
+    // Sur changement
+    $(document).on('change', "#modification_mode_renouvellement, #modification_date_fin_effet, #modification_date_fin_police", function () {
+        manageModeRenouvellement();
+        validateDates();
     });
 
     // Pour le téléchargement du fichier modèle de création d'aliment
@@ -785,513 +591,6 @@ $(document).ready(function() {
 });
 
 
-//TODO affichage sous-menu de la police
-/*$(document).ready(function () {
-    let produit_id_actuel = null; // Pour éviter les appels redondants
-
-    function afficherOngletAvecChamps(tabSelector, champSelector) {
-        $(tabSelector).removeClass('d-none');
-        if (champSelector) {
-            $(champSelector).attr('required', true);
-        }
-    }
-
-    const ongletsDynamiques = ['#risque-tab_modification', '#aliment-tab_modification', '#vehicule-tab_modification', '#marchandise-tab_modification'];
-    const champsDynamiques = ['.marchandise_champ_obligatoire_modification', '.vehicule_champ_obligatoire_modification'];
-
-    const ongletsFixes = [
-        { tab: '#garantie-tab_modification', champ: '.garantie_champ_obligatoire' },
-        { tab: '#general-tab_modification' },
-        { tab: '#facturation-tab_modification' },
-        { tab: '#prime-tab_modification' },
-    ];
-
-    function initialiserOnglets() {
-        $(ongletsDynamiques.join(', ')).addClass('d-none');
-        $(champsDynamiques.join(', ')).removeAttr('required');
-        $('#table_liste_aliment_modification tbody').empty();
-
-        ongletsFixes.forEach(onglet => {
-            $(onglet.tab).removeClass('d-none');
-            if (onglet.champ) {
-                $(onglet.champ).attr('required', true);
-            }
-        });
-    }
-
-    function handleProduitChange(produit_id) {
-        if (produit_id == produit_id_actuel) return; // Éviter appel si même produit
-        produit_id_actuel = produit_id;
-
-        if (!produit_id) {
-            initialiserOnglets();
-            return;
-        }
-
-        $.ajax({
-            type: 'get',
-            url: '/production/produit/' + produit_id + '/sous-menu',
-            success: function (produit) {
-                let produit_code = produit[0].fields.code;
-
-                if (produit_code == 10001){
-                    afficherOngletAvecChamps('#vehicule-tab_modification', '.vehicule_champ_obligatoire');
-                } else if (produit_code == 10002) {
-                     afficherOngletAvecChamps('#aliment-tab_modification', '.mod_aliment_champ_obligatoire');
-                } else if (produit_code == 50001 || produit_code == 50002) {
-                    afficherOngletAvecChamps('#marchandise-tab_modification', '.marchandise_champ_obligatoire');
-                } else {
-                    afficherOngletAvecChamps('#risque-tab_modification');
-                }
-
-                initialiserOnglets();
-            },
-            error: function () {
-                console.error('Erreur lors du chargement des sous-menus pour la modification.');
-            }
-        });
-    }
-
-    // Se déclenche uniquement si utilisateur change de produit dans le formulaire
-    $('#produit_modification').on('change', function () {
-        let produit_id = $(this).val();
-        handleProduitChange(produit_id);
-    });
-
-    // Lancement uniquement à l'ouverture du modal
-    $('#modal-modification_police').on('shown.bs.modal', function () {
-        produit_id_actuel = null; // Pour forcer la détection même si ID est null
-        let produit_id_initial = $('#produit_modification').val();
-        if (produit_id_initial) {
-            handleProduitChange(produit_id_initial);
-        }
-
-    });
-
-});
-
-$(document).ready(function () {
-    const produit_modification = $('#produit_modification');
-    const modal_modification_police = $('#modal-modification_police');
-    let produit_id_actuel_modification = null;
-
-    const onglets = {
-        '#risque-tab_modification': null,
-        '#aliment-tab_modification': '.mod_aliment_champ_obligatoire',
-        '#vehicule-tab_modification': '.vehicule_champ_obligatoire_modification',
-        '#marchandise-tab_modification': '.marchandise_champ_obligatoire_modification',
-        '#garantie-tab_modification': '.garantie_champ_obligatoire',
-        '#general-tab_modification': null,
-        '#facturation-tab_modification': null,
-        '#prime-tab_modification': null,
-    };
-
-    function afficherOnglet(tabSelector, champObligatoireSelector) {
-        $(tabSelector).removeClass('d-none');
-        if (champObligatoireSelector) {
-            $(champObligatoireSelector).attr('required', true);
-        }
-    }
-
-    function cacherOngletsDynamiques() {
-        $('#risque-tab_modification, #aliment-tab_modification, #vehicule-tab_modification, #marchandise-tab_modification').addClass('d-none');
-        $('.marchandise_champ_obligatoire_modification, .vehicule_champ_obligatoire_modification, .mod_aliment_champ_obligatoire').removeAttr('required');
-        $('#table_liste_aliment_modification tbody').empty();
-    }
-
-    function afficherOngletsFixes() {
-        $('#garantie-tab_modification, #general-tab_modification, #facturation-tab_modification, #prime-tab_modification').removeClass('d-none');
-        $('.garantie_champ_obligatoire').attr('required', true);
-    }
-
-    function afficherMenu(produitCode) {
-        $('.vehicule_menu, .aliment_menu, .marchandise_menu, .risque_menu').hide();
-        if (produitCode === '10001') {
-            $('.vehicule_menu').show();
-        } else if (produitCode === '10002') {
-            $('.aliment_menu').show();
-        } else if (produitCode === '50001' || produitCode === '50002') {
-            $('.marchandise_menu').show();
-        } else {
-            $('.risque_menu').show();
-        }
-    }
-
-    function gererAffichageOnglets(produitCode) {
-        cacherOngletsDynamiques();
-        afficherOngletsFixes();
-
-        if (produitCode === '10001') {
-            afficherOnglet('#vehicule-tab_modification', '.vehicule_champ_obligatoire_modification');
-        } else if (produitCode === '10002') {
-            afficherOnglet('#aliment-tab_modification', '.mod_aliment_champ_obligatoire');
-        } else if (produitCode === '50001' || produitCode === '50002') {
-            afficherOnglet('#marchandise-tab_modification', '.marchandise_champ_obligatoire_modification');
-        } else {
-            afficherOnglet('#risque-tab_modification');
-        }
-
-        afficherMenu(produitCode); // Afficher le menu correspondant
-    }
-
-    function chargerSousMenu(produitId) {
-        if (!produitId || produitId === produit_id_actuel_modification) return;
-        produit_id_actuel_modification = produitId;
-
-        $.ajax({
-            type: 'get',
-            url: `/production/produit/${produitId}/sous-menu`,
-            success: function (produit) {
-                if (produit && produit.length > 0) {
-                    gererAffichageOnglets(produit[0].fields.code);
-                } else {
-                    cacherOngletsDynamiques();
-                    afficherOngletsFixes();
-                    afficherMenu(null); // Cacher tous les menus si pas de produit
-                }
-            },
-            error: function () {
-                console.error('Erreur lors du chargement des sous-menus pour la modification.');
-                cacherOngletsDynamiques();
-                afficherOngletsFixes();
-                afficherMenu(null); // Cacher tous les menus en cas d'erreur
-            }
-        });
-    }
-
-    produit_modification.on('change', function () {
-        chargerSousMenu($(this).val());
-    });
-
-    modal_modification_police.on('shown.bs.modal', function () {
-        produit_id_actuel_modification = null;
-        const produitIdInitial = produit_modification.val();
-        if (produitIdInitial) {
-            chargerSousMenu(produitIdInitial);
-        } else {
-            afficherMenu($('#produit_modif_code').val()); // Afficher le menu initial à l'ouverture si un code est déjà présent
-        }
-    });
-
-    //TODO chargement des produits de la branche
-    function loadProduits(branche_id) {
-        if (!branche_id) return; // Vérification pour éviter des appels inutiles
-
-        $.ajax({
-            type: 'GET',
-            url: '/production/modification_ajax_produits/' + branche_id,
-            dataType: 'json',
-            success: function (produits) {
-                let produitSelect = $('#produit_modification');
-                produitSelect.empty().append('<option value="">Choisir un produit</option>');
-
-                produits.forEach(function (produit) {
-                    produitSelect.append('<option value="' + produit.pk + '">' + produit.fields.nom + '</option>');
-                });
-
-                let selectedProduitId = $('#police_produit_id').val();
-                if (selectedProduitId) {
-                    produitSelect.val(selectedProduitId);
-                }
-            },
-            error: function () {
-                console.error('Erreur lors du chargement des produits.');
-            }
-        });
-    }
-
-    // Récupération de la branche initialement sélectionnée et chargement des produits
-    let initialBrancheId = $('#branche_modification').val();
-    if (initialBrancheId) {
-        loadProduits(initialBrancheId);
-    }
-
-    // Gestion du changement de branche
-    $('#branche_modification').on('change', function () {
-        let branche_id = $(this).val();
-        loadProduits(branche_id);
-    });
-});
-*/
-
-$(document).ready(function () {
-    const produit_modification = $('#produit_modification');
-    const branche_modification = $('#branche_modification');
-    const modal_modification_police = $('#modal-modification_police');
-    let produit_id_actuel_modification = null;
-
-    const onglets = {
-        '#risque-tab_modification': null,
-        '#aliment-tab_modification': '.mod_aliment_champ_obligatoire',
-        '#vehicule-tab_modification': '.vehicule_champ_obligatoire_modification',
-        '#marchandise-tab_modification': '.marchandise_champ_obligatoire_modification',
-        '#garantie-tab_modification': '.garantie_champ_obligatoire',
-        '#general-tab_modification': null,
-        '#facturation-tab_modification': null,
-        '#prime-tab_modification': null,
-    };
-
-    function afficherOnglet(tabSelector, champObligatoireSelector) {
-        $(tabSelector).removeClass('d-none');
-        if (champObligatoireSelector) {
-            $(champObligatoireSelector).attr('required', true);
-        }
-    }
-
-    function cacherOngletsDynamiques() {
-        $('#risque-tab_modification, #aliment-tab_modification, #vehicule-tab_modification, #marchandise-tab_modification').addClass('d-none');
-        $('.marchandise_champ_obligatoire_modification, .vehicule_champ_obligatoire_modification, .mod_aliment_champ_obligatoire').removeAttr('required');
-        $('#table_liste_aliment_modification tbody').empty();
-    }
-
-    function afficherOngletsFixes() {
-        $('#garantie-tab_modification, #general-tab_modification, #facturation-tab_modification, #prime-tab_modification').removeClass('d-none');
-        $('.garantie_champ_obligatoire').attr('required', true);
-    }
-
-    function afficherMenu(produitCode) {
-        console.log('Fonction afficherMenu appelée avec le code:', produitCode);
-        $('.vehicule_menu, .aliment_menu, .marchandise_menu, .risque_menu').hide();
-        if (produitCode === '10001') {
-            $('.vehicule_menu').show();
-        } else if (produitCode === '10002') {
-            $('.aliment_menu').show();
-        } else if (produitCode === '50001' || produitCode === '50002') {
-            $('.marchandise_menu').show();
-        } else if (produitCode) {
-            $('.risque_menu').show();
-        } else {
-            console.log('Aucun code produit, les menus devraient être cachés.');
-        }
-    }
-
-    function gererAffichageOnglets(produitCode) {
-        cacherOngletsDynamiques();
-        afficherOngletsFixes();
-
-        if (produitCode === '10001') {
-            afficherOnglet('#vehicule-tab_modification', '.vehicule_champ_obligatoire_modification');
-        } else if (produitCode === '10002') {
-            afficherOnglet('#aliment-tab_modification', '.mod_aliment_champ_obligatoire');
-        } else if (produitCode === '50001' || produitCode === '50002') {
-            afficherOnglet('#marchandise-tab_modification', '.marchandise_champ_obligatoire_modification');
-        } else if (produitCode) {
-            afficherOnglet('#risque-tab_modification');
-        }
-
-        afficherMenu(produitCode);
-    }
-
-    function chargerSousMenu(produitId) {
-        console.log('Fonction chargerSousMenu appelée avec l\'ID:', produitId);
-        if (produitId === produit_id_actuel_modification) {
-            console.log('ID de produit inchangé, sortie.');
-            return;
-        }
-        produit_id_actuel_modification = produitId;
-
-        if (!produitId) {
-            console.log('ID de produit vide, on cache le menu.');
-            afficherMenu(null);
-            return;
-        }
-
-        $.ajax({
-            type: 'get',
-            url: `/production/produit/${produitId}/sous-menu`,
-            success: function (produit) {
-                if (produit && produit.length > 0) {
-                    const produitCode = produit[0].fields.code;
-                    console.log('Sous-menu chargé avec le code:', produitCode);
-                    gererAffichageOnglets(produitCode);
-                } else {
-                    console.log('Aucun sous-menu trouvé pour cet ID.');
-                    cacherOngletsDynamiques();
-                    afficherOngletsFixes();
-                    afficherMenu(null);
-                }
-            },
-            error: function () {
-                console.error('Erreur lors du chargement des sous-menus pour la modification.');
-                cacherOngletsDynamiques();
-                afficherOngletsFixes();
-                afficherMenu(null);
-            }
-        });
-    }
-
-    function loadProduits(branche_id) {
-        console.log('Fonction loadProduits appelée avec l\'ID de branche:', branche_id);
-        if (!branche_id) {
-            produit_modification.empty().append('<option value="">Choisir un produit</option>');
-            afficherMenu(null);
-            console.log('Aucune branche sélectionnée, menu caché.');
-            return;
-        }
-
-        $.ajax({
-            type: 'GET',
-            url: '/production/modification_ajax_produits/' + branche_id,
-            dataType: 'json',
-            success: function (produits) {
-                let produitSelect = produit_modification;
-                produitSelect.empty().append('<option value="">Choisir un produit</option>');
-
-                produits.forEach(function (produit) {
-                    produitSelect.append('<option value="' + produit.pk + '">' + produit.fields.nom + '</option>');
-                });
-
-                let selectedProduitId = $('#police_produit_id').val();
-                if (selectedProduitId) {
-                    console.log('Produit pré-sélectionné:', selectedProduitId);
-                    produitSelect.val(selectedProduitId);
-                    chargerSousMenu(selectedProduitId);
-                } else {
-                    console.log('Aucun produit pré-sélectionné après changement de branche, menu devrait être caché.');
-                    afficherMenu(null);
-                }
-            },
-            error: function () {
-                console.error('Erreur lors du chargement des produits.');
-                produit_modification.empty().append('<option value="">Erreur de chargement</option>');
-                afficherMenu(null);
-            }
-        });
-    }
-
-    // Récupération de la branche initialement sélectionnée et chargement des produits
-    let initialBrancheId = branche_modification.val();
-    if (initialBrancheId) {
-        console.log('Branche initiale détectée:', initialBrancheId);
-        loadProduits(initialBrancheId);
-    } else {
-        console.log('Aucune branche initiale, menu caché.');
-        afficherMenu(null);
-    }
-
-    // Gestion du changement de branche
-    branche_modification.on('change', function () {
-        let branche_id = $(this).val();
-        console.log('Changement de branche détecté, nouvel ID:', branche_id);
-        produit_id_actuel_modification = null; // Réinitialiser l'ID du produit actuel
-        loadProduits(branche_id);
-        produit_modification.val('').trigger('change');
-        console.log('Champ produit réinitialisé et événement change déclenché.');
-    });
-
-    // Gestion du changement de produit
-    produit_modification.on('change', function () {
-        let produitId = $(this).val();
-        console.log('Changement de produit détecté, nouvel ID:', produitId);
-        chargerSousMenu(produitId);
-    });
-
-    modal_modification_police.on('shown.bs.modal', function () {
-        produit_id_actuel_modification = null;
-        const produitIdInitial = produit_modification.val();
-        const produitModifCodeInitial = $('#produit_modif_code').val();
-
-        console.log('Ouverture du modal');
-        console.log('Produit initial dans le select:', produitIdInitial);
-        console.log('Code produit initial (caché):', produitModifCodeInitial);
-
-        if (produitIdInitial) {
-            chargerSousMenu(produitIdInitial);
-        } else if (produitModifCodeInitial) {
-            afficherMenu(produitModifCodeInitial);
-        } else {
-            afficherMenu(null);
-        }
-    });
-});
-//TODO Autres assureurs
-$(document).ready(function () {
-    // Masquer les champs au chargement de la page
-    $('.box_typecompagnie_modification').hide();
-    $('#box_compagnie_modification').hide();
-
-    // Fonction pour gérer les changements de compagnie
-    function handleCompagnieChange() {
-        let compagnieId = $('#compagnie_modification').val();
-
-        // Si une compagnie est sélectionnée, afficher le champ "Autre assureur"
-        if (compagnieId) {
-            $('.box_typecompagnie_modification').show();
-        } else {
-            $('.box_typecompagnie_modification').hide();
-            $('#box_compagnie_modification').hide(); // Masquer le champ suivant si la compagnie est désélectionnée
-        }
-    }
-
-    // Fonction pour gérer les changements de type de compagnie
-    function handleTypeCompagnieChange() {
-        let typeCompagnieId = $('#typecompagnie_modification').val();
-
-        // Si un type de compagnie est sélectionné (autre que "Aucun"), afficher le champ "Choisir l'assureur"
-        if (typeCompagnieId) {
-            $('#box_compagnie_modification').show();
-        } else {
-            $('#box_compagnie_modification').hide(); // Masquer le champ si "Aucun" est sélectionné
-        }
-    }
-
-    // Écouteur d'événement pour les changements de compagnie
-    $('#compagnie_modification').on('change', function () {
-        handleCompagnieChange();
-    });
-
-    // Écouteur d'événement pour les changements de type de compagnie
-    $('#typecompagnie_modification').on('change', function () {
-        handleTypeCompagnieChange();
-    });
-
-    // Appliquer les règles au chargement de la page
-    handleCompagnieChange(); // Vérifier l'état initial de la compagnie
-    handleTypeCompagnieChange(); // Vérifier l'état initial du type de compagnie
-});
-
-
-//TODO reponse Apporteur / Participant
-$(document).ready(function () {
-    // Fonction pour gérer l'affichage du bloc en fonction de la réponse à "Apporteur"
-    function handleApporteurChange() {
-        let apporteurValue = $('input[name="apporteur"]:checked').val();
-
-        if (apporteurValue === "NON") {
-            $('#test_modification').hide();
-        } else {
-            $('#test_modification').show();
-        }
-    }
-
-    // Écouteur d'événement pour les changements de réponse à "Apporteur"
-    $('input[name="apporteur"]').on('change', function () {
-        handleApporteurChange();
-    });
-
-    // Fonction pour gérer l'affichage du bloc en fonction de la réponse à "Participation"
-    function handleParticipationChange() {
-        let participationValue = $('input[name="participation"]:checked').val();
-
-        if (participationValue === "NON") {
-            $('#box_taux_participation_modification').hide();
-        } else {
-            $('#box_taux_participation_modification').show();
-        }
-    }
-
-    // Écouteur d'événement pour les changements de réponse à "Participation"
-    $('input[name="participation"]').on('change', function () {
-        handleParticipationChange();
-    });
-
-    // Appliquer les règles au chargement de la page
-    handleApporteurChange();
-    handleParticipationChange();
-});
-
-
-//TODO Garantie de la police
 $(document).ready(function () {
 
     // Fonction pour formater un montant en séparateurs de milliers
@@ -1305,7 +604,6 @@ $(document).ready(function () {
         let garantieValue = $('input[name="garantie"]:checked').val();
         let policeId = $("#police_id").val();
         $('.aliment_obligatoire_modification').removeAttr('required');
-
 
         if (garantieValue === "NON") {
                 $('#formule_block_modification').hide();
@@ -1326,6 +624,7 @@ $(document).ready(function () {
     // Écouteur d'événement pour les changements de réponse à "Garantie"
     $('input[name="garantie"]').on('change', function () {
         handleGarantieChange();
+
     });
 
     // Appliquer les règles au chargement de la page
@@ -1429,38 +728,411 @@ $(document).ready(function () {
             DateSortieInput.prop('disabled', true).val('');
         }
     });
-});
 
+    // Fonction pour gérer l'affichage du bloc en fonction de la réponse à "Apporteur"
+    function handleApporteurChange() {
+        let apporteurValue = $('input[name="apporteur"]:checked').val();
 
-//TODO SINISTRE
-$(document).ready(function () {
-
-    $('#mouvement_sinistre').on('change', function () {
-        let mouvement_id = $(this).val();
-        let selectedOption = $(this).find(':selected');
-        let mouvement_nom = selectedOption.data('movement_nom');
-
-        $('#modal-modification_sinistre #titre_mouvement').text(mouvement_nom);
-
-        let VerificationGarantie = $('#modal-modification_sinistre .verification_garantie');
-        let AccuseReceptionClient = $('#modal-modification_sinistre .accuse_reception_client');
-        let NominationExpert = $('#modal-modification_sinistre .nomination_expert');
-
-        if(mouvement_id == 18){
-            VerificationGarantie.show();
+        if (apporteurValue === "NON") {
+            $('#test_modification').hide();
+        } else {
+            $('#test_modification').show();
         }
-        else if(mouvement_id == 19){
-            AccuseReceptionClient.show();
+    }
+
+    // Écouteur d'événement pour les changements de réponse à "Apporteur"
+    $('input[name="apporteur"]').on('change', function () {
+        handleApporteurChange();
+    });
+
+    // Fonction pour gérer l'affichage du bloc en fonction de la réponse à "Participation"
+    function handleParticipationChange() {
+        let participationValue = $('input[name="participation"]:checked').val();
+
+        if (participationValue === "NON") {
+            $('#box_taux_participation_modification').hide();
+        } else {
+            $('#box_taux_participation_modification').show();
         }
-        else if(mouvement_id == 24){
-            NominationExpert.show();
-        }
-        else{
-            console.log('Chargement en cours...');
-        }
+    }
+
+    // Écouteur d'événement pour les changements de réponse à "Participation"
+    $('input[name="participation"]').on('change', function () {
+        handleParticipationChange();
 
     });
-    // Déclencher manuellement l'événement 'change' au chargement de la page
-    $('#mouvement_sinistre').trigger('change');
+
+    // Appliquer les règles au chargement de la page
+    handleApporteurChange();
+    handleParticipationChange();
+
+    // Masquer les champs au chargement de la page
+    $('.box_typecompagnie_modification').hide();
+    $('#box_compagnie_modification').hide();
+
+    // Fonction pour gérer les changements de compagnie
+    function handleCompagnieChange() {
+        let compagnieId = $('#compagnie_modification').val();
+
+        // Si une compagnie est sélectionnée, afficher le champ "Autre assureur"
+        if (compagnieId) {
+            $('.box_typecompagnie_modification').show();
+        } else {
+            $('.box_typecompagnie_modification').hide();
+            $('#box_compagnie_modification').hide(); // Masquer le champ suivant si la compagnie est désélectionnée
+        }
+    }
+
+    // Fonction pour gérer les changements de type de compagnie
+    function handleTypeCompagnieChange() {
+        let typeCompagnieId = $('#typecompagnie_modification').val();
+
+        // Si un type de compagnie est sélectionné (autre que "Aucun"), afficher le champ "Choisir l'assureur"
+        if (typeCompagnieId) {
+            $('#box_compagnie_modification').show();
+        } else {
+            $('#box_compagnie_modification').hide(); // Masquer le champ si "Aucun" est sélectionné
+        }
+    }
+
+    // Écouteur d'événement pour les changements de compagnie
+    $('#compagnie_modification').on('change', function () {
+        handleCompagnieChange();
+    });
+
+    // Écouteur d'événement pour les changements de type de compagnie
+    $('#typecompagnie_modification').on('change', function () {
+        handleTypeCompagnieChange();
+    });
+
+    // Appliquer les règles au chargement de la page
+    handleCompagnieChange();
+    handleTypeCompagnieChange();
+});
+
+
+
+//
+$(document).ready(function () {
+    const modalModificationPolice = $('#modal-modification_police');
+    const brancheModification = $('#branche_modification');
+    const produitModification = $('#produit_modification');
+    const produitModifId = $('#produit_modif_id');
+    const compagnieModification = $('#compagnie_modification');
+
+    const ongletRisqueTab = $('[href="#risque"]');
+    const ongletMarchandiseTab = $('[href="#marchandise"]');
+    const ongletAlimentTab = $('[href="#aliment"]');
+    const ongletVehiculeTab = $('[href="#vehicule"]');
+
+    const ongletRisqueContent = $('.risque');
+    const ongletMarchandiseContent = $('.marchandise');
+    const ongletAlimentContent = $('.aliment');
+    const ongletVehiculeContent = $('.vehicule');
+
+    // Variable pour stocker l'ID du produit courant
+    let currentProduitId = produitModifId.val();
+
+    // Function to show/hide relevant onglets and manage tab activation
+    function toggleOnglets(produitCode) {
+        // Hide all content divs
+        ongletRisqueContent.hide();
+        ongletMarchandiseContent.hide();
+        ongletAlimentContent.hide();
+        ongletVehiculeContent.hide();
+
+        // Deactivate all tabs
+        ongletRisqueTab.removeClass('active');
+        ongletMarchandiseTab.removeClass('active');
+        ongletAlimentTab.removeClass('active');
+        ongletVehiculeTab.removeClass('active');
+
+        if (produitCode === 10001) { // Mono-Véhicule
+            ongletVehiculeContent.show();
+            ongletVehiculeTab.addClass('active');
+        } else if (produitCode === 10002) { // Flotte-Auto
+            ongletAlimentContent.show();
+            ongletAlimentTab.addClass('active');
+        } else if (produitCode === 50001 || produitCode === 50002) { // Marchandise
+            ongletMarchandiseContent.show();
+            ongletMarchandiseTab.addClass('active');
+        } else if (produitCode) { // Risque
+            ongletRisqueContent.show();
+            ongletRisqueTab.addClass('active');
+        }
+    }
+
+    // Lorsque la fenêtre modale est affichée, déclenchez l'événement « change » sur la liste déroulante de la branche.
+    modalModificationPolice.on('shown.bs.modal', function () {
+        brancheModification.trigger('change');
+        // Noter l'ordre : d'abord branche, puis produit, puis compagnie
+    });
+
+    // Gérer l'événement de changement pour la liste déroulante « branche ».
+    brancheModification.on('change', function () {
+        const brancheIdModification = $(this).val();
+        const produitModifIdVal = produitModifId.val();
+
+        // Reset the produit dropdown
+        produitModification.html('<option value="">Choisir un produit</option>');
+
+        // Initially
+        toggleOnglets(null);
+
+        $.ajax({
+            type: 'get',
+            url: `/production/ajax_produits/${brancheIdModification}`,
+            dataType: 'json',
+            success: function (produits) {
+                let produitSelectionneParDefaut = false;
+
+                produits.forEach(function (produit) {
+                    const option = $('<option>', {
+                        value: produit.pk,
+                        text: produit.fields.nom
+                    });
+
+                    if (produit.pk == produitModifIdVal) {
+                        option.prop('selected', true);
+                        produitSelectionneParDefaut = true;
+                        toggleOnglets(produit.fields.code); // Show relevant onglet based on pre-selected product
+
+                        // Mettre à jour l'ID du produit actuel
+                        currentProduitId = produit.pk;
+                    }
+
+                    produitModification.append(option);
+                });
+
+                // Trigger 'change' on produit dropdown if a default product was selected
+                if (produitSelectionneParDefaut) {
+                    produitModification.trigger('change');
+
+                    // Déclencher ensuite le changement de compagnie après la sélection du produit
+                    setTimeout(function() {
+                        compagnieModification.trigger('change');
+                    }, 100);
+                }
+            },
+            error: function () {
+                console.error('Erreur lors du chargement des produits pour la modification.');
+            }
+        });
+    });
+
+    // Gérer l'événement de changement pour la liste déroulante « produit » dans la fenêtre modale
+    produitModification.on('change', function () {
+        const produitIdModification = $(this).val();
+
+        // Si un produit est sélectionné, mettre à jour l'ID du produit actuel
+        if (produitIdModification) {
+            currentProduitId = produitIdModification;
+            console.log('Produit changé, nouvelle valeur:', currentProduitId);
+        }
+
+        toggleOnglets(produitIdModification ? $(this).find('option:selected').data('code') : null);
+
+        if (produitIdModification) {
+            $.ajax({
+                type: 'get',
+                url: `/production/produit/${produitIdModification}/sous-menu`,
+                success: function (produit) {
+                    if (produit && produit.length > 0) {
+                        produitModification.find('option:selected').data('code', produit[0].fields.code);
+                        toggleOnglets(produit[0].fields.code);
+                    } else {
+                        toggleOnglets(null);
+                        console.warn('Aucun détail de produit trouvé.');
+                    }
+                },
+                error: function () {
+                    console.error('Erreur lors du chargement des détails du produit pour la modification.');
+                }
+            });
+        } else {
+            toggleOnglets(null);
+        }
+    });
+
+    /* Gérer l'événement de changement de compagnie dans le modal de modification
+    function reloadInfosCompagnieProduit() {
+        const compagnieIdModification = compagnieModification.val();
+        const produitIdModification = currentProduitId || produitModification.val() || produitModifId.val();
+
+        // Réinitialiser les champs
+        $('#modal-modification_police #taux_com_courtage').val('');
+        $('#modal-modification_police #taux_com_courtage_terme').val('');
+
+        if (compagnieIdModification && produitIdModification) {
+            $.ajax({
+                type: 'get',
+                url: '/production/compagnie/ajax_infos_compagnie/' + compagnieIdModification + '/' + produitIdModification,
+                dataType: 'json',
+                success: function (data) {
+                    let taux_com_courtage = parseFloat(data.taux_com_courtage);
+                    let taux_com_courtage_terme = parseFloat(data.taux_com_courtage_terme);
+                    $('#modal-modification_police #taux_com_courtage').val(taux_com_courtage);
+                    $('#modal-modification_police #taux_com_courtage_terme').val(taux_com_courtage_terme);
+
+                    calculer_montant_divers_police();
+                },
+                error: function () {
+                    console.log('Erreur de chargement : ajax_infos_compagnie');
+                }
+            });
+        }
+        $(document).on("keyup change", "#modal-modification_police .calculs_handler_police_modification", function (event) {
+
+            if (event.which == 13) {
+                event.preventDefault();
+            }
+
+            calculer_montant_divers_police();
+
+        });
+
+        function calculer_montant_divers_police() {
+            let prime_ht = parseInt($('#modal-modification_police #prime_ht').val().replaceAll(' ', ''));
+            let cout_police_compagnie = parseInt($('#modal-modification_police #cout_police_compagnie').val().replaceAll(' ', ''));
+            let cout_police_courtier = parseInt($('#modal-modification_police #cout_police_courtier').val().replaceAll(' ', ''));
+            let taxe = parseInt($('#modal-modification_police #taxe').val().replaceAll(' ', ''));
+            let autres_taxes = parseInt($('#modal-modification_police #autres_taxes').val().replaceAll(' ', ''));
+
+            let taux_com_courtage = parseFloat($('#modal-modification_police #taux_com_courtage').val());
+            let taux_com_courtage_terme = parseFloat($('#modal-modification_police #taux_com_courtage_terme').val());
+
+            if (isNaN(prime_ht)) { prime_ht = 0; }
+            if (isNaN(cout_police_compagnie)) { cout_police_compagnie = 0; }
+            if (isNaN(cout_police_courtier)) { cout_police_courtier = 0; }
+            if (isNaN(taxe)) { taxe = 0; }
+            if (isNaN(autres_taxes)) { autres_taxes = 0; }
+            if (isNaN(taux_com_courtage)) { taux_com_courtage = 0; }
+            if (isNaN(taux_com_courtage_terme)) { taux_com_courtage_terme = 0; }
+
+            console.log('prime_ht', prime_ht);
+            console.log('cout_police_compagnie', cout_police_compagnie);
+            console.log('cout_police_courtier', cout_police_courtier);
+            console.log('taxe', taxe);
+            console.log('autres_taxes', autres_taxes);
+            console.log('----------------');
+            console.log('taux_com_courtage', taux_com_courtage);
+            console.log('taux_com_courtage_terme', taux_com_courtage_terme);
+        }
+    }
+
+    // Lorsqu'on change la compagnie
+    compagnieModification.on('change', function () {
+        reloadInfosCompagnieProduit();
+    });
+
+    // Si tu veux déclencher aussi via le changement de produit, tu peux appeler aussi :
+    produitModification.on('change', function () {
+        reloadInfosCompagnieProduit();
+    });*/
+
+    $(document).on("keyup change", "#modal-modification_police .calculs_handler_police_modification", function (event) {
+         if (event.which == 13) {
+             event.preventDefault();
+         }
+         console.log('Événement keyup ou change détecté sur:', this); // Ajout pour le débogage
+         calculer_montant_divers_police();
+     });
+
+    function calculer_montant_divers_police() {
+         let prime_ht = parseFloat($('#modal-modification_police #prime_ht').val().replaceAll(' ', '')) || 0;
+         let cout_police_compagnie = parseFloat($('#modal-modification_police #cout_police_compagnie').val().replaceAll(' ', '')) || 0;
+         let cout_police_courtier = parseFloat($('#modal-modification_police #cout_police_courtier').val().replaceAll(' ', '')) || 0;
+         let taxe = parseFloat($('#modal-modification_police #taxe').val().replaceAll(' ', '')) || 0;
+         let autres_taxes = parseFloat($('#modal-modification_police #autres_taxes').val().replaceAll(' ', '')) || 0;
+         let taux_com_gestion = parseFloat($('#modal-modification_police #taux_com_gestion').val()) || 0;
+         let taux_com_courtage = parseFloat($('#modal-modification_police #taux_com_courtage').val()) || 0;
+         let taux_com_courtage_terme = parseFloat($('#modal-modification_police #taux_com_courtage_terme').val()) || 0;
+
+         let prime_ttc = prime_ht + cout_police_compagnie + cout_police_courtier + taxe + autres_taxes;
+         let montant_commission_gestion = (taux_com_gestion / 100) * prime_ht;
+         let montant_commission_courtage = (taux_com_courtage / 100) * prime_ht;
+         let total_montant_commission_intermediaire = 0;
+
+         console.log('prime_ht (dans la fonction)', prime_ht); // Ajout pour le débogage
+         console.log('cout_police_compagnie', cout_police_compagnie);
+         console.log('cout_police_courtier', cout_police_courtier);
+         console.log('taxe', taxe);
+         console.log('autres_taxes', autres_taxes);
+         console.log('taux_com_gestion', taux_com_gestion);
+         console.log('taux_com_courtage', taux_com_courtage);
+         console.log('taux_com_courtage_terme', taux_com_courtage_terme);
+         console.log('prime_ttc (avant affichage)', prime_ttc);
+
+         $('.taux_com_affaire_nouvelle').each(function () {
+             let taux_com_affaire_nouvelle = parseFloat($(this).val());
+             let taux_com_renouvelement = parseFloat($(this).closest('tr').find('.taux_com_renouvelement').val());
+             let base_calcul_taux_retrocession = $(this).closest('tr').find('.base_calcul_taux_retrocession').val();
+             let intermediaire = $(this).closest('tr').find('.intermediaire').val();
+             let montant_commission_intermediaire = 0;
+
+             if (intermediaire != "" && base_calcul_taux_retrocession != "" && taux_com_affaire_nouvelle > 0) {
+                 if (base_calcul_taux_retrocession == 1) {//sur prime ht
+                     montant_commission_intermediaire = (taux_com_affaire_nouvelle / 100) * prime_ht;
+                 } else if (base_calcul_taux_retrocession == 2) {//sur com courtage
+                     montant_commission_intermediaire = (taux_com_affaire_nouvelle / 100) * montant_commission_courtage;
+                 } else if (base_calcul_taux_retrocession == 3) {//sur com gestion
+                     montant_commission_intermediaire = (taux_com_affaire_nouvelle / 100) * montant_commission_gestion;
+                 } else if (base_calcul_taux_retrocession == 4) {//sur com total (courtage + gestion)
+                     montant_commission_intermediaire = (taux_com_affaire_nouvelle / 100) * (montant_commission_courtage + montant_commission_gestion);
+                 }
+                 console.log('montant_commission_intermediaire', montant_commission_intermediaire);
+                 total_montant_commission_intermediaire += montant_commission_intermediaire;
+                 console.log('total_montant_commission_intermediaire', total_montant_commission_intermediaire);
+             }
+         });
+
+         $('#modal-modification_police #prime_ttc').val(prime_ttc);
+         $('#modal-modification_police #commission_courtage').val(montant_commission_courtage);
+         $('#modal-modification_police #commission_gestion').val(montant_commission_gestion);
+         $('#modal-modification_police #total_commission_intermediaire').val(total_montant_commission_intermediaire);
+    }
+
+    function reloadInfosCompagnieProduit() {
+         const compagnieIdModification = compagnieModification.val();
+         const produitIdModification = currentProduitId || produitModification.val() || produitModifId.val();
+
+         // Réinitialiser les champs spécifiques aux taux de commission
+         modalModificationPolice.find('#taux_com_courtage').val('');
+         modalModificationPolice.find('#taux_com_courtage_terme').val('');
+         modalModificationPolice.find('#taux_com_gestion').val(''); // Ajout de la réinitialisation du taux de gestion
+
+         if (compagnieIdModification && produitIdModification) {
+             $.ajax({
+                 type: 'get',
+                 url: '/production/compagnie/ajax_infos_compagnie/' + compagnieIdModification + '/' + produitIdModification,
+                 dataType: 'json',
+                 success: function (data) {
+                     let taux_com_courtage = parseFloat(data.taux_com_courtage) || 0;
+                     let taux_com_courtage_terme = parseFloat(data.taux_com_courtage_terme) || 0;
+                     let taux_com_gestion = parseFloat(data.taux_com_gestion) || 0; // Récupération du taux de gestion
+
+                     modalModificationPolice.find('#taux_com_courtage').val(taux_com_courtage);
+                     modalModificationPolice.find('#taux_com_courtage_terme').val(taux_com_courtage_terme);
+                     modalModificationPolice.find('#taux_com_gestion').val(taux_com_gestion); // Affichage du taux de gestion
+
+                     calculer_montant_divers_police(); // Appel de la fonction de calcul après la récupération des infos
+                 },
+                 error: function () {
+                     console.log('Erreur de chargement : ajax_infos_compagnie');
+                 }
+             });
+         }
+    }
+
+     // Lorsqu'on change la compagnie
+    compagnieModification.on('change', function () {
+         reloadInfosCompagnieProduit();
+    });
+
+     // Si tu veux déclencher aussi via le changement de produit, tu peux appeler aussi :
+    produitModification.on('change', function () {
+         reloadInfosCompagnieProduit();
+    });
 
 });
+

@@ -71,7 +71,6 @@ from docx import Document as WordDocument
 # from django_dump_die.middleware import dd
 from fpdf import FPDF
 from urllib3 import request
-from xhtml2pdf import pisa
 from datetime import datetime, timezone
 from django.utils.timezone import now
 from django.utils.html import strip_tags
@@ -950,6 +949,7 @@ def add_police(request, client_id):
                     formule_id=formule_id,
                     franchise=franchise if franchise else None,
                     capital=capital if capital else None,
+                    created_at=datetime.now(),
                 )
                 police_garantie.save()
 
@@ -1494,26 +1494,14 @@ def modifier_police(request, police_id):
                                                        taux_com_renouvellement=taux_com_renew, ).save()
                 i += 1
 
-        # Historique taxe police
-        taxes_old = TaxePolice.objects.filter(police_id=police_id)
-
-        # enregistrer les autres taxes
-        taxes = request.POST.get('liste_autres_taxes_modification')
-
-        if len(taxes) > 0:
-            taxes = json.loads(taxes)
-
-            for taxe in taxes:
-                taxe = list(taxe.values())
-                taxe_id = taxe[0]
-                taxe_montant = taxe[1]
-
-                # Insérer la ligne
-                TaxePolice.objects.create(police_id=police_old.id, taxe_id=taxe_id, montant=taxe_montant).save()
-
-        # Suppression des garanties polices
+        # Désactivation  des garanties polices
         if garantie_reponse == "NON":
-            PoliceGarantie.objects.filter(police_id=police_id).delete()
+            garanties = PoliceGarantie.objects.filter(police_id=police_id, statut="ACTIF", deleted_at=None).all()
+            for garantie in garanties:
+                garantie.deleted_by = request.user
+                garantie.deleted_at=datetime.now(),
+                garantie.statut = Statut.INACTIF
+                garantie.save()
 
         # Initialiser une liste pour les garanties
         garanties = []
@@ -1532,7 +1520,7 @@ def modifier_police(request, police_id):
                 })
 
         # Récupérer les garanties existantes associées à la police
-        garanties_existantes = PoliceGarantie.objects.filter(police_id=police_old.id)
+        garanties_existantes = PoliceGarantie.objects.filter(police_id=police_old.id, statut="ACTIF", deleted_at=None)
 
         # Identifie les garanties à conserver (celles qui sont dans le formulaire)
         garanties_selectionnees_ids = {garantie['garantie_id'] for garantie in garanties}
@@ -1551,18 +1539,25 @@ def modifier_police(request, police_id):
             capital = supprimer_espaces(garantie['capital'].strip())
 
             # Vérifier si la garantie existe déjà pour la police
-            police_garantie = PoliceGarantie.objects.filter(garantie_id=garantie_id, police_id=police_old.id).first()
+            police_garantie = PoliceGarantie.objects.filter(garantie_id=garantie_id, police_id=police_old.id, statut="ACTIF", deleted_at=None).first()
 
             if police_garantie:
                 # Historisation des anciennes valeurs avant modification
                 HistoriquePoliceGarantie.objects.create(
                     police_garantie_id=police_garantie.id,
                     police_id=police_old.id,
+                    historique_police_id=dernier_historique.id,
                     garantie_id=garantie_id,
                     formule_id=formule_id,
-                    franchise=franchise if franchise else None,
-                    capital=capital if capital else None,
-                    created_by=request.user,
+                    franchise=police_garantie.franchise if franchise else None,
+                    capital=police_garantie.capital if capital else None,
+                    created_at=police_garantie.created_at,
+                    updated_at=police_garantie.updated_at,
+                    deleted_at=police_garantie.deleted_at,
+                    statut=police_garantie.statut,
+                    created_by=police_garantie.created_by,
+                    updated_by=police_garantie.updated_by,
+                    deleted_by=police_garantie.deleted_by,
                 )
 
                 # Mise à jour de la garantie
@@ -1570,6 +1565,7 @@ def modifier_police(request, police_id):
                 police_garantie.franchise = franchise if franchise else None
                 police_garantie.capital = capital if capital else None
                 police_garantie.updated_by = request.user
+                police_garantie.updated_at=datetime.now(),
                 police_garantie.statut = Statut.ACTIF
                 police_garantie.save()
 
@@ -1583,6 +1579,7 @@ def modifier_police(request, police_id):
                     formule_id=formule_id,
                     franchise=franchise if franchise else None,
                     capital=capital if capital else None,
+                    created_at=datetime.now(),
                     statut=Statut.ACTIF,
                 )
 
@@ -1737,7 +1734,6 @@ def modifier_police(request, police_id):
             production_id=production_id,
             created_by=request.user,
             numero=numero,
-            date_souscription=datetime.now(),
             preavis_de_resiliation=preavis_de_resiliation,
             date_debut_effet=date_debut_effet if date_debut_effet else None,
             date_fin_effet=date_fin_effet if date_fin_effet else None,
@@ -2400,7 +2396,7 @@ def get_aliments_session(request):
 def get_garanties_by_police(request):
     """Récupère les garanties d'une police pour affichage au chargement du modal."""
     police_id = request.GET.get('police_id')
-    police_garanties = PoliceGarantie.objects.filter(police_id=police_id, statut=Statut.ACTIF).values('garantie_id', 'franchise', 'capital', 'garantie__nom')
+    police_garanties = PoliceGarantie.objects.filter(police_id=police_id, statut="ACTIF", deleted_at=None).values('garantie_id', 'franchise', 'capital', 'garantie__nom')
 
     garanties = [
         {
@@ -2420,7 +2416,7 @@ def get_garanties_by_formule_modification(request):
     formule_id = request.GET.get('formule_id')
 
     # Garanties de la police existante
-    police_garanties = PoliceGarantie.objects.filter(police_id=police_id, statut=Statut.ACTIF).values('garantie_id', 'franchise', 'capital')
+    police_garanties = PoliceGarantie.objects.filter(police_id=police_id, statut="ACTIF", deleted_at=None).values('garantie_id', 'franchise', 'capital')
 
     # Garanties liées à la formule sélectionnée
     garanties_formule = GarantieFormule.objects.filter(formule_id=formule_id).values('garantie__id', 'garantie__nom')
@@ -2975,37 +2971,8 @@ def ajax_produits(request, branche_id):
 
 
 def modification_ajax_produits(request, branche_id):
-    """
-    Vue pour renvoyer les produits associés à une branche spécifique au format JSON.
-    :param request: La requête HTTP.
-    :param branche_id: L'ID de la branche pour laquelle charger les produits.
-    :return: Une réponse JSON contenant les produits de la branche.
-    """
-    try:
-        # Récupérer la branche ou renvoyer une 404 si elle n'existe pas
-        branche = get_object_or_404(Branche, id=branche_id)
-
-        # Récupérer tous les produits associés à cette branche
-        produits = Produit.objects.filter(branche=branche)
-
-        # Préparer les données à renvoyer au format JSON
-        produits_data = [
-            {
-                "pk": produit.id,  # ID du produit
-                "fields": {
-                    "nom": produit.nom,  # Nom du produit
-                    # Ajouter d'autres champs si nécessaire (ex: code, description, etc.)
-                }
-            }
-            for produit in produits
-        ]
-
-        # Renvoyer les données au format JSON
-        return JsonResponse(produits_data, safe=False)
-
-    except Exception as e:
-        # En cas d'erreur, renvoyer une réponse d'erreur au format JSON
-        return JsonResponse({"error": str(e)}, status=500)
+    produits = Produit.objects.filter(branche_id=branche_id).values('id', 'nom', 'code')
+    return JsonResponse(list(produits), safe=False)
 
 
 @login_required
@@ -3132,7 +3099,11 @@ def motifs_by_mouvement(request, police_id, mouvement_id):
     if police.produit.code == "10002":
         motifs = Motif.objects.filter(mouvement_id=mouvement_id)
     else:
-        motifs = Motif.objects.filter(mouvement_id=mouvement_id).exclude(code__in=["INCOR", "RETRAIT"])
+        dernier_historique = HistoriquePolice.objects.filter(police_id=police.id).order_by('-date_du_jour').first()
+        if dernier_historique.mode_renouvellement == "Temporaire":
+            motifs = Motif.objects.filter(mouvement_id=mouvement_id).exclude(code__in=["INCOR", "RETRAIT", "RENOUV"])
+        else:
+            motifs = Motif.objects.filter(mouvement_id=mouvement_id).exclude(code__in=["INCOR", "RETRAIT"])
 
     motifs_serialize = serializers.serialize('json', motifs)
     return HttpResponse(motifs_serialize, content_type='application/json')
@@ -3265,7 +3236,7 @@ class DetailsHistoriquePoliceView(TemplateView):
                     nombre_total_mois = duree_police_en_mois.days // 30
                     duree = f"{nombre_total_mois} mois"
                 else:
-                    duree = "Indéfini"  # Gérer le cas où il n'y a pas de durée valide
+                    duree = "Indéfini"
 
 
             etat_police = ""
@@ -3275,10 +3246,12 @@ class DetailsHistoriquePoliceView(TemplateView):
 
             assureur_police = PoliceAssureur.objects.filter(historique_police_id=hist_police_id, type_compagnie_id=1).first()
             autre_assureur_police = PoliceAssureur.objects.filter(historique_police_id=hist_police_id).exclude(type_compagnie_id=1).first()
-
+            
+            garanties = HistoriquePoliceGarantie.objects.filter(historique_police_id=hist_police_id).all()
+            
             context_perso = {'police': police, 'historiquepolice': hist_police, 'etat_police': etat_police, 'duree_police': duree,
                              'mouvement_police': hist_mouvement_police, 'assureur_police': assureur_police, 'autre_assureur_police': autre_assureur_police,
-                             'apporteurs_police': hist_apporteurs_police,}
+                             'apporteurs_police': hist_apporteurs_police, 'garanties': garanties,}
             context = {**context_original, **context_perso}
 
             return self.render_to_response(context)
@@ -4426,7 +4399,7 @@ class PoliceSinistresView(TemplateView):
             responsabilites = Responsabilite.objects.filter(statut=1)
             circonstances = Circonstance.objects.filter(statut=1, branche_id=police.produit.branche_id).order_by('libelle')
 
-            garanties = PoliceGarantie.objects.filter(police_id=police.id)
+            garanties = PoliceGarantie.objects.filter(police_id=police.id, statut="ACTIF", deleted_at=None)
             pays = Pays.objects.all().order_by('nom')
  
             aliments = 0
@@ -8277,6 +8250,13 @@ def get_compagnies(request):
 
 
 def produits_by_branche(request, branche_id):
+    produits = Produit.objects.filter(branche_id=branche_id)
+    produits_serialize = serializers.serialize('json', produits)
+    return HttpResponse(produits_serialize, content_type='application/json')
+
+
+def modification_produits_by_branche(request, branche_id):
+    print('Chargement des produits...')
     produits = Produit.objects.filter(branche_id=branche_id)
     produits_serialize = serializers.serialize('json', produits)
     return HttpResponse(produits_serialize, content_type='application/json')

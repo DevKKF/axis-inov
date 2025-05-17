@@ -15,7 +15,6 @@ from django.utils import timezone
 
 class ForcePasswordChangeMiddleware:
     def __init__(self, get_response):
-        pprint('ForcePasswordChangeMiddleware')
 
         self.get_response = get_response
 

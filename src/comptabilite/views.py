@@ -1,6 +1,7 @@
 from ast import literal_eval
 import calendar
 import datetime
+import io
 from datetime import datetime
 from datetime import timedelta
 from collections import defaultdict
@@ -24,6 +25,7 @@ from django.utils import timezone
 from api.api_helper import send_cron_state_mail
 from babel.numbers import format_number, NumberFormatError
 from django.core.mail import send_mail
+from xhtml2pdf import pisa
 
 from django.core.paginator import Paginator
 
@@ -47,7 +49,7 @@ from production.models import Aliment, Reglement, Police, Quittance, Operation, 
 from production.templatetags.my_filters import money_field
 from shared.enum import MoyenPaiement, SatutBordereauDossierSinistres, StatutPaiementSinistre, \
     StatutReversementCompagnie, StatutEncaissementCommission, StatutReglementApporteurs, \
-    StatutValidite, Statut
+    StatutValidite, Statut, StatutBordereau
 from shared.helpers import generate_random_string, render_pdf
 from sinistre.helper_sinistre import requete_analyse_prime_compta
 from sinistre.models import FactureCompagnie, ReglementCompagnie, Sinistre, BordereauOrdonnancement, PaiementComptable
@@ -2997,6 +2999,7 @@ def add_reglement_compagnie(request):
                                              devise_id=devise,
                                              mode_reglement_id=mode_reglement,
                                              date_operation=date_paiement,
+                                             statut_bordereau=StatutBordereau.VALIDE,
                                              created_by=request.user)
         operation.save()
 
@@ -3020,7 +3023,7 @@ def add_reglement_compagnie(request):
                 nombre_reglements_selectionnes = nombre_reglements_selectionnes + 1
 
                 #Lier l'opération au règlement
-                operation_reglement = OperationReglement.objects.create(operation=operation, reglement=reglement, created_by=request.user)
+                operation_reglement = OperationReglement.objects.create(operation=operation, reglement=reglement, statut_bordereau=StatutBordereau.VALIDE, created_by=request.user)
                 operation_reglement.save()
 
 
@@ -3051,8 +3054,6 @@ def add_reglement_compagnie(request):
 
         compagnies = Compagnie.objects.filter(bureau=request.user.bureau).order_by('nom')
 
-        print('Règlement compagnie : ', reglements_compagnies)
-
         for compagnie in compagnies:
             if compagnie.nombre_reglements_a_reverser_cie == 0:
                 compagnies = compagnies.exclude(id=compagnie.id)
@@ -3068,53 +3069,40 @@ def generer_bordereau_reglement_compagnie_pdf(request, operation_id):
 
     option_reglements = OperationReglement.objects.filter(operation=operation)
 
-    compagnie = option_reglements.first().reglement.quittance.compagnie if option_reglements.first() and option_reglements.first().reglement and option_reglements.first().reglement.quittance else None
-    bureau = option_reglements.first().reglement.bureau if option_reglements.first() and option_reglements.first().reglement else None
+    compagnie = option_reglements.first().reglement.quittance.compagnie if option_reglements.exists() and option_reglements.first().reglement and option_reglements.first().reglement.quittance else None
+    bureau = option_reglements.first().reglement.bureau if option_reglements.exists() and option_reglements.first().reglement else None
 
-    # dd(option_reglements.first())
     total_montant_compagnie = 0
     total_montant_com_courtage = 0
-    #total_montant_com_gestion = 0
     total_montant_com_intermediaire = 0
 
     for option_reglement in option_reglements:
         total_montant_compagnie += option_reglement.reglement.montant_compagnie
         total_montant_com_courtage += option_reglement.reglement.montant_com_courtage
-        #total_montant_com_gestion += option_reglement.reglement.montant_com_gestion
         total_montant_com_intermediaire += option_reglement.reglement.montant_com_intermediaire
 
     site_logo_url = request.build_absolute_uri(static(settings.JAZZMIN_SETTINGS['site_logo']))
-    print("Logo : ", site_logo_url)
+
     contexte = {
         'operation': operation,
         'option_reglements': option_reglements,
-        # 'nombre_pages': nombre_pages,
         'compagnie': compagnie,
         'bureau': bureau,
         'total_montant_compagnie': total_montant_compagnie,
         'total_montant_com_courtage': total_montant_com_courtage,
-        #'total_montant_com_gestion': total_montant_com_gestion,
         'total_montant_com_intermediaire': total_montant_com_intermediaire,
         'site_logo_url': site_logo_url,
     }
+
+    # Génération initiale pour compter les pages
+    pdf = render_pdf('courriers/bordereau_reglement_compagnie.html', contexte)
+    pdf_reader = PyPDF2.PdfReader(io.BytesIO(pdf.getvalue()))
+    contexte['nombre_pages'] = len(pdf_reader.pages)
+
+    # Regénération du PDF final avec nombre de pages
     pdf = render_pdf('courriers/bordereau_reglement_compagnie.html', contexte)
 
-    pdf_file = PyPDF2.PdfReader(pdf)
-    nombre_pages = len(pdf_file.pages)
-
-    #ajout du nombre de page obtenu au contexte pour le rendu final
-    contexte['nombre_pages'] = nombre_pages
-    pdf = render_pdf('courriers/bordereau_reglement_compagnie.html', contexte)
-
-    # Update bordereau data and save
-    #operation.fichier.save(f'bordereau_reglement_compagnie_{operation.numero}.pdf', File(pdf))
-    #operation.save()
-
-
-    #return pdf
-
-    #AFFICHER DIRECTEMENT
-    return HttpResponse(File(pdf), content_type='application/pdf')
+    return HttpResponse(pdf.getvalue(), content_type='application/pdf')
 
 
 @method_decorator(login_required, name='dispatch')

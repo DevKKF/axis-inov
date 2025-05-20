@@ -384,21 +384,6 @@ class Periodicite(models.Model):
         verbose_name_plural = 'Périodicites'
 
 
-class JourFerie(models.Model):
-    libelle = models.CharField(max_length=50, blank=True, null=True)
-    date = models.DateField(null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return self.libelle
-
-    class Meta:
-        db_table = 'jour_ferie'
-        verbose_name = 'Jour férié'
-        verbose_name_plural = "Jours fériés"
-
-
 class TypeTarif(models.Model):
     libelle = models.CharField(max_length=50, blank=True, null=True)
     code = models.CharField(max_length=50, blank=True, null=True)

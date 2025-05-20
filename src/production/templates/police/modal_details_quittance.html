@@ -16,8 +16,9 @@
 
 				<div class="col-md-12 offset-0">
 					<ul class="nav nav-tabs" id="myTab" role="tablist">
-						<li class="nav-item"><a class="nav-link active" id="infos_quittance-tab" data-toggle="tab" href="#infos_quittance" role="tab" aria-controls="infos_quittance" aria-selected="true">{{_("INFORMATIONS DE LA QUITTANCE")}}</a></li>
+						<li class="nav-item"><a class="nav-link active" id="infos_quittance-tab" data-toggle="tab" href="#infos_quittance" role="tab" aria-controls="infos_quittance" aria-selected="true">{{_("INFORMATIONS GENERALES")}}</a></li>
 						<li class="nav-item"><a class="nav-link" id="reglements-tab" data-toggle="tab" href="#reglements" role="tab" aria-controls="reglements" aria-selected="false">{{_("LISTE DES REGLEMENTS")}}</a></li>
+						<li class="nav-item"><a class="nav-link" id="bordereau_paiement-tab" data-toggle="tab" href="#bordereau_paiement" role="tab" aria-controls="bordereau_paiement" aria-selected="false">{{_('BORDEREAUX DE PAIEMENT')}}</a></li>
 						<li class="nav-item"><a class="nav-link" id="ged_beneficiaire-tab" data-toggle="tab" href="#ged_beneficiaire" role="tab" aria-controls="ged" aria-selected="false">{{_('GED')}}</a></li>
 					</ul>
 					<div class="tab-content" id="myTabContent">
@@ -138,10 +139,10 @@
 											<th scope="col">{{_("Dévise")}}</th>
 											<th scope="col">{{_("Date règlement")}}</th>
 											<th scope="col">{{_("Revers Cie")}}</th>
-											<!--th scope="col">{{_("Enc com")}}</th-->
+											<th scope="col">{{_("Enc com")}}</th>
 											<th scope="col">{{_("Date saisie")}}</th>
 											<th scope="col">{{_("Enregistrer par")}}</th>
-											<th scope="col">{{_("Action")}}</th>
+											<th class="text-center" scope="col">{{_("Actions")}}</th>
 										  </tr>
 										</thead>
 										<tbody>
@@ -155,12 +156,14 @@
 												<td>{{ reglement.devise.code|default_if_none:"" }}</td>
 												<td>{{ reglement.date_paiement|date:'d/m/Y'|default_if_none:"" }}</td>
 												<td><span class="badge badge-{{ reglement.statut_reversement_compagnie|lower|replace_espace }}" title="{{ reglement.statut_reversement_compagnie|date:'d/m/Y'|default_if_none:'' }}">{{ reglement.statut_reversement_compagnie|default_if_none:"" }}</span></td>
-												<!--td><span class="badge badge-{{ reglement.statut_commission|lower|replace_espace }}">{{ reglement.statut_commission|default_if_none:"" }}</span></td-->
+												<td><span class="badge badge-{{ reglement.statut_commission|lower|replace_espace }}">{{ reglement.statut_commission|default_if_none:"" }}</span></td>
 												<td>{{ reglement.created_at|date:'d/m/Y à H:i'|default_if_none:"" }}</td>
-												<td>{{ reglement.created_by|default_if_none:"" }}</td>
-												<td>
+												<td>{{ reglement.created_by.first_name|default_if_none:"" }} {{ reglement.created_by.last_name|default_if_none:"" }}</td>
+												<td class="text-center">
 													{% if reglement.statut_reversement_compagnie == "REVERSE" %}
-														<a href="{% url 'imprimer_recu_reglement' quittance.id reglement.id %}" class="badge badge-info" target="_blank"><i class="fa fa-print"></i> Imprimer reçu paiement</a>
+														<a href="{% url 'imprimer_recu_reglement' quittance.id reglement.id %}" class="badge badge-info" target="_blank"><i class="fa fa-file-word-o"></i> Imprimer reçu paiement</a>
+													{% else %}
+														<span class="badge badge-secondary disabled"><i class="fa fa-file-word-o"></i> Imprimer reçu paiement</span>
 													{% endif %}
 												</td>
 											  </tr>
@@ -171,6 +174,56 @@
 							</div>
 						</div>
 						<!-- FIN REGLEMENTS QUITTANCE -->
+
+                        <!-- TAB BORDEREAU GE PAIEMENT -->
+						<div class="tab-pane fade mt-3" id="bordereau_paiement" role="tabpanel" aria-labelledby="bordereau_paiement-tab">
+							<div class="rowd" style="padding-top:0px;">
+								<div class="card">
+									<div class="card-tools d-none">
+									  <span class="btn btn-sm btn-info mb-1 imprimer_borderau_liste" id="imprimer_borderau_liste"><i class="fas fa-print"></i> Imprimer une liste de bordereau</span>
+									</div>
+									<div class="">
+										<table class="table table-bordered table-striped dataTable dtr-inline" id="table_bordereau_paiement">
+											<thead>
+											  <tr>
+												<th scope="col" width="3%"><input type="checkbox" class="form-control operation-checkbox-all" style="width: 1rem; height: 1.25rem;" disabled></th>
+												<th scope="col">{{_("N° Bordereau")}}</th>
+												<th scope="col">{{_("Règlement")}}</th>
+												<th scope="col">{{_("Mont reglé")}}</th>
+												<th scope="col">{{_("Mont CIE")}}</th>
+												<th scope="col">{{_("Com courtage")}}</th>
+												<th scope="col">{{_("Date paiment")}}</th>
+												<th scope="col">{{_("Statut")}}</th>
+												<th class="text-center" scope="col">{{_("Actions")}}</th>
+											  </tr>
+											</thead>
+											<tbody>
+												{% for operation_reg in operations_reglements %}
+													<tr>
+													   <td><input type="checkbox" class="form-control operation-checkbox" name="operation_{{operation_reg.operation.id}}" value="{{operation_reg.operation.id}}" style="width: 1rem; height: 1.25rem;" disabled></td>
+													   <td>{{ operation_reg.operation.numero|default:"" }}</td>
+													   <td>{{ operation_reg.reglement.numero|default:"" }}</td>
+													   <td>{{ operation_reg.reglement.montant|money_field|default:"" }}</td>
+													   <td>{{ operation_reg.reglement.montant_compagnie|money_field|default:"" }}</td>
+													   <td>{{ operation_reg.reglement.montant_com_courtage|money_field|default:"" }}</td>
+													   <td>{{ operation_reg.reglement.date_paiement|date:'d/m/Y'|default:"" }}</td>
+													   <td><span class="badge badge-{{ operation_reg.reglement.statut_reversement_compagnie|lower|replace_espace }}">{{ operation_reg.reglement.statut_reversement_compagnie|default_if_none:"" }}</span></td>
+													   <td class="text-center" style="cursor:pointer">
+														  {% if operation_reg.reglement.statut_reversement_compagnie == "REVERSE" %}
+															 <a href="{% url 'generer_bordereau_reglement_compagnie_pdf' operation_reg.operation.id %}" class="badge badge-info" target="_blank"><i class="fa fa-print"></i> Imprimer le bordereau</a>
+														  {% else %}
+															 <span class="badge badge-secondary disabled"><i class="fa fa-print"></i> Imprimer le bordereau</span>
+														  {% endif %}
+													   </td>
+													</tr>
+												{% endfor %}
+											</tbody>
+										</table>
+									</div>
+								</div>
+							</div>
+						</div>
+							<!-- FIN BORDEREAU GE PAIEMENT -->
 
                         <!-- TAB GED -->
 						<div class="tab-pane fade mt-3" id="ged_beneficiaire" role="tabpanel" aria-labelledby="ged_beneficiaire-tab">
@@ -193,7 +246,7 @@
 												<th scope="col">{{_("Type de document")}}</th>
 												<th scope="col">{{_("Fichier")}}</th>
 												<th scope="col">{{_("Date ajout")}}</th>
-												<th scope="col">{{_("Action")}}</th>
+												<th scope="col">{{_("Actions")}}</th>
 											  </tr>
 											</thead>
 											<tbody>

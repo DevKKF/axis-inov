@@ -19,7 +19,7 @@ from configurations.models import Banque, Bureau, Civilite, Compagnie, Fractionn
     SousRegroupementActe, Secteur, GroupeInter, Carosserie, Formule, Usage, Carburant, BusinessUnit, Garantie, ConditionsAssurance, MoyensTransport, TypeCourrier, Groupe
 from shared.enum import Genre, Statut, StatutRelation, StatutFamilial, OptionYesNo, PlacementEtGestion, \
     ModeRenouvellement, TypeEncaissementCommission, TypeMajorationContrat, CalculTM, StatutContrat, StatutPolice, \
-    StatutQuittance, \
+    StatutQuittance, StatutBordereau, \
     StatutReversementCompagnie, StatutReglementApporteurs, StatutEncaissementCommission, Energie, StatutSinistre, \
     StatutValidite, StatutIncorporation, StatutTraitement
 
@@ -1629,8 +1629,8 @@ class Operation(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     observation = models.CharField(max_length=255, null=True)
-    statut_validite = models.fields.CharField(choices=StatutValidite.choices, default=StatutValidite.VALIDE,
-                                              max_length=15, null=True)
+    statut_validite = models.fields.CharField(choices=StatutValidite.choices, default=StatutValidite.VALIDE, max_length=15, null=True)
+    statut_bordereau = models.fields.CharField(choices=StatutBordereau.choices, default=StatutBordereau.BROUILLON, max_length=15, null=True)
     uuid = models.CharField(max_length=255, null=True)
 
     def __str__(self):
@@ -1806,6 +1806,7 @@ class OperationReglement(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     statut_validite = models.fields.CharField(choices=StatutValidite.choices, default=StatutValidite.VALIDE, max_length=15, null=True)
+    statut_bordereau = models.fields.CharField(choices=StatutBordereau.choices, default=StatutBordereau.BROUILLON, max_length=15, null=True)
 
     class Meta:
         db_table = 'operation_reglement'

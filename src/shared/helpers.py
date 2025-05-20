@@ -1,6 +1,7 @@
 import base64
 import datetime
 import os
+import io
 from decimal import Decimal
 from io import BytesIO
 from pprint import pprint
@@ -21,9 +22,10 @@ from django.db import transaction
 from django.db.models import Sum, Q
 from django.template.loader import get_template
 from django_dump_die.middleware import dd
+from xhtml2pdf import pisa
 import secrets
 
-from configurations.models import Acte, Prestataire, Prescripteur, JourFerie, Periodicite, Tarif, \
+from configurations.models import Acte, Prestataire, Prescripteur, Periodicite, Tarif, \
     SousRubriqueRegroupementActe, TypePrefinancement
 from production.models import Aliment, TarifPrestataireClient, Bareme, AlimentFormule, Carte, FormuleGarantie, \
     FormuleRubriquePrefinance
@@ -49,12 +51,6 @@ def today_utc():
 def as_money(montant):
     if montant == "" or montant is None: montant = 0
     return intcomma(int(montant))
-
-
-def is_jour_ferie(date_jour):
-    jours_feries = JourFerie.objects.filter(date=date_jour)
-
-    return jours_feries.exists()
 
 
 def get_type_prefinancement_of_acte(acte, formule):
@@ -1829,7 +1825,7 @@ def get_exel_df_to_dict(file_pah, sheet_name, search_colum, search_value):
         return None
 
 
-def render_pdf(template_src, context_dict={}):
+def _render_pdf_(template_src, context_dict={}):
     pprint("::: render_pdf :::")
     pprint("@@@@@@@@@@ render_pdf_view @@@@@@@")
     template_path = template_src
@@ -1847,6 +1843,15 @@ def render_pdf(template_src, context_dict={}):
     if pisa_status.err:
         return None
     return response
+
+def render_pdf(template_path, context):
+    template = get_template(template_path)
+    html = template.render(context)
+    result = io.BytesIO()
+    pisa_status = pisa.CreatePDF(io.BytesIO(html.encode("UTF-8")), dest=result)
+    if not pisa_status.err:
+        return result
+    return None
 
 
 import requests

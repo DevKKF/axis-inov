@@ -84,6 +84,10 @@ class StatutValidite(models.TextChoices):
     BROUILLON = 'BROUILLON'
     CLOTURE = 'CLOTURE'
 
+class StatutBordereau(models.TextChoices):
+    BROUILLON = 'BROUILLON'
+    VALIDE = 'VALIDE'
+
 class StatutRemboursement(models.TextChoices):
     ATTENTE = 'EN ATTENTE'
     DEMANDE = 'DEMANDE'

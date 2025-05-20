@@ -2066,21 +2066,11 @@ def suggestions(request):
     if query:
         user = request.user
 
-        if not (user.is_commercial or user.is_production):
-            return JsonResponse([], safe=False)
-
-        if user.is_commercial:
-            results = (
-                Police.objects.filter(numero__icontains=query, commercial_id=user.id)
-                .select_related('client')
-                .values('id', 'numero', 'client__nom')[:10]
-            )
-        else:
-            results = (
-                Police.objects.filter(numero__icontains=query)
-                .select_related('client')
-                .values('id', 'numero', 'client__nom')[:10]
-            )
+        results = (
+            Police.objects.filter(numero__icontains=query)
+            .select_related('client')
+            .values('id', 'numero', 'client__nom')[:10]
+        )
 
         results_with_links = [
             {

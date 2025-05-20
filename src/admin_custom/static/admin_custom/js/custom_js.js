@@ -66,6 +66,14 @@ $(document).ready(function () {
         lengthChange: true,
     });
 
+    $('#table_bordereau_paiement').DataTable({
+        order: [[0, 'desc']],
+        sDom: "<'row'<'col-sm-6'>>t<'row'<'col-sm-6'><'col-sm-6'>>",
+        paging: true,
+        searching: true,
+        lengthChange: true,
+    });
+
 
     if ($('#accordionClient').length) {
         showCurentTab();
@@ -6625,9 +6633,7 @@ $(document).ready(function () {
 
             }
 
-
         });
-
 
         $('#modal-police #prime_ttc').val(prime_ttc);
 
@@ -6986,173 +6992,190 @@ $(document).ready(function () {
         let modal_title = $(this).data('modal_title');
         let href = $(this).data('href');
 
-        $('#olea_std_dialog_box').load(href, function () {
-
-            //appliquer le mask de saisie sur les champs montant
-            AppliquerMaskSaisie();
-
-            $('#modal-quittance').attr('data-backdrop', 'static').attr('data-keyboard', false);
-
-            $('#modal-quittance').find('.modal-title').text(modal_title);
-            $('#modal-quittance').find('#btn_valider').attr({ 'data-model_name': model_name, 'data-href': href });
-            $('#modal-quittance').find('.modal-dialog').addClass('modal-xl').removeClass('modal-lg');
-
-            //
-            $('#modal-quittance').modal();
-
-            //Bouton d'enregistrement de la quittance
-            $("#btn_save_quittance").on('click', function () {
-
-                let btn_save_quittance = $(this);
-
-                let formulaire = $('#form_add_quittance');
-                let href = formulaire.attr('action');
-
-                let date_debut = $('#date_debut').val();
-                let date_fin = $('#date_fin').val();
-
-                $.validator.setDefaults({ ignore: [] });
-
-                if (formulaire.valid()) {
-
-                    if (date_debut && !date_fin) {
-                        notifyWarning('La date fin est obligatoire lorsque la date début est renseignée.');
+        $('#olea_std_dialog_box').load(href, function (responseTxt, statusTxt, xhr) {
+            if (statusTxt == "success") {
+                try {
+                    const response = JSON.parse(responseTxt);
+                    if (response.statut === 0) {
+                        notifyWarning(response.message);
                         return;
                     }
+                } catch (e) {
+                    // If not a JSON response, assume it's the modal content and proceed
+                    $('#modal-quittance').attr('data-backdrop', 'static').attr('data-keyboard', false);
+                    $('#modal-quittance').find('.modal-title').text($(this).data('modal_title'));
+                    $('#modal-quittance').find('#btn_valider').attr({ 'data-model_name': $(this).data('model_name'), 'data-href': href });
+                    $('#modal-quittance').find('.modal-dialog').addClass('modal-xl').removeClass('modal-lg');
+                    $('#modal-quittance').modal();
+                }
 
-                    if (new Date(date_debut) > new Date(date_fin)) {
-                        notifyWarning('La date début doit être antérieure ou égale à la date fin.');
-                        return;
-                    }
+                // This part will be executed if the response was not a JSON error
+                if (statusTxt == "success" && (typeof response === 'undefined' || response.statut !== 0)) {
+                    //appliquer le mask de saisie sur les champs montant
+                    AppliquerMaskSaisie();
 
-                    //désactiver le bouton Valider, pour empecher une double soumission du formulaire
-                    btn_save_quittance.attr('disabled', true);
+                    $('#modal-quittance').attr('data-backdrop', 'static').attr('data-keyboard', false);
 
-                    //enregistrer les taxes dans le storage
-                    $('#modal-autres_taxes_quittance #btn_save_taxe').click();
-                    //alert($('#modal-autres_taxes_quittance #btn_save_taxe').text());
+                    $('#modal-quittance').find('.modal-title').text(modal_title);
+                    $('#modal-quittance').find('#btn_valider').attr({ 'data-model_name': model_name, 'data-href': href });
+                    $('#modal-quittance').find('.modal-dialog').addClass('modal-xl').removeClass('modal-lg');
 
-                    //demander confirmation
-                    let n = noty({
-                        text: 'Voulez-vous vraiment créer cette quittance ?',
-                        type: 'warning',
-                        dismissQueue: true,
-                        layout: 'center',
-                        theme: 'defaultTheme',
-                        buttons: [
-                            {
-                                addClass: 'btn btn-primary', text: 'OUI', onClick: function ($noty) {
-                                    $noty.close();
+                    //
+                    $('#modal-quittance').modal();
 
-                                    //confirmation obtenu
-                                    $.ajax({
-                                        type: 'post',
-                                        url: href,
-                                        data: formulaire.serialize(),
-                                        success: function (response) {
+                    //Bouton d'enregistrement de la quittance
+                    $("#btn_save_quittance").on('click', function () {
 
-                                            if (response.statut == 1) {
+                        let btn_save_quittance = $(this);
 
-                                                location.reload();
+                        let formulaire = $('#form_add_quittance');
+                        let href = formulaire.attr('action');
 
-                                            } else {
+                        let date_debut = $('#date_debut').val();
+                        let date_fin = $('#date_fin').val();
 
-                                                let errors = JSON.parse(JSON.stringify(response.errors));
-                                                let errors_list_to_display = '';
-                                                for (field in errors) {
-                                                    errors_list_to_display += '- ' + ucfirst(field) + ' : ' + errors[field] + '<br/>';
+                        $.validator.setDefaults({ ignore: [] });
+
+                        if (formulaire.valid()) {
+
+                            if (date_debut && !date_fin) {
+                                notifyWarning('La date fin est obligatoire lorsque la date début est renseignée.');
+                                return;
+                            }
+
+                            if (new Date(date_debut) > new Date(date_fin)) {
+                                notifyWarning('La date début doit être antérieure ou égale à la date fin.');
+                                return;
+                            }
+
+                            //désactiver le bouton Valider, pour empecher une double soumission du formulaire
+                            btn_save_quittance.attr('disabled', true);
+
+                            //enregistrer les taxes dans le storage
+                            $('#modal-autres_taxes_quittance #btn_save_taxe').click();
+                            //alert($('#modal-autres_taxes_quittance #btn_save_taxe').text());
+
+                            //demander confirmation
+                            let n = noty({
+                                text: 'Voulez-vous vraiment créer cette quittance ?',
+                                type: 'warning',
+                                dismissQueue: true,
+                                layout: 'center',
+                                theme: 'defaultTheme',
+                                buttons: [
+                                    {
+                                        addClass: 'btn btn-primary', text: 'OUI', onClick: function ($noty) {
+                                            $noty.close();
+
+                                            //confirmation obtenu
+                                            $.ajax({
+                                                type: 'post',
+                                                url: href,
+                                                data: formulaire.serialize(),
+                                                success: function (response) {
+
+                                                    if (response.statut == 1) {
+
+                                                        location.reload();
+
+                                                    } else {
+
+                                                        let errors = JSON.parse(JSON.stringify(response.errors));
+                                                        let errors_list_to_display = '';
+                                                        for (field in errors) {
+                                                            errors_list_to_display += '- ' + ucfirst(field) + ' : ' + errors[field] + '<br/>';
+                                                        }
+
+                                                        $('#modal-quittance .alert .message').html(errors_list_to_display);
+
+                                                        $('#modal-quittance .alert ').fadeTo(2000, 500).slideUp(500, function () {
+                                                            $(this).slideUp(500);
+                                                        }).removeClass('alert-success').addClass('alert-warning');
+
+                                                    }
+
+                                                },
+                                                error: function (request, status, error) {
+
+                                                    notifyWarning("Erreur lors de l'enregistrement");
+
+                                                    btn_save_quittance.removeAttr('disabled');
+
                                                 }
 
-                                                $('#modal-quittance .alert .message').html(errors_list_to_display);
+                                            });
 
-                                                $('#modal-quittance .alert ').fadeTo(2000, 500).slideUp(500, function () {
-                                                    $(this).slideUp(500);
-                                                }).removeClass('alert-success').addClass('alert-warning');
+                                            //fin confirmation obtenue
 
-                                            }
-
-                                        },
-                                        error: function (request, status, error) {
-
-                                            notifyWarning("Erreur lors de l'enregistrement");
+                                        }
+                                    },
+                                    {
+                                        addClass: 'btn btn-danger', text: 'Annuler', onClick: function ($noty) {
+                                            //confirmation refusée
+                                            $noty.close();
 
                                             btn_save_quittance.removeAttr('disabled');
 
                                         }
+                                    }
+                                ]
+                            });
+                            //fin demande confirmation
 
-                                    });
+                        } else {
 
-                                    //fin confirmation obtenue
+                            $('label.error').css({ display: 'none', height: '0px' }).removeClass('error').text('');
 
-                                }
-                            },
-                            {
-                                addClass: 'btn btn-danger', text: 'Annuler', onClick: function ($noty) {
-                                    //confirmation refusée
-                                    $noty.close();
+                            let validator = formulaire.validate();
 
-                                    btn_save_quittance.removeAttr('disabled');
+                            $.each(validator.errorMap, function (index, value) {
 
-                                }
+                                console.log('Id: ' + index + ' Message: ' + value);
+
+                            });
+
+                            notifyWarning('Veuillez renseigner tous les champs obligatoires');
+
+                            btn_save_quittance.removeAttr('disabled');
+
+                        }
+
+                    });
+
+
+                    //gestion de la fenetre interne des taxes
+                    $("#form_add_autres_taxes_quittance .montant_taxe").on('keyup', function (event) {
+
+                        if (event.which == 13) {
+                            event.preventDefault();
+                        }
+
+                        let montant_total_autres_taxes_quittance = parseInt(0);
+
+                        $("#modal-autres_taxes_quittance .montant_taxe").each(function (index, element) {
+
+                            //element = this
+                            let montant = parseInt($(element).val().replaceAll(' ', ''));
+                            montant = (montant != '') ? montant : parseInt(0);
+
+                            if (isNaN(montant)) {
+                                montant = parseInt(0);
                             }
-                        ]
-                    });
-                    //fin demande confirmation
 
-                } else {
+                            montant_total_autres_taxes_quittance += montant;
 
-                    $('label.error').css({ display: 'none', height: '0px' }).removeClass('error').text('');
+                        });
 
-                    let validator = formulaire.validate();
+                        $('#modal-quittance #autres_taxes').val(montant_total_autres_taxes_quittance);
+                        $('#modal-autres_taxes_quittance .total_autres_taxes').text(montant_total_autres_taxes_quittance);
 
-                    $.each(validator.errorMap, function (index, value) {
-
-                        console.log('Id: ' + index + ' Message: ' + value);
+                        calculer_montant_divers_quittance();
 
                     });
 
-                    notifyWarning('Veuillez renseigner tous les champs obligatoires');
 
-                    btn_save_quittance.removeAttr('disabled');
-
-                }
-
-            });
-
-
-            //gestion de la fenetre interne des taxes
-            $("#form_add_autres_taxes_quittance .montant_taxe").on('keyup', function (event) {
-
-                if (event.which == 13) {
-                    event.preventDefault();
-                }
-
-                let montant_total_autres_taxes_quittance = parseInt(0);
-
-                $("#modal-autres_taxes_quittance .montant_taxe").each(function (index, element) {
-
-                    //element = this
-                    let montant = parseInt($(element).val().replaceAll(' ', ''));
-                    montant = (montant != '') ? montant : parseInt(0);
-
-                    if (isNaN(montant)) {
-                        montant = parseInt(0);
-                    }
-
-                    montant_total_autres_taxes_quittance += montant;
-
-                });
-
-                $('#modal-quittance #autres_taxes').val(montant_total_autres_taxes_quittance);
-                $('#modal-autres_taxes_quittance .total_autres_taxes').text(montant_total_autres_taxes_quittance);
-
-                calculer_montant_divers_quittance();
-
-            });
-
-
-            //A la fermeture de la fenetre des autres taxes, sauvegarder les données dans les cookies pour pouvoir les récupérer coté serveur
-            $('#modal-autres_taxes_quittance').on('hidden.bs.modal', function () {
+                    //A la fermeture de la fenetre des autres taxes, sauvegarder les données dans les cookies pour pouvoir les récupérer coté serveur
+                    $('#modal-autres_taxes_quittance').on('hidden.bs.modal', function () {
                 $('body').addClass('modal-open');
 
                 //Enregistrer les autres taxes saisies
@@ -7193,14 +7216,12 @@ $(document).ready(function () {
                     notifyWarning('No web storage Support.');
                 }
 
-
             });
-
-
-
+                }
+            } else {
+                notifyWarning("Le produit n'a pas de taux commission paramétré pour la compagnie, Veuillez parametré les taux de commission !");
+            }
         });
-
-
     });
 
 
@@ -7223,11 +7244,20 @@ $(document).ready(function () {
         let cout_police_courtier = parseInt($('#modal-quittance #cout_police_courtier').val().replaceAll(' ', ''));
         let taxe = parseInt($('#modal-quittance #taxe').val().replaceAll(' ', ''));
         let autres_taxes = parseInt($('#modal-quittance #autres_taxes').val().replaceAll(' ', ''));
-        let taux_commission_intermediaire = parseInt($('#modal-quittance #taux_com_affaire_nouvelle').val().replaceAll(' ', ''));
 
-        let taux_com_gestion = parseFloat($('#modal-quittance #taux_com_gestion').val());
-        let taux_com_courtage = parseFloat($('#modal-quittance #taux_com_courtage').val());
-        let taux_com_courtage_terme = parseFloat($('#modal-quittance #taux_com_courtage_terme').val());
+        let taux_com_courtage = $('#modal-quittance #taux_com_courtage').val();
+        let taux_com_courtage_terme = $('#modal-quittance #taux_com_courtage_terme').val();
+
+        console.log('Valeur taux_com_courtage en chaîne:', taux_com_courtage);
+        console.log('Valeur taux_com_courtage_terme en chaîne:', taux_com_courtage_terme);
+
+        // Remplacer la virgule par un point pour garantir une bonne conversion en nombre
+        taux_com_courtage = parseFloat(taux_com_courtage.replace(',', '.'));
+        taux_com_courtage_terme = parseFloat(taux_com_courtage_terme.replace(',', '.'));
+
+        // Vérification des valeurs après conversion
+        console.log('taux_com_courtage', taux_com_courtage);
+        console.log('taux_com_courtage_terme', taux_com_courtage_terme);
 
         //Added on 10022024:0302: si terme, prendre le taux_com_courtage_terme comme taux_com_courtage
         if (nature_quittance_id == 2) {
@@ -7239,10 +7269,8 @@ $(document).ready(function () {
         if (isNaN(cout_police_courtier)) { cout_police_courtier = 0; }
         if (isNaN(taxe)) { taxe = 0; }
         if (isNaN(autres_taxes)) { autres_taxes = 0; }
-        if (isNaN(taux_com_gestion)) { taux_com_gestion = 0; }
         if (isNaN(taux_com_courtage)) { taux_com_courtage = 0; }
         if (isNaN(taux_com_courtage_terme)) { taux_com_courtage_terme = 0; }
-        if (isNaN(taux_commission_intermediaire)) { taux_commission_intermediaire = 0; }
 
         /* accorder les montant selon la nature de la quittance */
         if ((prime_ht > 0 && nature_quittance_id == 3) || (prime_ht < 0 && nature_quittance_id != 3)) {
@@ -7250,48 +7278,13 @@ $(document).ready(function () {
         }
         $('#modal-quittance #prime_ht').val(prime_ht);
 
-        if((cout_police_compagnie > 0 && nature_quittance_id == 3) || (cout_police_compagnie < 0 && nature_quittance_id != 3)){
-            cout_police_compagnie = cout_police_compagnie * (-1);
-        }
-        if((cout_police_courtier > 0 && nature_quittance_id == 3) || (cout_police_courtier < 0 && nature_quittance_id != 3)){
-            cout_police_courtier = cout_police_courtier * (-1);
-        }
-        if((taxe > 0 && nature_quittance_id == 3) || (taxe < 0 && nature_quittance_id != 3)){
-            taxe = taxe * (-1);
-        }
-        if((autres_taxes > 0 && nature_quittance_id == 3) || (autres_taxes < 0 && nature_quittance_id != 3)){
-            autres_taxes = autres_taxes * (-1);
-        }
-        if((taux_com_gestion > 0 && nature_quittance_id == 3) || (taux_com_gestion < 0 && nature_quittance_id != 3)){
-            taux_com_gestion = taux_com_gestion * (-1);
-        }
-        if((taux_com_courtage > 0 && nature_quittance_id == 3) || (taux_com_courtage < 0 && nature_quittance_id != 3)){
-            taux_com_courtage = taux_com_courtage * (-1);
-        }
-        if((taux_com_courtage_terme > 0 && nature_quittance_id == 3) || (taux_com_courtage_terme < 0 && nature_quittance_id != 3)){
-            taux_com_courtage_terme = taux_com_courtage_terme * (-1);
-        }
-        $('#modal-quittance #cout_police_compagnie').val(cout_police_compagnie);
-        $('#modal-quittance #cout_police_courtier').val(cout_police_courtier);
-        $('#modal-quittance #taxe').val(taxe);
-        $('#modal-quittance #autres_taxes').val(autres_taxes);
-        $('#modal-quittance #taux_com_gestion').val(taux_com_gestion);
-        $('#modal-quittance #taux_com_courtage').val(taux_com_courtage);
-        $('#modal-quittance #taux_com_courtage_terme').val(taux_com_courtage_terme);
-
-
         let prime_ttc = prime_ht + cout_police_compagnie + cout_police_courtier + taxe + autres_taxes;
 
-        let montant_commission_gestion = (taux_com_gestion / 100) * prime_ht;
         let montant_commission_courtage = (taux_com_courtage / 100) * prime_ht;
         let montant_commission_courtage_terme = (taux_com_courtage_terme / 100) * prime_ht;
 
-
-        let total_commission_intermediaire = (taux_commission_intermediaire / 100) * cout_police_courtier;
-
         //selon type de quittance : honnoraire pas de com
         if (type_quittance_id == 2) {
-            montant_commission_gestion = 0;
             montant_commission_courtage = 0;
             montant_commission_courtage_terme = 0;
         }
@@ -7303,27 +7296,79 @@ $(document).ready(function () {
         console.log('cout_police_courtier', cout_police_courtier);
         console.log('taxe', taxe);
         console.log('autres_taxes', autres_taxes);
-        console.log('taux_com_gestion', taux_com_gestion);
         console.log('taux_com_courtage', taux_com_courtage);
         console.log('taux_com_courtage_terme', taux_com_courtage_terme);
-        console.log('montant_commission_gestion', montant_commission_gestion);
         console.log('montant_commission_courtage', montant_commission_courtage);
         console.log('montant_commission_courtage_terme', montant_commission_courtage_terme);
-
-        console.log('taux_commission_intermediaire', taux_commission_intermediaire);
-        console.log('total_commission_intermediaire', total_commission_intermediaire);
-
         console.log('prime_ttc', prime_ttc);
 
+        let total_taux_com_affaire_nouvelle = 0;
+        let total_taux_com_renouvelement = 0;
+        let montant_commission_intermediaire = 0;
+        let total_montant_commission_intermediaire = 0;
+
+        $('.taux_com_affaire_nouvelle').each(function () {
+
+            let taux_com_affaire_nouvelle = parseFloat($(this).val());
+            let taux_com_renouvelement = parseFloat($(this).closest('tr').find('.taux_com_renouvelement').val());
+            let base_calcul_taux_retrocession = $(this).closest('tr').find('.base_calcul_taux_retrocession').val();
+            let intermediaire = $(this).closest('tr').find('.intermediaire').val();
+
+            if (intermediaire != "" && base_calcul_taux_retrocession != "" && taux_com_affaire_nouvelle > 0) {
+
+                if (nature_quittance_id == 1) {//quittance comptant: on prend les taux de com affaire nouvelle
+
+                    if (base_calcul_taux_retrocession == 1) {//sur prime ht
+
+                        montant_commission_intermediaire = (taux_com_affaire_nouvelle / 100) * prime_ht;
+
+                    } else if (base_calcul_taux_retrocession == 2) {//sur com courtage
+
+                        montant_commission_intermediaire = (taux_com_affaire_nouvelle / 100) * montant_commission_courtage;
+
+                    } else if (base_calcul_taux_retrocession == 4) {//sur com total (courtage + gestion)
+
+                        montant_commission_intermediaire = (taux_com_affaire_nouvelle / 100) * (montant_commission_courtage);
+
+                    }
+
+                } else if (nature_quittance_id == 2) {//quittance Terme: on prend les taux de com renouvellement
+
+                    if (base_calcul_taux_retrocession == 1) {//sur prime ht
+
+                        montant_commission_intermediaire = (taux_com_renouvelement / 100) * prime_ht;
+
+                    } else if (base_calcul_taux_retrocession == 2) {//sur com courtage
+
+                        montant_commission_intermediaire = (taux_com_renouvelement / 100) * montant_commission_courtage;
+
+                    } else if (base_calcul_taux_retrocession == 4) {//sur com total (courtage + gestion)
+
+                        montant_commission_intermediaire = (taux_com_renouvelement / 100) * (montant_commission_courtage);
+
+                    }
+
+                }
+
+                console.log('montant_commission_intermediaire', montant_commission_intermediaire);
+
+                total_montant_commission_intermediaire = montant_commission_intermediaire; // a la place de celui es ten bas
+                // total_montant_commission_intermediaire = total_montant_commission_intermediaire + montant_commission_intermediaire;
+
+                console.log('total_montant_commission_intermediaire', total_montant_commission_intermediaire);
+
+            }
+
+        });
+
         $('#modal-quittance #prime_ttc').val(prime_ttc);
+
         $('#modal-quittance #commission_courtage').val(montant_commission_courtage);
+
         $('#modal-quittance #commission_courtage_terme').val(montant_commission_courtage_terme);
-        $('#modal-quittance #commission_gestion').val(montant_commission_gestion);
-        $('#modal-quittance #total_commission_intermediaire').val(total_commission_intermediaire);
 
-
+        $('#modal-quittance #total_commission_intermediaire').val(total_montant_commission_intermediaire);
     }
-
 
     $(document).on("change", "#modal-quittance #nature_quittance", function (event) {
         let nature_quittance_id = $(this).val();

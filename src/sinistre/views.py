@@ -45,7 +45,7 @@ from xhtml2pdf import pisa
 from configurations.helper_config import execute_query, create_query_background_task
 from configurations.models import Compagnie, User, Rubrique, \
     TypePriseencharge, Pays, TypeIntervenant, Responsabilite, TypeSinistre, Circonstance, \
-    JourFerie, ActionLog, PeriodeComptable, TypeRemboursement, ModeCreation, \
+    ActionLog, PeriodeComptable, TypeRemboursement, ModeCreation, \
     BackgroundQueryTask, TypePrefinancement
 from production.models import Statut, TypeDocument, Client
 #
@@ -2677,16 +2677,11 @@ def search_assure(request):
                                                           'G66049CI01'])
 
                                         # garder l'acte consultation generaliste urgence garde uniquement entre 18H et 6h du matin, ainsi que les jours fériés
-                                        jours_feries = JourFerie.objects.all().values('date')
                                         date_jour = datetime.datetime.now(tz=timezone.utc).date().strftime("%Y-%m-%d")
                                         heure_actuelle = datetime.datetime.now(tz=timezone.utc).time().hour
-                                        # or date_jour not in jours_feries
-                                        if (heure_actuelle > 7 and heure_actuelle < 18) or is_jour_ferie(date_jour):
+                                        if (heure_actuelle > 7 and heure_actuelle < 18):
                                             actes_garantis = actes_garantis.exclude(code__in=['G65913CI01', 'G65914CI01'])
                                             pprint(actes_garantis)
-
-                                        pprint("jours_feries")
-                                        pprint(jours_feries)
 
                                         if actes_garantis:
                                             actes_garantis_json = json.dumps(list(actes_garantis))
@@ -2978,17 +2973,7 @@ def search_assure_bygestionnaire(request, prestataire_id):  # _bygestionnaire
                                                 code__in=['G66044CI01', 'G66045CI01', 'G66046CI01', 'G66047CI01', 'G66048CI01',
                                                           'G66049CI01'])
 
-                                        # garder l'acte consultation generaliste urgence garde uniquement entre 18H et 6h du matin, ainsi que les jours fériés
-                                        #jours_feries = JourFerie.objects.all().values('date')
-                                        #date_jour = datetime.datetime.now(tz=timezone.utc).date().strftime("%Y-%m-%d")
-                                        #heure_actuelle = datetime.datetime.now(tz=timezone.utc).time().hour
-                                        # or date_jour not in jours_feries
-                                        #if (heure_actuelle > 7 and heure_actuelle < 18) or is_jour_ferie(date_jour):
-                                        #    actes_garantis = actes_garantis.exclude(code__in=['G65913CI01', 'G65914CI01'])
-                                        #    pprint(actes_garantis)
 
-                                        #pprint("jours_feries")
-                                        #pprint(jours_feries)
 
                                         # commented on 20112023:reintégré cette notion de type_pec
                                         # Added on 15112023: Afficher tous les actes vu que c'est le gestionnaire qui saisie

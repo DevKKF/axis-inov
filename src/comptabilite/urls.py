@@ -90,7 +90,7 @@ urlpatterns = [
     path('add_encaissement_com_court_gest/<str:type>',views.add_encaissement_com_court_gest, name='add_encaissement_com_court_gest'),
 
     path('generer_bordereau_reglement_compagnie_pdf/<int:operation_id>', views.generer_bordereau_reglement_compagnie_pdf, name='generer_bordereau_reglement_compagnie_pdf'),
-    
+    path('generer_bordereau_reglement_compagnie_pdf/<int:operation_id>/<str:type>', views.generer_bordereau_reglement_compagnie_pdf, name='generer_bordereau_reglement_compagnie_pdf'),
     path('generer_bordereau_encaissement_compagnie_pdf/<int:operation_id>', views.generer_bordereau_encaissement_compagnie_pdf, name='generer_bordereau_encaissement_compagnie_pdf'),
 
     path('execution-requete-excel-compta/', views.ExecutionRequeteExcelComptaView.as_view(), name='execution_requete_excel_compta'),

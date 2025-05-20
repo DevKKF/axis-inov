@@ -116,6 +116,7 @@
 								<th scope="col">{{_("Début période")}}</th>
 								<th scope="col">{{_('Type')}}</th>
 								<th scope="col">{{_("Prime TTC")}}</th>
+								<th scope="col">{{_("Com Courtage")}}</th>
 								<th scope="col">{{_("Solde actuel")}}</th>
 								<th scope="col" style="width:150px;">{{_("Solde après")}}</th>
 							</tr>
@@ -129,6 +130,7 @@
 							  <td>{{ quittance_imp.date_debut|default_if_none:"" }}</td>
 							  <td>{{ quittance_imp.type_quittance.libelle|default_if_none:"" }}</td>
 							  <td class="text-right">{{ quittance_imp.prime_ttc|money_field }}<input type="hidden" class="form-control montant_quittance" value="{{quittance_imp.prime_ttc}}"/></td>
+							  <td class="text-right">{{ quittance_imp.commission_courtage|money_field }}<input type="hidden" class="form-control com_courtage" value="{{quittance_imp.commission_courtage}}"/></td>
 							  <td class="text-right">{{ quittance_imp.solde|money_field }}<input type="hidden" class="form-control solde_quittance" value="{{quittance_imp.solde}}"/></td>
 							  <td class="text-right"><input type="text" class="form-control money_field_negative solde_apres" value="{{quittance_imp.solde}}" readonly/></td>
 							</tr>

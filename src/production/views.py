@@ -1,82 +1,50 @@
 # Create your views here.
 import datetime
-from datetime import timedelta
 import json
 import os
-import re
 import uuid
 
 import PyPDF2
 import docx
-import pdfkit
 import pypandoc
 from ast import literal_eval
 from datetime import datetime as datetimes
-from datetime import date
-from datetime import datetime, timezone
 from django.utils.dateparse import parse_date
 from datetime import timedelta
 from io import BytesIO
 from pprint import pprint
 from sqlite3 import Date
 from datetime import date
-from decimal import Decimal, InvalidOperation
-from venv import create
+from decimal import Decimal
 
-from django.db.models import Max
 import locale
 from docx import Document
 from docx.shared import Inches
 from num2words import num2words
 from django.templatetags.static import static
 from django.views.decorators.http import require_GET
-#import pdfkit
-from PyPDF2 import PdfReader
-from reportlab.platypus import SimpleDocTemplate, Paragraph
-from reportlab.lib.styles import getSampleStyleSheet
-from reportlab.lib import colors
-from reportlab.lib.pagesizes import letter
-from reportlab.pdfgen import canvas
-from django.utils.safestring import mark_safe
-from django.db.models import OuterRef, Subquery
 
 import openpyxl
 import pandas as pd
-# import qrcode
-# import qrcode.image.svg
-# from dateutil.relativedelta import relativedelta
 from django.contrib import admin
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.mixins import PermissionRequiredMixin
 from django.core import serializers
-from django.core.files.storage import FileSystemStorage
 from django.core.paginator import Paginator
-from django.db.models import Sum, Q, ExpressionWrapper, F, DurationField, Max, Case, When, Value
-from django.forms import model_to_dict
+from django.db.models import Q, ExpressionWrapper, F, DurationField, Max, Case, When
 from django.http import JsonResponse, HttpResponse, FileResponse
 from django.shortcuts import redirect, render, get_object_or_404
 from django.template.loader import get_template
-from django.template.loader import render_to_string
 from django.urls import reverse
 from django.utils import timezone
-from django.utils.datastructures import MultiValueDictKeyError
 from django.utils.decorators import method_decorator
 from django.utils.translation import gettext as _
 from django.views import View
 from django.views.decorators.cache import never_cache
-## INOV API MOBILE
-from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_http_methods
 from django.views.generic import TemplateView
 from docx import Document as WordDocument
-# from django_dump_die.middleware import dd
 from fpdf import FPDF
-from urllib3 import request
 from datetime import datetime, timezone
 from django.utils.timezone import now
-from django.utils.html import strip_tags
-from django.core.exceptions import ObjectDoesNotExist
-from django.core.serializers.json import DjangoJSONEncoder
 from django.db import transaction
 
 from configurations.models import Compagnie, MarqueVehicule, Pays, Civilite, Profession, \
@@ -91,14 +59,14 @@ from configurations.models import Compagnie, MarqueVehicule, Pays, Civilite, Pro
 from inov import settings
 from production.forms import ContactForm, FilialeForm, AcompteForm, DocumentForm, PoliceForm, PhotoUploadForm
 from production.helper_production import create_alimet_helper
-from production.models import FormuleRubriquePrefinance, ModePrefinancement, Motif, Mouvement, Client, Police, \
+from production.models import (FormuleRubriquePrefinance, ModePrefinancement, Motif, Mouvement, Client, Police, \
     Acompte, Document, Filiale, AutreRisque, PoliceGarantie, AlimentPolice, PoliceAssureur, Courrier, \
-    Contact, Quittance, SecteurActivite, TypeDocument, Statut, FormuleGarantie, MouvementPolice, StatutQuittance, \
+    Contact, Quittance, SecteurActivite, TypeDocument, Statut, MouvementPolice, StatutQuittance, \
     Genre, StatutFamilial, PlacementEtGestion, ModeRenouvellement, CalculTM, ApporteurPolice, TaxePolice, \
     TaxeQuittance, Reglement, OptionYesNo, TypeMajorationContrat, Vehicule, VehiculePolice, Energie, \
     StatutPolice, Operation, PeriodeCouverture, \
     OperationReglement, HistoriquePolice, HistoriqueApporteurPolice, HistoriqueTaxePolice, Marchandise, HistoriqueAliment, \
-    HistoriquePoliceGarantie
+    HistoriquePoliceGarantie)
 from production.templatetags.my_filters import money_field, convertir_date_multiformat, supprimer_espaces, convertir_date_jj_mm_aaaa, format_montant, money_format_mille, \
     arrondis_nombre, transformer_statut
 from shared.enum import StatutIncorporation, StatutValidite, StatutSinistre, StatutEnrolement, StatutTraitement, \
@@ -107,14 +75,10 @@ from sinistre.models import Sinistre, DossierSinistre, MouvementSinistre, Alimen
     HistoriqueSinistre, HistoriqueSinistreIntervenant, HistoriqueGarantieSinistre, HistoriqueProvision, HistoriqueAlimentPoliceSinistre, SinistreEtape
 from sinistre.forms import SinistreForm
 from comptabilite.models import EncaissementCommission
-from django.contrib.auth.models import Group
-import traceback
+
 from django.core.files.base import File
 from xhtml2pdf import pisa
 
-
-
-## INOV API MOBILE
 from django.views.decorators.csrf import csrf_exempt
 
 
@@ -138,7 +102,6 @@ class DetailsClientView(TemplateView):
             derniere_police = polices.first()
 
             #les anciennes polices qui un mouvement_police de résiliation
-            #anciennes_polices = polices.filter(id__in=select police_id from mouvemet_police where date_debut >=today).exclude(id=derniere_police.id)
             anciennes_polices = polices.filter(
                 id__in=MouvementPolice.objects.filter(
                     mouvement__code="RESIL",
@@ -1566,7 +1529,7 @@ def modifier_police(request, police_id):
                 police_garantie.franchise = franchise if franchise else None
                 police_garantie.capital = capital if capital else None
                 police_garantie.updated_by = request.user
-                police_garantie.updated_at=datetime.now(),
+                police_garantie.updated_at=datetime.now()
                 police_garantie.statut = Statut.ACTIF
                 police_garantie.save()
 
@@ -2347,6 +2310,7 @@ def get_aliments_session(request):
 
     # Charger les aliments existants depuis la session
     aliments = request.session.get('aliments', [])
+    print('aliments', aliments)
     if vehicules.exists():
         immatriculations_en_session = {alim['immat'] for alim in aliments}
 
@@ -2570,6 +2534,87 @@ def import_formulaire_aliments(request):
                 return JsonResponse({'success': False, 'message': 'Immatriculation manquante.'}, status=400)
 
             # Vérifier si l'immatriculation existe déjà
+            if is_immatriculation_exists(request, immat):
+                return JsonResponse({
+                    'success': False,
+                    'message': f"L'immatriculation {immat} existe déjà en session.",
+                    'data': request.session.get('aliments', [])
+                }, status=400)
+
+            # Vérification de la catégorie
+            categorie_id = request.POST.get('categorie_id')
+            categorie = CategorieVehicule.objects.filter(id=categorie_id).first()
+            if not categorie:
+                return JsonResponse({'success': False, 'message': 'Catégorie non trouvée.'}, status=400)
+
+            # Vérification de l'énergie
+            carburant_id = request.POST.get('carburant_id')
+            carburant = Carburant.objects.filter(id=carburant_id).first()
+            if not carburant:
+                return JsonResponse({'success': False, 'message': 'Carburant non trouvé.'}, status=400)
+
+            # Création du nouvel aliment
+            nouvel_aliment = {
+                'immat': immat,
+                'proprietaire': request.POST.get('proprietaire'),
+                'marque': request.POST.get('marque'),
+                'energie': carburant.code,  # Utiliser le code du carburant mocké
+                'puissance': request.POST.get('puissance_fiscale'),
+                'mis_en_circulation': request.POST.get('date_mise_circulation'),
+                'modele': request.POST.get('modele'),
+                'conducteur': request.POST.get('conducteur'),
+                'date_entree': request.POST.get('date_entree'),
+                'immat_prov': request.POST.get('immatriculation_provisioire'),
+                'num_parc': request.POST.get('num_parc'),
+                'num_serie': request.POST.get('num_serie'),
+                'places_assises': request.POST.get('places_assises'),
+                'valeur_neuve': request.POST.get('valeur_a_neuf'),
+                'valeur_actuelle': request.POST.get('valeur_actuelle'),
+                'poids_a_vide': request.POST.get('poid_vide'),
+                'poids_a_charge': request.POST.get('poid_tac'),
+                'T_categorie_id': categorie.libelle,  # Utiliser le libellé de la catégorie mockée
+                'T_carosserie_id': request.POST.get('carosserie_id'),
+                'T_usage_id': request.POST.get('usage_id'),
+                'comment': request.POST.get('commentaire')
+            }
+
+            # Récupération et mise à jour de la session
+            aliments_existant = list(request.session.get('aliments', []))  # Copie défensive
+            aliments_existant.append(nouvel_aliment)
+            request.session['aliments'] = aliments_existant
+            request.session.modified = True  # 🔥 Force Django à enregistrer la session
+
+            print('✅ Aliment ajouté en session :', nouvel_aliment)
+            print('🛡 Aliment existant avec le nouveau ajout :', aliments_existant)
+
+            return JsonResponse({
+                'success': True,
+                'message': "Ajout de l'aliment effectué avec succès !",
+                'data': aliments_existant  # <-- MODIFICATION CLÉ : Renvoyer TOUTE la liste mise à jour
+            }, status=200)
+
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'message': f"Erreur lors de l'enregistrement : {str(e)}"
+            }, status=500)
+
+    return JsonResponse({
+        'success': False,
+        'message': 'Requête invalide ou méthode non autorisée.'
+    }, status=400)
+
+
+"""@csrf_exempt
+def import_formulaire_aliments(request):
+    if request.method == 'POST':
+        try:
+            # Récupération de l'immatriculation
+            immat = request.POST.get('immatriculation')
+            if not immat:
+                return JsonResponse({'success': False, 'message': 'Immatriculation manquante.'}, status=400)
+
+            # Vérifier si l'immatriculation existe déjà
             if is_immatriculation_exists(request, immat):  # Vérifier les doublons
                 return JsonResponse({
                     'success': False,
@@ -2620,6 +2665,7 @@ def import_formulaire_aliments(request):
             aliments_existant = request.session.get('aliments', [])
             aliments_existant.append(nouvel_aliment)
             request.session['aliments'] = aliments_existant
+            request.session.modified = True  # 🔥 Assure que Django sauvegarde bien la session
 
             print('Aliment ajouté en session : ', nouvel_aliment)
 
@@ -2639,7 +2685,7 @@ def import_formulaire_aliments(request):
         'success': False,
         'message': 'Requête invalide ou données manquantes.'
     }, status=400)
-
+"""
 
 @csrf_exempt
 def supprimer_aliment(request, index):
@@ -2716,214 +2762,6 @@ def get_garanties_by_formule(request):
     return JsonResponse({'garanties': list(garanties)})
 
 
-
-@login_required
-# edition des cartes des adhérents
-def editer_cartes(request, police_id):
-    return render(request, 'admin/form_edition_cartes.html')
-
-
-# IMPRESSION DE LA CARTE
-class CARTE_SANTE(FPDF):
-    # marron (167, 79, 51)
-    # jaune (234, 173, 82)
-    start_x = 0
-    start_y = 0
-
-    def set_origin(self, x, y):
-        self.start_x = x
-        self.start_y = y
-
-    def set_cadre(self):
-        self.set_draw_color(234, 173, 82)
-        self.set_fill_color(167, 79, 51)
-        self.set_text_color(0, 0, 0)
-        self.set_line_width(.1)
-
-        self.rect(self.start_x + 4, self.start_y + 4, 102, 55)  # cadre de la carte
-        self.rect(self.start_x + 5, self.start_y + 4, 4, 55, 'F')  # bande verticale
-
-        self.rect(self.start_x + 5, self.start_y + 4, 4, 55, 'F')
-
-    def set_logo(self, logo_src):
-        # LE LOGO
-        self.image(logo_src, self.start_x + 10, self.start_y + 5, 0, 10)
-
-    def set_photo(self, photo_src):
-        self.set_draw_color(128, 128, 128)  # gray
-        self.rect(self.start_x + 90, self.start_y + 5, 15, 17)
-        self.image(photo_src, self.start_x + 90, self.start_y + 5, 15, 17)
-
-    def set_numero_carte(self, numero):
-        # Arial bold 15
-        self.set_font('Arial', '', 12)
-        self.set_draw_color(0, 80, 180)
-        self.set_fill_color(255, 255, 255)
-        self.set_text_color(0, 0, 0)
-        self.set_line_width(.1)
-
-        self.set_font('Arial', '', 10)
-        self.set_xy(self.start_x + 40, self.start_y + 5)
-        self.cell(20, 5, "N° CARTE:", 0, 0, 'L', 1)
-
-        self.set_x(self.start_x + 60)
-        self.set_font('Arial', 'B', 12)
-        # Title
-        self.cell(30, 5, numero, 0, 0, 'L', 1)
-        # Line break
-        self.ln(10)
-
-        # si inactive, imprimé le statut dessus
-
-    def set_statut(self, statut):
-        if statut == Statut.INACTIF:
-            self.set_font('Arial', 'B', 10)
-            self.set_xy(self.start_x + 50, self.start_y + 10)
-            self.set_text_color(255, 0, 0)
-            self.cell(55, 5, "I N A C T I V E", 0, 0, 'L', 0)
-            self.set_text_color(0, 0, 0)
-
-    def set_nom_beneficiaire(self, nom, date_naissance, numero_cmu):
-        if nom is None: nom = ''
-        if date_naissance is None: date_naissance = ''
-        if numero_cmu is None: numero_cmu = ''
-
-        self.set_y(self.start_y + 22)
-
-        self.set_fill_color(167, 79, 51)
-        self.rect(self.start_x + 11, self.start_y + 22, 1, 4, 'F')
-        self.set_xy(self.start_x + 12, self.start_y + 22)
-        self.set_font('Arial', '', 8)
-        self.cell(95, 4, "BÉNÉFICIAIRE", 0, 1, 'L', 0)
-
-        self.ln(1)
-        self.set_x(self.start_x + 10)
-        self.set_font('Arial', 'B', 10)
-        self.cell(95, 4, nom, 0, 1, 'L', 0)
-
-        self.set_font('Arial', '', 8)
-        self.ln(1)
-        self.set_x(self.start_x + 10)
-        self.cell(17, 4, "Né(e) le:", 0, 0, 'L', 0)
-        self.set_font('Arial', 'B', 10)
-        self.set_x(self.start_x + 27)
-        self.cell(30, 4, str(date_naissance), 0, 1, 'L', 0)
-
-        self.set_font('Arial', '', 8)
-        self.ln(1)
-        self.set_x(self.start_x + 10)
-        self.cell(17, 4, "N° CMU:", 0, 0, 'L', 0)
-        self.set_font('Arial', 'B', 10)
-        self.set_x(self.start_x + 27)
-        self.cell(30, 4, str(numero_cmu), 0, 0, 'L', 0)
-
-    def set_nom_adherent_principal(self, adherent_principal, numero_police):
-        if adherent_principal:
-            nom = adherent_principal.nom + " " + adherent_principal.prenoms
-            self.set_y(self.start_y + 43)
-            self.set_fill_color(167, 79, 51)
-            self.rect(self.start_x + 11, self.start_y + 45, 1, 4, 'F')
-            self.set_xy(self.start_x + 12, self.start_y + 45)
-
-            self.set_font('Arial', '', 8)
-            self.cell(60, 4, "ADHÉRENT PRINCIPAL", 0, 1, 'L', 0)
-            self.ln(1)
-            self.set_x(self.start_x + 10)
-            self.set_font('Arial', 'B', 10)
-            self.cell(60, 4, nom, 0, 1, 'L', 0)
-
-            self.set_font('Arial', '', 8)
-            self.ln(1)
-            self.set_x(self.start_x + 10)
-            self.cell(17, 4, "N° POLICE:", 0, 0, 'L', 0)
-            self.set_font('Arial', 'B', 10)
-            self.set_x(self.start_x + 27)
-            self.cell(43, 4, str(numero_police), 0, 0, 'L', 0)
-
-    def set_qrcode(self, photo_src):
-        self.set_draw_color(128, 128, 128)
-        self.rect(self.start_x + 62, self.start_y + 40, 15, 15)
-        self.image(photo_src, self.start_x + 62, self.start_y + 40, 15, 15)
-
-    def set_signature_filialle(self, photo_src):
-        # self.rect(self.start_x + 89, self.start_y + 40, 15, 15)
-        self.image(photo_src, self.start_x + 89, self.start_y + 40, 15, 15)
-
-    def set_origin_verso(self, x, y):
-        self.start_x = x
-        self.start_y = y
-
-    def set_cadre_verso(self):
-        self.set_draw_color(234, 173, 82)
-        self.set_fill_color(167, 79, 51)
-        self.set_text_color(0, 0, 0)
-        self.set_line_width(.1)
-
-        self.rect(self.start_x + 4, self.start_y + 4, 102, 55)  # cadre de la carte
-
-    def set_informations_verso(self, informations, nom_bureau, whatsapp, telephone, email, adresse):
-        if nom_bureau is None: nom_bureau = ''
-        if whatsapp is None: whatsapp = ''
-        if telephone is None: telephone = ''
-        if email is None: email = ''
-        if adresse is None: adresse = ''
-
-        self.set_xy(self.start_x + 8, self.start_y + 8)
-
-        self.set_draw_color(167, 79, 51)
-        self.set_fill_color(234, 173, 82)
-        self.set_text_color(255, 255, 255)
-        self.set_draw_color(255, 255, 255)
-        self.set_fill_color(255, 255, 255)
-        self.set_text_color(0, 0, 0)
-
-        self.set_font('Arial', '', 9)
-        self.multi_cell(94, 4, informations, 1, 'L', 1)
-        self.ln(4)
-        self.set_x(self.start_x + 8)
-        self.set_font('Arial', 'B', 14)
-        self.multi_cell(94, 5, nom_bureau, 1, 'C', 1)
-        self.ln(5)
-
-        self.set_x(self.start_x + 8)
-        self.set_font('Arial', '', 10)
-        self.cell(24, 4, "WhatsApp: ", 1, 0, 'L', 1)
-        self.set_font('Arial', '', 10)
-        self.set_x(self.start_x + 32)
-        self.cell(70, 4, str(whatsapp), 1, 1, 'L', 1)
-
-        self.set_x(self.start_x + 8)
-        self.set_font('Arial', '', 10)
-        self.cell(24, 4, "Fixe: ", 1, 0, 'L', 1)
-        self.set_font('Arial', '', 10)
-        self.set_x(self.start_x + 32)
-        self.cell(70, 4, str(telephone), 1, 1, 'L', 1)
-
-        self.set_x(self.start_x + 8)
-        self.set_font('Arial', '', 10)
-        self.cell(24, 4, "E-mail: ", 1, 0, 'L', 1)
-        self.set_font('Arial', '', 10)
-        self.set_x(self.start_x + 32)
-        self.cell(70, 4, str(email), 1, 1, 'L', 1)
-
-        self.ln(4)
-        self.set_x(self.start_x + 8)
-        self.set_font('Arial', '', 9)
-        self.multi_cell(94, 5, str(adresse), 1, 'L', 1)
-
-
-# defining the function to convert an HTML file to a PDF file
-def html_to_pdf(template_src, context_dict={}):
-    template = get_template(template_src)
-    html = template.render(context_dict)
-    result = BytesIO()
-    pdf = pisa.pisaDocument(BytesIO(html.encode("ISO-8859-1")), result)
-    if not pdf.err:
-        return HttpResponse(result.getvalue(), content_type='application/pdf')
-    return None
-
-
-
 def download(request, filename):
     file_path = os.path.join(settings.MEDIA_ROOT, "cartes/" + filename)
     # file_path = os.path.join(filename)
@@ -2969,69 +2807,6 @@ def ajax_produits(request, branche_id):
     produits_serialize = serializers.serialize('json', produits)
 
     return HttpResponse(produits_serialize, content_type='application/json')
-
-
-def modification_ajax_produits(request, branche_id):
-    produits = Produit.objects.filter(branche_id=branche_id).values('id', 'nom', 'code')
-    return JsonResponse(list(produits), safe=False)
-
-
-@login_required
-def sous_rubriques_by_rubrique(request, rubrique_id):
-    actes = SousRubrique.objects.filter(rubrique_id=rubrique_id, status=1).order_by('libelle')
-    actes_serialize = serializers.serialize('json', actes)
-
-    return HttpResponse(actes_serialize, content_type='application/json')
-
-
-@login_required
-def regroupements_actes_by_rubrique(request, rubrique_id):
-    actes = RegroupementActe.objects.filter(rubrique_id=rubrique_id, status=1).order_by('libelle')
-    actes_serialize = serializers.serialize('json', actes)
-
-    return HttpResponse(actes_serialize, content_type='application/json')
-
-
-@login_required
-def sous_regroupements_actes_by_rubrique(request, rubrique_id):
-    data = SousRegroupementActe.objects.filter(rubrique_id=rubrique_id, status=1).order_by('libelle')
-    data_serialize = serializers.serialize('json', data)
-
-    return HttpResponse(data_serialize, content_type='application/json')
-
-
-@login_required
-def actes_by_rubrique(request, rubrique_id):
-    rubrique = Rubrique.objects.get(id=rubrique_id)
-
-    if rubrique.code != 'PHARMACIE':
-        actes = Acte.objects.filter(rubrique_id=rubrique_id, status=1).order_by('libelle')
-    else:
-        actes = []
-
-    actes_serialize = serializers.serialize('json', actes)
-    return HttpResponse(actes_serialize, content_type='application/json')
-
-
-@login_required
-def actes_by_regroupement_acte(request, regroupement_acte_id):
-    regroupement_acte = RegroupementActe.objects.get(id=regroupement_acte_id)
-    if regroupement_acte and regroupement_acte.rubrique.code != 'PHARMACIE':
-        actes = Acte.objects.filter(regroupement_acte_id=regroupement_acte_id, status=1).order_by('libelle')
-    else:
-        actes = []
-
-    actes_serialize = serializers.serialize('json', actes)
-
-    return HttpResponse(actes_serialize, content_type='application/json')
-
-
-@login_required
-def formules_by_police(request, police_id):
-    formules = FormuleGarantie.objects.filter(police_id=police_id, statut=Statut.ACTIF)
-    formules_serialize = serializers.serialize('json', formules)
-
-    return HttpResponse(formules_serialize, content_type='application/json')
 
 
 @login_required
@@ -5189,7 +4964,7 @@ def modifiersinistre(request, sinistre_id):
 
 # modification de sinistre
 @login_required
-def modifiersinistre(request, sinistre_id):
+def modifiersinistres(request, sinistre_id):
 
     if request.method == 'POST':
         sinistre_old = Sinistre.objects.get(id=sinistre_id)
@@ -5992,170 +5767,12 @@ def delete_garantie_session(request):
     return JsonResponse({"success": False, "error": "Requête invalide"})
 
 
-def get_formules(request, police_id):
-    # Récupérez les formules associées à la police_id (ajustez selon votre modèle)
-    formules = FormuleGarantie.objects.filter(police_id=police_id).values('code', 'libelle')
-
-    # Convertissez les résultats en un format JSON approprié
-    formules_list = [{'code': formule['code'], 'libelle': formule['libelle']} for formule in formules]
-
-    return JsonResponse({'formules': formules_list})
-
-
-def getAliments(police_id):
-    aliments = []
-
-    police = Police.objects.filter(pk=police_id, statut_validite=StatutValidite.VALIDE)
-    for formule in police.formules:
-
-        aliment_formule = AlimentFormule.objects.filter(formule_id=formule.id, statut=Statut.ACTIF).order_by('-id')
-
-        for af in aliment_formule:
-            if af.aliment not in aliments:
-                aliments.append(af.aliment)
-
-    return aliments
-
-
-def getAdherentsPrincipaux(police_id):
-    aliments = []
-
-    police = Police.objects.get(id=police_id)
-
-    for formule in police.formules:
-
-        aliment_formule = AlimentFormule.objects.filter(formule_id=formule.id, statut=Statut.ACTIF, statut_validite=StatutValidite.VALIDE).order_by('-id')
-
-        for af in aliment_formule:
-            if af.aliment.statut == Statut.ACTIF and af.aliment.qualite_beneficiaire and af.aliment.qualite_beneficiaire.code == "AD":
-                if af.aliment not in aliments:
-                    aliments.append(af.aliment)
-
-    return aliments
-
-
 def check_pandas_value(value):
     return value if pd.notna(value) else None
 
 
 def check_pandas_date_value(value):
     return pd.to_datetime(value) if pd.notna(value) else None
-
-
-#TODO CHANGEMENT DE COMPAGNIE
-@transaction.atomic
-def changement_compagnie(request, client_id):
-    #dd("Désactivé pour l'instant")
-
-    rstatut = 0
-    rmessage = ""
-    rerrors = {}
-
-    try:
-        if request.method == 'POST':
-
-            ancienne_police_id = request.POST.get('ancienne_police')
-            nouvelle_police_id = request.POST.get('nouvelle_police')
-
-            ancienne_police = Police.objects.filter(id=ancienne_police_id, statut_validite=StatutValidite.VALIDE).first()
-            nouvelle_police = Police.objects.filter(id=nouvelle_police_id, statut_validite=StatutValidite.VALIDE).first()
-
-            if ancienne_police and nouvelle_police:
-                anciennes_formules = FormuleGarantie.objects.filter(police=ancienne_police)
-
-                #Pour chaque formule
-                pprint("Pour chaque formule")
-                for old_formule in anciennes_formules:
-
-                    # vérifier qu'il y a des bénéficiaires actif sur la formule
-                    pprint("TRAITEMENT DES FORMULES DE GARANTIE ET SPECIFICITES")
-                    pprint("vérifier qu'il y a des bénéficiaires actif sur la formule")
-
-                    #Créer la nouvelle formule
-                    pprint("Créer la nouvelle formule")
-                    new_formule = FormuleGarantie.objects.create(police=nouvelle_police,
-                                                                 created_by=request.user,
-                                                                 territorialite=old_formule.territorialite,
-                                                                 type_tarif=old_formule.type_tarif,
-                                                                 libelle=old_formule.libelle,
-                                                                 taux_couverture=old_formule.taux_couverture,
-                                                                 plafond_conso_famille=old_formule.plafond_conso_famille,
-                                                                 plafond_conso_individuelle=old_formule.plafond_conso_individuelle,
-                                                                 taux_tm=old_formule.taux_tm,
-                                                                 garantis_pharmacie=old_formule.garantis_pharmacie,
-                                                                 date_debut=nouvelle_police.date_debut_effet,
-                                                                 )
-                    code_bureau = request.user.bureau.code
-                    code_formule = str(code_bureau) + str(Date.today().year)[-2:] + '-' + str(new_formule.pk).zfill(7)
-
-                    new_formule.code = 'F' + str(Date.today().year)[-2:] + '' + str(new_formule.pk).zfill(7)
-                    new_formule.save()
-
-
-                    #Réccupérer les barèmes de l'ancienne formule
-                    pprint("Réccupérer les barèmes de l'ancienne formule")
-                    anciens_baremes = Bareme.objects.filter(formulegarantie=old_formule)
-
-                    #Copier les barèmes sur la nouvelle formule
-                    pprint("Copier les barèmes sur la nouvelle formule")
-                    for old_bareme in anciens_baremes:
-                        new_bareme = Bareme.objects.create(formulegarantie=new_formule,
-                                                           created_by=request.user,
-                                                           rubrique_id=old_bareme.rubrique_id,
-                                                           sous_rubrique_id=old_bareme.sous_rubrique_id,
-                                                           regroupement_acte_id=old_bareme.regroupement_acte_id,
-                                                           acte_id=old_bareme.acte_id,
-                                                           is_garanti=old_bareme.is_garanti,
-                                                           qualite_beneficiaire_id=old_bareme.qualite_beneficiaire_id,
-                                                           taux_couverture=old_bareme.taux_couverture,
-                                                           taux_tm=old_bareme.taux_tm,
-                                                           plafond_individuel=old_bareme.plafond_individuel,
-                                                           plafond_famille=old_bareme.plafond_famille,
-                                                           plafond_rubrique=old_bareme.plafond_rubrique,
-                                                           plafond_sous_rubrique=old_bareme.plafond_sous_rubrique,
-                                                           plafond_regroupement_acte=old_bareme.plafond_regroupement_acte,
-                                                           plafond_acte=old_bareme.plafond_acte,
-                                                           nombre_acte=old_bareme.nombre_acte,
-                                                           periodicite_id=old_bareme.periodicite_id,
-                                                           # unite_frequence = unite_frequence,
-                                                           # frequence = frequence,
-                                                           age_minimum=old_bareme.age_minimum,
-                                                           age_maximum=old_bareme.age_maximum,
-                                                           date_debut=nouvelle_police.date_debut_effet,
-                                                           )
-                        new_bareme.save()
-                        pprint("new_bareme crée")
-                        pprint(new_bareme)
-
-
-                #save log
-                ActionLog.objects.create(done_by=request.user, action="changement_assureur",
-                                         description="Changement d'assureur: copie des formules et bénéficiaires de la police " + str(ancienne_police.numero) + " vers la police " + str(nouvelle_police.numero), table="",
-                                         row=None, data_before=None,
-                                         data_after=None)
-
-                rstatut = 1
-                rmessage = "Opération effectuée avec succès."
-                rerrors = {}
-
-            else:
-                rstatut = 0
-                message = "Polices non trouvées"
-
-
-    except Exception as e:
-        error_message = str(e)
-
-        rmessage = "Erreur lors du traitement: " + error_message
-        rerrors = {'Erreur': error_message}
-
-    response = {
-        'statut': rstatut,
-        'message': rmessage,
-        'errors': rerrors,
-    }
-
-    return JsonResponse(response)
 
 
 def serialize_sets(obj):
@@ -8587,194 +8204,6 @@ class GEDClientView(TemplateView):
         }
 
 
-# Test excel file exploid
-class ExcelFileView(View):
-    def get(self, request, *args, **kwargs):
-        formule = FormuleGarantie.objects.get(id=1)
-        print(formule.tarfile.path)
-
-        excel_data_df = pd.read_excel(formule.tarfile.path, sheet_name='actes')
-        print(excel_data_df.head())
-        print(excel_data_df)
-
-        acte_row = excel_data_df.loc[excel_data_df['Code acte'] == 'CH0106']
-
-        print(acte_row)
-        print(acte_row.empty)
-        print(acte_row.to_dict())
-        print(acte_row.to_dict()['Code acte'])
-        # print(acte_row.col)
-        value = [i for i in acte_row.to_dict()['Code acte'] if acte_row.to_dict()['Code acte'][i] == "CH0106"]
-        print("key by value:", value)
-        print("key by value:", value[0])
-        print(acte_row.to_dict()['Code acte'][value[0]])
-        print(acte_row.to_dict().keys())
-        acts = acte_row.to_dict()
-        acts_kay = acte_row.to_dict().keys()
-
-        dic = {}
-        for i in list(acts_kay):
-            print(i)
-            print(type(i))
-            dic[i] = acts[i][value[0]]
-
-        print(dic)
-
-        return HttpResponse("Get method is not allowed")
-
-
-# liste des formules universelles pour assurance universelle
-@method_decorator(login_required, name='dispatch')
-class FormulesUniversellesView(TemplateView):
-    # permission_required = "production.view_formules"
-    template_name = 'police/formules_universelles.html'
-    model = FormuleGarantie
-
-    # @never_cache
-    def get(self, request, *args, **kwargs):
-        context_original = self.get_context_data(**kwargs)
-
-        # police_id = kwargs['police_id']
-
-        # police = Police.objects.get(id=police_id)
-        bureau = request.user.bureau
-        formules = FormuleGarantie.objects.filter(police__isnull=True, statut=Statut.ACTIF)
-        territorialites = Territorialite.objects.all().order_by('libelle')
-        types_tarifs = TypeTarif.objects.all().order_by('libelle')
-        reseaux_soins = ""
-        rubriques = Rubrique.objects.filter(status=True).order_by('libelle')
-        mode_prefinancements = ModePrefinancement.objects.all().order_by('libelle')
-
-        today = datetime.datetime.now(tz=timezone.utc)
-
-        context_perso = {'bureau': bureau, 'formules': formules, 'types_tarifs': types_tarifs,
-                         'territorialites': territorialites, 'reseaux_soins': reseaux_soins, 'rubriques': rubriques, 'mode_prefinancements':mode_prefinancements, 'today': today}
-
-        context = {**context_original, **context_perso}
-
-        return self.render_to_response(context)
-
-    def post(self):
-        pass
-
-    def get_context_data(self, **kwargs):
-        return {
-            **super().get_context_data(**kwargs),
-            **admin.site.each_context(self.request),
-            "opts": self.model._meta,
-        }
-
-
-# ajout de formule universelle pour assurance universelle
-@login_required()
-def add_formule_universelle(request):
-    # police = Police.objects.get(id=police_id)
-
-    # if police and request.method == 'POST':
-    if request.method == 'POST':
-        territorialite_id = request.POST.get('territorialite')
-        type_tarif_id = request.POST.get('type_tarif')
-        reseau_soin_id = request.POST.get('reseau_soin')
-        taux_couverture = request.POST.get('taux_couverture')
-        libelle = request.POST.get('libelle')
-        plafond_conso_famille = request.POST.get('plafond_conso_famille').replace(' ', '')
-        plafond_conso_individuelle = request.POST.get('plafond_conso_individuelle').replace(' ', '')
-        garantis_pharmacie = request.POST.get('garantis_pharmacie')
-        date_debut = request.POST.get('date_debut')
-
-        #date_debut = police.date_debut_effet
-
-        # Ajout des 5/6 champs complementaires
-        infos_carte_consultation = request.POST.get('infos_carte_consultation')
-        infos_carte_hospitalisation = request.POST.get('infos_carte_hospitalisation')
-        infos_carte_ambulatoire = request.POST.get('infos_carte_ambulatoire')
-        infos_carte_vitamine = request.POST.get('infos_carte_vitamine')
-        infos_carte_vaccination = request.POST.get('infos_carte_vaccination')
-
-        infos_carte_numero_police = request.POST.get('infos_carte_numero_police')
-        infos_carte_show_numero_police = request.POST.get('infos_carte_show_numero_police',0)
-
-        option_mode_prefinancement = request.POST.get('option_mode_prefinancement')
-        selected_rubriques = request.POST.getlist('selected_rubriques') if option_mode_prefinancement == "TPP" else []
-
-        if plafond_conso_famille == "": plafond_conso_famille = 0
-        if plafond_conso_individuelle == "": plafond_conso_individuelle = 0
-
-        taux_couverture = int(taux_couverture)
-        taux_tm = 100 - taux_couverture
-
-        territorialite = Territorialite.objects.get(id=territorialite_id)
-        type_tarif = TypeTarif.objects.get(id=type_tarif_id)
-        reseau_soin = ""
-
-        mode_prefinancement = ModePrefinancement.objects.filter(code=option_mode_prefinancement).first()
-
-        formule = FormuleGarantie.objects.create(
-            created_by=request.user,
-            # police_id=police_id,
-            territorialite_id=territorialite.pk,
-            type_tarif_id=type_tarif.pk,
-            libelle=libelle,
-            taux_couverture=taux_couverture,
-            plafond_conso_famille=plafond_conso_famille,
-            plafond_conso_individuelle=plafond_conso_individuelle,
-            taux_tm=taux_tm,
-            garantis_pharmacie=garantis_pharmacie,
-            date_debut=date_debut,
-            infos_carte_consultation=infos_carte_consultation,
-            infos_carte_hospitalisation=infos_carte_hospitalisation,
-            infos_carte_ambulatoire=infos_carte_ambulatoire,
-            infos_carte_vitamine=infos_carte_vitamine,
-            infos_carte_vaccination=infos_carte_vaccination,
-            infos_carte_numero_police=infos_carte_numero_police,
-            infos_carte_show_numero_police=infos_carte_show_numero_police,
-            mode_prefinancement = mode_prefinancement,
-            bureau = request.user.bureau
-        )
-
-        formule.save()
-
-        code_bureau = request.user.bureau.code
-        formule.code = 'F' + str(Date.today().year)[-2:] + '' + str(formule.pk).zfill(7) + str(code_bureau)
-        formule.save()
-
-        # associons des rubriques en cas de tiers payant partiel
-        if option_mode_prefinancement == "TPP":
-            for selected_rubrique in selected_rubriques:
-                old_formule_rubrique = FormuleRubriquePrefinance.objects.filter(formulegarantie=formule, rubrique__id=int(selected_rubrique), statut_validite=StatutValidite.VALIDE).first()
-                if old_formule_rubrique is None:
-                    rubrique = Rubrique.objects.filter(id=int(selected_rubrique), status=True).first()
-                    new_formule_rubrique = FormuleRubriquePrefinance.objects.create(
-                        formulegarantie = formule,
-                        rubrique = rubrique,
-                        created_by=request.user
-                    )
-                    new_formule_rubrique.save()
-
-        # suppressions des rubriques en dehors des selectionnées en cas de tiers payant partiel ou de l'ensemble dans le cas de tiers payant generalisé
-        obsolete_formule_rubriques = FormuleRubriquePrefinance.objects.filter(formulegarantie=formule, statut_validite=StatutValidite.VALIDE).exclude(rubrique__id__in=selected_rubriques)
-        for obsolete_formule_rubrique in obsolete_formule_rubriques:
-            obsolete_formule_rubrique.statut_validite = StatutValidite.SUPPRIME
-            obsolete_formule_rubrique.save()
-
-        response = {
-            'statut': 1,
-            'message': "Enregistrement effectuée avec succès !",
-            'data': {
-                'id': formule.pk,
-                'libelle': formule.libelle,
-                'territorialite': formule.territorialite.libelle,
-                'taux_couverture': formule.taux_couverture,
-                'type_tarif': formule.type_tarif.libelle,
-                'date_debut': formule.date_debut,
-                'date_fin': formule.date_fin,
-                'statut': formule.statut,
-            }
-        }
-
-        return JsonResponse(response)
-
-
 @method_decorator(login_required, name='dispatch')
 class CourrierView(TemplateView):
     template_name = 'police/courrier.html'
@@ -8812,305 +8241,6 @@ class CourrierView(TemplateView):
         context.update(admin.site.each_context(self.request))  # Contexte admin
         context['opts'] = self.model._meta  # Options du modèle Courrier
         return context
-
-
-@method_decorator(login_required, name='dispatch')
-class FormulesView(TemplateView):
-    # permission_required = "production.view_formules"
-    template_name = 'police/formules.html'
-    model = FormuleGarantie
-
-    # @never_cache
-    def get(self, request, *args, **kwargs):
-        context_original = self.get_context_data(**kwargs)
-
-        police_id = kwargs['police_id']
-
-        police = Police.objects.filter(id=police_id, statut_validite=StatutValidite.VALIDE).first()
-        if police:
-            formules = FormuleGarantie.objects.filter(police_id=police_id, statut=Statut.ACTIF)
-            territorialites = Territorialite.objects.all().order_by('libelle')
-            types_tarifs = TypeTarif.objects.all().order_by('libelle')
-            reseaux_soins = ReseauSoin.objects.filter(bureau=police.bureau)
-            rubriques = Rubrique.objects.filter(status=True).order_by('libelle')
-            mode_prefinancements = ModePrefinancement.objects.all().order_by('libelle')
-
-            today = datetime.now(tz=timezone.utc)
-
-            context_perso = {'police': police, 'formules': formules, 'types_tarifs': types_tarifs,
-                             'territorialites': territorialites, 'reseaux_soins': reseaux_soins, 'rubriques': rubriques, 'mode_prefinancements':mode_prefinancements, 'today': today}
-
-            context = {**context_original, **context_perso}
-
-            return self.render_to_response(context)
-
-        else:
-            return redirect("clients")
-
-    def post(self):
-        pass
-
-    def get_context_data(self, **kwargs):
-        return {
-            **super().get_context_data(**kwargs),
-            **admin.site.each_context(self.request),
-            "opts": self.model._meta,
-        }
-
-
-# ajout de bareme
-@login_required()
-def add_formule(request, police_id):
-    police = Police.objects.get(id=police_id)
-
-    if police and request.method == 'POST':
-        territorialite_id = request.POST.get('territorialite')
-        type_tarif_id = request.POST.get('type_tarif')
-        reseau_soin_id = request.POST.get('reseau_soin')
-        taux_couverture = request.POST.get('taux_couverture')
-        libelle = request.POST.get('libelle')
-        plafond_conso_famille = request.POST.get('plafond_conso_famille').replace(' ', '')
-        plafond_conso_individuelle = request.POST.get('plafond_conso_individuelle').replace(' ', '')
-        garantis_pharmacie = request.POST.get('garantis_pharmacie')
-        #date_debut = request.POST.get('date_debut')
-        date_debut = police.date_debut_effet
-
-        # Ajout des 5/6 champs complementaires
-        infos_carte_consultation = request.POST.get('infos_carte_consultation')
-        infos_carte_hospitalisation = request.POST.get('infos_carte_hospitalisation')
-        infos_carte_ambulatoire = request.POST.get('infos_carte_ambulatoire')
-        infos_carte_vitamine = request.POST.get('infos_carte_vitamine')
-        infos_carte_vaccination = request.POST.get('infos_carte_vaccination')
-
-        infos_carte_numero_police = request.POST.get('infos_carte_numero_police')
-        infos_carte_show_numero_police = request.POST.get('infos_carte_show_numero_police')
-
-        option_mode_prefinancement = request.POST.get('option_mode_prefinancement')
-        selected_rubriques = request.POST.getlist('selected_rubriques') if option_mode_prefinancement == "TPP" else []
-
-
-        exclusion = request.POST.get('exclusion')
-        # print(option_type_prefinancement)
-        # print(selected_rubriques)
-
-        # obsolete_formule_rubriques = FormuleRubriquePrefinance.objects.filter(statut_validite=StatutValidite.VALIDE).exclude(rubrique__id__in=selected_rubriques)            
-
-        # print(obsolete_formule_rubriques)
-
-        if plafond_conso_famille == "": plafond_conso_famille = 0
-        if plafond_conso_individuelle == "": plafond_conso_individuelle = 0
-
-        taux_couverture = int(taux_couverture)
-        taux_tm = 100 - taux_couverture
-
-        territorialite = Territorialite.objects.get(id=territorialite_id)
-        type_tarif = TypeTarif.objects.get(id=type_tarif_id)
-        reseau_soin = ReseauSoin.objects.get(id=reseau_soin_id) if reseau_soin_id else None
-
-        mode_prefinancement = ModePrefinancement.objects.filter(code=option_mode_prefinancement).first()
-
-        formule = FormuleGarantie.objects.create(
-            created_by=request.user,
-            police_id=police_id,
-            territorialite_id=territorialite.pk,
-            type_tarif_id=type_tarif.pk,
-            reseau_soin=reseau_soin,
-            libelle=libelle,
-            taux_couverture=taux_couverture,
-            plafond_conso_famille=plafond_conso_famille,
-            plafond_conso_individuelle=plafond_conso_individuelle,
-            taux_tm=taux_tm,
-            garantis_pharmacie=garantis_pharmacie,
-            date_debut=date_debut,
-            infos_carte_consultation=infos_carte_consultation,
-            infos_carte_hospitalisation=infos_carte_hospitalisation,
-            infos_carte_ambulatoire=infos_carte_ambulatoire,
-            infos_carte_vitamine=infos_carte_vitamine,
-            infos_carte_vaccination=infos_carte_vaccination,
-            infos_carte_numero_police=infos_carte_numero_police,
-            infos_carte_show_numero_police=infos_carte_show_numero_police,
-            mode_prefinancement=mode_prefinancement,
-            bureau=police.bureau,
-            exclusion=exclusion
-        )
-
-        formule.save()
-
-        code_bureau = request.user.bureau.code
-        formule.code = 'F' + str(Date.today().year)[-2:] + '' + str(formule.pk).zfill(7) + str(code_bureau)
-        formule.save()
-
-        # associons des rubriques en cas de tiers payant partiel
-        if option_mode_prefinancement == "TPP":
-            for selected_rubrique in selected_rubriques:
-                old_formule_rubrique = FormuleRubriquePrefinance.objects.filter(formulegarantie=formule, rubrique__id=int(selected_rubrique), statut_validite=StatutValidite.VALIDE).first()
-                if old_formule_rubrique is None:
-                    rubrique = Rubrique.objects.filter(id=int(selected_rubrique), status=True).first()
-                    new_formule_rubrique = FormuleRubriquePrefinance.objects.create(
-                        formulegarantie = formule,
-                        rubrique = rubrique,
-                        created_by=request.user
-                    )
-                    new_formule_rubrique.save()
-
-        # suppressions des rubriques en dehors des selectionnées en cas de tiers payant partiel ou de l'ensemble dans le cas de tiers payant generalisé
-        obsolete_formule_rubriques = FormuleRubriquePrefinance.objects.filter(formulegarantie=formule, statut_validite=StatutValidite.VALIDE).exclude(rubrique__id__in=selected_rubriques)
-        for obsolete_formule_rubrique in obsolete_formule_rubriques:
-            obsolete_formule_rubrique.statut_validite = StatutValidite.SUPPRIME
-            obsolete_formule_rubrique.save()
-
-        response = {
-            'statut': 1,
-            'message': "Enregistrement effectuée avec succès !",
-            'data': {
-                'id': formule.pk,
-                'libelle': formule.libelle,
-                'territorialite': formule.territorialite.libelle,
-                'taux_couverture': formule.taux_couverture,
-                'type_tarif': formule.type_tarif.libelle,
-                'date_debut': formule.date_debut,
-                'date_fin': formule.date_fin,
-                'statut': formule.statut,
-            }
-        }
-
-        return JsonResponse(response)
-
-
-# dialog modifier formule et update réel
-@login_required()
-@never_cache
-def modifier_formule(request, formule_id):
-    formule = FormuleGarantie.objects.get(id=formule_id)
-    police = formule.police if formule else None
-
-    if request.method == 'POST':
-
-        formule_before = formule
-        pprint(formule_before)
-
-        libelle = request.POST.get('libelle')
-        taux_couverture = int(request.POST.get('taux_couverture').replace(" ", ""))
-        type_tarif_id = request.POST.get('type_tarif')
-        reseau_soin_id = request.POST.get('reseau_soin')
-        territorialite_id = request.POST.get('territorialite')
-        plafond_conso_individuelle = request.POST.get('plafond_conso_individuelle').replace(" ", "")
-        plafond_conso_famille = request.POST.get('plafond_conso_famille').replace(" ", "")
-        garantis_pharmacie = request.POST.get('garantis_pharmacie')
-        date_debut = request.POST.get('date_debut') if formule_before.police is None else formule.date_debut
-        exclusion = request.POST.get('exclusion')
-
-        # Infos complementaires
-        infos_carte_consultation = request.POST.get('infos_carte_consultation', '')
-        infos_carte_hospitalisation = request.POST.get('infos_carte_hospitalisation', '')
-        infos_carte_ambulatoire = request.POST.get('infos_carte_ambulatoire', '')
-        infos_carte_vitamine = request.POST.get('infos_carte_vitamine', '')
-        infos_carte_vaccination = request.POST.get('infos_carte_vaccination', '')
-        infos_carte_show_numero_police = request.POST.get('infos_carte_show_numero_police', 0)
-
-        option_mode_prefinancement = request.POST.get('option_mode_prefinancement')
-        selected_rubriques = request.POST.getlist('selected_rubriques') if option_mode_prefinancement == "TPP" else []
-
-        mode_prefinancement = ModePrefinancement.objects.filter(code=option_mode_prefinancement).first()
-
-        if plafond_conso_famille == "": plafond_conso_famille = 0
-        if plafond_conso_individuelle == "": plafond_conso_individuelle = 0
-
-        if taux_couverture >= 0 and taux_couverture <= 100:
-            formule.libelle = libelle
-            formule.taux_couverture = taux_couverture
-            formule.taux_tm = 100 - taux_couverture
-            formule.type_tarif_id = type_tarif_id
-            formule.territorialite_id = territorialite_id
-            if reseau_soin_id: formule.reseau_soin_id = reseau_soin_id
-            formule.plafond_conso_individuelle = plafond_conso_individuelle
-            formule.plafond_conso_famille = plafond_conso_famille
-            formule.garantis_pharmacie = garantis_pharmacie
-            #formule.date_debut = date_debut
-            formule.updated_at = datetime.datetime.now(tz=timezone.utc)
-            formule.updated_by = request.user
-            formule.exclusion=exclusion
-
-            formule.infos_carte_consultation = infos_carte_consultation
-            formule.infos_carte_hospitalisation = infos_carte_hospitalisation
-            formule.infos_carte_ambulatoire = infos_carte_ambulatoire
-            formule.infos_carte_vitamine = infos_carte_vitamine
-            formule.infos_carte_vaccination = infos_carte_vaccination
-            formule.infos_carte_show_numero_police = infos_carte_show_numero_police
-            formule.mode_prefinancement = mode_prefinancement
-            formule.date_debut = date_debut
-
-
-            ActionLog.objects.create(done_by=request.user, action="update",
-                                     description="Modification d'une formule de garantie", table="formulegarantie",
-                                     row=formule.pk,
-                                     #data_before=json.dumps(custom_model_to_dict(formule_before)),
-                                     #data_after=json.dumps(custom_model_to_dict(formule))
-                                     )
-
-            formule.save()
-
-            # associons des rubriques en cas de tiers payant partiel
-            if option_mode_prefinancement == "TPP":
-                for selected_rubrique in selected_rubriques:
-                    old_formule_rubrique = FormuleRubriquePrefinance.objects.filter(formulegarantie=formule, rubrique__id=int(selected_rubrique), statut_validite=StatutValidite.VALIDE).first()
-                    if old_formule_rubrique is None:
-                        rubrique = Rubrique.objects.filter(id=int(selected_rubrique), status=True).first()
-                        new_formule_rubrique = FormuleRubriquePrefinance.objects.create(
-                            formulegarantie = formule,
-                            rubrique = rubrique,
-                            created_by=request.user
-                        )
-                        new_formule_rubrique.save()
-
-            # suppressions des rubriques en dehors des selectionnées en cas de tiers payant partiel ou de l'ensemble dans le cas de tiers payant generalisé
-            obsolete_formule_rubriques = FormuleRubriquePrefinance.objects.filter(formulegarantie=formule, statut_validite=StatutValidite.VALIDE).exclude(rubrique__id__in=selected_rubriques)
-            for obsolete_formule_rubrique in obsolete_formule_rubriques:
-                obsolete_formule_rubrique.statut_validite = StatutValidite.SUPPRIME
-                obsolete_formule_rubrique.save()
-
-            response = {
-                'statut': 1,
-                'message': "Modification effectuée avec succès !",
-                'data': {
-                    'id': formule.pk,
-                    'libelle': formule.libelle,
-                    'statut': formule.statut,
-                }
-            }
-
-        else:
-            response = {
-                'statut': 0,
-                'message': "Le taux de couverture doit être compris entre 0 et 100",
-                'data': {
-                }
-            }
-
-        return JsonResponse(response)
-
-
-    else:
-
-        formule = FormuleGarantie.objects.get(id=formule_id)
-        formules = FormuleGarantie.objects.all()
-        territorialites = Territorialite.objects.all().order_by('libelle')
-        types_tarifs = TypeTarif.objects.all().order_by('libelle')
-        reseaux_soins = ReseauSoin.objects.filter(bureau=request.user.bureau).order_by('nom')
-
-        today =datetime.datetime.now(tz=timezone.utc)
-
-        rubriques = Rubrique.objects.filter(status=True).order_by('libelle')
-        mode_prefinancements = ModePrefinancement.objects.all().order_by('libelle')
-        formule_rubriques = FormuleRubriquePrefinance.objects.filter(formulegarantie=formule, statut_validite=StatutValidite.VALIDE).order_by('rubrique__libelle')
-
-        # formule.plafond_conso_famille = float(formule.plafond_conso_famille)
-        # formule.plafond_conso_individuelle = float(formule.plafond_conso_individuelle)
-
-        template = 'police/modal_formule_update.html' if police else 'police/modal_formule_update_universelle.html'
-
-        return render(request, template, {'formule': formule, 'types_tarifs': types_tarifs,
-                                                                    'territorialites': territorialites, 'reseaux_soins': reseaux_soins, 'rubriques': rubriques, 'mode_prefinancements':mode_prefinancements, 'formule_rubriques':formule_rubriques, 'today': today, 'police': police})
 
 
 @login_required()

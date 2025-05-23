@@ -19,7 +19,6 @@ import openpyxl
 
 from grh.models import Campagne, CampagneProspect, Prospect, CampagneAppmobileProspect, CampagneAppmobile
 from production.helper_production import create_alimet_helper
-from production.views import getAdherentsPrincipaux
 from shared.helpers import generate_numero_famille, generer_nombre_famille_du_mois
 from sinistre.models import Sinistre
 

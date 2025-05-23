@@ -25158,73 +25158,12 @@ $(document).ready(function () {
         $('#modal-modification_marchandise #prime_ttc_mar_modification').val(prime_ttc_mar);
     }
 
-    /*
-    const searchInput = $('#search_all');
-    const suggestionsBox = $('#suggestions');
-    const searchError = $('#search-error');
-
-    searchInput.on('input', function () {
-        const query = $(this).val().trim();
-
-        if (query.length < 3) {
-            // Message d'erreur si moins de 3 caractères
-            searchError.text("Saisissez au moins 3 caractères").removeClass('d-none');
-            suggestionsBox.addClass('d-none');
-            return;
-        }
-
-        // Si 3 caractères ou plus : effacer l'erreur et faire la requête
-        searchError.addClass('d-none');
-
-        $.ajax({
-            url: `/api/suggestions`,
-            method: 'GET',
-            data: { numero: query },
-            success: function (data) {
-                displaySuggestions(data);
-            },
-            error: function (xhr, status, error) {
-                console.error('Erreur lors de la récupération des suggestions:', error);
-            }
-        });
-    });
-
-    function displaySuggestions(data) {
-        if (data.length > 0) {
-            suggestionsBox.empty();
-            $.each(data, function (index, item) {
-                const suggestion = $(`
-                    <div class="list-group-item list-group-item-action">
-                        <a href="${item.details_url}" class="btn btn-link p-0 text-dark" style="text-decoration:none">
-                            N° Police :<strong>${item.numero_police}</strong> / Client : <strong>${item.client_nom}</strong>
-                        </a>
-                    </div>
-                `).on('click', function () {
-                    searchInput.val(item.numero_police);
-                    suggestionsBox.addClass('d-none');
-                });
-                suggestionsBox.append(suggestion);
-            });
-            suggestionsBox.removeClass('d-none');
-        } else {
-            suggestionsBox.html('<div class="list-group-item">Aucun résultat</div>');
-            suggestionsBox.removeClass('d-none');
-        }
-    }
-
-    $(document).on('click', function (e) {
-        if (!suggestionsBox.is(e.target) && !searchInput.is(e.target) && suggestionsBox.has(e.target).length === 0) {
-            suggestionsBox.addClass('d-none');
-        }
-    });
-    */
-
     const searchInput = $('#search_all');
     const suggestionsBox = $('#suggestions');
     const searchError = $('#search-error');
     const searchForm = $('#search-form');
 
-    let selectedDetailsUrl = ''; // 🔹 Variable pour retenir le lien de détail
+    let selectedDetailsUrl = '';
 
     searchInput.on('input', function () {
         const query = $(this).val().trim();
@@ -25284,7 +25223,7 @@ $(document).ready(function () {
 
     // 🔹 Redirection vers l'URL de détail lors du clic sur "Rechercher"
     searchForm.on('submit', function (e) {
-        e.preventDefault(); // Empêche la soumission standard
+        e.preventDefault();
 
         const query = searchInput.val().trim();
 
@@ -25294,7 +25233,7 @@ $(document).ready(function () {
         }
 
         if (selectedDetailsUrl) {
-            window.location.href = selectedDetailsUrl; // Redirection
+            window.location.href = selectedDetailsUrl;
         } else {
             // Message si aucune suggestion n’a été sélectionnée
             searchError.text("Veuillez sélectionner une suggestion avant de rechercher.").removeClass('d-none');

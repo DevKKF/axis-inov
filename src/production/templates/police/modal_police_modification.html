@@ -231,7 +231,7 @@
 																	</div>
 																</td>
 																<td style="vertical-align:middle;padding:5px;">
-																	<select class="form-control calculs_handler_police_modification base_calcul_taux_retrocession_modification not_select2" name="base_calcul_taux_retrocession">
+																	<select class="form-control calculs_handler_police_modification base_calcul_taux_retrocession not_select2" name="base_calcul_taux_retrocession">
 																		<option value="">Choisir</option>
 																		{% for bc in bases_calculs %}
 																			<option value="{{ bc.id }}" {% if apporteur_police.base_calcul.id == bc.id %} selected {% endif %}>{{ bc.libelle }}</option>
@@ -239,42 +239,14 @@
 																	</select>
 																</td>
 																<td style="vertical-align:middle;padding:5px;">
-																	<input maxlength="5" type="text" class="form-control money_field_avec_virgule calculs_handler_police_modification taux_com_affaire_nouvelle" name="taux_com_affaire_nouvelle" value="{{ apporteur_police.taux_com_affaire_nouvelle|default_if_none:'0' }}">
+																	<input maxlength="5" type="text" class="form-control calculs_handler_police_modification taux_com_affaire_nouvelle" name="taux_com_affaire_nouvelle" value="{{ apporteur_police.taux_com_affaire_nouvelle }}">
 																</td>
 																<td style="vertical-align:middle;padding:5px;">
-																	<input maxlength="5" type="text" class="form-control money_field_avec_virgule calculs_handler_police_modification taux_com_renouvelement" name="taux_com_renouvelement" value="{{ apporteur_police.taux_com_renouvellement|default_if_none:'0' }}">
+																	<input maxlength="5" type="text" class="form-control calculs_handler_police_modification taux_com_renouvelement" name="taux_com_renouvelement" value="{{ apporteur_police.taux_com_renouvellement }}">
 																</td>
 																<td style="vertical-align:middle;padding:5px;"><span style="cursor:pointer;" class="btn btn-sm btn-danger btnSupprimerLigneApporteur_modification"><i class="fa fa-trash" style="font-size:12px;"></i></span></td>
 															</tr>
 														{% endfor %}
-													{% else %}
-														<tr id="tr_initial_vide">
-															<td style="vertical-align:middle;">
-																<div class="row" style="margin-right:5px;">
-																	<select class="form-control calculs_handler_police_modification intermediaire_modification" name="intermediaires" id="intermediaires_modification">
-																		<option value="">Choisir</option>
-																		{% for apporteur in apporteurs %}
-																			<option value="{{ apporteur.id }}">{{ apporteur.nom|default_if_none:"" }} {{ apporteur.prenoms|default_if_none:"" }}</option>
-																		{% endfor %}
-																	</select>
-																</div>
-															</td>
-															<td style="vertical-align:middle;padding:5px;">
-																<select class="form-control calculs_handler_police_modification base_calcul_taux_retrocession not_select2" name="base_calcul_taux_retrocession">
-																	<option value="">Choisir</option>
-																	{% for bc in bases_calculs %}
-																		<option value="{{ bc.id }}">{{ bc.libelle }}</option>
-																	{% endfor %}
-																</select>
-															</td>
-															<td style="vertical-align:middle;padding:5px;">
-																<input maxlength="5" type="text" class="form-control money_field_avec_virgule calculs_handler_police_modification taux_com_affaire_nouvelle_modification" name="taux_com_affaire_nouvelle" value="" />
-															</td>
-															<td style="vertical-align:middle;padding:5px;">
-																<input maxlength="5" type="text" class="form-control money_field_avec_virgule calculs_handler_police_modification taux_com_renouvelement_modification" name="taux_com_renouvelement" value="" />
-															</td>
-															<td style="vertical-align:middle;padding:5px;"><span style="cursor:pointer;" class="btn btn-sm btn-danger btnSupprimerLigneApporteur_modification"><i class="fa fa-trash" style="font-size:12px;"></i></span></td>
-														</tr>
 													{% endif %}
 												</tbody>
 												<tfoot style="display:none;">
@@ -363,82 +335,42 @@
 							</div>
 
 							<div class="tab-pane fade mt-3" id="aliment_modification" role="tabpanel" aria-labelledby="aliment-tab_modification">
-								<div class="aliment_bloc_global">
-									<div class="row">
-										<div class="col-md-3">
-											<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#modal-police_aliment_modification"><i class="fa fa-plus-circle"></i> Ajouter un aliment</button>
-										</div>
-										<div class="vl"></div>
-										<div class="col-md-5 d-flex">
-											<input type="file" accept=".xlsx" class="form-control mr-3" name="fichier_aliment" id="fichier_aliment_modification" style="width:300px">
-											<button type="button" id="importation_aliment_modification" class="btn btn-warning"><i class="fa fa-download"></i> Importer</button>
-										</div>
-										<div class="vl"></div>
-										<div class="col-md-3">
-											{% load static %}
-											<button type="button" download-modification-fichier="{% static 'production/modeles/import-vehicule-model.xlsx' %}" id="telecharger_modele_modification" class="btn btn-success pull-right"><i class="fa fa-file-excel-o"></i> Télécharger le modèle</button>
-										</div>
+								<div class="row">
+									<div class="col-md-3">
+										<button type="button" class="btn btn-primary" data-toggle="modal" data-target="#modal-police_aliment"><i class="fa fa-plus-circle"></i> Ajouter un aliment</button>
 									</div>
-									<hr>
-									<div id="message-success" class="alert alert-success" style="display:none;"></div>
-									<div id="message-warning" class="alert alert-warning" style="display:none;"></div>
-									<div id="message-error" class="alert alert-danger" style="display:none;"></div>
-									<div class="row">
-										<div class="col-md-12" style="max-height:500px;">
-											<table id="table_liste_aliment_modification" class="table table-bordered table-striped dtr-inline">
-												<thead>
-													<tr>
-														<th class="text-center" style="width:5%">##</th>
-														<th>Immat</th>
-														<th>Marque</th>
-														<th>Modèle</th>
-														<th>Catégorie</th>
-														<th>Entrée</th>
-														<th>Propriétaire</th>
-														<th>Conducteur</th>
-													</tr>
-												</thead>
-												<tbody></tbody>
-											</table>
-										</div>
+									<div class="vl"></div>
+									<div class="col-md-5 d-flex">
+										<input type="file" accept=".xlsx" class="form-control mr-3" name="fichier_aliment" id="fichier_aliment" style="width:300px">
+										<button type="button" id="importation_aliment" class="btn btn-warning"><i class="fa fa-download"></i> Importer</button>
+									</div>
+									<div class="vl"></div>
+									<div class="col-md-3">
+										{% load static %}
+										<button type="button" download-modification-fichier="{% static 'production/modeles/import-vehicule-model.xlsx' %}" id="telecharger_modele_modification" class="btn btn-success pull-right"><i class="fa fa-file-excel-o"></i> Télécharger le modèle</button>
 									</div>
 								</div>
-								<div class="aliment_bloc_retrait">
-									<div class="row">
-										<div class="col-md-12" style="max-height:500px;">
-											<table id="table_retrait_aliment_modification" class="table table-bordered table-striped dtr-inline">
-												<thead>
-													<tr>
-														<th class="text-center" style="width:5%">##</th>
-														<th>Immat</th>
-														<th>Marque</th>
-														<th>Catégorie</th>
-														<th width="4%">Entrée</th>
-														<th width="18%">Sortie</th>
-														<th>Propriétaire</th>
-														<th>Conducteur</th>
-													</tr>
-												</thead>
-												<tbody>
-													{% for veh in vehicules %}
-														<tr>
-															<td>
-																<input type="checkbox" name="aliment_{{veh.id}}" class="form-control aliment-checkbox" style="width: 1rem; height: 1.25rem;">
-															</td>
-															<td>{{ veh.vehicule.numero_immatriculation|default_if_none:"" }}</td>
-															<td>{{ veh.vehicule.marque|default_if_none:"" }}</td>
-															<td>{{ veh.vehicule.categorie_vehicule.libelle|default_if_none:"" }}</td>
-															<td>{{ veh.date_entree|date:'d-m-Y'|default_if_none:"" }}</td>
-															<td>
-																<input type="date" name="date_sortie_{{veh.id}}" class="form-control datesortie-input" disabled>
-															</td>
-															<td>{{ veh.proprietaire|default_if_none:"" }}</td>
-															<td>{{ veh.conducteur|default_if_none:"" }}</td>
-														</tr>
-													{% endfor %}
-												</tbody>
-											</table>
-										</div>
+								<hr>
+								<div id="message-success" class="alert alert-success" style="display:none;"></div>
+								<div id="message-warning" class="alert alert-warning" style="display:none;"></div>
+								<div id="message-error" class="alert alert-danger" style="display:none;"></div>
+								<div class="row">
+									<div class="col-md-12" style="max-height:500px;">
+										<table id="table_liste_aliment_modification" class="table table-bordered table-striped dtr-inline">
+											<thead>
+												<tr>
+													<th class="text-center" style="width:3%"></th>
+													<th>Immat</th>
+													<th>Marque</th>
+													<th>Modèle</th>
+													<th>Catégorie</th>
+													<th>Entrée</th>
+													<th>Propriétaire</th>
+													<th>Conducteur</th>
+												</tr>
+											</thead>
+											<tbody></tbody>
+										</table>
 									</div>
 								</div>
 							</div>
@@ -1040,7 +972,7 @@
 </div>
 
 
-{% include 'police/modal_police_aliment_modification.html' %}
+{% include 'police/modal_police_aliment.html' %}
 
 <script>
     function isInputNumber(evt){

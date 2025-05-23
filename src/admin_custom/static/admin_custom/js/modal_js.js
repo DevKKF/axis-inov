@@ -16,10 +16,6 @@ $(document).ready(function () {
         let fieldsFacturationToModify = $('#modal-modification_police #facturation_modification').find('input, select, textarea');
         let fieldsPrimeToModify = $('#modal-modification_police #prime_modification').find('input, select, textarea');
 
-        // Autres champs à griser
-        $('.aliment_bloc_global').hide();
-        $('.aliment_bloc_retrait').hide();
-
         // Fonction pour désactiver les champs
         function disableFields(fields) {
             fields.each(function() {
@@ -68,8 +64,6 @@ $(document).ready(function () {
             disableFields(fieldsMarchandiseToModify);
             disableFields(fieldsFacturationToModify);
             disableFields(fieldsPrimeToModify);
-            $('.aliment_bloc_global').show();
-            $('.aliment_bloc_retrait').hide();
         }
         // Incorporation
         if (motif_id == 10) {
@@ -81,8 +75,6 @@ $(document).ready(function () {
             disableFields(fieldsMarchandiseToModify);
             disableFields(fieldsFacturationToModify);
             disableFields(fieldsPrimeToModify);
-            $('.aliment_bloc_global').show();
-            $('.aliment_bloc_retrait').hide();
         }
         // Retrait
         if (motif_id == 12) {
@@ -94,207 +86,10 @@ $(document).ready(function () {
             disableFields(fieldsMarchandiseToModify);
             disableFields(fieldsFacturationToModify);
             disableFields(fieldsPrimeToModify);
-            $('.aliment_bloc_global').hide();
-            $('.aliment_bloc_retrait').show();
         }
         else {
-            $('.aliment_bloc_global').show();
-            $('.aliment_bloc_retrait').hide();
+            // Réactiver tous les champs si le motif n'est pas 5, 10 ou 12
         }
-    });
-
-    // Déclencher manuellement l'événement 'change' au chargement de la page
-    $('#motif').trigger('change');
-
-    $("#importation_aliment_modification").on("click", function () {
-        const inputFichier = $("#fichier_aliment_modification");
-        const fichier = inputFichier.prop("files")[0];
-
-        if (!fichier) {
-            inputFichier.css("border-color", "red");
-            $("#message-warning").text("Veuillez sélectionner un fichier.").delay(5000).fadeOut();
-            return;
-        }
-
-        inputFichier.css("border-color", "");
-
-        const formData = new FormData();
-        formData.append("fichier_aliment", fichier);
-
-        $.ajax({
-            url: "/production/import-excel-aliments/",
-            type: "POST",
-            data: formData,
-            processData: false,
-            contentType: false,
-            headers: {'X-CSRFToken': getCookie('csrftoken')},
-            success: function (response) {
-                if (response.success) {
-                    // Réinitialiser tous les champs du formulaire
-                    $("#fichier_aliment_modification").trigger("reset");
-                    $("#message-success").text(response.message).show().delay(5000).fadeOut();
-                    console.log(response.data);
-                    // Mettre à jour le tableau avec les nouvelles données
-                    const tbody = $("#table_liste_aliment_modification tbody");
-                    response.data.forEach((row, index) => {
-                        tbody.append(`
-                            <tr data-immat="${row.immat}">
-                                <td>
-                                    <button type="button" class="btn btn-danger btn-sm delete-btn">
-                                        <i class="fa fa-trash-o"></i>
-                                    </button>
-                                </td>
-                                <td>${row.immat || ''}</td>
-                                <td>${row.marque || ''}</td>
-                                <td>${row.modele || ''}</td>
-                                <td>${row.T_categorie_id || ''}</td>
-                                <td>${row.date_entree || ''}</td>
-                                <td>${row.proprietaire || ''}</td>
-                                <td>${row.conducteur || ''}</td>
-                            </tr>
-                        `);
-                    });
-
-                    $('#fichier_aliment_modification').removeClass('is-valid').removeClass('is-invalid');
-
-                } else {
-                    $("#message-warning").text(response.message).delay(5000).fadeOut();
-                }
-            },
-            error: function (xhr) {
-                // Gérer les erreurs 500 ou autres erreurs inattendues
-                const response = xhr.responseJSON;
-                if (xhr.status === 500) {
-                    $("#message-error").text(response?.message || "Une erreur interne du serveur est survenue. Veuillez réessayer plus tard.").show().delay(5000).fadeOut();
-                } else if (xhr.status === 400) {
-                    $("#message-warning").text(response?.message || "Erreur dans les données soumises. Veuillez vérifier votre fichier.").show().delay(5000).fadeOut();
-                } else {
-                    $("#message-error").text(response?.message || "Une erreur inattendue est survenue. Veuillez réessayer.").show().delay(5000).fadeOut();
-                }
-            },
-        });
-    });
-
-    $('#btn_save_modification_police_aliment_modification').on('click', function () {
-        // Supprimer les erreurs précédentes
-        $('.mod_aliment_champ_obligatoire').removeClass('is-invalid').removeClass('is-valid');
-        $('#message-modal-error').text('').hide();
-        $('#message-modal-warning').text('').hide();
-        $('#message-modal-success').text('').hide();
-
-        // Valider les champs obligatoires
-        let valide = true;
-        $('.mod_aliment_champ_obligatoire').each(function () {
-            let value = $(this).val().trim();
-            // Validation spécifique pour les <select>
-            if ($(this).is('select')) {
-                if (!value || value === "") {
-                    $(this).addClass('is-invalid'); // Ajouter classe invalide
-                    valide = false;
-                } else {
-                    $(this).removeClass('is-invalid').addClass('is-valid'); // Ajouter classe valide
-                }
-            } else {
-                // Validation pour les autres types de champs
-                if (!value) {
-                    $(this).addClass('is-invalid'); // Ajouter classe invalide
-                    valide = false;
-                } else {
-                    $(this).removeClass('is-invalid').addClass('is-valid'); // Ajouter classe valide
-                }
-            }
-        });
-
-        if (!valide) {
-            // Afficher un message si un champ obligatoire est vide
-            $('#message-modal-error').text('Veuillez remplir tous les champs obligatoires.').show();
-            setTimeout(() => $('#message-modal-error').fadeOut(), 5000);
-            return;
-        }
-
-        // Récupérer les données du formulaire
-        const formData = new FormData($('#form_add_police_aliment_modification')[0]);
-
-        // Requête Ajax pour envoyer les données au backend
-        $.ajax({
-            url: '/production/import-formulaire-aliments/',
-            type: 'POST',
-            data: formData,
-            processData: false, // Indique que nous envoyons un FormData
-            contentType: false, // Pour ne pas encoder les données
-            success: function (response) {
-                if (response.success) {
-                    // Afficher le message de succès
-                    $("#message-modal-success").text(response.message).show().delay(5000).fadeOut();
-
-                    // Mettre à jour le tableau avec les nouvelles données
-                    const tbody = $("#table_liste_aliment_modification tbody");
-                    response.data.forEach((row, index) => {
-                        tbody.append(`
-                            <tr data-immat="${row.immat}">
-                                <td>
-                                    <button type="button" class="btn btn-danger btn-sm delete-btn">
-                                        <i class="fa fa-trash-o"></i>
-                                    </button>
-                                </td>
-                                <td>${row.immat || ''}</td>
-                                <td>${row.marque || ''}</td>
-                                <td>${row.modele || ''}</td>
-                                <td>${row.T_categorie_id || ''}</td>
-                                <td>${row.date_entree || ''}</td>
-                                <td>${row.proprietaire || ''}</td>
-                                <td>${row.conducteur || ''}</td>
-                            </tr>
-                        `);
-                    });
-
-                    // Réinitialiser tous les champs du formulaire
-                    $("#form_add_police_aliment_modification").trigger("reset");
-                    $("#form_add_police_aliment_modification select").each(function() {
-                        $(this).prop('selectedIndex', 0).trigger('change');
-                    });
-                    $('.mod_aliment_champ_obligatoire').removeClass('is-valid').removeClass('is-invalid');
-
-                } else {
-                    // Afficher un message d'avertissement
-                    $("#message-modal-warning").text(response.message).show().delay(5000).fadeOut();
-                }
-            },
-            error: function (xhr) {
-                // Gérer les erreurs 500 ou autres erreurs inattendues
-                const response = xhr.responseJSON;
-                if (xhr.status === 500) {
-                    $("#message-modal-error").text(response?.message || "Une erreur interne du serveur est survenue. Veuillez réessayer plus tard.").show().delay(5000).fadeOut();
-                } else if (xhr.status === 400) {
-                    $("#message-modal-warning").text(response?.message || "Erreur dans les données soumises. Veuillez vérifier votre fichier.").show().delay(5000).fadeOut();
-                } else {
-                    $("#message-modal-error").text(response?.message || "Une erreur inattendue est survenue. Veuillez réessayer.").show().delay(5000).fadeOut();
-                }
-            },
-        });
-    });
-
-    // Écouter le clic sur le bouton de suppression
-    $(document).on('click', '.delete-btn', function () {
-        const immat = $(this).closest('tr').data('immat');
-
-        // Effectuer la requête AJAX pour supprimer l'immatriculation
-        $.ajax({
-            url: '/production/supprimer_aliment_modification/',
-            type: 'POST',
-            data: { immat: immat },
-            success: function (response) {
-                if (response.success) {
-                    // Si la suppression est réussie côté serveur, retirer la ligne du DOM
-                    $(`tr[data-immat="${immat}"]`).remove();
-                } else {
-                    alert('Erreur lors de la suppression.');
-                }
-            },
-            error: function () {
-                alert('Erreur lors de la requête.');
-            }
-        });
     });
 
     // Using jQuery
@@ -316,52 +111,9 @@ $(document).ready(function () {
 
     var csrftoken = getCookie('csrftoken');
 
-    function ajouterAlimentsDansTableau(data) {
-        const tbody = $("#table_liste_aliment_modification tbody");
-        tbody.empty();
-        data.forEach((row) => {
-            tbody.append(`
-                <tr data-immat="${row.immat}">
-                    <td>
-                        <button type="button" class="btn btn-danger btn-sm delete-btn">
-                            <i class="fa fa-trash-o"></i>
-                        </button>
-                    </td>
-                    <td>${row.immat || ''}</td>
-                    <td>${row.marque || ''}</td>
-                    <td>${row.modele || ''}</td>
-                    <td>${row.T_categorie_id || ''}</td>
-                    <td>${row.date_entree || ''}</td>
-                    <td>${row.proprietaire || ''}</td>
-                    <td>${row.conducteur || ''}</td>
-                </tr>
-            `);
-        });
-    }
+    // Déclencher manuellement l'événement 'change' au chargement de la page
+    $('#motif').trigger('change');
 
-    function chargerAlimentsSession() {
-        let police_id = $('#police_id').val();
-        $.ajax({
-            url: "/production/get_aliments_session/",
-            type: "GET",
-            data: { police_id: police_id },
-            success: function (response) {
-                if (response.success) {
-                    ajouterAlimentsDansTableau(response.data);
-                } else {
-                    console.warn("Aucun aliment en session.");
-                }
-            },
-            error: function () {
-                console.error("Erreur lors du chargement des aliments en session.");
-            }
-        });
-    }
-
-    // Lors du clic sur l'onglet "ALIMENTS"
-    $("#aliment-tab_modification").on("click", function () {
-        chargerAlimentsSession();
-    });
     //TODO FIN RECUPERATION DES MOTIFS VIA LE MODAL AVENANT
 
     //TODO DEBUT DU CALCUL DES TAUX ET DES PRIMES DE LA MARCHANDISE
@@ -814,11 +566,28 @@ $(document).ready(function () {
 
 //
 $(document).ready(function () {
+    // Fonction pour récupérer le CSRF token
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
     const modalModificationPolice = $('#modal-modification_police');
     const brancheModification = $('#branche_modification');
     const produitModification = $('#produit_modification');
     const produitModifId = $('#produit_modif_id');
     const compagnieModification = $('#compagnie_modification');
+    const policeIdModification = $('#police_id');
 
     const ongletRisqueTab = $('[href="#risque"]');
     const ongletMarchandiseTab = $('[href="#marchandise"]');
@@ -847,16 +616,19 @@ $(document).ready(function () {
         ongletAlimentTab.removeClass('active');
         ongletVehiculeTab.removeClass('active');
 
-        if (produitCode === 10001) { // Mono-Véhicule
+        if (produitCode == 10001) { // Mono-Véhicule
             ongletVehiculeContent.show();
             ongletVehiculeTab.addClass('active');
-        } else if (produitCode === 10002) { // Flotte-Auto
+        }
+        else if (produitCode == 10002) { // Flotte-Auto
             ongletAlimentContent.show();
             ongletAlimentTab.addClass('active');
-        } else if (produitCode === 50001 || produitCode === 50002) { // Marchandise
+        }
+         else if (produitCode == 50001 || produitCode === 50002) { // Marchandise
             ongletMarchandiseContent.show();
             ongletMarchandiseTab.addClass('active');
-        } else if (produitCode) { // Risque
+        }
+        else { // Risque
             ongletRisqueContent.show();
             ongletRisqueTab.addClass('active');
         }
@@ -865,7 +637,10 @@ $(document).ready(function () {
     // Lorsque la fenêtre modale est affichée, déclenchez l'événement « change » sur la liste déroulante de la branche.
     modalModificationPolice.on('shown.bs.modal', function () {
         brancheModification.trigger('change');
-        // Noter l'ordre : d'abord branche, puis produit, puis compagnie
+
+        const policeId = policeIdModification.val();
+        chargerAlimentsDepuisSession(policeId);
+
     });
 
     // Gérer l'événement de changement pour la liste déroulante « branche ».
@@ -954,82 +729,189 @@ $(document).ready(function () {
         }
     });
 
-    /* Gérer l'événement de changement de compagnie dans le modal de modification
-    function reloadInfosCompagnieProduit() {
-        const compagnieIdModification = compagnieModification.val();
-        const produitIdModification = currentProduitId || produitModification.val() || produitModifId.val();
-
-        // Réinitialiser les champs
-        $('#modal-modification_police #taux_com_courtage').val('');
-        $('#modal-modification_police #taux_com_courtage_terme').val('');
-
-        if (compagnieIdModification && produitIdModification) {
-            $.ajax({
-                type: 'get',
-                url: '/production/compagnie/ajax_infos_compagnie/' + compagnieIdModification + '/' + produitIdModification,
-                dataType: 'json',
-                success: function (data) {
-                    let taux_com_courtage = parseFloat(data.taux_com_courtage);
-                    let taux_com_courtage_terme = parseFloat(data.taux_com_courtage_terme);
-                    $('#modal-modification_police #taux_com_courtage').val(taux_com_courtage);
-                    $('#modal-modification_police #taux_com_courtage_terme').val(taux_com_courtage_terme);
-
-                    calculer_montant_divers_police();
-                },
-                error: function () {
-                    console.log('Erreur de chargement : ajax_infos_compagnie');
-                }
-            });
-        }
-        $(document).on("keyup change", "#modal-modification_police .calculs_handler_police_modification", function (event) {
-
-            if (event.which == 13) {
-                event.preventDefault();
-            }
-
-            calculer_montant_divers_police();
-
+    // Gérer l'événement de chargement des aliments liés à la police
+    function afficherAlimentsDansTableau(data) {
+        const tbody = $("#table_liste_aliment_modification tbody");
+        tbody.empty(); // Vider l'ancien contenu
+        data.forEach((row, index) => {
+            tbody.append(`
+                <tr data-index="${index}">
+                    <td>
+                        <button class="btn btn-danger btn-sm btn-supprimer-aliment" data-index="${index}">
+                            <i class="fa fa-remove"></i>
+                        </button>
+                    </td>
+                    <td>${row.immat || ''}</td>
+                    <td>${row.marque || ''}</td>
+                    <td>${row.modele || ''}</td>
+                    <td>${row.T_categorie_id || ''}</td>
+                    <td>${row.date_entree || ''}</td>
+                    <td>${row.proprietaire || ''}</td>
+                    <td>${row.conducteur || ''}</td>
+                </tr>
+            `);
         });
-
-        function calculer_montant_divers_police() {
-            let prime_ht = parseInt($('#modal-modification_police #prime_ht').val().replaceAll(' ', ''));
-            let cout_police_compagnie = parseInt($('#modal-modification_police #cout_police_compagnie').val().replaceAll(' ', ''));
-            let cout_police_courtier = parseInt($('#modal-modification_police #cout_police_courtier').val().replaceAll(' ', ''));
-            let taxe = parseInt($('#modal-modification_police #taxe').val().replaceAll(' ', ''));
-            let autres_taxes = parseInt($('#modal-modification_police #autres_taxes').val().replaceAll(' ', ''));
-
-            let taux_com_courtage = parseFloat($('#modal-modification_police #taux_com_courtage').val());
-            let taux_com_courtage_terme = parseFloat($('#modal-modification_police #taux_com_courtage_terme').val());
-
-            if (isNaN(prime_ht)) { prime_ht = 0; }
-            if (isNaN(cout_police_compagnie)) { cout_police_compagnie = 0; }
-            if (isNaN(cout_police_courtier)) { cout_police_courtier = 0; }
-            if (isNaN(taxe)) { taxe = 0; }
-            if (isNaN(autres_taxes)) { autres_taxes = 0; }
-            if (isNaN(taux_com_courtage)) { taux_com_courtage = 0; }
-            if (isNaN(taux_com_courtage_terme)) { taux_com_courtage_terme = 0; }
-
-            console.log('prime_ht', prime_ht);
-            console.log('cout_police_compagnie', cout_police_compagnie);
-            console.log('cout_police_courtier', cout_police_courtier);
-            console.log('taxe', taxe);
-            console.log('autres_taxes', autres_taxes);
-            console.log('----------------');
-            console.log('taux_com_courtage', taux_com_courtage);
-            console.log('taux_com_courtage_terme', taux_com_courtage_terme);
-        }
     }
 
-    // Lorsqu'on change la compagnie
-    compagnieModification.on('change', function () {
-        reloadInfosCompagnieProduit();
+    function chargerAlimentsDepuisSession(policeId) {
+        console.log('Chargement des aliments pour la police ID:', policeId);
+        $.ajax({
+            url: "/production/get_aliments_session/",
+            type: "GET",
+            data: { police_id: policeId },
+            success: function (response) {
+                if (response.success) {
+                    afficherAlimentsDansTableau(response.data);
+                } else {
+                    console.log("Aucun aliment en session.");
+                }
+            },
+            error: function () {
+                console.error("Erreur lors du chargement des aliments.");
+            }
+        });
+    }
+
+
+    // Gérer l'événement de changement de police
+    $('#ChargementAlimentPolice').on('change', function () {
+        const policeId = $(this).val();
+
+        $.ajax({
+            url: "/production/get_aliments_session/",
+            type: "GET",
+            data: { police_id: policeId },
+            success: function (response) {
+                if (response.success) {
+                    afficherAlimentsDansTableau(response.data);
+                } else {
+                    console.log("Aucun aliment en session.");
+                }
+            },
+            error: function () {
+                console.error("Erreur lors du chargement des aliments.");
+            }
+        });
     });
 
-    // Si tu veux déclencher aussi via le changement de produit, tu peux appeler aussi :
-    produitModification.on('change', function () {
-        reloadInfosCompagnieProduit();
-    });*/
+    // Suppression d’un aliment (déléguée)
+    $(document).on('click', '.btn-supprimer-aliment', function () {
+        const index = $(this).data('index');
+        $.ajax({
+            url: `/production/supprimer_aliment/${index}/`,
+            type: 'POST',
+            headers: { 'X-CSRFToken': getCookie('csrftoken') },
+            success: function (response) {
+                if (response.success) {
+                    $(`tr[data-index="${index}"]`).remove();
+                } else {
+                    console.error(response.error || 'Erreur lors de la suppression.');
+                }
+            },
+            error: function () {
+                console.error('Erreur de communication avec le serveur.');
+            }
+        });
+    });
 
+    // Soumission du formulaire manuel
+    $('#btn_save_police_aliment').on('click', function () {
+        $('.mod_aliment_champ_obligatoire').removeClass('is-invalid is-valid');
+        $('#message-modal-error, #message-modal-warning, #message-modal-success').hide();
+
+        let valide = true;
+        $('.mod_aliment_champ_obligatoire').each(function () {
+            const value = $(this).val().trim();
+            if (!value) {
+                $(this).addClass('is-invalid');
+                valide = false;
+            } else {
+                $(this).addClass('is-valid');
+            }
+        });
+
+        if (!valide) {
+            $('#message-modal-error').text('Veuillez remplir tous les champs obligatoires.').show().delay(5000).fadeOut();
+            return;
+        }
+
+        const formData = new FormData($('#form_add_police_aliment')[0]);
+
+        $.ajax({
+            url: '/production/import-formulaire-aliments/',
+            type: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function (response) {
+                if (response.success) {
+                    $('#message-modal-success').text(response.message).show().delay(5000).fadeOut();
+                    afficherAlimentsDansTableau(response.data);
+                    $("#form_add_police_aliment").trigger("reset");
+                    $(".mod_aliment_champ_obligatoire").removeClass('is-valid is-invalid');
+                    $("#form_add_police_aliment select").prop('selectedIndex', 0).trigger('change');
+                } else {
+                    $('#message-modal-warning').text(response.message).show().delay(5000).fadeOut();
+                }
+            },
+            error: function (xhr) {
+                const response = xhr.responseJSON;
+                if (xhr.status === 500) {
+                    $("#message-modal-error").text(response?.message || "Erreur serveur").show().delay(5000).fadeOut();
+                } else if (xhr.status === 400) {
+                    $("#message-modal-warning").text(response?.message || "Erreur dans les données").show().delay(5000).fadeOut();
+                } else {
+                    $("#message-modal-error").text(response?.message || "Erreur inattendue").show().delay(5000).fadeOut();
+                }
+            }
+        });
+    });
+
+    // Importation via fichier Excel
+    $("#importation_aliment").on("click", function () {
+        const inputFichier = $("#fichier_aliment");
+        const fichier = inputFichier.prop("files")[0];
+
+        if (!fichier) {
+            inputFichier.css("border-color", "red");
+            $("#message-warning").text("Veuillez sélectionner un fichier.").show().delay(5000).fadeOut();
+            return;
+        }
+
+        inputFichier.css("border-color", "");
+        const formData = new FormData();
+        formData.append("fichier_aliment", fichier);
+
+        $.ajax({
+            url: "/production/import-excel-aliments/",
+            type: "POST",
+            data: formData,
+            processData: false,
+            contentType: false,
+            headers: { 'X-CSRFToken': getCookie('csrftoken') },
+            success: function (response) {
+                if (response.success) {
+                    $("#message-success").text(response.message).show().delay(5000).fadeOut();
+                    afficherAlimentsDansTableau(response.data);
+                    $("#fichier_aliment").val('').removeClass('is-valid is-invalid');
+                } else {
+                    $("#message-warning").text(response.message).show().delay(5000).fadeOut();
+                }
+            },
+            error: function (xhr) {
+                const response = xhr.responseJSON;
+                if (xhr.status === 500) {
+                    $("#message-error").text(response?.message || "Erreur serveur").show().delay(5000).fadeOut();
+                } else if (xhr.status === 400) {
+                    $("#message-warning").text(response?.message || "Erreur dans les données").show().delay(5000).fadeOut();
+                } else {
+                    $("#message-error").text(response?.message || "Erreur inattendue").show().delay(5000).fadeOut();
+                }
+            }
+        });
+    });
+
+    // Gérer l'événement de changement de compagnie dans le modal de modification
     $(document).on("keyup change", "#modal-modification_police .calculs_handler_police_modification", function (event) {
          if (event.which == 13) {
              event.preventDefault();
@@ -1064,11 +946,18 @@ $(document).ready(function () {
          console.log('prime_ttc (avant affichage)', prime_ttc);
 
          $('.taux_com_affaire_nouvelle').each(function () {
-             let taux_com_affaire_nouvelle = parseFloat($(this).val());
+             let taux_com_affaire_nouvelle = parseFloat($(this).closest('tr').find('.taux_com_affaire_nouvelle').val());
              let taux_com_renouvelement = parseFloat($(this).closest('tr').find('.taux_com_renouvelement').val());
              let base_calcul_taux_retrocession = $(this).closest('tr').find('.base_calcul_taux_retrocession').val();
              let intermediaire = $(this).closest('tr').find('.intermediaire').val();
              let montant_commission_intermediaire = 0;
+
+             console.log('-------------------------------');
+             console.log('taux_com_affaire_nouvelle', taux_com_affaire_nouvelle);
+             console.log('taux_com_renouvelement', taux_com_renouvelement);
+             console.log('base_calcul_taux_retrocession', base_calcul_taux_retrocession);
+             console.log('intermediaire', intermediaire);
+             console.log('-------------------------------');
 
              if (intermediaire != "" && base_calcul_taux_retrocession != "" && taux_com_affaire_nouvelle > 0) {
                  if (base_calcul_taux_retrocession == 1) {//sur prime ht

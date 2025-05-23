@@ -1341,7 +1341,7 @@ class ApporteurPolice(models.Model):
 
     def com_affaire_nouvelle(self):
         # Récupérer le dernier historique lié à cette police
-        dernier_historique = self.police.historiques.order_by('-date_du_jour').first()
+        dernier_historique = self.police.historique_polices.order_by('-date_du_jour').first()
 
         # Vérifier si un historique existe
         if not dernier_historique:

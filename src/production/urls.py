@@ -2,10 +2,8 @@
 from django.urls import path
 
 from . import views
-from .views import ClientsView, ExcelFileView, FormulesUniversellesView, FormulesView, \
-    DetailsClientView, PoliceClientView, ContactClientView, FilialeClientView, AcompteClientView, GEDClientView, QuittancesClientView, \
-    PoliceGedView, PoliceAvenantsView, PoliceQuittancesView, \
-    PoliceSinistresView, AnnulerQuittanceView, CourrierView, PolicesEncoursView, PolicesArrivantEcheanceView, PolicesNonRenouvelleesResilieesView, \
+from .views import ClientsView, DetailsClientView, PoliceClientView, ContactClientView, FilialeClientView, AcompteClientView, GEDClientView, QuittancesClientView, \
+    PoliceGedView, PoliceAvenantsView, PoliceQuittancesView, PoliceSinistresView, AnnulerQuittanceView, CourrierView, PolicesEncoursView, PolicesArrivantEcheanceView, PolicesNonRenouvelleesResilieesView, \
     DetailsSinistreView, SinistreGedView, SinistreAvenantsView
 
 urlpatterns = [
@@ -13,13 +11,7 @@ urlpatterns = [
     path("compagnie/ajax_infos_compagnie/<int:compagnie_id>/<int:produit_id>/", views.ajax_infos_compagnie, name='ajax_infos_compagnie'),
     path("compagnie/ajax_infos_compagnie_modification/<int:compagnie_id>/<int:produit_id>/", views.ajax_infos_compagnie_modification, name='ajax_infos_compagnie_modification'),
     path("ajax_produits/<int:branche_id>/", views.ajax_produits, name='ajax_produits'),
-    path("modification_ajax_produits/<int:branche_id>/", views.modification_ajax_produits, name='modification_ajax_produits'),
-    path("actes_by_rubrique/<int:rubrique_id>/", views.actes_by_rubrique, name='actes_by_rubrique'),
-    path("sous_rubriques_by_rubrique/<int:rubrique_id>/", views.sous_rubriques_by_rubrique, name='sous_rubriques_by_rubrique'),
-    path("regroupements_actes_by_rubrique/<int:rubrique_id>/", views.regroupements_actes_by_rubrique, name='regroupements_actes_by_rubrique'),
-    path("sous_regroupements_actes_by_rubrique/<int:rubrique_id>/", views.sous_regroupements_actes_by_rubrique, name='sous_regroupements_actes_by_rubrique'),
-    path("actes_by_regroupement_acte/<int:regroupement_acte_id>/", views.actes_by_regroupement_acte, name='actes_by_regroupement_acte'),
-    path("formules_by_police/<int:police_id>/", views.formules_by_police, name='formules_by_police'),
+
     path("polices_restantes/<int:police_id>/", views.polices_restantes, name='polices_restantes'),
 
     path('client/', ClientsView.as_view(), name='clients'),
@@ -70,8 +62,6 @@ urlpatterns = [
     path("client/<int:client_id>/<int:police_id>/exporter-quittance", views.exporter_quittance, name='exporter_quittance'),
     path('police/generer_exportation_quittance/<int:typefichier_id>', views.generer_exportation_quittance, name='generer_exportation_quittance'),
 
-    path('client/<int:client_id>/changement_compagnie',views.changement_compagnie, name='changement_compagnie'),
-
     path('polices-en-cours/', PolicesEncoursView.as_view(), name='polices_en_cours'),
     path('polices_en_cours_datatable/', views.polices_en_cours_datatable, name='polices_en_cours_datatable'),
     path('polices-a-echeance-dans-90-jours/', PolicesArrivantEcheanceView.as_view(), name='polices_arrivant_echeance'),
@@ -96,8 +86,6 @@ urlpatterns = [
     path('police/<int:police_id>/add_document', views.police_add_document, name='police_add_document'),
 
     path('police/<int:police_id>/export_sinistres_police', views.export_sinistres_police, name='export_sinistres_police'),
-    #
-    path('police/get_formules/<int:police_id>/', views.get_formules, name='get_formules'),
     
     path('police/<int:police_id>/vehicules', views.police_vehicules, name='police_vehicules'),
     path('police/<int:police_id>/add_vehicule', views.add_vehicule, name='add_vehicule'),
@@ -158,8 +146,6 @@ urlpatterns = [
     path('police/<int:police_id>/courrier/<int:courrier_id>/word/', views.generer_word, name='generer_word'),
     path('police/<int:police_id>/courrier/<int:courrier_id>/quittance/<int:quittance_id>/word/', views.generer_word, name='generer_word'),
 
-    # path('generate-word/', generate_word, name='generate_word'),
-
     path('sinistre/<int:sinistre_id>/details', views.DetailsSinistreView.as_view(), name='sinistre.details'),
     path('sinistre/<int:sinistre_id>/ged', SinistreGedView.as_view(), name='sinistre_ged'),
     path('sinistre/<int:sinistre_id>/add_document', views.sinistre_add_document, name='sinistre_add_document'),
@@ -167,18 +153,8 @@ urlpatterns = [
     path('sinistre/<int:sinistre_id>/add_sinistre_avenant', views.add_sinistre_avenant, name='add_sinistre_avenant'),
     path('sinistre/<int:sinistre_id>/modifier', views.modifier_sinistre, name='modifier_sinistre'),
 
-    path('formules_universelles', FormulesUniversellesView.as_view(), name='formules_universelles'),
-    path('police/<int:police_id>/formules', FormulesView.as_view(), name='police_formules'),
-    path('police/add_formule_universelle', views.add_formule_universelle, name='add_formule_universelle'),
-    path('police/<int:police_id>/add_formule', views.add_formule, name='add_formule'),
-    path('formule/<int:formule_id>/modifier', views.modifier_formule, name='modifier_formule'),
-    path('formule/<int:formule_id>/update_formule', views.modifier_formule, name='update_formule'),
-
 
     path('download/<str:filename>', views.download, name='download'),
-
-    # test panda excel
-    path('text-excel-file/', ExcelFileView.as_view()),
 
     #
     path('annuler_quittance/', AnnulerQuittanceView.as_view(), name='annuler_quittance'),

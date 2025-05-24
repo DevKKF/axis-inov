@@ -6,12 +6,9 @@ import uuid
 
 import PyPDF2
 import docx
-import pypandoc
-from ast import literal_eval
 from datetime import datetime as datetimes
 from django.utils.dateparse import parse_date
 from datetime import timedelta
-from io import BytesIO
 from pprint import pprint
 from sqlite3 import Date
 from datetime import date
@@ -30,19 +27,16 @@ from django.contrib import admin
 from django.contrib.auth.decorators import login_required
 from django.core import serializers
 from django.core.paginator import Paginator
-from django.db.models import Q, ExpressionWrapper, F, DurationField, Max, Case, When
+from django.db.models import Q, ExpressionWrapper, F, DurationField, Max, Case, When, Sum
 from django.http import JsonResponse, HttpResponse, FileResponse
 from django.shortcuts import redirect, render, get_object_or_404
-from django.template.loader import get_template
 from django.urls import reverse
 from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.utils.translation import gettext as _
-from django.views import View
 from django.views.decorators.cache import never_cache
 from django.views.generic import TemplateView
 from docx import Document as WordDocument
-from fpdf import FPDF
 from datetime import datetime, timezone
 from django.utils.timezone import now
 from django.db import transaction
@@ -77,7 +71,6 @@ from sinistre.forms import SinistreForm
 from comptabilite.models import EncaissementCommission
 
 from django.core.files.base import File
-from xhtml2pdf import pisa
 
 from django.views.decorators.csrf import csrf_exempt
 
@@ -2579,18 +2572,17 @@ def import_formulaire_aliments(request):
             }
 
             # Récupération et mise à jour de la session
-            aliments_existant = list(request.session.get('aliments', []))  # Copie défensive
+            aliments_existant = list(request.session.get('aliments', []))
             aliments_existant.append(nouvel_aliment)
             request.session['aliments'] = aliments_existant
             request.session.modified = True  # 🔥 Force Django à enregistrer la session
 
-            print('✅ Aliment ajouté en session :', nouvel_aliment)
             print('🛡 Aliment existant avec le nouveau ajout :', aliments_existant)
 
             return JsonResponse({
                 'success': True,
                 'message': "Ajout de l'aliment effectué avec succès !",
-                'data': aliments_existant  # <-- MODIFICATION CLÉ : Renvoyer TOUTE la liste mise à jour
+                'data': aliments_existant
             }, status=200)
 
         except Exception as e:
@@ -2604,88 +2596,6 @@ def import_formulaire_aliments(request):
         'message': 'Requête invalide ou méthode non autorisée.'
     }, status=400)
 
-
-"""@csrf_exempt
-def import_formulaire_aliments(request):
-    if request.method == 'POST':
-        try:
-            # Récupération de l'immatriculation
-            immat = request.POST.get('immatriculation')
-            if not immat:
-                return JsonResponse({'success': False, 'message': 'Immatriculation manquante.'}, status=400)
-
-            # Vérifier si l'immatriculation existe déjà
-            if is_immatriculation_exists(request, immat):  # Vérifier les doublons
-                return JsonResponse({
-                    'success': False,
-                    'message': f"L'immatriculation {immat} existe déjà en session.",
-                    'data': request.session.get('aliments', [])
-                }, status=400)
-
-            # Vérification de la catégorie
-            categorie_id = request.POST.get('categorie_id')
-            categorie = CategorieVehicule.objects.filter(id=categorie_id).first()
-
-            if not categorie:
-                return JsonResponse({'success': False, 'message': 'Catégorie non trouvée.'}, status=400)
-
-            # Vérification de l'énergie
-            carburant_id = request.POST.get('carburant_id')
-            carburant = Carburant.objects.filter(id=carburant_id).first()
-
-            if not carburant:
-                return JsonResponse({'success': False, 'message': 'Carburant non trouvé.'}, status=400)
-
-            # Création du nouvel aliment
-            nouvel_aliment = {
-                'immat': immat,
-                'proprietaire': request.POST.get('proprietaire'),
-                'marque': request.POST.get('marque'),
-                'energie': carburant.code,
-                'puissance': request.POST.get('puissance_fiscale'),
-                'mis_en_circulation': request.POST.get('date_mise_circulation'),
-                'modele': request.POST.get('modele'),
-                'conducteur': request.POST.get('conducteur'),
-                'date_entree': request.POST.get('date_entree'),
-                'immat_prov': request.POST.get('immatriculation_provisioire'),
-                'num_parc': request.POST.get('num_parc'),
-                'num_serie': request.POST.get('num_serie'),
-                'places_assises': request.POST.get('places_assises'),
-                'valeur_neuve': request.POST.get('valeur_a_neuf'),
-                'valeur_actuelle': request.POST.get('valeur_actuelle'),
-                'poids_a_vide': request.POST.get('poid_vide'),
-                'poids_a_charge': request.POST.get('poid_tac'),
-                'T_categorie_id': categorie.libelle,
-                'T_carosserie_id': request.POST.get('carosserie_id'),
-                'T_usage_id': request.POST.get('usage_id'),
-                'comment': request.POST.get('commentaire')
-            }
-
-            # Mettre à jour la session
-            aliments_existant = request.session.get('aliments', [])
-            aliments_existant.append(nouvel_aliment)
-            request.session['aliments'] = aliments_existant
-            request.session.modified = True  # 🔥 Assure que Django sauvegarde bien la session
-
-            print('Aliment ajouté en session : ', nouvel_aliment)
-
-            return JsonResponse({
-                'success': True,
-                'message': "Ajout de l'aliment effectué avec succès !",
-                'data': [nouvel_aliment]
-            }, status=200)
-
-        except Exception as e:
-            return JsonResponse({
-                'success': False,
-                'message': f"Erreur lors de l'enregistrement : {str(e)}"
-            }, status=500)
-
-    return JsonResponse({
-        'success': False,
-        'message': 'Requête invalide ou données manquantes.'
-    }, status=400)
-"""
 
 @csrf_exempt
 def supprimer_aliment(request, index):
@@ -3160,9 +3070,14 @@ def details_quittance(request, quittance_id):
         statut_bordereau = "VALIDE"
     ).select_related('reglement', 'reglement__quittance')
 
+    operations = Operation.objects.filter(
+        operationreglement__reglement__quittance_id=quittance_id,
+        statut_bordereau="VALIDE"
+    ).distinct()
+
     return render(request, 'police/modal_details_quittance.html',
                   {'police': police, 'types_quittances': types_quittances, 'natures_quittances': natures_quittances,'types_documents':types_documents,
-                   'taxes_quittances': taxes_quittances, 'quittance': quittance, 'reglements': reglements,'documents':documents,'operations_reglements':operations_reglements })
+                   'taxes_quittances': taxes_quittances, 'quittance': quittance, 'reglements': reglements,'documents':documents, 'operations': operations})
 
 
 @login_required
@@ -3311,7 +3226,7 @@ def add_quittance(request, police_id):
                                                  uuid=uuid.uuid4())
             operation.save()
 
-            nombre_quittances = 1
+            nombre_reglements = 1
 
             # Lier l'opération au règlement
             operation_reglement = OperationReglement.objects.create(operation=operation, reglement=reglement, created_by=request.user)
@@ -3320,7 +3235,7 @@ def add_quittance(request, police_id):
 
             # mettre à jour le total dans operation
             operation.montant_total = prime_ttc
-            operation.nombre_quittances = nombre_quittances
+            operation.nombre_reglements = nombre_reglements
             operation.numero = 'OP' + str(Date.today().year) + str(operation.pk).zfill(6)
             operation.save()
 
@@ -3349,35 +3264,18 @@ def add_quittance(request, police_id):
         natures_quittances = NatureQuittance.objects.filter(status=True).order_by('libelle')
         types_quittances = TypeQuittance.objects.filter(status=True).order_by('libelle')
 
-        bureau_taxes = BureauTaxe.objects.filter(bureau_id=police.bureau_id)
-        for bureau_taxe in bureau_taxes:
-            print(bureau_taxe)
-
-        #staxes_police = TaxePolice.objects.filter(police=police)
-        taxes_police = BureauTaxe.objects.filter(bureau=police.bureau) #pour être plus flexible, pas obligé que la taxe ait été ajouté sur la police avant qu'elle apparaisse à la création de la quittance
-
-        param_produit = ParamProduitCompagnie.objects.filter(produit=police.produit, compagnie=assureur_police.compagnie)[:1].get()
-
-        if not param_produit:
-            response = {
-                'statut': 0,
-                'message': f"Produit {police.produit.libelle} non paramétré pour la compagnie {assureur_police.compagnie.nom} !",
-                'data': {}
-            }
-
-            return JsonResponse(response)
+        taxes_police = BureauTaxe.objects.filter(bureau=police.bureau)
 
         police_dernier_mouvement = MouvementPolice.objects.filter(police=police, statut_validite=StatutValidite.VALIDE, motif__code__in=["AN", "RENOUV"]).last()
 
-        #get apporteur : un seul apporteur par police
         apporteurs_polices = ApporteurPolice.objects.filter(police=police, statut_validite=StatutValidite.VALIDE)
 
         today = datetime.now(tz=timezone.utc)
 
         return render(request, 'police/modal_add_quittance.html',
-                      {'police': police, 'police_dernier_mouvement': police_dernier_mouvement, 'taxes_police': taxes_police, 'param_produit': param_produit, 'today': today,
+                      {'police': police, 'police_dernier_mouvement': police_dernier_mouvement, 'taxes_police': taxes_police, 'today': today,
                        'types_quittances': types_quittances, 'natures_quittances': natures_quittances, 'dernier_historique': dernier_historique, 'assureur_police': assureur_police, 'autre_assureur_police': autre_assureur_police,
-                       'bureau_taxes': bureau_taxes, 'apporteurs_polices': apporteurs_polices})
+                       'apporteurs_polices': apporteurs_polices})
 
 
 @login_required
@@ -3402,7 +3300,7 @@ def add_reglement(request, police_id):
         if not uuid_reglement_existant:
 
             # enregistrer les infos dans operation
-            nombre_quittances = 0
+            nombre_reglements = 0
             montant_total_regle = 0
             operation = Operation.objects.create(nature_operation=nature_operation,
                                                  numero_piece=numero_piece,
@@ -3474,7 +3372,7 @@ def add_reglement(request, police_id):
                         quittance.save()
 
                         montant_total_regle += montant_regle
-                        nombre_quittances = nombre_quittances + 1
+                        nombre_reglements = nombre_reglements + 1
 
                         # Lier l'opération au règlement
                         operation_reglement = OperationReglement.objects.create(operation=operation, reglement=reglement, statut_bordereau=StatutBordereau.BROUILLON, created_by=request.user)
@@ -3483,7 +3381,7 @@ def add_reglement(request, police_id):
 
             # mettre à jour le total dans operation
             operation.montant_total = montant_total_regle
-            operation.nombre_quittances = nombre_quittances
+            operation.nombre_reglements = nombre_reglements
             operation.numero = 'OP' + str(Date.today().year) + str(operation.pk).zfill(6)
             operation.save()
 
@@ -3733,7 +3631,7 @@ def add_lettrage(request, police_id):
 
         if not Operation.objects.filter(uuid=uuid_reglement).exists():
             montant_total_regle = 0
-            nombre_quittances = 0
+            nombre_reglements = 0
             operation = Operation.objects.create(
                 montant_total=0,
                 date_operation=date_paiement,
@@ -3789,10 +3687,10 @@ def add_lettrage(request, police_id):
                     )
 
                     montant_total_regle += montant_regle
-                    nombre_quittances += 1
+                    nombre_reglements += 1
 
             operation.montant_total = montant_total_regle
-            operation.nombre_quittances = nombre_quittances
+            operation.nombre_reglements = nombre_reglements
             operation.numero = f'OP{Date.today().year}{str(operation.pk).zfill(6)}'
             operation.save()
 

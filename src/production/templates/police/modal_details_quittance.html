@@ -197,36 +197,53 @@
 												<th scope="col">{{_("Enc com")}}</th>
 											  </tr>
 											</thead>
-											<!--tbody>
-												{% for operation_reg in operations_reglements %}
-													<tr>
-													   <td><input type="checkbox" class="form-control operation-checkbox" name="operation_{{operation_reg.operation.id}}" value="{{operation_reg.operation.id}}" style="width: 1rem; height: 1.25rem;"></td>
-													   <td>{{ operation_reg.operation.numero|default:"" }} / ID OP {{ operation_reg.operation_id|default:"" }}</td>
-													   <td>{{ operation_reg.reglement.numero|default:"" }}</td>
-													   <td>{{ operation_reg.reglement.montant|money_field|default:"" }}</td>
-													   <td>{{ operation_reg.reglement.montant_compagnie|money_field|default:"" }}</td>
-													   <td>{{ operation_reg.reglement.montant_com_courtage|money_field|default:"" }}</td>
-													   <td>{{ operation_reg.reglement.date_paiement|date:'d/m/Y'|default:"" }}</td>
-													   <td><span class="badge badge-{{ operation_reg.reglement.statut_reversement_compagnie|lower|replace_espace }}">{{ operation_reg.reglement.statut_reversement_compagnie|default_if_none:"" }}</span></td>
-													   <td><span class="badge badge-{{ operation_reg.reglement.statut_commission|lower|replace_espace }}">{{ operation_reg.reglement.statut_commission|default_if_none:"" }}</span></td>
-													</tr>
-												{% endfor %}
-											</tbody-->
-											<tbody>
-												{% for operation in operations %}
-													<tr>
-														<td><input type="checkbox" class="form-control operation-checkbox" name="operation_{{operation.id}}" value="{{operation.id}}" style="width: 1rem; height: 1.25rem;"></td>
-														<td>{{ operation.numero|default:"" }}</td>
-														<td>{{ operation.montant_total|money_field|default:"" }}</td>
-														<td></td>
-														<td></td>
-														<td></td>
-														<td></td>
-														<td></td>
-													</tr>
-												{% endfor %}
+												{% if operations_data %}
+													{% for data in operations_data %}
+														<tr>
+															<td><input type="checkbox" class="form-control operation-checkbox" name="operation_{{data.operation.id}}" value="{{data.operation.id}}" style="width: 1rem; height: 1.25rem;"></td>
+															<td>{{ data.operation.numero }}</td>
+															<td>{{ data.operation.montant_total|money_field }}</td>
+															<td>{{ data.total_montant_compagnie|money_field }}</td>
+															<td>{{ data.total_montant_com_courtage|money_field }}</td>
+															<td>{{ data.total_montant_com_intermediaire|money_field }}</td>
+															<td>{{ data.operation.date_paiement|date:'d/m/Y'|default_if_none:"" }}</td>
+															<td>{{ data.operation.statut_reversement_compagnie|default_if_none:"" }}</td>
+															<td>{{ data.operation.statut_commission|default_if_none:"" }}</td>
+														</tr>
+													{% endfor %}
+												{% endif %}
 											</tbody>
 										</table>
+									</div>
+                                    <br><br>
+									<hr>
+									<div class="">
+										{% if operations_data %}
+											<table class="table table-bordered table-striped dataTable dtr-inline" id="table_bordereau_paiement">
+												<thead>
+													<tr>
+														<th>Numéro Opération</th>
+														<th>Montant Total Opération</th>
+														<th>Montant Compagnie</th>
+														<th>Montant Commission Courtage</th>
+														<th>Montant Commission Intermédiaire</th>
+													</tr>
+												</thead>
+												<tbody>
+													{% for data in operations_data %}
+														<tr>
+															<td>{{ data.operation.numero }}</td>
+															<td>{{ data.operation.montant_total }}</td>
+															<td>{{ data.total_montant_compagnie }}</td>
+															<td>{{ data.total_montant_com_courtage }}</td>
+															<td>{{ data.total_montant_com_intermediaire }}</td>
+														</tr>
+													{% endfor %}
+												</tbody>
+											</table>
+										{% else %}
+											<p>Aucune opération trouvée pour la Quittance ID: {{ quittance_id }} avec le statut "VALIDE".</p>
+										{% endif %}
 									</div>
 								</div>
 							</div>

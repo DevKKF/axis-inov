@@ -120,20 +120,12 @@
 										<input type="text" class="form-control money_field_negative" name="commission_courtage" id="commission_courtage" value="{% if police.police_dernier_historique.taux_com_courtage %}{{ police.police_dernier_historique.taux_com_courtage|diviser:100|multiply:police.police_dernier_historique.prime_ht }}{% endif %}" data-value_from_police="{{ police.police_dernier_historique.commission_courtage }} " readonly/>
 									</div>
 								</div>
-								<div class="form-group row show_if_nature_quittance_terme" style="display:none;">
-									<label class="col-sm-5 col-form-label">Com C. Terme(10,0%)<span class="required"></span></label>
-									<div class="col-sm-7">
-										<input type="hidden" class="form-control" name="taux_com_courtage_terme" id="taux_com_courtage_terme" value="10,0" readonly="">
-										<input type="text" class="form-control money_field_negative" name="commission_courtage_terme" id="commission_courtage_terme" value="54396,5" data-value_from_police="54396 " readonly="" style="text-align: right;">
-									</div>
-								</div>
 								<div class="form-group row">
 									<label class="col-sm-5 col-form-label">{{_("Retrocession Apporteur")}}<span class="required"></span></label>
 									<div class="col-sm-7">
 										<input type="text" class="form-control money_field_negative" name="commission_intermediaire" id="total_commission_intermediaire" value="{{ police.police_dernier_historique.commission_intermediaires }}" readonly/>
 									</div>
 								</div>
-
 							</div>
 						</div>
 						<table id="table_apporteurs_police" style="display:none;width:100%;" class="table table-bordered table-striped dataTable_ dtr-inline">
@@ -177,7 +169,6 @@
 			</form>
 		</div>
 	</div>
-
 </div>
 
 <!-- modal interne des autres taxes -->

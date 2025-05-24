@@ -1623,7 +1623,7 @@ class Operation(models.Model):
     numero_piece = models.CharField(max_length=100, blank=True, null=True)
     numero = models.CharField(max_length=100, blank=True, null=True)
     montant_total = models.DecimalField(max_digits=20, decimal_places=5, blank=True, null=True)
-    nombre_quittances = models.IntegerField(blank=True, null=True)
+    nombre_reglements = models.IntegerField(blank=True, null=True)
     fichier = models.FileField(upload_to=upload_location_operation, blank=True, default=None, null=True)
     date_operation = models.DateField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)

@@ -179,42 +179,50 @@
 						<div class="tab-pane fade mt-3" id="bordereau_paiement" role="tabpanel" aria-labelledby="bordereau_paiement-tab">
 							<div class="rowd" style="padding-top:0px;">
 								<div class="card">
-									<div class="card-tools d-none">
-									  <span class="btn btn-sm btn-info mb-1 imprimer_borderau_liste" id="imprimer_borderau_liste"><i class="fas fa-print"></i> Imprimer une liste de bordereau</span>
+									<div class="card-tools">
+									  <span class="btn btn-sm btn-info mb-1 imprimer_borderau_liste_reversement" id="imprimer_borderau_liste_reversement"><i class="fas fa-print"></i> Imprimer la liste de bordereau de revers. cie</span>
+									  <span class="btn btn-sm btn-primary mb-1 imprimer_borderau_liste_encaissement_com" id="imprimer_borderau_liste_encaissement_com"><i class="fas fa-print"></i> Imprimer la liste de bordereau de enc. com</span>
 									</div>
 									<div class="">
 										<table class="table table-bordered table-striped dataTable dtr-inline" id="table_bordereau_paiement">
 											<thead>
 											  <tr>
-												<th scope="col" width="3%"><input type="checkbox" class="form-control operation-checkbox-all" style="width: 1rem; height: 1.25rem;" disabled></th>
+												<th scope="col" width="3%"><input type="checkbox" class="form-control operation-checkbox-all" style="width: 1rem; height: 1.25rem;"></th>
 												<th scope="col">{{_("N° Bordereau")}}</th>
-												<th scope="col">{{_("Règlement")}}</th>
 												<th scope="col">{{_("Mont reglé")}}</th>
 												<th scope="col">{{_("Mont CIE")}}</th>
 												<th scope="col">{{_("Com courtage")}}</th>
 												<th scope="col">{{_("Date paiment")}}</th>
-												<th scope="col">{{_("Statut")}}</th>
-												<th class="text-center" scope="col">{{_("Actions")}}</th>
+												<th scope="col">{{_("Revers Cie")}}</th>
+												<th scope="col">{{_("Enc com")}}</th>
 											  </tr>
 											</thead>
-											<tbody>
+											<!--tbody>
 												{% for operation_reg in operations_reglements %}
 													<tr>
-													   <td><input type="checkbox" class="form-control operation-checkbox" name="operation_{{operation_reg.operation.id}}" value="{{operation_reg.operation.id}}" style="width: 1rem; height: 1.25rem;" disabled></td>
-													   <td>{{ operation_reg.operation.numero|default:"" }}</td>
+													   <td><input type="checkbox" class="form-control operation-checkbox" name="operation_{{operation_reg.operation.id}}" value="{{operation_reg.operation.id}}" style="width: 1rem; height: 1.25rem;"></td>
+													   <td>{{ operation_reg.operation.numero|default:"" }} / ID OP {{ operation_reg.operation_id|default:"" }}</td>
 													   <td>{{ operation_reg.reglement.numero|default:"" }}</td>
 													   <td>{{ operation_reg.reglement.montant|money_field|default:"" }}</td>
 													   <td>{{ operation_reg.reglement.montant_compagnie|money_field|default:"" }}</td>
 													   <td>{{ operation_reg.reglement.montant_com_courtage|money_field|default:"" }}</td>
 													   <td>{{ operation_reg.reglement.date_paiement|date:'d/m/Y'|default:"" }}</td>
 													   <td><span class="badge badge-{{ operation_reg.reglement.statut_reversement_compagnie|lower|replace_espace }}">{{ operation_reg.reglement.statut_reversement_compagnie|default_if_none:"" }}</span></td>
-													   <td class="text-center" style="cursor:pointer">
-														  {% if operation_reg.reglement.statut_reversement_compagnie == "REVERSE" %}
-															 <a href="{% url 'generer_bordereau_reglement_compagnie_pdf' operation_reg.operation.id %}" class="badge badge-info" target="_blank"><i class="fa fa-print"></i> Imprimer le bordereau</a>
-														  {% else %}
-															 <span class="badge badge-secondary disabled"><i class="fa fa-print"></i> Imprimer le bordereau</span>
-														  {% endif %}
-													   </td>
+													   <td><span class="badge badge-{{ operation_reg.reglement.statut_commission|lower|replace_espace }}">{{ operation_reg.reglement.statut_commission|default_if_none:"" }}</span></td>
+													</tr>
+												{% endfor %}
+											</tbody-->
+											<tbody>
+												{% for operation in operations %}
+													<tr>
+														<td><input type="checkbox" class="form-control operation-checkbox" name="operation_{{operation.id}}" value="{{operation.id}}" style="width: 1rem; height: 1.25rem;"></td>
+														<td>{{ operation.numero|default:"" }}</td>
+														<td>{{ operation.montant_total|money_field|default:"" }}</td>
+														<td></td>
+														<td></td>
+														<td></td>
+														<td></td>
+														<td></td>
 													</tr>
 												{% endfor %}
 											</tbody>

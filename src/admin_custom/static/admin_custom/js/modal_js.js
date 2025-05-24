@@ -732,10 +732,10 @@ $(document).ready(function () {
     // Gérer l'événement de chargement des aliments liés à la police
     function afficherAlimentsDansTableau(data) {
         const tbody = $("#table_liste_aliment_modification tbody");
-        tbody.empty(); // Vider l'ancien contenu
+        //tbody.empty(); // Vider l'ancien contenu
         data.forEach((row, index) => {
             tbody.append(`
-                <tr data-index="${index}">
+                <tr data-index="${index}" style="height: 1px !important;">
                     <td>
                         <button class="btn btn-danger btn-sm btn-supprimer-aliment" data-index="${index}">
                             <i class="fa fa-remove"></i>
@@ -843,6 +843,7 @@ $(document).ready(function () {
             data: formData,
             processData: false,
             contentType: false,
+            headers: { 'X-CSRFToken': getCookie('csrftoken') },
             success: function (response) {
                 if (response.success) {
                     $('#message-modal-success').text(response.message).show().delay(5000).fadeOut();

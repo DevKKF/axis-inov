@@ -1,6 +1,5 @@
 $(document).ready(function () {
 
-    //$('.onglets_sante_uniquement').hide();//Commented on 20102023: Appli uniquement santé
     function alert_pop() {
         alert("open modal benef");
     }
@@ -11,7 +10,6 @@ $(document).ready(function () {
         $('.tags-multiple_affection_soins_amb').select2();
         $('.tags-multiple').select2();
         $('#affection_id').select2();
-        $('.form-beneficiaire-select').select2();
         $('.tags-multiple_affection').select2();
         $('.tags-multiple_affection_sa').select2();
         $('.tags-multiple_affection_hospit').select2();
@@ -273,24 +271,6 @@ $(document).ready(function () {
                                 success: function (response) {
 
                                     if (response.statut == 1) {
-
-                                        /*
-                                        let client = response.data;
-
-                                        let t = $('#table_clients').DataTable();
-
-                                        t.row.add([
-                                                    client.nom + ' ' + client.prenoms,
-                                                    client.type_client,
-                                                    client.type_personne,
-                                                    client.ville,
-                                                    client.created_at,
-                                                    client.statut,
-                                                    '<span></span>',
-                                                    ])
-                                                    .draw(false);
-                                                    */
-
                                         //Vider le formulaire
                                         resetFields('#' + formulaire.attr('id'));
 
@@ -321,9 +301,6 @@ $(document).ready(function () {
                                 }
 
                             });
-
-                            //fin confirmation obtenue
-
                         }
                     },
                     {
@@ -335,8 +312,6 @@ $(document).ready(function () {
                     }
                 ]
             });
-            //fin demande confirmation
-
 
         } else {
 
@@ -353,12 +328,7 @@ $(document).ready(function () {
             notifyWarning('Veuillez renseigner correctement le forumulaire');
         }
 
-
     });
-
-
-    //fin ajout d'un client
-
 
     //modification d'un client
     $(document).on('click', '.btn_modifier_client', function () {
@@ -462,9 +432,6 @@ $(document).ready(function () {
                                         }
 
                                     });
-
-                                    //fin confirmation obtenue
-
                                 }
                             },
                             {
@@ -476,8 +443,6 @@ $(document).ready(function () {
                             }
                         ]
                     });
-                    //fin demande confirmation
-
 
                 } else {
 
@@ -494,12 +459,9 @@ $(document).ready(function () {
                     notifyWarning('Veuillez renseigner tous les champs obligatoires');
                 }
 
-
             });
 
-
         });
-
 
     });
 
@@ -545,8 +507,6 @@ $(document).ready(function () {
                 }
             ]
         });
-
-
     });
     //fin suppression d'un client
 
@@ -632,9 +592,6 @@ $(document).ready(function () {
                                 }
 
                             });
-
-                            //fin confirmation obtenue
-
                         }
                     },
                     {
@@ -646,8 +603,6 @@ $(document).ready(function () {
                     }
                 ]
             });
-            //fin demande confirmation
-
 
         } else {
 
@@ -761,9 +716,6 @@ $(document).ready(function () {
                                         }
 
                                     });
-
-                                    //fin confirmation obtenue
-
                                 }
                             },
                             {
@@ -799,106 +751,53 @@ $(document).ready(function () {
 
     //Suppression d'un contact
     $(document).on('click', '.btn_supprimer_contact', function () {
-    let contact_id = $(this).data('contact_id');
-    let href = $(this).data('href');
-    let n = noty({
-        text: 'Voulez-vous vraiment supprimer cette contact ?',
-        type: 'warning',
-        dismissQueue: true,
-        layout: 'center',
-        theme: 'defaultTheme',
-        buttons: [
-            {
-                addClass: 'btn btn-primary', text: 'Supprimer', onClick: function ($noty) {
-                    $noty.close();
+        let contact_id = $(this).data('contact_id');
+        let href = $(this).data('href');
+        let n = noty({
+            text: 'Voulez-vous vraiment supprimer cette contact ?',
+            type: 'warning',
+            dismissQueue: true,
+            layout: 'center',
+            theme: 'defaultTheme',
+            buttons: [
+                {
+                    addClass: 'btn btn-primary', text: 'Supprimer', onClick: function ($noty) {
+                        $noty.close();
 
-                    //effectuer la suppression
-                    $.ajax({
-                        url: href,
-                        type: 'post',
-                        data: { contact_id: contact_id },
-                        success: function (response) {
+                        //effectuer la suppression
+                        $.ajax({
+                            url: href,
+                            type: 'post',
+                            data: { contact_id: contact_id },
+                            success: function (response) {
 
-                            notifySuccess(response.message, function () {
-                                location.reload();
-                            });
+                                notifySuccess(response.message, function () {
+                                    location.reload();
+                                });
 
-                        },
-                        error: function () {
-                            notifyWarning('Erreur lors de la suppression');
-                        }
-                    });
+                            },
+                            error: function () {
+                                notifyWarning('Erreur lors de la suppression');
+                            }
+                        });
 
+                    }
+                },
+                {
+                    addClass: 'btn btn-danger', text: 'Annuler', onClick: function ($noty) {
+                        //annuler la suppression
+                        $noty.close();
+                    }
                 }
-            },
-            {
-                addClass: 'btn btn-danger', text: 'Annuler', onClick: function ($noty) {
-                    //annuler la suppression
-                    $noty.close();
-                }
-            }
-        ]
+            ]
+        });
     });
-});
 
 
     //----------------- FIN AJOUT DE CONTACT ------------------//
 
 
     //----------------- AJOUT DE FILIALE ------------------//
-    /*$(document).on('click', "#modal-filiale #btn_save_filiale", function () {
-
-        let client_id = $("#modal-filiale #client_id").val();
-
-        $.ajax({
-            type: 'post',
-            url: '/production/client/' + client_id + '/filiale/add',
-            data: $("#modal_form_filiale").serialize(),
-            success: function (response) {
-
-                if (response.statut == 1) {
-
-                    //mettre à jour le tableau
-                    let filiale = response.data;
-                    let t = $('#table_filiales').DataTable();
-                    t.row.add([filiale.nom, filiale.pays, filiale.ville, filiale.adresse, '<td class=""><span class="btn_supprimer_filiale" data-filiale_id="' + filiale.id + '" onClick="supprimer_filiale(' + filiale.id + ')" style="cursor:pointer;"><i class="fa fa-times text-danger"></i></span>&nbsp;&nbsp;&nbsp;<span class="btn_modifier_on_modal" data-modal_title="Modification d\'une filiale" data-model_name="filiale" data-href="/production/filiale/' + filiale.id + '/modifier" title="Modifier" style="cursor:pointer;"><i class="fas fa-edit text-warning"></i></span></td>']).draw(false);
-
-                    //Afficher le message de succès et fermer la fenêtre
-                    $("#modal_form_filiale input[type=text]").val("");
-                    $("#modal_form_filiale input[type=email]").val("");
-                    $("#modal_form_document select").prop('selectedIndex', 0);
-
-                    $('#modal_form_filiale .alert .message').text(response.message);
-
-                    $('#modal_form_filiale .alert ').fadeTo(2000, 500).slideUp(500, function () {
-                        $(this).slideUp(500);
-                        $("#modal-filiale").modal('toggle');
-                    }).removeClass('alert-warning').addClass('alert-success');
-
-                } else {
-
-                    $('#modal_form_filiale .alert .message').text(response.message);
-
-                    $('#modal_form_filiale .alert ').fadeTo(2000, 500).slideUp(500, function () {
-                        $(this).slideUp(500);
-                    }).removeClass('alert-success').addClass('alert-warning');
-
-                }
-
-
-            },
-            error: function () {
-
-                $('#modal_form_filiale .alert .message').text("Erreur lors de l'enregistrement !");
-
-                $('#modal_form_filiale .alert ').fadeTo(2000, 500).slideUp(500, function () {
-                    $(this).slideUp(500);
-                }).removeClass('alert-success').addClass('alert-warning');
-
-            }
-        });
-
-    });*/
 
     // TODO AJOUT DE FILIALE DU CLIENT
     //Création d'une filiale
@@ -976,9 +875,6 @@ $(document).ready(function () {
                                 }
 
                             });
-
-                            //fin confirmation obtenue
-
                         }
                     },
                     {
@@ -990,8 +886,6 @@ $(document).ready(function () {
                     }
                 ]
             });
-            //fin demande confirmation
-
 
         } else {
 
@@ -1013,133 +907,133 @@ $(document).ready(function () {
     //Modification d'une filiale
     $(document).on('click', '.btn_modifier_filiale', function () {
 
-    let model_name = $(this).attr('data-model_name');
-    let modal_title = $(this).attr('data-modal_title');
-    let href = $(this).attr('data-href');
+        let model_name = $(this).attr('data-model_name');
+        let modal_title = $(this).attr('data-modal_title');
+        let href = $(this).attr('data-href');
 
-    $('#olea_std_dialog_box').load(href, function () {
+        $('#olea_std_dialog_box').load(href, function () {
 
-        //appliquer le mask de saisie sur les champs montant
-        AppliquerMaskSaisie();
+            //appliquer le mask de saisie sur les champs montant
+            AppliquerMaskSaisie();
 
-        $('#modal-modification_filiale').attr('data-backdrop', 'static').attr('data-keyboard', false);
+            $('#modal-modification_filiale').attr('data-backdrop', 'static').attr('data-keyboard', false);
 
-        $('#modal-modification_filiale').find('.modal-title').text(modal_title);
-        $('#modal-modification_filiale').find('#btn_valider').attr({ 'data-model_name': model_name, 'data-href': href });
-        $('#modal-modification_filiale').find('.modal-dialog').addClass('modal-lg').removeClass('modal-xl');
+            $('#modal-modification_filiale').find('.modal-title').text(modal_title);
+            $('#modal-modification_filiale').find('#btn_valider').attr({ 'data-model_name': model_name, 'data-href': href });
+            $('#modal-modification_filiale').find('.modal-dialog').addClass('modal-lg').removeClass('modal-xl');
 
-        //
-        $('#modal-modification_filiale').modal();
+            //
+            $('#modal-modification_filiale').modal();
 
-        //gestion du clique sur valider les modifications
-        $("#btn_save_modification_filiale").on('click', function () {
+            //gestion du clique sur valider les modifications
+            $("#btn_save_modification_filiale").on('click', function () {
 
-            let formulaire = $('#form_update_filiale');
-            let href = formulaire.attr('action');
+                let formulaire = $('#form_update_filiale');
+                let href = formulaire.attr('action');
 
-            $.validator.setDefaults({ ignore: [] });
+                $.validator.setDefaults({ ignore: [] });
 
-            let formData = new FormData();
+                let formData = new FormData();
 
-            if (formulaire.valid()) {
+                if (formulaire.valid()) {
 
-                //demander confirmation
-                let n = noty({
-                    text: 'Voulez-vous vraiment modifier cette filiale ?',
-                    type: 'warning',
-                    dismissQueue: true,
-                    layout: 'center',
-                    theme: 'defaultTheme',
-                    buttons: [
-                        {
-                            addClass: 'btn btn-primary', text: 'OUI', onClick: function ($noty) {
-                                $noty.close();
+                    //demander confirmation
+                    let n = noty({
+                        text: 'Voulez-vous vraiment modifier cette filiale ?',
+                        type: 'warning',
+                        dismissQueue: true,
+                        layout: 'center',
+                        theme: 'defaultTheme',
+                        buttons: [
+                            {
+                                addClass: 'btn btn-primary', text: 'OUI', onClick: function ($noty) {
+                                    $noty.close();
 
-                                //confirmation obtenu
+                                    //confirmation obtenu
 
-                                let data_serialized = formulaire.serialize();
-                                $.each(data_serialized.split('&'), function (index, elem) {
-                                    let vals = elem.split('=');
+                                    let data_serialized = formulaire.serialize();
+                                    $.each(data_serialized.split('&'), function (index, elem) {
+                                        let vals = elem.split('=');
 
-                                    let key = vals[0];
-                                    let valeur = decodeURIComponent(vals[1].replace(/\+/g, '  '));
+                                        let key = vals[0];
+                                        let valeur = decodeURIComponent(vals[1].replace(/\+/g, '  '));
 
-                                    formData.append(key, valeur);
+                                        formData.append(key, valeur);
 
-                                });
+                                    });
 
-                                $.ajax({
-                                    type: 'post',
-                                    url: href,
-                                    data: formData,
-                                    processData: false,
-                                    contentType: false,
-                                    success: function (response) {
+                                    $.ajax({
+                                        type: 'post',
+                                        url: href,
+                                        data: formData,
+                                        processData: false,
+                                        contentType: false,
+                                        success: function (response) {
 
-                                        if (response.statut == 1) {
+                                            if (response.statut == 1) {
 
-                                            notifySuccess(response.message, function () {
-                                                location.reload();
-                                            });
+                                                notifySuccess(response.message, function () {
+                                                    location.reload();
+                                                });
 
-                                        } else {
+                                            } else {
 
-                                            let errors = JSON.parse(JSON.stringify(response.errors));
-                                            let errors_list_to_display = '';
-                                            for (field in errors) {
-                                                errors_list_to_display += '- ' + ucfirst(field) + ' : ' + errors[field] + '<br/>';
+                                                let errors = JSON.parse(JSON.stringify(response.errors));
+                                                let errors_list_to_display = '';
+                                                for (field in errors) {
+                                                    errors_list_to_display += '- ' + ucfirst(field) + ' : ' + errors[field] + '<br/>';
+                                                }
+
+                                                $('#modal-modification_filiale .alert .message').html(errors_list_to_display);
+
+                                                $('#modal-modification_filiale .alert ').fadeTo(2000, 500).slideUp(500, function () {
+                                                    $(this).slideUp(500);
+                                                }).removeClass('alert-success').addClass('alert-warning');
+
                                             }
 
-                                            $('#modal-modification_filiale .alert .message').html(errors_list_to_display);
+                                        },
+                                        error: function (request, status, error) {
 
-                                            $('#modal-modification_filiale .alert ').fadeTo(2000, 500).slideUp(500, function () {
-                                                $(this).slideUp(500);
-                                            }).removeClass('alert-success').addClass('alert-warning');
-
+                                            notifyWarning("Erreur lors de l'enregistrement");
                                         }
 
-                                    },
-                                    error: function (request, status, error) {
+                                    });
 
-                                        notifyWarning("Erreur lors de l'enregistrement");
-                                    }
+                                    //fin confirmation obtenue
 
-                                });
+                                }
+                            },
+                            {
+                                addClass: 'btn btn-danger', text: 'Annuler', onClick: function ($noty) {
+                                    //confirmation refusée
+                                    $noty.close();
 
-                                //fin confirmation obtenue
-
+                                }
                             }
-                        },
-                        {
-                            addClass: 'btn btn-danger', text: 'Annuler', onClick: function ($noty) {
-                                //confirmation refusée
-                                $noty.close();
+                        ]
+                    });
 
-                            }
-                        }
-                    ]
-                });
+                } else {
 
-            } else {
+                    $('label.error').css({ display: 'none', height: '0px' }).removeClass('error').text('');
 
-                $('label.error').css({ display: 'none', height: '0px' }).removeClass('error').text('');
+                    let validator = formulaire.validate();
 
-                let validator = formulaire.validate();
+                    $.each(validator.errorMap, function (index, value) {
 
-                $.each(validator.errorMap, function (index, value) {
+                        console.log('Id: ' + index + ' Message: ' + value);
 
-                    console.log('Id: ' + index + ' Message: ' + value);
+                    });
 
-                });
+                    notifyWarning('Veuillez renseigner tous les champs obligatoires');
+                }
 
-                notifyWarning('Veuillez renseigner tous les champs obligatoires');
-            }
+            });
 
         });
 
     });
-
-});
 
     //Suppression d'une filiale
     $(document).on('click', '.btn_supprimer_filiale', function () {
@@ -1268,9 +1162,6 @@ $(document).ready(function () {
                                 }
 
                             });
-
-                            //fin confirmation obtenue
-
                         }
                     },
                     {
@@ -1282,9 +1173,6 @@ $(document).ready(function () {
                     }
                 ]
             });
-            //fin demande confirmation
-
-
         }
 
         else {
@@ -1483,7 +1371,6 @@ $(document).ready(function () {
         });
     });
 
-
     $(document).on("click", "#btn_save_document_dossier_sinistre", function () {
 
         const button = $(this); // Sauvegarder le bouton cliquÃ©
@@ -1502,12 +1389,6 @@ $(document).ready(function () {
 
         let form_validity = false
 
-        //let files = $('#'+ modal_id +' #fichier')
-        //let type_documents = $('#'+ modal_id +' #type_document');
-
-        //let array_type_documents = [];
-        //let array_files = [];
-
         for (let i = 0; i < 6; i++) {
             file = $('#' + modal_id + ' #fichier_' + i)[0].files[0];
             type_document = $('#' + modal_id + ' #type_document_' + i).val();
@@ -1519,18 +1400,10 @@ $(document).ready(function () {
                 formData.append('type_document_' + i, type_document);
             }
         }
-        //console.log(type_documents[3].value);
-        //console.log(formulaire.valid());
-        //console.log(files);
-        //console.log(array_files);
-        //console.log(array_type_documents);
-        //return false;
 
         if (form_validity == true) {
 
             formData.append('dossier_sinistre_id', dossier_sinistre_id);
-            //formData.append('fichiers', array_files);
-            //formData.append('type_documents', array_type_documents);
 
             $.ajax({
                 type: 'post',
@@ -1653,54 +1526,6 @@ $(document).ready(function () {
 
     //----------------- BORDEREAU -----------------------------//
 
-    /*
-    $(document).on("click", "#btn_generation_bordereau" , function(e) {
-
-        console.log(localStorage.getItem('selectedItems'));
-         var selectedItems = JSON.parse(localStorage.getItem('selectedItems'));// || []
-         console.log(selectedItems);
-        //demander confirmation
-
-         $('#btn_generation_bordereau').prop('disabled', true);
-         $('#loader').show();
-         $.ajax({
-            type:'post',
-            url:'/sinistre/submit_generate_bordereau',
-            data: {'periode_id':$('#search_periode_comptable').val(),'prestataire_id':$('#search_prestataire').val(), 'type_remboursement_id':$('#search_type_remboursement').val() , "selectedItems": JSON.stringify(selectedItems)},
-            success: function(response){
-
-                console.log(response);
-
-                if (response.statut == 1){
-
-                    $('#btn_generation_bordereau').prop('disabled', false);
-                    var link = response.bordereau_pdf;
-                    var a = document.createElement('a');
-                    a.href = link;
-                    a.download = link.substr(link.lastIndexOf('/') + 1);
-                    document.body.appendChild(a);
-                    a.click();
-                    document.body.removeChild(a);
-
-                    location.reload();
-
-                }else{
-                    notifyWarning(response.message);
-                }
-
-            },
-            error: function(){
-                notifyWarning("Erreur lors de la génération du bordereau");
-                $('#loader').hide();
-            }
-
-        });
-
-
-    });
-    */
-
-
     $(document).on("click", "#btn_generation_bordereau_validation", function (e) {
 
         //demander confirmation
@@ -1761,9 +1586,6 @@ $(document).ready(function () {
                             }
 
                         });
-
-
-
                     }
                 },
                 {
@@ -2107,64 +1929,7 @@ $(document).ready(function () {
         });
     });
 
-
     //TRAITEMENT PAGE POLICE
-
-
-    // Button changement de formule
-    $("#btn_changement_formules").on('click', function () {
-
-        let href = $(this).attr('data-href');
-        let formulaire = $('#form_importation_beneficiaire')[0];
-
-        let formData = new FormData(formulaire);
-        let police_id = $('#modal_importation_beneficiaires #police_id').val();
-
-        formData.append('police_id', police_id);
-
-        $.ajax({
-            type: 'post',
-            url: href,
-            data: formData,
-            processData: false,
-            contentType: false,
-            success: function (response) {
-
-                if (response.statut == 1) {
-
-                    //Vider le formulaire
-                    resetFields('#' + formulaire.id);
-
-                    notifySuccess(response.message, function () {
-                        location.reload();
-                    });
-
-                } else {
-
-                    let errors = JSON.parse(JSON.stringify(response.errors));
-                    let errors_list_to_display = '';
-                    for (field in errors) {
-                        errors_list_to_display += '- ' + ucfirst(field) + ' : ' + errors[field] + '<br/>';
-                    }
-
-                    $('#modal_importation_beneficiaires .alert .message').html(errors_list_to_display);
-
-                    $('#modal_importation_beneficiaires .alert ').fadeTo(2000, 500).slideUp(500, function () {
-                        $(this).slideUp(500);
-                    }).removeClass('alert-success').addClass('alert-warning');
-
-                }
-
-            },
-            error: function () {
-
-            }
-        });
-
-
-    });
-
-    // Ajax pour afficher le select de la liste de formule en fonction de la police
 
     // Ajoutez un gestionnaire d'événements au changement de la police
     $('#police_sortante_id').change(function () {
@@ -2192,149 +1957,6 @@ $(document).ready(function () {
             }
         });
     });
-
-
-    //TODO VERIFICATION IMPORT DES BENEFICIAIRES
-
-    // DISABLE IMPORTER BUTTON
-    $(document).ready(function () {
-        $('#btn_importer_beneficiaires').prop('disabled', true);
-    });
-
-    $("#btn_verifier_beneficiaires").on('click', function () {
-
-        let href = $(this).attr('data-href');
-        let formulaire = $('#modal_form_import_beneficiaire');
-
-        let formData = new FormData();
-        let files = $('#modal_form_import_beneficiaire #fichier')[0].files;
-        let police_id = $('#modal_form_import_beneficiaire #police_id').val();
-
-        if (files.length > 0) {
-
-            formData.append('police_id', police_id);
-            formData.append('fichier', files[0]);
-
-            $('#btn_importer_beneficiaires').hide();
-            $('#btn_verifier_beneficiaires').prop('disabled', true);
-            $('#import_beneficiaires_loader').show();
-
-            $.ajax({
-                type: 'post',
-                url: href,
-                data: formData,
-                processData: false,
-                contentType: false,
-                success: function (response) {
-                    if (response.statut == 1) {
-                        notifySuccess(response.message);
-                        $('#import_beneficiaires_loader').hide();
-                        $('#btn_verifier_beneficiaires').prop('disabled', false);
-                        $('#btn_importer_beneficiaires').prop('disabled', false);
-                        $('#btn_importer_beneficiaires').show();
-                    } else {
-                        let errors = response.errors ?? [];
-                        let errors_list_to_display = '<strong>Erreurs:</strong><br/>';
-                        console.log(errors);
-                        errors.forEach(function (error) {
-                            console.log(error);
-                            errors_list_to_display += '- Ligne: ' + error.row + ', Collonne: ' + error.collunmName + ' | ' + error.message + '<br/>';
-                        });
-                        $('#modal-import_beneficiaires .alert .message').html(errors_list_to_display);
-                        $('#modal-import_beneficiaires .alert').fadeTo(30000, 500).slideUp(500, function () {
-                            $(this).slideUp(500);
-                        }).removeClass('alert-success').addClass('alert-danger');
-                        $('#import_beneficiaires_loader').hide();
-                        $('#btn_verifier_beneficiaires').prop('disabled', false);
-                        $('#btn_importer_beneficiaires').show();
-                    }
-                },
-                error: function (response) {
-                    console.log(response.errors);
-                    console.log(response);
-                    $('#import_beneficiaires_loader').hide();
-                    $('#btn_importer_beneficiaires').show();
-                    $('#btn_verifier_beneficiaires').prop('disabled', true);
-                }
-            });
-
-        } else {
-            notifyWarning('Veuillez chosisr un fichier');
-        }
-    });
-    //
-
-    // TODO IMPORTATION DES BENEFICIAIRES
-    $("#btn_importer_beneficiaires").on('click', function () {
-
-        let href = $(this).attr('data-href');
-        let formulaire = $('#modal_form_import_beneficiaire');
-
-        let formData = new FormData();
-        let files = $('#modal_form_import_beneficiaire #fichier')[0].files;
-        let police_id = $('#modal_form_import_beneficiaire #police_id').val();
-
-        if (files.length > 0) {
-
-            formData.append('police_id', police_id);
-            formData.append('fichier', files[0]);
-
-            $('#btn_importer_beneficiaires').hide();
-            $('#import_beneficiaires_loader').show();
-            $('#btn_verifier_beneficiaires').prop('disabled', true);
-
-            $.ajax({
-                type: 'post',
-                url: href,
-                data: formData,
-                processData: false,
-                contentType: false,
-                success: function (response) {
-
-                    if (response.statut == 1) {
-
-                        //Vider le formulaire
-                        resetFields('#' + formulaire.attr('id'));
-
-                        notifySuccess(response.message, function () {
-                            location.reload();
-                        });
-
-                    } else {
-                        let errors = response.errors ?? [];
-                        let errors_list_to_display = '<strong>Erreurs:</strong><br/>';
-                        console.log(errors);
-                        errors.forEach(function (error) {
-                            console.log(error);
-                            errors_list_to_display += '- Ligne: ' + error.row + ', Collonne: ' + error.collunmName + ' | ' + error.message + '<br/>';
-                        });
-
-                        $('#modal-import_beneficiaires .alert .message').html(errors_list_to_display);
-
-                        $('#modal-import_beneficiaires .alert').fadeTo(30000, 500).slideUp(500, function () {
-                            $(this).slideUp(500);
-                        }).removeClass('alert-success').addClass('alert-danger');
-
-                        $('#btn_importer_beneficiaires').show();
-                        $('#import_beneficiaires_loader').hide();
-                        $('#btn_verifier_beneficiaires').prop('disabled', false);
-                    }
-                },
-                error: function (response) {
-                    console.log(response.errors);
-                    console.log(response);
-                    $('#btn_importer_beneficiaires').show();
-                    $('#import_beneficiaires_loader').hide();
-                    $('#btn_verifier_beneficiaires').prop('disabled', false);
-                }
-            });
-
-        } else {
-            notifyWarning('Veuillez chosisr un fichier');
-            //        $('#import_beneficiaires_loader').hide();
-        }
-    });
-
 
     // TODO CHANGEMENT DE COMPAGNIE
     $("#btn_valider_changement_compagnie").on('click', function () {
@@ -2398,121 +2020,6 @@ $(document).ready(function () {
 
     });
     //fin gestion changement de genre/sexe
-
-
-    //ajout d'un bénéficiaire sur une police
-
-    $(document).on('click', "#btn_save_beneficiaire", function () {
-        let btn_save_beneficiaire = $(this);
-        let formulaire = $('#form_add_beneficiaire');
-        let href = formulaire.attr('action');
-        let matricule_salarie_field = $('input[name="matricule_employe"]');
-        let matricule_salarie_value = matricule_salarie_field.val().trim();
-        let alphanumericRegex = /^[a-zA-Z0-9]*$/;
-        if (matricule_salarie_value === '') {
-            matricule_salarie_field.val('');
-        } else {
-            if (!alphanumericRegex.test(matricule_salarie_value)) {
-                notifyWarning("Aucun caractère spécial ou espace n'est autorisé");
-                return;
-            }
-            matricule_salarie_field.val(matricule_salarie_value);
-        }
-
-        $.validator.setDefaults({ ignore: [] });
-        let formData = new FormData();
-        let files = $('#form_add_beneficiaire #photo')[0].files;
-
-        // Validate the form
-        if (formulaire.valid()) {
-            btn_save_beneficiaire.attr('disabled', true);
-            let n = noty({
-                text: 'Voulez-vous vraiment enregistrer ce bénéficiaire ?',
-                type: 'warning',
-                dismissQueue: true,
-                layout: 'center',
-                theme: 'defaultTheme',
-                buttons: [
-                    {
-                        addClass: 'btn btn-primary', text: 'OUI', onClick: function ($noty) {
-                            $noty.close();
-                            if (files.length > 0) {
-                                formData.append('photo', files[0]);
-                            }
-                            let data_serialized = formulaire.serialize();
-                            $.each(data_serialized.split('&'), function (index, elem) {
-                                let vals = elem.split('=');
-                                let key = vals[0];
-                                let valeur = decodeURIComponent(vals[1].replace(/\+/g, ' '));
-                                formData.append(key, valeur);
-                            });
-                            $.ajax({
-                                type: 'post',
-                                url: href,
-                                data: formData,
-                                processData: false,
-                                contentType: false,
-                                success: function (response) {
-                                    btn_save_beneficiaire.removeAttr('disabled');
-                                    if (response.statut == 1) {
-                                        let aliment = response.data;
-                                        let t = $('#table_beneficiaires').DataTable();
-                                        t.row.add([
-                                            aliment.nom,
-                                            aliment.prenoms,
-                                            aliment.date_naissance,
-                                            aliment.genre,
-                                            aliment.qualite_beneficiaire,
-                                            aliment.matricule_cie,
-                                            aliment.numero_famille,
-                                            aliment.formule,
-                                            aliment.statut,
-                                            aliment.date_sortie
-                                        ])
-                                            .draw(false);
-                                        // Clear the form
-                                        resetFields('#' + formulaire.attr('id'));
-                                        notifySuccess(response.message);
-                                        location.reload();
-                                        btn_save_beneficiaire.removeAttr('disabled');
-                                    } else {
-                                        let errors = JSON.parse(JSON.stringify(response.errors));
-                                        let errors_list_to_display = '';
-                                        for (field in errors) {
-                                            errors_list_to_display += '- ' + ucfirst(field) + ' : ' + errors[field] + '<br/>';
-                                        }
-                                        $('#modal-beneficiaire .alert .message').html(errors_list_to_display);
-                                        $('#modal-beneficiaire .alert ').fadeTo(2000, 500).slideUp(500, function () {
-                                            $(this).slideUp(500);
-                                        }).removeClass('alert-success').addClass('alert-warning');
-                                    }
-                                },
-                                error: function (request, status, error) {
-                                    btn_save_beneficiaire.removeAttr('disabled');
-                                    notifyWarning("Erreur lors de l'enregistrement");
-                                }
-                            });
-                        }
-                    },
-                    {
-                        addClass: 'btn btn-danger', text: 'Annuler', onClick: function ($noty) {
-                            $noty.close();
-                        }
-                    }
-                ]
-            });
-        } else {
-            btn_save_beneficiaire.removeAttr('disabled');
-            $('label.error').css({ display: 'none', height: '0px' }).removeClass('error').text('');
-            let validator = formulaire.validate();
-            $.each(validator.errorMap, function (index, value) {
-                console.log('Id: ' + index + ' Message: ' + value);
-            });
-            notifyWarning('Veuillez renseigner tous les champs obligatoires');
-        }
-    });
-
-
 
     //Ajout de véhicule
     $(document).on('click', "#btn_save_vehicule", function () {
@@ -2593,8 +2100,6 @@ $(document).ready(function () {
     });
 
 
-
-    //modification de beneficiaire
     $(document).on('click', '.btn_modifier_vehicule', function () {
 
         let model_name = $(this).attr('data-model_name');
@@ -2739,466 +2244,7 @@ $(document).ready(function () {
             ]
         });
 
-
-
     });
-
-    //ajout bénéficiaire
-    $(document).on('click', '#btn_add_beneficiaire', function () {
-
-        //let model_name = $(this).attr('data-model_name');
-        //let modal_title = $(this).attr('data-modal_title');
-        // alert('hello');
-        let href = $(this).attr('data-href');
-        $('#btn_add_beneficiaire').hide();
-        $('#loader-btn_add_beneficiaire').show();
-        $('#olea_std_dialog_box').load(href, function () {
-            //appliquer le mask de saisie sur les champs montant
-            AppliquerMaskSaisie();
-            $('#modal-beneficiaire').attr('data-backdrop', 'static').attr('data-keyboard', false);
-            $('#modal-beneficiaire').find('.modal-dialog').addClass('modal-xl').removeClass('modal-lg');
-            $('#modal-beneficiaire').modal();
-
-            $('#btn_add_beneficiaire').show();
-            $('#loader-btn_add_beneficiaire').hide();
-
-            //gestion selection qualité bénéficiaire et adhérent principal
-            $("#qualite_beneficiaire_id").on('change', function () {
-
-                let qualite_code = $(this).children('option:selected').data('qualite_code');
-                if (qualite_code == "AD") {
-
-                    $('select#adherent_principal').removeAttr('required');
-                    $('div#box_adherent_principal').hide();
-                    //alert('qualite');
-                } else {
-                    $('select#adherent_principal').attr('required', 'required');
-                    $('div#box_adherent_principal').show();
-                    //alert('code');
-                }
-
-            });
-
-
-        });
-
-
-    });
-
-    //modification de beneficiaire
-    $(document).on('click', '.btn_modifier_beneficiaire', function () {
-
-        let model_name = $(this).attr('data-model_name');
-        let modal_title = $(this).attr('data-modal_title');
-        let aliment_id = $(this).attr('data-aliment_id');
-        let href = $(this).attr('data-href');
-        let btn = $(this)
-
-        btn.hide();
-        $('#loder-aliment-' + aliment_id).show();
-
-        $('#olea_std_dialog_box').load(href, function () {
-
-            //appliquer le mask de saisie sur les champs montant
-            AppliquerMaskSaisie();
-
-            $('#modal-modification_beneficiaire').attr('data-backdrop', 'static').attr('data-keyboard', false);
-
-            $('#modal-modification_beneficiaire').find('.modal-title').text(modal_title);
-            $('#modal-modification_beneficiaire').find('#btn_valider').attr({ 'data-model_name': model_name, 'data-href': href });
-            $('#modal-modification_beneficiaire').find('.modal-dialog').addClass('modal-xl').removeClass('modal-lg');
-
-            //
-            $('#modal-modification_beneficiaire').modal();
-
-            //
-            btn.show();
-            $('#loder-aliment-' + aliment_id).hide();
-
-            //gestion du clique sur valider les modifications
-
-            $("#btn_save_modification_beneficiaire").on('click', function () {
-                let formulaire = $('#form_update_beneficiaire');
-                let href = formulaire.attr('action');
-
-                $.validator.setDefaults({ ignore: [] });
-                let matricule_salarie_field = $('input[name="matricule_employe"]');
-                let matricule_salarie_value = matricule_salarie_field.val().trim();
-                let alphanumericRegex = /^[a-zA-Z0-9]*$/;
-                if (matricule_salarie_value === '') {
-                    matricule_salarie_field.val('');
-                } else {
-                    matricule_salarie_field.val(matricule_salarie_value);
-                    if (!alphanumericRegex.test(matricule_salarie_value)) {
-                        notifyWarning("Aucun caractère spécial ou espace n'est autorisé");
-                        return;
-                    }
-                }
-
-                let formData = new FormData();
-                let files = $('#form_update_beneficiaire #photo')[0].files;
-                let currentPhoto = $('#current_photo').val();
-
-                if (formulaire.valid()) {
-                    if (files.length > 0) {
-                        formData.append('photo', files[0]);
-                    } else {
-                        formData.append('current_photo', currentPhoto);
-                    }
-
-                    let data_serialized = formulaire.serialize();
-                    $.each(data_serialized.split('&'), function (index, elem) {
-                        let vals = elem.split('=');
-                        let key = vals[0];
-                        let valeur = decodeURIComponent(vals[1].replace(/\+/g, '  '));
-                        formData.append(key, valeur);
-                    });
-
-                    $.ajax({
-                        type: 'post',
-                        url: href,
-                        data: formData,
-                        processData: false,
-                        contentType: false,
-                        success: function (response) {
-                            if (response.statut == 1) {
-                                notifySuccess(response.message);
-                                location.reload();
-                            } else {
-                                let errors = JSON.parse(JSON.stringify(response.errors));
-                                let errors_list_to_display = '';
-                                for (field in errors) {
-                                    errors_list_to_display += '- ' + ucfirst(field) + ' : ' + errors[field] + '<br/>';
-                                }
-                                $('#modal-beneficiaire .alert .message').html(errors_list_to_display);
-                                $('#modal-beneficiaire .alert ').fadeTo(2000, 500).slideUp(500, function () {
-                                    $(this).slideUp(500);
-                                }).removeClass('alert-success').addClass('alert-warning');
-                            }
-                        },
-                        error: function (request, status, error) {
-                            notifyWarning("Erreur lors de l'enregistrement");
-                        }
-                    });
-                } else {
-                    $('label.error').css({ display: 'none', height: '0px' }).removeClass('error').text('');
-                    let validator = formulaire.validate();
-                    $.each(validator.errorMap, function (index, value) {
-                        console.log('Id: ' + index + ' Message: ' + value);
-                    });
-                    notifyWarning('Veuillez renseigner tous les champs obligatoires');
-                }
-            });
-
-
-        });
-
-
-    });
-
-
-
-    //fin modification de beneficiaire
-
-    //DETAILS de beneficiaire
-    $(document).on("click", ".btn_details_beneficiaire", function () {
-
-        let model_name = $(this).attr('data-model_name');
-        let modal_title = $(this).attr('data-modal_title');
-        let href = $(this).attr('data-href');
-
-        //let dialog_box = $("<div>").addClass('olea_std_dialog_box').appendTo('body');
-
-        $('#olea_std_dialog_box').load(href, function () {
-
-            //appliquer le mask de saisie sur les champs montant
-            AppliquerMaskSaisie();
-
-            $('#modal-details_beneficiaire .dataTable:not(.customDataTable_)').DataTable({
-                "language": {
-                    "url": "//cdn.datatables.net/plug-ins/9dcbecd42ad/i18n/French.json"
-                },
-                order: [[0, 'desc']],
-                lengthMenu: [
-                    [10],
-                    [10],
-                ],
-                searching: false,
-                lengthChange: false,
-            });
-
-            let i = 0;
-            /*
-            $('.dropzone_area').each(function(myElement){
-                let zone_id = $(this).data('zone_id');
-                let href = $(this).attr('action');
-
-                let dropzone = new Dropzone("#"+zone_id, { url: href, dictDefaultMessage: ""});
-
-            });
-            */
-
-            $('#modal-details_beneficiaire').attr('data-backdrop', 'static').attr('data-keyboard', false);
-
-            $('#modal-details_beneficiaire').find('.modal-dialog').addClass('modal-xl').removeClass('modal-lg');
-
-            //
-            $('#modal-details_beneficiaire').modal();
-
-
-
-
-
-        });
-
-
-    });
-
-    //DETAILS de prospect
-    $(document).on("click", ".btn_details_prospect", function () {
-
-        let model_name = $(this).attr('data-model_name');
-        let modal_title = $(this).attr('data-modal_title');
-        let href = $(this).attr('data-href');
-
-        //let dialog_box = $("<div>").addClass('olea_std_dialog_box').appendTo('body');
-
-        $('#olea_std_dialog_box').load(href, function () {
-
-            //appliquer le mask de saisie sur les champs montant
-            AppliquerMaskSaisie();
-
-            $('#modal-details_beneficiaire .dataTable:not(.customDataTable_)').DataTable({
-                "language": {
-                    "url": "//cdn.datatables.net/plug-ins/9dcbecd42ad/i18n/French.json"
-                },
-                order: [[0, 'desc']],
-                lengthMenu: [
-                    [10],
-                    [10],
-                ],
-                searching: false,
-                lengthChange: false,
-            });
-
-            let i = 0;
-            /*
-            $('.dropzone_area').each(function(myElement){
-                let zone_id = $(this).data('zone_id');
-                let href = $(this).attr('action');
-
-                let dropzone = new Dropzone("#"+zone_id, { url: href, dictDefaultMessage: ""});
-
-            });
-            */
-
-            $('#modal-details_prospect').attr('data-backdrop', 'static').attr('data-keyboard', false);
-
-            $('#modal-details_prospect').find('.modal-dialog').addClass('modal-xl').removeClass('modal-lg');
-
-            //
-            $('#modal-details_prospect').modal();
-
-
-
-
-
-        });
-
-
-    });
-
-
-    $(document).on("click", "#btn_rejet_prospect", function (e) {
-        //    alert('Voulez-vous vraiment rejeter ce prospect ?');
-        let prospect_id = $(this).attr('data-prospect_id');
-        let href = $(this).attr('data-href');
-
-        let btn_rejet_prospect = $(this);
-        btn_rejet_prospect.attr('disabled', true);
-        $("#btn_submit_prospect").attr('disabled', true);
-
-        $.ajax({
-            type: 'post',
-            url: href,
-            data: { prospect_id: prospect_id },
-            success: function (response) {
-                if (response.status == 1) {
-
-                    notifySuccess(response.message, function () {
-                        location.reload();
-                    });
-                    //btn_rejet_prospect.removeAttr('disabled');
-                } else {
-                    notifyWarning(response.message);
-                }
-            },
-            error: function (request, status, error) {
-                btn_rejet_prospect.removeAttr('disabled');
-                $("#btn_submit_prospect").removeAttr('disabled');
-                notifyWarning("Erreur lors de l'enregistrement");
-            }
-
-        });
-
-    });
-
-
-    $(document).on("click", "#btn_submit_prospect", function (e) {
-        //    alert('Voulez-vous vraiment rejeter ce prospect ?');
-        let prospect_id = $(this).attr('data-prospect_id');
-        let police_id = $(this).attr('data-police_id');
-        let href = $(this).attr('data-href');
-        let url_police_benef = $(this).attr('data-url_police_benef');
-
-        let btn_submit_prospect = $(this);
-        btn_submit_prospect.attr('disabled', true);
-        $("#btn_rejet_prospect").attr('disabled', true);
-
-        $.ajax({
-            type: 'post',
-            url: href,
-            data: {
-                prospect_id: prospect_id,
-                police_id: police_id
-            },
-            success: function (response) {
-                if (response.status == 1) {
-
-                    notifySuccess(response.message, function () {
-                        window.open(url_police_benef, '_blank').focus();
-                        location.reload();
-                    });
-                    //btn_submit_prospect.removeAttr('disabled');
-                } else {
-                    notifyWarning(response.message);
-                }
-            },
-            error: function (request, status, error) {
-                btn_submit_prospect.removeAttr('disabled');
-                $("#btn_rejet_prospect").removeAttr('disabled');
-                notifyWarning("Erreur lors de l'enregistrement");
-            }
-
-        });
-
-    });
-
-    //Moved from inside details beneficiaire to here
-
-    //gestion détails carte
-    $(document).on("click", "#modal-details_beneficiaire .btn_details_carte", function () {
-        let numero_carte = $(this).data('numero_carte');
-        let statut_carte = $(this).data('statut_carte');
-        let qrcode_carte = $(this).data('qrcode_carte');
-
-        $('#qrcode_carte').attr("src", qrcode_carte);
-        $('#apercu_carte_numero').text(numero_carte);
-
-        if (statut_carte == "INACTIF") {
-            $('#apercu_carte_statut').html('<span style="color:red;letter-spacing:5px;margin-left:15px;">INACTIVE</span>');
-            $('#btn_imprimer_carte').hide();
-        } else {
-            $('#apercu_carte_statut').html('<span style="color:green;letter-spacing:5px;"></span>');
-            $('#btn_imprimer_carte').show();
-        }
-
-
-        $("#apercu_carte").animate({
-            opacity: 0.25,
-        }, 500, function () {
-            // on Animation complete.
-
-            $("#apercu_carte").css({ opacity: 0.99 });
-        });
-
-    });
-
-    //gestion détails carte
-    $(document).on("click", "#btn_save_carte", function (e) {
-        e.stopPropagation();
-
-        let btn_save_carte = $(this);
-        btn_save_carte.attr('disabled', true);
-
-        let formulaire = $('#form_add_carte');
-        let href = formulaire.attr('action');
-
-        if (formulaire.valid()) {
-
-            $.ajax({
-                type: 'post',
-                url: href,
-                data: formulaire.serialize(),
-                success: function (response) {
-
-                    btn_save_carte.removeAttr('disabled');
-
-                    if (response.statut == 1) {
-
-                        carte = response.data;
-                        let t = $('#table_cartes').DataTable();
-
-                        t.row.add([
-                            carte.numero,
-                            carte.date_edition.substr(0, 10),
-                            carte.date_desactivation,
-                            carte.statut,
-                            carte.id,
-                        ])
-                            .draw(false);
-
-                        //Vider le formulaire
-                        resetFields('#' + formulaire.attr('id'));
-
-                        notifySuccess(response.message);
-                        location.reload();
-
-                        btn_save_carte.removeAttr('disabled');
-
-                    } else {
-
-                        let errors = JSON.parse(JSON.stringify(response.errors));
-                        let errors_list_to_display = '';
-                        for (field in errors) {
-                            errors_list_to_display += '- ' + ucfirst(field) + ' : ' + errors[field] + '<br/>';
-                        }
-
-                        $('#modal-carte .alert .message').html(errors_list_to_display);
-
-                        $('#modal-carte .alert ').fadeTo(2000, 500).slideUp(500, function () {
-                            $(this).slideUp(500);
-                        }).removeClass('alert-success').addClass('alert-warning');
-
-                    }
-
-                },
-                error: function (request, status, error) {
-                    btn_save_carte.removeAttr('disabled');
-                    notifyWarning("Erreur lors de l'enregistrement");
-                }
-
-            });
-
-        } else {
-
-            btn_save_carte.removeAttr('disabled');
-
-            $('label.error').css({ display: 'none', height: '0px' }).removeClass('error').text('');
-
-            let validator = formulaire.validate();
-
-            $.each(validator.errorMap, function (index, value) {
-
-                console.log('Id: ' + index + ' Message: ' + value);
-
-            });
-
-            notifyWarning('Veuillez renseigner tous les champs obligatoires');
-        }
-
-    });
-
 
     //changement de formule
     $(document).on("click", "#btn_save_changement_formule", function (e) {
@@ -3325,134 +2371,7 @@ $(document).ready(function () {
 
     });
 
-
-    $(document).on("click", "#btn_save_suspension_beneficiaire", function (e) {
-
-        //alert('yes');
-
-        e.stopPropagation();
-
-        let btn_valider = $(this);
-        let ligne_tr = $(this).closest('tr');
-
-        let formulaire = $('#form_suspension_beneficiaire');
-        let href = formulaire.attr('action');
-
-        if (formulaire.valid()) {
-
-            btn_valider.prop('disabled', true).attr('disabled', true);
-
-            //demander confirmation
-            let n = noty({
-                text: 'Voulez-vous vraiment le suspendre le bénéficiaire ?',
-                type: 'warning',
-                dismissQueue: true,
-                layout: 'center',
-                theme: 'defaultTheme',
-                buttons: [
-                    {
-                        addClass: 'btn btn-primary', text: 'OUI', onClick: function ($noty) {
-                            $noty.close();
-
-                            //confirmation obtenu
-
-
-
-                            $.ajax({
-                                type: 'post',
-                                url: href,
-                                data: formulaire.serialize(),
-                                success: function (response) {
-
-                                    btn_valider.removeAttr('disabled');
-
-                                    if (response.statut == 1) {
-
-                                        //Fermer le modal
-                                        $('#modal-suspension_beneficiaire').modal('hide');
-
-                                        avenant = response.data;
-                                        let t = $('#table_avenants_beneficiaire').DataTable();
-
-                                        t.row.add([
-                                            avenant.libelle,
-                                            avenant.date_effet,
-                                            avenant.motif,
-                                            avenant.created_by
-                                        ])
-                                            .draw(false);
-
-                                        //Vider le formulaire
-                                        resetFields('#' + formulaire.attr('id'));
-
-                                        notifySuccess(response.message);
-
-                                    } else {
-                                        /*
-                                        let errors = JSON.parse(JSON.stringify(response.errors));
-                                        let errors_list_to_display = '';
-                                        for(field in errors){
-                                            errors_list_to_display += '- ' + ucfirst(field) + ' : ' + errors[field] + '<br/>';
-                                        }
-
-                                        $('#modal-carte .alert .message').html(errors_list_to_display);
-
-                                        $('#modal-carte .alert ').fadeTo(2000, 500).slideUp(500, function(){
-                                            $(this).slideUp(500);
-                                        }).removeClass('alert-success').addClass('alert-warning');
-                                        */
-                                    }
-
-                                },
-                                error: function (request, status, error) {
-                                    btn_valider.removeAttr('disabled');
-                                    notifyWarning("Erreur lors de l'enregistrement" + request.responseText);
-                                }
-
-                            });
-
-
-
-                            //fin confirmation obtenue
-
-                        }
-                    },
-                    {
-                        addClass: 'btn btn-danger', text: 'Annuler', onClick: function ($noty) {
-                            //confirmation refusée
-                            $noty.close();
-
-                        }
-                    }
-                ]
-            });
-            //fin demande confirmation
-            btn_valider.prop('disabled', false).attr('disabled', false);
-            btn_valider.removeAttr('disabled');
-
-        } else {
-
-            btn_valider.removeAttr('disabled');
-
-            $('label.error').css({ display: 'none', height: '0px' }).removeClass('error').text('');
-
-            let validator = formulaire.validate();
-
-            $.each(validator.errorMap, function (index, value) {
-
-                console.log('Id: ' + index + ' Message: ' + value);
-
-            });
-
-            notifyWarning('Veuillez renseigner tous les champs obligatoires');
-        }
-
-    });
-
-
     $(document).on("click", "#btn_save_remise_en_vigueur", function (e) {
-
-        //alert('yes');
 
         e.stopPropagation();
 
@@ -3477,10 +2396,6 @@ $(document).ready(function () {
                     {
                         addClass: 'btn btn-primary', text: 'OUI', onClick: function ($noty) {
                             $noty.close();
-
-                            //confirmation obtenu
-
-
 
                             $.ajax({
                                 type: 'post',
@@ -3524,10 +2439,6 @@ $(document).ready(function () {
 
                             });
 
-
-
-                            //fin confirmation obtenue
-
                         }
                     },
                     {
@@ -3566,12 +2477,7 @@ $(document).ready(function () {
     //sortir le bénéficiaire de la police
     $(document).on("click", ".btn_sortie_beneficiaire_formule", function () {
         var id = $(this).data('id');
-        //var motif = $(this).data('motif');
         $("#modal-sortie_police #msp-id").val(id);
-        //$("#modal-sortie_police #msp-motif").val(motif);
-        // As pointed out in comments,
-        // it is unnecessary to have to manually call the modal.
-        // $('#addBookDialog').modal('show');
     });
 
 
@@ -3715,113 +2621,7 @@ $(document).ready(function () {
             //
             $('#modal-details_vehicule').modal();
 
-
-
-            //sortir le bénéficiaire de la police
-            // $(document).on("click", "#btn_save_sortie_police", function(e) {
-            //     e.stopPropagation();
-
-            //     let btn_valider = $(this);
-
-            //     let formulaire = $('#form_sortie_police');
-            //     let href = formulaire.attr('action');
-
-            //     if(formulaire.valid()){
-
-            //         btn_valider.prop('disabled', true).attr('disabled', true);
-
-            //         //demander confirmation
-            //         let n = noty({
-            //         text        : 'Voulez-vous vraiment le sortir de la police ?',
-            //         type        : 'warning',
-            //         dismissQueue: true,
-            //         layout      : 'center',
-            //         theme       : 'defaultTheme',
-            //         buttons     : [
-            //             {addClass: 'btn btn-primary', text: 'OUI', onClick: function ($noty) {
-            //                 $noty.close();
-
-            //                  //confirmation obtenu
-
-
-
-            //                 $.ajax({
-            //                     type:'post',
-            //                     url:href,
-            //                     data: formulaire.serialize(),
-            //                     success: function(response){
-
-            //                         btn_valider.removeAttr('disabled');
-
-            //                         if(response.statut == 1){
-
-            //                             $('.col_statut').text("INACTIF");
-
-            //                             notifySuccess(response.message);
-            //                             //location.reload();
-
-            //                         }else{
-
-            //                             let errors = JSON.parse(JSON.stringify(response.errors));
-            //                             let errors_list_to_display = '';
-            //                             for(field in errors){
-            //                                 errors_list_to_display += '- ' + ucfirst(field) + ' : ' + errors[field] + '<br/>';
-            //                             }
-
-            //                             $('#modal-carte .alert .message').html(errors_list_to_display);
-
-            //                             $('#modal-carte .alert ').fadeTo(2000, 500).slideUp(500, function(){
-            //                                 $(this).slideUp(500);
-            //                             }).removeClass('alert-success').addClass('alert-warning');
-
-            //                         }
-
-            //                     },
-            //                     error:function(request, status, error){
-            //                         btn_valider.removeAttr('disabled');
-            //                         notifyWarning("Erreur lors de l'enregistrement" + request.responseText);
-            //                     }
-
-            //                 });
-
-
-
-            // 				 //fin confirmation obtenue
-
-            //                 }
-            //                 },
-            //                 {addClass: 'btn btn-danger', text: 'Annuler', onClick: function ($noty) {
-            //                     //confirmation refusée
-            //                     $noty.close();
-
-            //                 }
-            //                 }
-            //             ]
-            //         });
-            //         //fin demande confirmation
-
-
-            //     }else{
-
-            //         btn_valider.removeAttr('disabled');
-
-            //         $('label.error').css({display:'none',height:'0px'}).removeClass('error').text('');
-
-            //         let validator = formulaire.validate();
-
-            //         $.each(validator.errorMap, function (index, value) {
-
-            //             console.log('Id: ' + index + ' Message: ' + value);
-
-            //         });
-
-            //         notifyWarning('Veuillez renseigner tous les champs obligatoires');
-            //     }
-
-            // });
-
         });
-
 
     });
 
@@ -3886,9 +2686,6 @@ $(document).ready(function () {
 
 
     });
-
-    //fin modification de beneficiaire
-
 
     //DETAILS de marchandise
     $(document).on("click", ".btn_details_marchandise", function () {
@@ -4135,7 +2932,6 @@ $(document).ready(function () {
 
         });
     });
-
 
     //Ajout d'autre risque
     $(document).on('click', "#btn_save_autrerisque", function () {
@@ -4883,7 +3679,6 @@ $(document).ready(function () {
         $("#modal-formule-desactivate #mbu-id").val(id);
         $("#modal-formule-desactivate #mbu-type").val(type);
         $("#modal-formule-desactivate #mbu-libelle").val(libelle);
-        //$("#modal-formule-desactivate #mbu-date_fin").val(date_fin);
 
         $("#modal-formule-desactivate #mbu-title").html("DESACTIVATION D'UNE FORMULE DE GARANTIE");
         $("#modal-formule-desactivate #mbu-libelle").parent().parent().hide();
@@ -4904,7 +3699,6 @@ $(document).ready(function () {
 
         $('.if_tpp').addClass("d-none");
         $('.if_tpp .form-control').removeAttr('required');
-        // $('.champ_variable input').removeAttr('required')
 
         let option_mode_prefinancement = $(this).val();
 
@@ -4912,7 +3706,6 @@ $(document).ready(function () {
             case "TPP"://prime par famille
                 $('.if_tpp').removeClass("d-none");
                 $('.if_tpp .form-control').attr('required', 'required');
-                //$('.if_prime_famille input:not(.not_required)').attr('required','required');
                 break;
         }
 
@@ -4952,500 +3745,6 @@ $(document).ready(function () {
         });
     })
 
-    $(document).on("click", "#btn_save_bareme", function () {
-
-        let formulaire = $('#form_add_bareme');
-        let href = formulaire.attr('action');
-
-        if (formulaire.valid()) {
-
-            $.ajax({
-                type: 'post',
-                url: href,
-                data: formulaire.serialize(),
-                success: function (response) {
-
-                    if (response.statut == 1) {
-
-                        ligne_bareme = response.data;
-                        let t = $('#table_baremes').DataTable();
-                        if (ligne_bareme.is_garanti == "GARANTI") {
-                            ligne_bareme.is_garanti = '<span class="badge badge-success">GARANTI</span>';
-                        } else {
-                            ligne_bareme.is_garanti = '<span class="badge badge-danger">EXCLU</span>';
-                        }
-
-                        //statut actif par défaut
-                        ligne_bareme.statut = '<span class="badge badge-success">ACTIF</span>';
-
-                        let actions_buttons = '<span data-href="" class="btn badge btn-sm btn-details rounded-pill btn-popup_details_ligne_bareme"><i class="fa fa-eye"></i> Détails</span></a>&nbsp;&nbsp;&nbsp;'
-                            + '<span title="Modifier" data-href="" class="text-warning btn-popup_details_ligne_bareme" style="cursor:pointer;font-weight:normal;"><i class="fa fa-edit"></i></span>&nbsp;&nbsp;&nbsp;'
-                            + '<span title="Désactiver" data-href="" class="text-danger btn-popup_details_ligne_bareme" style="cursor:pointer;font-weight:normal;"><i class="fa fa-times"></i></span>';
-
-                        t.row.add([ligne_bareme.rubrique,
-                        ligne_bareme.sous_rubrique,
-                        ligne_bareme.regroupement_acte,
-                        ligne_bareme.acte,
-                        ligne_bareme.qualite_beneficiaire,
-                        ligne_bareme.age_minimum,
-                        ligne_bareme.age_maximum,
-                        ligne_bareme.is_garanti,
-                        ligne_bareme.taux_couverture,
-                        ligne_bareme.plafond_rubrique,
-                        ligne_bareme.plafond_sous_rubrique,
-                        ligne_bareme.plafond_regroupement_acte,
-                        ligne_bareme.plafond_acte,
-                        ligne_bareme.date_debut.split('-').reverse().join('/'),
-                        ligne_bareme.date_fin.split('-').reverse().join('/'),
-                            //ligne_bareme.statut,
-                            actions_buttons
-                        ])
-                            .draw(false);
-
-                        //Vider le formulaire
-                        resetFields('#' + formulaire.attr('id'));
-
-                        formulaire.find(".tags-multiple").val('').trigger('change');
-                        formulaire.find("#acte").empty('change');
-
-                        //$('#'+formulaire + " select").val('').trigger('change');
-                        //$('#'+formulaire).val("").trigger("change");
-
-                        notifySuccess(response.message, function () {
-                            //location.reload();
-                        });
-
-                    } else {
-
-                        notifyWarning(response.message);
-
-                        /*
-                        let errors = JSON.parse(JSON.stringify(response.errors));
-                        let errors_list_to_display = '';
-                        for(field in errors){
-                            errors_list_to_display += '- ' + ucfirst(field) + ' : ' + errors[field] + '<br/>';
-                        }
-
-                        $('#modal-bareme .alert .message').html(errors_list_to_display);
-
-                        $('#modal-bareme .alert ').fadeTo(2000, 500).slideUp(500, function(){
-                            $(this).slideUp(500);
-                        }).removeClass('alert-success').addClass('alert-warning');
-                        */
-
-                    }
-
-                },
-                error: function (request, status, error) {
-
-                    notifyWarning("Erreur lors de l'enregistrement");
-                }
-
-            });
-
-        } else {
-
-            $('label.error').css({ display: 'none', height: '0px' }).removeClass('error').text('');
-
-            let validator = formulaire.validate();
-
-            $.each(validator.errorMap, function (index, value) {
-
-                console.log('Id: ' + index + ' Message: ' + value);
-
-            });
-
-            notifyWarning('Veuillez renseigner correctement le formulaire');
-        }
-
-
-    });
-
-
-    //afficher le modal de saisi de la date de realisation d'une seance sinistre
-    $(document).on("click", ".popup-detail_formule_bareme", function (e) {
-
-        e.preventDefault();
-
-        href = $(this).data('href');
-
-        $('#olea_std_dialog_box').load(href, function () {
-
-            $('#modal-details_bareme').attr('data-backdrop', 'static').attr('data-keyboard', false);
-
-            $('#modal-details_bareme').find('.modal-dialog').addClass('modal-lg');
-
-            //
-            $('#modal-details_bareme').modal();
-
-        });
-    });
-
-
-    //afficher le modal de désactivation d'un barème
-    $(document).on("click", ".popup-desactiver_bareme", function (e) {
-
-        e.preventDefault();
-
-        let bareme_id = $(this).data('bareme_id');
-        let libelle = $(this).data('libelle');
-
-        let tr = $(this).closest('tr');
-
-
-        $('#modal-desactiver_bareme #bareme_id').val(bareme_id);
-        //let tr = $('#table_apporteurs_police tbody tr:first');
-
-        let timestamp = Date.now();
-
-        $('#table_bareme_a_supprimer tbody')
-            .append('<tr id="tr_x">' + tr.html() + '</tr>')
-            .ready(function () {
-                tr = $('#tr_x');
-                tr.find('td:last').remove();
-                tr.find('td:last').remove();
-                tr.find('td:last').remove();
-                AppliquerMaskSaisie();
-            });
-
-        $('#modal-desactiver_bareme').attr('data-backdrop', 'static').attr('data-keyboard', false);
-
-        $('#modal-desactiver_bareme').find('.modal-dialog').addClass('modal-lg');
-
-        //
-        $('#modal-desactiver_bareme').modal();
-
-    });
-
-    //au changement de rubrique
-    $(document).on("change", "#form_add_bareme #rubrique", function () {
-        rubrique_id = $(this).val();
-        let href = $(this).data('href_load_actes');
-
-        $('#form_add_bareme #regroupement_acte').html('').append('<option value="">Choisir</option>');
-        $('#form_add_bareme #acte').html('').append('<option value="">Choisir</option>');
-
-        //charger les actes
-        $.ajax({
-            type: 'get',
-            url: '/production/actes_by_rubrique/' + rubrique_id,
-            dataType: 'json',
-            success: function (actes) {
-                $('#form_add_bareme #acte').html('').append('<option value="">Choisir</option>');
-
-                actes.forEach(function (acte) {
-                    $('#form_add_bareme #acte').append('<option value="' + acte.pk + '">' + acte.fields.libelle + '</option>');
-                });
-            },
-            error: function () {
-                console.log('Erreur lors du chargement des actes ');
-            }
-        });
-
-
-        //charger les regroupements d'actes
-        $.ajax({
-            type: 'get',
-            url: '/production/regroupements_actes_by_rubrique/' + rubrique_id,
-            dataType: 'json',
-            success: function (regroupements_actes) {
-                $('#form_add_bareme #regroupement_acte').html('').append('<option value="">Choisir</option>');
-
-                regroupements_actes.forEach(function (regroupement_acte) {
-                    $('#form_add_bareme #regroupement_acte').append('<option value="' + regroupement_acte.pk + '">' + regroupement_acte.fields.libelle + '</option>');
-                });
-            },
-            error: function () {
-                console.log("Erreur lors du chargement des regroupements d'actes");
-            }
-        });
-
-
-        //charger les sous-regroupements d'actes
-        $.ajax({
-            type: 'get',
-            url: '/production/sous_regroupements_actes_by_rubrique/' + rubrique_id,
-            dataType: 'json',
-            success: function (sous_regroupements_actes) {
-                $('#form_add_bareme #sous_regroupement_acte').html('').append('<option value="">Choisir</option>');
-
-                sous_regroupements_actes.forEach(function (sous_regroupement_acte) {
-                    $('#form_add_bareme #sous_regroupement_acte').append('<option value="' + sous_regroupement_acte.pk + '">' + sous_regroupement_acte.fields.libelle + '</option>');
-                });
-            },
-            error: function () {
-                console.log("Erreur lors du chargement des sous-regroupements d'actes");
-            }
-        });
-
-
-        //charger les sous-rubriques
-        $.ajax({
-            type: 'get',
-            url: '/production/sous_rubriques_by_rubrique/' + rubrique_id,
-            dataType: 'json',
-            success: function (sous_rubriques) {
-                $('#form_add_bareme #sous_rubrique').html('').append('<option value="">Choisir</option>');
-
-                sous_rubriques.forEach(function (sous_rubrique) {
-                    $('#form_add_bareme #sous_rubrique').append('<option value="' + sous_rubrique.pk + '">' + sous_rubrique.fields.libelle + '</option>');
-                });
-            },
-            error: function () {
-                console.log('Erreur lors du chargement des sous-rubrique ');
-            }
-        });
-
-
-    });
-
-
-    $(document).on("change", "#form_add_bareme #regroupement_acte", function () {
-
-
-        regroupement_acte_id = $(this).val();
-        let href = $(this).data('href_load_actes');
-
-        if (regroupement_acte_id != "") {
-
-            //vider le champ sous-rubrique
-            $('#form_add_bareme #sous_rubrique').val('').trigger('change');
-
-            //charger les actes du regroupement
-            $.ajax({
-                type: 'get',
-                url: '/production/actes_by_regroupement_acte/' + regroupement_acte_id,
-                dataType: 'json',
-                success: function (actes) {
-                    $('#form_add_bareme #acte').html('').append('<option value="">Choisir</option>');
-
-
-                    actes.forEach(function (acte) {
-                        $('#form_add_bareme #acte').append('<option value="' + acte.pk + '">' + acte.fields.libelle + '</option>');
-                    });
-                },
-                error: function () {
-                    console.log('Erreur lors du chargement des actes ');
-                }
-            });
-
-        } else {
-            //recharger la liste des acteqs de la rubrique
-            let rubrique_id = $('#form_add_bareme #rubrique').val();
-
-            $.ajax({
-                type: 'get',
-                url: '/production/actes_by_rubrique/' + rubrique_id,
-                dataType: 'json',
-                success: function (actes) {
-                    $('#form_add_bareme #acte').html('').append('<option value="">Choisir</option>');
-
-
-                    actes.forEach(function (acte) {
-                        $('#form_add_bareme #acte').append('<option value="' + acte.pk + '">' + acte.fields.libelle + '</option>');
-                    });
-                },
-                error: function () {
-                    console.log('Erreur lors du chargement des actes ');
-                }
-            });
-
-        }
-
-    });
-
-
-    $(document).on("change", "#form_add_bareme #sous_rubrique", function () {
-
-        sous_rubrique_id = $(this).val();
-        let href = $(this).data('href_load_actes');
-
-        if (sous_rubrique_id != "") {
-            $('#form_add_bareme #regroupement_acte').val('').trigger('change');
-            $('#form_add_bareme #acte').val('').trigger('change');
-        }
-
-    });
-
-
-    //a la fermeture du dialog, rafraichir la page
-    $("#modal-bareme").on("hidden.bs.modal", function () {
-        location.href = '';
-    });
-
-
-    //suppression de bareme
-    $(document).on("click", "#btn_desactiver_bareme", function (e) {
-        let formulaire = $(this).closest("form");
-
-        let href = formulaire.attr('action');
-
-        let bareme_id = $('#bareme_id').val();
-        let date_fin = $('#date_fin_bareme').val();
-
-        if (bareme_id != '' && date_fin != "") {
-
-            let n = noty({
-                text: 'Voulez-vous vraiment désactiver cette spécificité ?',
-                type: 'warning',
-                dismissQueue: true,
-                layout: 'center',
-                theme: 'defaultTheme',
-                buttons: [
-                    {
-                        addClass: 'btn btn-primary', text: 'Supprimer', onClick: function ($noty) {
-                            $noty.close();
-
-                            //confirmation obtenu
-                            $.ajax({
-                                type: 'post',
-                                url: href,
-                                data: formulaire.serialize(),
-                                success: function (response) {
-
-                                    if (response.statut == 1) {
-
-                                        notifySuccess(response.message, function () {
-                                            location.reload();
-                                        });
-
-                                    } else {
-                                        notifyWarning(response.response);
-                                    }
-
-                                },
-                                error: function (request, status, error) {
-
-                                    notifyWarning("Erreur lors du traitement");
-                                }
-
-                            });
-
-                        }
-                    },
-                    {
-                        addClass: 'btn btn-danger', text: 'Annuler', onClick: function ($noty) {
-                            //confirmation refusée
-                            $noty.close();
-
-                        }
-                    }
-                ]
-            });
-
-        } else {
-            notifyWarning("Veuillez saisir la date fin SVP");
-        }
-
-
-    });
-
-    //fin ajout d'un bareme sur une police
-
-
-    // Impression des cartes des bénéficiaires d'une police
-    $("#parametre_impression").on('change', function () {
-        let parametre_impression = $(this).val();
-        if (parametre_impression == 'all') {
-            $('.if_plage').hide();
-            $('.if_plage').find('input').removeAttr('required');
-        } else {
-            $('.if_plage').show();
-            $('.if_plage').find('input#numero_fin').attr('required', true);
-        }
-    });
-
-    $("#btn_imprimer_cartes").on('click', function () {
-        let btn_valider = $(this);
-
-        let formulaire = $('#form_imprimer_cartes');
-        let href = formulaire.attr('action');
-
-        if (formulaire.valid()) {
-
-            btn_valider.hide();
-            $('#imprimer_cartes_loader').show();
-
-            $.ajax({
-                type: 'post',
-                url: href,
-                data: formulaire.serialize(),
-                cache: false,
-                xhr: function () {
-                    var xhr = new XMLHttpRequest();
-                    xhr.onreadystatechange = function () {
-                        if (xhr.readyState == 2) {
-                            if (xhr.status == 200) {
-                                xhr.responseType = "blob";
-                            } else {
-                                xhr.responseType = "json";
-                            }
-                        }
-                    };
-                    return xhr;
-                },
-                success: function (data) {
-                    fileName = "polices_cartes_beneficiaires.pdf";
-                    //Convert the Byte Data to BLOB object.
-                    var blob = new Blob([data], { type: "application/octetstream" });
-
-                    //Check the Browser type and download the File.
-                    var isIE = false || !!document.documentMode;
-                    if (isIE) {
-                        window.navigator.msSaveBlob(blob, fileName);
-                    } else {
-                        var url = window.URL || window.webkitURL;
-                        link = url.createObjectURL(blob);
-                        var a = $("<a />");
-                        a.attr("download", fileName);
-                        a.attr("href", link);
-                        $("body").append(a);
-                        a[0].click();
-                        $("body").remove(a);
-                    }
-
-                    btn_valider.show();
-                    $('#imprimer_cartes_loader').hide();
-
-                },
-                error: function () {
-                    btn_valider.show();
-                    $('#imprimer_cartes_loader').hide();
-
-                    notifyWarning("Erreur lors de l'impression des cartes");
-
-                    let errors = JSON.parse(JSON.stringify(response.errors));
-                    let errors_list_to_display = '';
-                    for (field in errors) {
-                        errors_list_to_display += '- ' + ucfirst(field) + ' : ' + errors[field] + '<br/>';
-                    }
-
-                    $('#modal-edition_cartes .alert .message').html(errors_list_to_display);
-
-                    $('#modal-edition_cartes .alert ').fadeTo(2000, 500).slideUp(500, function () {
-                        $(this).slideUp(500);
-                    }).removeClass('alert-success').addClass('alert-warning');
-                }
-            });
-
-        } else {
-
-            $('label.error').css({ display: 'none', height: '0px' }).removeClass('error').text('');
-
-            let validator = formulaire.validate();
-
-            $.each(validator.errorMap, function (index, value) {
-
-                console.log('Id: ' + index + ' Message: ' + value);
-
-            });
-
-            notifyWarning('Veuillez renseigner tous les champs obligatoires');
-        }
-
-    });
-
-
     $("#execution_requete_excel").on('click', function () {
         let btn_valider = $(this);
 
@@ -5479,7 +3778,6 @@ $(document).ready(function () {
                 },
                 success: function (data) {
                     // SUIVI SP CLIENT PAR FILIALE
-                    // fileName = "LISTE_DE_SINISTRES_ORDONNANCES.xlsx";
                     fileName = $('select[name="query_name"]').val() + ".xlsx";
                     //Convert the Byte Data to BLOB object.
                     var blob = new Blob([data], { type: "application/octetstream" });
@@ -5512,9 +3810,6 @@ $(document).ready(function () {
                     btn_valider.show();
                     $('#loader').hide();
 
-                    // Background query task init
-                    // $.ajax({type:'post',url:taskVerifUrl,data:{"task_event":"ENCOURS"}});
-                    //notifyWarning(response.message)
                     notifyWarning("Votre requête a dépassé le temps limite d'exécution. Nous la traitons en arrière-plan et vous notifierons dès que celle-ci sera terminée. Merci pour votre patience.");
 
                 }
@@ -5542,8 +3837,6 @@ $(document).ready(function () {
 
         let formulaire = $('#form_execution_requete_super_admin');
         let href = formulaire.attr('action');
-        // let taskVerifUrl = formulaire.attr('data-task-url');
-        //alert(taskVerifUrl);
 
         if (formulaire.valid()) {
 
@@ -5553,55 +3846,52 @@ $(document).ready(function () {
 
             //demander confirmation
             let n = noty({
-                        text: "Voulez-vous vraiment effectuer l'action ?",
-                        type: 'warning',
-                        dismissQueue: true,
-                        layout: 'center',
-                        theme: 'defaultTheme',
-                        buttons: [
-                            {
-                                addClass: 'btn btn-primary', text: 'OUI', onClick: function ($noty) {
-                                    $noty.close();
+                text: "Voulez-vous vraiment effectuer l'action ?",
+                type: 'warning',
+                dismissQueue: true,
+                layout: 'center',
+                theme: 'defaultTheme',
+                buttons: [
+                    {
+                        addClass: 'btn btn-primary', text: 'OUI', onClick: function ($noty) {
+                            $noty.close();
 
-                                    //confirmation obtenu
+                            //confirmation obtenu
 
-                                    $.ajax({
-                                        type: 'post',
-                                        url: href,
-                                        data: formulaire.serialize(),
-                                        success: function (data) {
-                                            console.log('success',data);
-                                            btn_valider.show();
-                                            $('#loader').hide();
-                                            $('#msg-box').html(data.message);
-                                        },
-                                        error: function (response) {
-                                            console.log('error', response);
-                                            btn_valider.show();
-                                            $('#loader').hide();
-                                            $('#msg-box').html(response.responseJSON.message);
-
-                                        }
-                                    });
-
-                                    //fin confirmation obtenue
-
-                                }
-                            },
-                            {
-                                addClass: 'btn btn-danger', text: 'Annuler', onClick: function ($noty) {
-                                    //confirmation refusée
-                                    $noty.close();
+                            $.ajax({
+                                type: 'post',
+                                url: href,
+                                data: formulaire.serialize(),
+                                success: function (data) {
+                                    console.log('success',data);
                                     btn_valider.show();
                                     $('#loader').hide();
+                                    $('#msg-box').html(data.message);
+                                },
+                                error: function (response) {
+                                    console.log('error', response);
+                                    btn_valider.show();
+                                    $('#loader').hide();
+                                    $('#msg-box').html(response.responseJSON.message);
 
                                 }
-                            }
-                        ]
-                    });
-            //fin demande confirmation
+                            });
 
+                            //fin confirmation obtenue
 
+                        }
+                    },
+                    {
+                        addClass: 'btn btn-danger', text: 'Annuler', onClick: function ($noty) {
+                            //confirmation refusée
+                            $noty.close();
+                            btn_valider.show();
+                            $('#loader').hide();
+
+                        }
+                    }
+                ]
+            });
 
         } else {
 
@@ -5614,13 +3904,9 @@ $(document).ready(function () {
                 console.log('Id: ' + index + ' Message: ' + value);
 
             });
-
-            // notifyWarning('Veuillez renseigner tous les champs obligatoires');
         }
 
     });
-
-
 
     $("#execution_requete_excel_compta").on('click', function () {
         let btn_valider = $(this);
@@ -6774,9 +5060,7 @@ $(document).ready(function () {
 
         }
 
-
     });
-
 
     //A la fermeture de la fenetre des autres taxes, sauvegarder les données dans les cookies pour pouvoir les récupérer coté serveur
     $('#modal-autres_taxes').on('hidden.bs.modal', function () {
@@ -6821,10 +5105,7 @@ $(document).ready(function () {
             notifyWarning('No web storage Support.');
         }
 
-
     });
-
-
 
     //Insertion ligne supplémantaire dans l'onglet INTERMEDIAIRES/APPORTAUERS - lors de l'ajout de police
     $(document).on("click", "#table_apporteurs_police #btnAddLigneApporteur", function () {
@@ -6911,8 +5192,6 @@ $(document).ready(function () {
                 montant = parseInt(0);
             }
 
-            //console.log('montant: '+ isNaN(montant));
-
             montant_total_autres_taxes += montant;
 
         });
@@ -6964,9 +5243,6 @@ $(document).ready(function () {
 
             console.log(taxes_result);
 
-            //enregistrer dans le cookies pour l'utiliser coté serveur avec python
-            //document.cookie="taxes_modification="+taxes_result+";SameSite=None;Secure";
-
             //mettre dans un champ du formulaire de modification; vu que les cookies ne marchent pas, surement à cause du popup load dynamiquement
             $('#modal-modification_police #liste_autres_taxes_modification').val(taxes_result);
 
@@ -6977,13 +5253,9 @@ $(document).ready(function () {
 
     });
 
-
-
     //FIN GESTION MODIFICATION AUTRES TAXES
 
-
     //************* FIN AJOUT ET MODIFICATION DE POLICE ***************//
-
 
     //************* AJOUT DE QUITTANCES ***************//
     $("#btnOpenDialogAddQuittance").on('click', function () {
@@ -6992,190 +5264,165 @@ $(document).ready(function () {
         let modal_title = $(this).data('modal_title');
         let href = $(this).data('href');
 
-        $('#olea_std_dialog_box').load(href, function (responseTxt, statusTxt, xhr) {
-            if (statusTxt == "success") {
-                try {
-                    const response = JSON.parse(responseTxt);
-                    if (response.statut === 0) {
-                        notifyWarning(response.message);
-                        return;
-                    }
-                } catch (e) {
-                    // If not a JSON response, assume it's the modal content and proceed
-                    $('#modal-quittance').attr('data-backdrop', 'static').attr('data-keyboard', false);
-                    $('#modal-quittance').find('.modal-title').text($(this).data('modal_title'));
-                    $('#modal-quittance').find('#btn_valider').attr({ 'data-model_name': $(this).data('model_name'), 'data-href': href });
-                    $('#modal-quittance').find('.modal-dialog').addClass('modal-xl').removeClass('modal-lg');
-                    $('#modal-quittance').modal();
-                }
+        $('#olea_std_dialog_box').load(href, function () {
 
-                // This part will be executed if the response was not a JSON error
-                if (statusTxt == "success" && (typeof response === 'undefined' || response.statut !== 0)) {
-                    //appliquer le mask de saisie sur les champs montant
-                    AppliquerMaskSaisie();
+            //appliquer le mask de saisie sur les champs montant
+            AppliquerMaskSaisie();
 
-                    $('#modal-quittance').attr('data-backdrop', 'static').attr('data-keyboard', false);
+            $('#modal-quittance').attr('data-backdrop', 'static').attr('data-keyboard', false);
 
-                    $('#modal-quittance').find('.modal-title').text(modal_title);
-                    $('#modal-quittance').find('#btn_valider').attr({ 'data-model_name': model_name, 'data-href': href });
-                    $('#modal-quittance').find('.modal-dialog').addClass('modal-xl').removeClass('modal-lg');
+            $('#modal-quittance').find('.modal-title').text(modal_title);
+            $('#modal-quittance').find('#btn_valider').attr({ 'data-model_name': model_name, 'data-href': href });
+            $('#modal-quittance').find('.modal-dialog').addClass('modal-xl').removeClass('modal-lg');
 
-                    //
-                    $('#modal-quittance').modal();
+            //
+            $('#modal-quittance').modal();
 
-                    //Bouton d'enregistrement de la quittance
-                    $("#btn_save_quittance").on('click', function () {
+            //Bouton d'enregistrement de la quittance
+            $("#btn_save_quittance").on('click', function () {
 
-                        let btn_save_quittance = $(this);
+                let btn_save_quittance = $(this);
 
-                        let formulaire = $('#form_add_quittance');
-                        let href = formulaire.attr('action');
 
-                        let date_debut = $('#date_debut').val();
-                        let date_fin = $('#date_fin').val();
+                let formulaire = $('#form_add_quittance');
+                let href = formulaire.attr('action');
 
-                        $.validator.setDefaults({ ignore: [] });
+                $.validator.setDefaults({ ignore: [] });
 
-                        if (formulaire.valid()) {
+                if (formulaire.valid()) {
 
-                            if (date_debut && !date_fin) {
-                                notifyWarning('La date fin est obligatoire lorsque la date début est renseignée.');
-                                return;
-                            }
+                    //désactiver le bouton Valider, pour empecher une double soumission du formulaire
+                    btn_save_quittance.attr('disabled', true);
 
-                            if (new Date(date_debut) > new Date(date_fin)) {
-                                notifyWarning('La date début doit être antérieure ou égale à la date fin.');
-                                return;
-                            }
+                    //enregistrer les taxes dans le storage
+                    $('#modal-autres_taxes_quittance #btn_save_taxe').click();
+                    //alert($('#modal-autres_taxes_quittance #btn_save_taxe').text());
 
-                            //désactiver le bouton Valider, pour empecher une double soumission du formulaire
-                            btn_save_quittance.attr('disabled', true);
+                    //demander confirmation
+                    let n = noty({
+                        text: 'Voulez-vous vraiment créer cette quittance ?',
+                        type: 'warning',
+                        dismissQueue: true,
+                        layout: 'center',
+                        theme: 'defaultTheme',
+                        buttons: [
+                            {
+                                addClass: 'btn btn-primary', text: 'OUI', onClick: function ($noty) {
+                                    $noty.close();
 
-                            //enregistrer les taxes dans le storage
-                            $('#modal-autres_taxes_quittance #btn_save_taxe').click();
-                            //alert($('#modal-autres_taxes_quittance #btn_save_taxe').text());
+                                    //confirmation obtenu
+                                    $.ajax({
+                                        type: 'post',
+                                        url: href,
+                                        data: formulaire.serialize(),
+                                        success: function (response) {
 
-                            //demander confirmation
-                            let n = noty({
-                                text: 'Voulez-vous vraiment créer cette quittance ?',
-                                type: 'warning',
-                                dismissQueue: true,
-                                layout: 'center',
-                                theme: 'defaultTheme',
-                                buttons: [
-                                    {
-                                        addClass: 'btn btn-primary', text: 'OUI', onClick: function ($noty) {
-                                            $noty.close();
+                                            if (response.statut == 1) {
 
-                                            //confirmation obtenu
-                                            $.ajax({
-                                                type: 'post',
-                                                url: href,
-                                                data: formulaire.serialize(),
-                                                success: function (response) {
+                                                notifySuccess(response.message, function () {
+                                                    location.reload();
+                                                });
 
-                                                    if (response.statut == 1) {
 
-                                                        location.reload();
+                                            } else {
 
-                                                    } else {
-
-                                                        let errors = JSON.parse(JSON.stringify(response.errors));
-                                                        let errors_list_to_display = '';
-                                                        for (field in errors) {
-                                                            errors_list_to_display += '- ' + ucfirst(field) + ' : ' + errors[field] + '<br/>';
-                                                        }
-
-                                                        $('#modal-quittance .alert .message').html(errors_list_to_display);
-
-                                                        $('#modal-quittance .alert ').fadeTo(2000, 500).slideUp(500, function () {
-                                                            $(this).slideUp(500);
-                                                        }).removeClass('alert-success').addClass('alert-warning');
-
-                                                    }
-
-                                                },
-                                                error: function (request, status, error) {
-
-                                                    notifyWarning("Erreur lors de l'enregistrement");
-
-                                                    btn_save_quittance.removeAttr('disabled');
-
+                                                let errors = JSON.parse(JSON.stringify(response.errors));
+                                                let errors_list_to_display = '';
+                                                for (field in errors) {
+                                                    errors_list_to_display += '- ' + ucfirst(field) + ' : ' + errors[field] + '<br/>';
                                                 }
 
-                                            });
+                                                $('#modal-quittance .alert .message').html(errors_list_to_display);
 
-                                            //fin confirmation obtenue
+                                                $('#modal-quittance .alert ').fadeTo(2000, 500).slideUp(500, function () {
+                                                    $(this).slideUp(500);
+                                                }).removeClass('alert-success').addClass('alert-warning');
 
-                                        }
-                                    },
-                                    {
-                                        addClass: 'btn btn-danger', text: 'Annuler', onClick: function ($noty) {
-                                            //confirmation refusée
-                                            $noty.close();
+                                            }
+
+                                        },
+                                        error: function (request, status, error) {
+
+                                            notifyWarning("Erreur lors de l'enregistrement");
 
                                             btn_save_quittance.removeAttr('disabled');
 
                                         }
-                                    }
-                                ]
-                            });
-                            //fin demande confirmation
 
-                        } else {
+                                    });
 
-                            $('label.error').css({ display: 'none', height: '0px' }).removeClass('error').text('');
+                                    //fin confirmation obtenue
 
-                            let validator = formulaire.validate();
+                                }
+                            },
+                            {
+                                addClass: 'btn btn-danger', text: 'Annuler', onClick: function ($noty) {
+                                    //confirmation refusée
+                                    $noty.close();
 
-                            $.each(validator.errorMap, function (index, value) {
+                                    btn_save_quittance.removeAttr('disabled');
 
-                                console.log('Id: ' + index + ' Message: ' + value);
-
-                            });
-
-                            notifyWarning('Veuillez renseigner tous les champs obligatoires');
-
-                            btn_save_quittance.removeAttr('disabled');
-
-                        }
-
-                    });
-
-
-                    //gestion de la fenetre interne des taxes
-                    $("#form_add_autres_taxes_quittance .montant_taxe").on('keyup', function (event) {
-
-                        if (event.which == 13) {
-                            event.preventDefault();
-                        }
-
-                        let montant_total_autres_taxes_quittance = parseInt(0);
-
-                        $("#modal-autres_taxes_quittance .montant_taxe").each(function (index, element) {
-
-                            //element = this
-                            let montant = parseInt($(element).val().replaceAll(' ', ''));
-                            montant = (montant != '') ? montant : parseInt(0);
-
-                            if (isNaN(montant)) {
-                                montant = parseInt(0);
+                                }
                             }
+                        ]
+                    });
+                    //fin demande confirmation
 
-                            montant_total_autres_taxes_quittance += montant;
 
-                        });
+                } else {
 
-                        $('#modal-quittance #autres_taxes').val(montant_total_autres_taxes_quittance);
-                        $('#modal-autres_taxes_quittance .total_autres_taxes').text(montant_total_autres_taxes_quittance);
+                    $('label.error').css({ display: 'none', height: '0px' }).removeClass('error').text('');
 
-                        calculer_montant_divers_quittance();
+                    let validator = formulaire.validate();
+
+                    $.each(validator.errorMap, function (index, value) {
+
+                        console.log('Id: ' + index + ' Message: ' + value);
 
                     });
 
+                    notifyWarning('Veuillez renseigner tous les champs obligatoires');
 
-                    //A la fermeture de la fenetre des autres taxes, sauvegarder les données dans les cookies pour pouvoir les récupérer coté serveur
-                    $('#modal-autres_taxes_quittance').on('hidden.bs.modal', function () {
+                    btn_save_quittance.removeAttr('disabled');
+
+                }
+
+            });
+
+
+            //gestion de la fenetre interne des taxes
+            $("#form_add_autres_taxes_quittance .montant_taxe").on('keyup', function (event) {
+
+                if (event.which == 13) {
+                    event.preventDefault();
+                }
+
+                let montant_total_autres_taxes_quittance = parseInt(0);
+
+                $("#modal-autres_taxes_quittance .montant_taxe").each(function (index, element) {
+
+                    //element = this
+                    let montant = parseInt($(element).val().replaceAll(' ', ''));
+                    montant = (montant != '') ? montant : parseInt(0);
+
+                    if (isNaN(montant)) {
+                        montant = parseInt(0);
+                    }
+
+                    montant_total_autres_taxes_quittance += montant;
+
+                });
+
+                $('#modal-quittance #autres_taxes').val(montant_total_autres_taxes_quittance);
+                $('#modal-autres_taxes_quittance .total_autres_taxes').text(montant_total_autres_taxes_quittance);
+
+                calculer_montant_divers_quittance();
+
+            });
+
+
+            //A la fermeture de la fenetre des autres taxes, sauvegarder les données dans les cookies pour pouvoir les récupérer coté serveur
+            $('#modal-autres_taxes_quittance').on('hidden.bs.modal', function () {
                 $('body').addClass('modal-open');
 
                 //Enregistrer les autres taxes saisies
@@ -7216,14 +5463,15 @@ $(document).ready(function () {
                     notifyWarning('No web storage Support.');
                 }
 
-            });
-                }
-            } else {
-                notifyWarning("Le produit n'a pas de taux commission paramétré pour la compagnie, Veuillez parametré les taux de commission !");
-            }
-        });
-    });
 
+            });
+
+
+
+        });
+
+
+    });
 
     $(document).on("keyup change", "#modal-quittance .calculs_handler_police", function (event) {
 
@@ -7246,22 +5494,22 @@ $(document).ready(function () {
         let autres_taxes = parseInt($('#modal-quittance #autres_taxes').val().replaceAll(' ', ''));
 
         let taux_com_courtage = $('#modal-quittance #taux_com_courtage').val();
-        let taux_com_courtage_terme = $('#modal-quittance #taux_com_courtage_terme').val();
+        //let taux_com_courtage_terme = $('#modal-quittance #taux_com_courtage_terme').val();
 
         console.log('Valeur taux_com_courtage en chaîne:', taux_com_courtage);
-        console.log('Valeur taux_com_courtage_terme en chaîne:', taux_com_courtage_terme);
+        //console.log('Valeur taux_com_courtage_terme en chaîne:', taux_com_courtage_terme);
 
         // Remplacer la virgule par un point pour garantir une bonne conversion en nombre
         taux_com_courtage = parseFloat(taux_com_courtage.replace(',', '.'));
-        taux_com_courtage_terme = parseFloat(taux_com_courtage_terme.replace(',', '.'));
+        //taux_com_courtage_terme = parseFloat(taux_com_courtage_terme.replace(',', '.'));
 
         // Vérification des valeurs après conversion
         console.log('taux_com_courtage', taux_com_courtage);
-        console.log('taux_com_courtage_terme', taux_com_courtage_terme);
+        //console.log('taux_com_courtage_terme', taux_com_courtage_terme);
 
         //Added on 10022024:0302: si terme, prendre le taux_com_courtage_terme comme taux_com_courtage
         if (nature_quittance_id == 2) {
-            taux_com_courtage = taux_com_courtage_terme;
+            taux_com_courtage =0 //taux_com_courtage_terme;
         }
 
         if (isNaN(prime_ht)) { prime_ht = 0; }
@@ -7270,7 +5518,7 @@ $(document).ready(function () {
         if (isNaN(taxe)) { taxe = 0; }
         if (isNaN(autres_taxes)) { autres_taxes = 0; }
         if (isNaN(taux_com_courtage)) { taux_com_courtage = 0; }
-        if (isNaN(taux_com_courtage_terme)) { taux_com_courtage_terme = 0; }
+        //if (isNaN(taux_com_courtage_terme)) { taux_com_courtage_terme = 0; }
 
         /* accorder les montant selon la nature de la quittance */
         if ((prime_ht > 0 && nature_quittance_id == 3) || (prime_ht < 0 && nature_quittance_id != 3)) {
@@ -7281,12 +5529,12 @@ $(document).ready(function () {
         let prime_ttc = prime_ht + cout_police_compagnie + cout_police_courtier + taxe + autres_taxes;
 
         let montant_commission_courtage = (taux_com_courtage / 100) * prime_ht;
-        let montant_commission_courtage_terme = (taux_com_courtage_terme / 100) * prime_ht;
+        //let montant_commission_courtage_terme = (taux_com_courtage_terme / 100) * prime_ht;
 
         //selon type de quittance : honnoraire pas de com
         if (type_quittance_id == 2) {
             montant_commission_courtage = 0;
-            montant_commission_courtage_terme = 0;
+            //montant_commission_courtage_terme = 0;
         }
 
         console.log('nature_quittance_id', nature_quittance_id);
@@ -7297,9 +5545,9 @@ $(document).ready(function () {
         console.log('taxe', taxe);
         console.log('autres_taxes', autres_taxes);
         console.log('taux_com_courtage', taux_com_courtage);
-        console.log('taux_com_courtage_terme', taux_com_courtage_terme);
+        //console.log('taux_com_courtage_terme', taux_com_courtage_terme);
         console.log('montant_commission_courtage', montant_commission_courtage);
-        console.log('montant_commission_courtage_terme', montant_commission_courtage_terme);
+        //console.log('montant_commission_courtage_terme', montant_commission_courtage_terme);
         console.log('prime_ttc', prime_ttc);
 
         let total_taux_com_affaire_nouvelle = 0;
@@ -7365,7 +5613,7 @@ $(document).ready(function () {
 
         $('#modal-quittance #commission_courtage').val(montant_commission_courtage);
 
-        $('#modal-quittance #commission_courtage_terme').val(montant_commission_courtage_terme);
+        //$('#modal-quittance #commission_courtage_terme').val(montant_commission_courtage_terme);
 
         $('#modal-quittance #total_commission_intermediaire').val(total_montant_commission_intermediaire);
     }
@@ -7630,8 +5878,6 @@ $(document).ready(function () {
                 montant_total_a_regler = montant_total_a_regler + montant_a_regler;
 
                 solde_apres = solde_quittance - montant_a_regler;
-
-                //console.log(montant_total_a_regler);
 
             } else {
                 solde_apres = solde_quittance;
@@ -8131,17 +6377,6 @@ $(document).ready(function () {
 
                                                 notifySuccess(response.message, function () {
                                                     window.open('../generer_bordereau_encaissement_compagnie_pdf/' + response.data.operation_id, '_blank');
-
-                                                    //rediriger pour afficher le bordereau de reglement compagnie en pdf
-                                                    //console.log(response.data.pdf_url);
-                                                    //operation_id = response.data.operation_id;
-                                                    //console.log(operation_id);
-                                                    //location.href = 'comptabilite/generer_bordereau_encaissement_compagnie_pdf/'+operation_id;
-                                                    //window.open('comptabilite/generer_bordereau_encaissement_compagnie_pdf/'+operation_id);
-                                                    //location.href = 'comptabilite/generer_bordereau_encaissement_compagnie_pdf/'+operation_id;
-                                                    //alert(operation_id);
-                                                    //alert(location.href);
-
                                                     location.reload();
                                                 });
 
@@ -8208,7 +6443,6 @@ $(document).ready(function () {
                     btn_save_encaissement.removeAttr('disabled');
 
                 }
-
 
             });
 
@@ -8404,7 +6638,6 @@ $(document).ready(function () {
 
                 calculer_montant_total_a_encaisser_court_gest(com_type);
 
-
             });
 
             //montant_a_regler
@@ -8590,7 +6823,6 @@ $(document).ready(function () {
                     btn_save_encaissement.removeAttr('disabled');
 
                 }
-
 
             });
 
@@ -9099,7 +7331,6 @@ $(document).ready(function () {
 
     });
 
-
     //********** FAIRE UN REGLEMENT BORDEREAU D"ORDONNANCEMENT PAR GARANT */
     $("#btnOpenDialogAddReglementBordereauParGarant").on('click', function () {
 
@@ -9120,7 +7351,6 @@ $(document).ready(function () {
 
             //
             $('#modal-reglement_ordonnancement_par_garant').modal();
-
 
             //enregistrement
             //TODO REGLEMENT PAR GARANT
@@ -9264,8 +7494,6 @@ $(document).ready(function () {
 
     });
 
-
-
     //********** FAIRE UNE INITIALISATION DE LA CAUTION D'UN GARANT | SUIVI DE TRÉSORERIE */
     $("#btnOpenDialogInitialiserFDRGarant").on('click', function () {
 
@@ -9286,7 +7514,6 @@ $(document).ready(function () {
 
             //
             $('#modal-initialiser_fdr_garant').modal();
-
 
             //enregistrement
             $('#btn_save_initialiser_fdr_garant').on('click', function () {
@@ -9387,7 +7614,6 @@ $(document).ready(function () {
                     });
                     //fin demande confirmation
 
-
                 } else {
 
                     $('label.error').css({ display: 'none', height: '0px' }).removeClass('error').text('');
@@ -9408,7 +7634,6 @@ $(document).ready(function () {
                     btn_save_reglement_ordonnancement_garant.removeAttr('disabled');
 
                 }
-
 
             });
 
@@ -9437,7 +7662,6 @@ $(document).ready(function () {
             //
             $('#modal-reglement_factures_garant').modal();
 
-
             //enregistrement
             $('#btn_save_reglement_factures_garant').on('click', function () {
 
@@ -9449,8 +7673,6 @@ $(document).ready(function () {
                 $.validator.setDefaults({ ignore: [] });
 
                 if (formulaire.valid()) {
-
-
 
                     //demander confirmation
                     let n = noty({
@@ -9532,8 +7754,6 @@ $(document).ready(function () {
 
                                     });
 
-                                    //fin confirmation obtenue
-
                                 }
                             },
                             {
@@ -9550,7 +7770,6 @@ $(document).ready(function () {
                         ]
                     });
                     //fin demande confirmation
-
 
                 } else {
 
@@ -9573,13 +7792,11 @@ $(document).ready(function () {
 
                 }
 
-
             });
 
         });
 
     });
-
 
     // Reglement de facture garant unique / TRESO
     $(document).on('click', '.btn_regler_facture_compagnie_treso', function () {
@@ -9692,10 +7909,6 @@ $(document).ready(function () {
 
                                     });
 
-                                    //fin confirmation obtenue
-
-
-
                                 }
                             },
                             {
@@ -9706,14 +7919,12 @@ $(document).ready(function () {
                                     // réactivation le bouton
                                     $button.prop('disabled', false);
 
-
                                 }
                             }
 
                         ]
                     });
                     //fin demande confirmation
-
 
                 } else {
                     // réactivation le bouton
@@ -9732,12 +7943,9 @@ $(document).ready(function () {
                     notifyWarning('Veuillez renseigner tous les champs obligatoires');
                 }
 
-
             });
 
-
         });
-
 
     });
     //fin reglement de facture garant unique / TRESO
@@ -9852,11 +8060,6 @@ $(document).ready(function () {
                                         }
 
                                     });
-
-                                    //fin confirmation obtenue
-
-
-
                                 }
                             },
                             {
@@ -9893,12 +8096,9 @@ $(document).ready(function () {
                     notifyWarning('Veuillez renseigner tous les champs obligatoires');
                 }
 
-
             });
 
-
         });
-
 
     });
     //fin Annulation de facture garant / TRESO
@@ -10015,10 +8215,6 @@ $(document).ready(function () {
 
                                     });
 
-                                    //fin confirmation obtenue
-
-
-
                                 }
                             },
                             {
@@ -10028,8 +8224,6 @@ $(document).ready(function () {
 
                                     // réactivation le bouton
                                     $button.prop('disabled', false);
-
-
                                 }
                             }
 
@@ -10055,12 +8249,9 @@ $(document).ready(function () {
                     notifyWarning('Veuillez renseigner tous les champs obligatoires');
                 }
 
-
             });
 
-
         });
-
 
     });
     //fin Editer fonds de roulement compagnie / TRESO
@@ -10077,12 +8268,10 @@ $(document).ready(function () {
 
             let montant_reglement = parseFloat($("#input_stock_" + $(this).val()).data('reglement_montant'));
             let montant_compagnie = parseFloat($("#input_stock_" + $(this).val()).data('reglement_montant_compagnie'));
-            //let montant_com_gestion = parseFloat($("#input_stock_" + $(this).val()).data('reglement_montant_com_gestion'));
             let montant_com_courtage = parseFloat($("#input_stock_" + $(this).val()).data('reglement_montant_com_courtage'));
 
             montant_total_reglements_coches = montant_total_reglements_coches + montant_reglement;
             montant_total_a_regler_compagnie = montant_total_a_regler_compagnie + montant_compagnie;
-            //montant_total_com_gestion = montant_total_com_gestion + montant_com_gestion;
             montant_total_com_courtage = montant_total_com_courtage + montant_com_courtage;
 
             console.log('montant_total_reglements_coches : ',montant_total_reglements_coches);
@@ -10202,9 +8391,6 @@ $(document).ready(function () {
                                         }
 
                                     });
-
-                                    //fin confirmation obtenue
-
                                 }
                             },
                             {
@@ -10245,39 +8431,25 @@ $(document).ready(function () {
     });
     //********* FIN FAIRE UNE EXPORTATION DES QUITTANCES VIA LA POLICE ***********//
 
-
     //GESTION SINISTRE
-
 
     //ouverture de la boite de dialog
     $('.modal-sinistre').on('shown.bs.modal', function () {
         let formulaire = $(this).find('form');
         formulaire.trigger('reset');
         $('#acte').trigger('reset');
-        $('.numero_carte').val('');
         hideAndEmptyOrShowSibbling('varAlimentSinistreAutre', formulaire, 'hide');
     })
         .on('hidden.bs.modal', function () {
             let formulaire = $(this).find('form');
             formulaire.trigger('reset');
             $('#acte').trigger('reset');
-            $('.numero_carte').val('');
             hideAndEmptyOrShowSibbling('varAlimentSinistreAutre', formulaire, 'hide');
-
-            //location.reload();
         });
 
-    //recherche d'un sinistré par son numéro de carte
+    //recherche d'un sinistré
     $(document).on('click', '.btnSearchAlimentSinistreAutre', function () {
         performSearchAliment($(this));
-    });
-
-    $(document).on('keydown', '.numero_carte', function (event) {
-        if (event.keyCode === 13) {
-            event.preventDefault();
-
-            performSearchAliment($(event.target));
-        }
     });
 
     function performSearchAliment(element) {
@@ -10285,7 +8457,6 @@ $(document).ready(function () {
         let formulaire = element.closest('form');
         let date_survenance = formulaire.find('#date_survenance').val();
         let prestataire_id = formulaire.find('.prestataire_executant_id').val();
-        let numero_carte = formulaire.find('.numero_carte').val();
         let type_prise_en_charge_id = formulaire.find('.type_prise_en_charge_id').val();
         let href = element.data('href');
 
@@ -10300,7 +8471,7 @@ $(document).ready(function () {
         $.ajax({
             type: 'post',
             url: href,
-            data: { numero_carte: numero_carte, date_survenance: date_survenance, prestataire_id: prestataire_id, type_prise_en_charge_id: type_prise_en_charge_id },
+            data: { date_survenance: date_survenance, prestataire_id: prestataire_id, type_prise_en_charge_id: type_prise_en_charge_id },
             beforeSend: function () {
                 $('.varAlimentSinistreAutre').hide();
             },
@@ -10330,18 +8501,12 @@ $(document).ready(function () {
                     formulaire.find('#span-plafond_consommation_famille').html(aliment.plafond_consommation_famille);
                     formulaire.find('#span-plafond_consommation_individuelle').html(aliment.plafond_consommation_individuelle);
 
-                    //alert(aliment.nom_client + ' (' + aliment.numero_police + ')');
-
                     //remplir la liste des actes garantis
                     let actes_garantis_json = aliment.actes_garantis;
                     actes_garantis = JSON.parse(actes_garantis_json);
 
                     //REMPLIR avec ses actes garantis
                     remplir_select_acte_prestation(formulaire.find('.acte_prestation'));
-
-                    //vérrouiller le champ de recherche de numero_assure
-                    formulaire.find('.numero_carte').attr('readonly', 'readonly');
-
 
                 } else {
                     //notifyWarning(response.message);
@@ -10398,13 +8563,6 @@ $(document).ready(function () {
         });
     }
 
-    $(".numero_carte").on("keydown", function () {
-        let formulaire = $(this).closest('form');
-        hideAndEmptyOrShowSibbling('varAlimentSinistreAutre', formulaire, 'hide');
-
-        formulaire.find('.error_box_aliment_not_found').html("").hide();
-    });
-
     function hideAndEmptyOrShowSibbling(classDependance, form, etat) {
 
         form.find("#current_searched_aliment_id").val("");
@@ -10414,31 +8572,6 @@ $(document).ready(function () {
             $("." + classDependance + "").show();
         }
     }
-
-    //au changement de centre_prescripteur, charger les medecins du centre sélectionné
-    $(document).on("change", "#centre_prescripteur", function () {
-        prestataire_id = $(this).val();
-        let formulaire = $(this).closest('form');
-
-        $.ajax({
-            type: 'get',
-            url: '/configurations/prescripteurs_by_prestataire/' + prestataire_id,
-            dataType: 'json',
-            success: function (prescripteurs) {
-                $('#prescripteur_optique').html('').append('<option value="">Choisir</option>');
-
-
-                prescripteurs.forEach(function (prescripteur) {
-                    $('#prescripteur_optique').append('<option value="' + prescripteur.pk + '">' + prescripteur.fields.nom + ' ' + prescripteur.fields.prenoms + '</option>');
-                });
-            },
-            error: function () {
-                console.log('Erreur lors du chargement des prescripteurs du centre ');
-            }
-        });
-
-    });
-
 
     function is_specials_keys(keyCode) {
         return (keyCode == 8 || keyCode == 9 || keyCode == 46 || keyCode == 37 || keyCode == 39);
@@ -10490,135 +8623,6 @@ $(document).ready(function () {
             $('#date_sortie').val("");
         }
 
-
-    });
-
-    var xhr_change_acte = '';
-    //recherche de cout et tx franchise de l'acte
-    $(document).on("change", ".acte_prestation", function () {
-
-
-        let cet_element = $(this);
-        let formulaire = $(this).closest('form');
-
-        let type_prise_en_charge = formulaire.find('#type_prise_en_charge').val();
-        let type_prise_en_charge_id = formulaire.find('.type_prise_en_charge_id').val();
-        let type_prise_en_charge_code = formulaire.find('.type_prise_en_charge_code').val();
-
-
-        //Si hospit s'assurer que le nombre de jour est renseigné
-        if (type_prise_en_charge_id == 3) {
-            let nombre_jours = parseInt(formulaire.find('#nombre_jours').val().replaceAll(' ', ''));
-            let cout_acte = parseInt(formulaire.find('#cout_acte').val().replaceAll(' ', ''));
-            if (isNaN(cout_acte)) {
-                cout_acte = parseInt(0);
-            }
-
-            //if (isNaN(cout_acte) || isNaN(nombre_jours) || cout_acte == 0 || nombre_jours == 0) return ;
-            if (isNaN(cout_acte) || isNaN(nombre_jours) || nombre_jours == 0) return;
-
-            console.log("continue");
-        }
-
-        formulaire.find('.btn_save_sinistre').attr('disabled', "disabled");
-        formulaire.find('#box_table_actes_selected').hide();
-        formulaire.find('#loading_shimmer_box').show();
-
-        let href_get_infos_selected_actes = $(this).data('href_get_infos_selected_actes');
-
-        //ajouter les lignes déjà dans le tableau
-        let table_actes_sinistres_autre = formulaire.find('#table_actes_sinistres_autre');
-        let str_actes_du_tableau = '';
-        //updated on 21062024: replace $('.selected_acte_info').each(..) by formulaire.find('.selected_acte_info').each(...)
-        formulaire.find('.selected_acte_info').each(function () {
-            var acteId = $(this).data('acte_id');
-
-            //gestion cas particulier de la consultation le 01062024
-            if (type_prise_en_charge_id == 1) {
-                let new_selected_acte_id = cet_element.val();
-                //alert("new_acte_selected: " + new_selected_acte_id + " - acteId existing in table:" + acteId);
-
-                if (new_selected_acte_id != acteId) {
-                    formulaire.find('#cout_acte').val('0');//réinitialiser
-                }
-            }
-
-
-            //added on 21062023: prendre en compte les quantié déjà renseignées, ou le montant pour optique et dentiste
-            //fusionner les deux: acte_id:quantite:cout_acte
-            var acteCout = $(this).closest('tr').find('.cout_acte').val();
-
-            var acteQuantite = $(this).closest('tr').find('.nombre_seance').val();
-
-            str_actes_du_tableau += acteId + ':' + acteQuantite + ':' + acteCout + ',';
-
-            //alert(str_actes_du_tableau);
-
-
-        });
-        formulaire.find('#actes_du_tableau').val(str_actes_du_tableau);
-
-        xhr_change_acte = $.ajax({
-            type: 'POST',
-            url: href_get_infos_selected_actes,
-            data: formulaire.serialize(),
-            success: function (response) {
-
-                if (response.statut == 0) {
-
-                    notifyWarning(response.message);
-
-                    formulaire.find('#loading_shimmer_box').hide();
-
-                    //si consultation, cacher le tableau des actes
-                    if (type_prise_en_charge_id == 1) {
-                        formulaire.find('#box_table_actes_selected').hide();
-                    } else {
-                        formulaire.find('#box_table_actes_selected').show();
-                    }
-
-                    //alert(type_prise_en_charge_id);
-
-
-                } else {
-
-                    formulaire.find('#box_table_actes_selected').html(response);
-
-                    //appliquer le mask de saisie sur les champs montant
-                    AppliquerMaskSaisie();
-                    //alert("exec AppliquerMaskSaisie");
-
-
-
-                    formulaire.find('.btn_save_sinistre').removeAttr('disabled');
-
-                    formulaire.find('#box_table_actes_selected').show();
-                    formulaire.find('#loading_shimmer_box').hide();
-
-                    //alert(type_prise_en_charge_id);
-                    //Added on 23052023::si soins ambulatoire : rafraichir la liste en supprimant celle qui vient d'etre ajouté
-                    if (type_prise_en_charge_id != 1 && type_prise_en_charge_id != 3) {
-                        remplir_select_acte_prestation(cet_element);
-
-                        //désactiver le require du champ select
-                        $('.acte_prestation').removeAttr('required');
-                    }
-
-                    //scroller la liste pour aller en bas:: ne marche pas pour l'instant
-                    let scrollableDiv = formulaire.find('#box_table_actes_selected');
-                    scrollableDiv.scrollTop = scrollableDiv[0].scrollHeight - scrollableDiv.height();
-
-                }
-
-            },
-            error: function () {
-
-                notifyError("Erreur lors du chargement");
-
-                formulaire.find('#box_table_actes_selected').show();
-                formulaire.find('#loading_shimmer_box').hide();
-            }
-        });
 
     });
 
@@ -11340,90 +9344,6 @@ $(document).ready(function () {
 
     // TODO : DEMANDE DE REMBOURSEMENT JS
     //DEMANDE DE REMBOURSEMENT
-    // Multiple select checkbox
-    //    $('#selectAllRemboursements').click(function(e){
-    //        var table= $(e.target).closest('table');
-    //        $('td input:checkbox',table).prop('checked',this.checked);
-    //    });
-
-    // Activation/Desactivation du bouton de traitement de la demande de remboursement lors de la selection
-    //    $(document).on("change",'td input:checkbox',function(e){
-    //        alert($('td input:checkbox').length);
-    //        if( $(this).is(':checked') ){
-    //            if( $('td input:checkbox').length > 0){
-    //                $('#btn_bulk_traitement_remboursement').prop('disabled', false);
-    //            }
-    //        }else{
-    //            if( $('td input:checkbox').length == 0){
-    //                $('#btn_bulk_traitement_remboursement').prop('disabled', true);
-    //            }
-    //        }
-    //    });
-
-
-
-    // bulk traitement de la demande de remboursement selectionnées
-
-    //     $(document).on("click", "#btn_bulk_traitement_remboursement" , function(e) {
-    //
-    //        //demander confirmation
-    //         let n = noty({
-    //         text        : 'Voulez-vous vraiment traiter la selection ?',
-    //         type        : 'warning',
-    //         dismissQueue: true,
-    //         layout      : 'center',
-    //         theme       : 'defaultTheme',
-    //         buttons     : [
-    //                 {addClass: 'btn btn-primary', text: 'OUI', onClick: function ($noty) {
-    //                     $noty.close();
-    //
-    //                     $('#btn_bulk_traitement_remboursement').prop('disabled', true);
-    //
-    //                      var formulaire = $('#bulk_traitement_remboursement_form').closest('form');
-    //                      console.log(formulaire.serialize());
-    //
-    //                      if(formulaire.valid()){
-    //                        $.ajax({
-    //                        type:'post',
-    //                        url:formulaire.attr('action'),
-    //                        data: formulaire.serialize(),
-    //                        success: function(response){
-    //
-    //                            console.log(response);
-    //
-    //                            if (response.statut == 1){
-    //
-    //                                notifySuccess(response.message, function(){
-    //                                    location.reload();
-    //                                });
-    //
-    //
-    //                            }else{
-    //                                notifyWarning(response.message);
-    //                                $('#btn_bulk_traitement_remboursement').prop('disabled', false);
-    //                            }
-    //
-    //                        },
-    //                        error: function(){
-    //                            notifyWarning("Erreur lors de la génération du bordereau");
-    //                        }
-    //
-    //                    });
-    //                       }
-    //
-    //
-    //                     }
-    //                 },
-    //                 {addClass: 'btn btn-danger', text: 'Annuler', onClick: function ($noty) {
-    //                     //confirmation refusée
-    //                     $noty.close();
-    //                 }
-    //                 }
-    //             ]
-    //         });
-    //         //fin demande confirmation
-    //
-    //    });
 
     // Valider la demande de remboursement
     $(document).on("click", "#btnValiderRemboursementsSelectionnes", function (e) {
@@ -12626,520 +10546,6 @@ $(document).ready(function () {
 
     });
 
-
-    $(document).on("click", "#btn_save_prestataire", function (e) {
-        e.preventDefault();
-
-        console.log("Création du prestataire");
-
-        let formulaire = $('#form_add_prestataire');
-
-        if (formulaire.valid()) {
-
-            //demander confirmation
-            let n = noty({
-                text: 'Voulez-vous créer un prestataire ?',
-                type: 'warning',
-                dismissQueue: true,
-                layout: 'center',
-                theme: 'defaultTheme',
-                buttons: [
-                    {
-                        addClass: 'btn btn-primary', text: 'OUI', onClick: function ($noty) {
-                            $noty.close();
-
-                            //confirmation obtenu
-                            $.ajax({
-                                type: 'post',
-                                url: formulaire.attr('action'),
-                                data: formulaire.serialize(),
-                                success: function (response) {
-
-                                    if (response.statut == 1) {
-
-                                        resetFields('#form_add_prestataire');
-
-                                        notifySuccess(response.message, function () {
-                                            location.reload();
-                                        });
-
-                                    } else {
-                                        notifyWarning(response.message);
-                                    }
-
-                                },
-                                error: function (request, status, error) {
-
-                                    notifyWarning("Erreur lors de l'enregistrement");
-                                }
-
-                            });
-
-                        }
-                    },
-                    {
-                        addClass: 'btn btn-danger', text: 'Annuler', onClick: function ($noty) {
-                            //confirmation refusée
-                            $noty.close();
-
-                        }
-                    }
-                ]
-            });
-            //fin demande confirmation
-
-        } else {
-            notifyWarning("Veuillez renseigner correctement le formulaire");
-        }
-
-    });
-
-
-    //Modifier un prestataire modal
-    $(document).on("click", ".btn_modifier_prestataire", function () {
-
-        let model_name = $(this).attr('data-model_name');
-        let modal_title = $(this).attr('data-modal_title');
-        let href = $(this).attr('data-href');
-
-        //let dialog_box = $("<div>").addClass('olea_std_dialog_box').appendTo('body');
-
-        $('#olea_std_dialog_box').load(href, function () {
-
-            //appliquer le mask de saisie sur les champs montant
-            AppliquerMaskSaisie();
-
-            $('#modifier_modal_prestataire .dataTable:not(.customDataTable_)').DataTable({
-                "language": {
-                    "url": "//cdn.datatables.net/plug-ins/9dcbecd42ad/i18n/French.json"
-                },
-                order: [[0, 'desc']],
-                lengthMenu: [
-                    [10],
-                    [10],
-                ],
-                searching: false,
-                lengthChange: false,
-            });
-
-            let i = 0;
-            $('.dropzone_area').each(function (myElement) {
-                let zone_id = $(this).attr('id');
-                let href = $(this).attr('action');
-
-                let dropzone = new Dropzone("#" + zone_id, { url: href, dictDefaultMessage: "" });
-
-            });
-
-            $('#modifier_modal_prestataire').attr('data-backdrop', 'static').attr('data-keyboard', false);
-
-            $('#modifier_modal_prestataire').find('.modal-dialog').addClass('modal-xl').removeClass('modal-lg');
-
-            //
-            $('#modifier_modal_prestataire').modal();
-
-
-        });
-
-
-    });
-
-    //Modifier un prestataire sauvegarde
-    $(document).on("click", "#btn_update_prestataire", function (e) {
-        e.preventDefault();
-
-        console.log("Modification du prestataire");
-
-        let formulaire = $('#form_update_prestataire');
-
-        if (formulaire.valid()) {
-
-            //demander confirmation
-            let n = noty({
-                text: 'Voulez-vous modifier ce prestataire ?',
-                type: 'warning',
-                dismissQueue: true,
-                layout: 'center',
-                theme: 'defaultTheme',
-                buttons: [
-                    {
-                        addClass: 'btn btn-primary', text: 'OUI', onClick: function ($noty) {
-                            $noty.close();
-
-                            //confirmation obtenu
-                            $.ajax({
-                                type: 'post',
-                                url: formulaire.attr('action'),
-                                data: formulaire.serialize(),
-                                success: function (response) {
-
-                                    if (response.statut == 1) {
-
-                                        resetFields('#form_update_prestataire');
-
-                                        notifySuccess(response.message, function () {
-                                            location.reload();
-                                        });
-
-                                    } else {
-                                        notifyWarning(response.message);
-                                    }
-
-                                },
-                                error: function (request, status, error) {
-
-                                    notifyWarning("Erreur lors de l'enregistrement");
-                                }
-
-                            });
-
-                        }
-                    },
-                    {
-                        addClass: 'btn btn-danger', text: 'Annuler', onClick: function ($noty) {
-                            //confirmation refusée
-                            $noty.close();
-
-                        }
-                    }
-                ]
-            });
-            //fin demande confirmation
-
-        } else {
-            notifyWarning("Veuillez renseigner correctement le formulaire");
-        }
-
-    });
-
-
-    $(document).on("click", "#btn_save_reseau_soin_prestataire", function (e) {
-        e.preventDefault();
-
-        let formulaire = $('#form_add_reseau_soin_prestataire');
-
-        if (formulaire.valid()) {
-
-            //confirmation obtenu
-            $.ajax({
-                type: 'post',
-                url: formulaire.attr('action'),
-                data: formulaire.serialize(),
-                success: function (response) {
-
-                    if (response.statut == 1) {
-
-                        resetFields('#form_add_reseau_soin_prestataire');
-
-                        notifySuccess(response.message, function () {
-                            location.reload();
-                        });
-
-                    } else {
-                        notifyWarning("Erreur lors de l'ajout des réseaux de soins");
-                    }
-
-                },
-                error: function (request, status, error) {
-
-                    notifyWarning("Erreur lors de l'enregistrement");
-                }
-
-            });
-
-
-        } else {
-            notifyWarning("Veuillez renseigner correctement le formulaire");
-        }
-
-    });
-
-    $(document).on("click", ".btn_retirer_reseau_soin_prestataire", function () {
-        let ce_bouton = $(this);
-        let href = $(this).data('href');
-
-        //demander confirmation
-        let n = noty({
-            text: 'Voulez-vous vraiment retirer le prestataire de ce réseau de soins ?',
-            type: 'warning',
-            dismissQueue: true,
-            layout: 'center',
-            theme: 'defaultTheme',
-            buttons: [
-                {
-                    addClass: 'btn btn-primary', text: 'OUI', onClick: function ($noty) {
-                        $noty.close();
-
-                        //confirmation obtenu
-                        $.ajax({
-                            type: 'post',
-                            url: href,
-                            success: function (response) {
-
-                                if (response.statut == 1) {
-
-                                    location.href = '';
-
-                                } else {
-                                    notifyWarning(response.message);
-                                }
-
-                            },
-                            error: function (request, status, error) {
-
-                                notifyWarning("Erreur lors du retrait du prestataire du réseau de soins");
-                            }
-
-                        });
-
-                    }
-                },
-                {
-                    addClass: 'btn btn-danger', text: 'Annuler', onClick: function ($noty) {
-                        //confirmation refusée
-                        $noty.close();
-
-                    }
-                }
-            ]
-        });
-        //fin demande confirmation
-
-
-    });
-
-    //soumission du formulaire
-    $(document).on("click", "#btn_save_prescripteur", function (e) {
-        e.preventDefault();
-
-        let formulaire = $('#form_add_prescripteur');
-
-        if (formulaire.valid()) {
-
-            //confirmation obtenu
-            $.ajax({
-                type: 'post',
-                url: formulaire.attr('action'),
-                data: formulaire.serialize(),
-                success: function (response) {
-
-                    if (response.statut == 1) {
-
-                        resetFields('#form_add_prescripteur');
-
-                        notifySuccess(response.message, function () {
-                            location.reload();
-                        });
-
-                    } else {
-                        notifyWarning("Erreur lors de la création du prestataire");
-                    }
-
-                },
-                error: function (request, status, error) {
-
-                    notifyWarning("Erreur lors de l'enregistrement");
-                }
-
-            });
-
-
-        } else {
-            notifyWarning("Veuillez renseigner correctement le formulaire");
-        }
-
-    });
-
-    //added on 01062023
-    $(document).on("click", "#btn_importer_prescripteurs", function (e) {
-        e.preventDefault();
-
-        let formulaire = $(this).closest('form');
-
-        if (formulaire.valid()) {
-
-            let formData = new FormData();
-            let files = $('#fichier_import_prescripteurs')[0].files;
-            formData.append('fichier_import_prescripteurs', files[0]);
-
-            //confirmation obtenu
-            $.ajax({
-                type: 'post',
-                url: formulaire.attr('action'),
-                data: formData,
-                processData: false,
-                contentType: false,
-                success: function (response) {
-
-                    if (response.statut == 1) {
-
-                        resetFields('#form_add_prescripteur');
-
-                        notifySuccess(response.message, function () {
-                            location.reload();
-                        });
-
-                    } else {
-                        notifyWarning(response.message);
-                    }
-
-                },
-                error: function (request, status, error) {
-
-                    notifyWarning("Erreur lors de l'importation");
-                }
-
-            });
-
-        } else {
-            notifyWarning("Veuillez joindre un fichier svp");
-        }
-
-    });
-
-
-    //added on 21122023
-    $(document).on("click", "#btn_importer_tarif_pestataire", function (e) {
-        e.preventDefault();
-
-        let btn_importer_tarif_pestataire = $(this);
-
-        let formulaire = $(this).closest('form');
-
-        if (formulaire.valid()) {
-
-            let formData = new FormData();
-            let files = $('#fichier_import_tarif')[0].files;
-            formData.append('fichier_import_tarif', files[0]);
-
-            //confirmation obtenu
-            $.ajax({
-                type: 'post',
-                url: formulaire.attr('action'),
-                data: formData,
-                processData: false,
-                contentType: false,
-                beforeSend: function () {
-                    $('#loading_gif').show();
-                    btn_importer_tarif_pestataire.hide();
-                },
-                success: function (response) {
-
-                    if (response.statut == 1) {
-
-                        resetFields('#form_importer_tarif_pestataire');
-
-                        $('#loading_gif').hide();
-                        btn_importer_tarif_pestataire.show();
-
-                        notifySuccess(response.message, function () {
-                            location.reload();
-                        });
-
-                    } else {
-                        notifyWarning("Erreur lors de l'importaion des tarifs");
-                    }
-
-                },
-                error: function (request, status, error) {
-                    $('#loading_gif').hide();
-                    btn_importer_tarif_pestataire.show();
-                    notifyWarning("Erreur lors de l'enregistrement");
-                }
-
-            });
-
-        } else {
-            notifyWarning("Veuillez joindre un fichier svp");
-        }
-
-    });
-
-
-    //added on 21122023
-    $(document).on("click", "#btn_valider_tarif_prestataire", function (e) {
-        e.preventDefault();
-
-        let formulaire = $(this).closest('form');
-
-        //confirmation obtenu
-        $.ajax({
-            type: 'post',
-            url: formulaire.attr('action'),
-            success: function (response) {
-
-                if (response.statut == 1) {
-
-                    notifySuccess(response.message, function () {
-                        location.reload();
-                    });
-
-                } else {
-                    notifyWarning("Erreur lors de la validation des tarifs");
-                }
-
-            },
-            error: function (request, status, error) {
-
-                notifyWarning("Erreur lors du traitement");
-            }
-        });
-
-    });
-
-    //added on 202062023
-    $(document).on("click", "#btn_add_tarif_prestataire_client", function (e) {
-        e.preventDefault();
-
-        let formulaire = $(this).closest('form');
-
-        if (formulaire.valid()) {
-
-            let prestataire_id = formulaire.find('#prestataire').val();
-            let formule_police_id = formulaire.find('#formule_police').val();
-
-            let formData = new FormData();
-            let files = $('#fichier_tarif')[0].files;
-            formData.append('fichier_tarif', files[0]);
-            formData.append('prestataire_id', prestataire_id);
-            formData.append('formule_police_id', formule_police_id);
-
-            //confirmation obtenu
-            $.ajax({
-                type: 'post',
-                url: formulaire.attr('action'),
-                data: formData,
-                processData: false,
-                contentType: false,
-                success: function (response) {
-
-                    if (response.statut == 1) {
-
-                        resetFields('#form_add_tarif_prestataire_client');
-
-                        notifySuccess(response.message, function () {
-                            location.reload();
-                        });
-
-                    } else {
-                        notifyWarning("Erreur lors de l'enregistrement");
-                    }
-
-                },
-                error: function (request, status, error) {
-
-                    notifyWarning("Erreur lors de l'enregistrement");
-                }
-
-            });
-
-        } else {
-            notifyWarning("Veuillez joindre un fichier svp");
-        }
-
-    });
-
-
     $(document).on("click", ".btn_supprimer_tarif_specifique", function (e) {
         let tarif_id = $(this).data('tarif_specifique_id');
         let href = $(this).data('href');
@@ -13195,175 +10601,6 @@ $(document).ready(function () {
         //fin demande confirmation
 
     });
-
-    // PRESCRIPTEUR
-
-    $(document).on("click", ".btn_retirer_prescripteur", function () {
-
-        console.warn('btn retirer clicked !');
-
-        let ce_bouton = $(this);
-        let href = $(this).data('href');
-
-        //demander confirmation
-        let n = noty({
-            text: 'Voulez-vous vraiment retirer ce prescripteur ?',
-            type: 'warning',
-            dismissQueue: true,
-            layout: 'center',
-            theme: 'defaultTheme',
-            buttons: [
-                {
-                    addClass: 'btn btn-primary', text: 'OUI', onClick: function ($noty) {
-                        $noty.close();
-
-                        //confirmation obtenu
-                        $.ajax({
-                            type: 'post',
-                            url: href,
-                            success: function (response) {
-
-                                if (response.statut == 1) {
-
-                                    location.href = '';
-
-                                } else {
-                                    notifyWarning(response.message);
-                                }
-
-                            },
-                            error: function (request, status, error) {
-
-                                notifyWarning("Erreur lors du retrait du prescripteur");
-                            }
-
-                        });
-
-                    }
-                },
-                {
-                    addClass: 'btn btn-danger', text: 'Annuler', onClick: function ($noty) {
-                        //confirmation refusée
-                        $noty.close();
-
-                    }
-                }
-            ]
-        });
-        //fin demande confirmation
-    });
-
-    //
-
-    $(document).on("click", ".btn_modifier_prescripteur", function () {
-
-        let model_name = $(this).attr('data-model_name');
-        let modal_title = $(this).attr('data-modal_title');
-        let href = $(this).attr('data-href');
-
-        $('#olea_std_dialog_box').load(href, function () {
-
-            AppliquerMaskSaisie();
-
-            $('#modifier_modal_prescripteur .dataTable:not(.customDataTable_)').DataTable({
-                "language": {
-                    "url": "//cdn.datatables.net/plug-ins/9dcbecd42ad/i18n/French.json"
-                },
-                order: [[0, 'desc']],
-                lengthMenu: [
-                    [10],
-                    [10],
-                ],
-                searching: false,
-                lengthChange: false,
-            });
-
-            let i = 0;
-            $('.dropzone_area').each(function (myElement) {
-                let zone_id = $(this).attr('id');
-                let href = $(this).attr('action');
-
-                let dropzone = new Dropzone("#" + zone_id, { url: href, dictDefaultMessage: "" });
-
-            });
-
-            $('#modifier_modal_prescripteur').attr('data-backdrop', 'static').attr('data-keyboard', false);
-
-            $('#modifier_modal_prescripteur').find('.modal-dialog').addClass('modal-xl').removeClass('modal-lg');
-
-            $('#modifier_modal_prescripteur').modal();
-
-        });
-
-
-    });
-
-    //
-
-    $(document).on("click", "#btn_update_prescripteur", function (e) {
-
-        e.preventDefault();
-        console.log("Modification de prescripteur");
-        let formulaire = $('#form_update_prescripteur');
-
-        if (formulaire.valid()) {
-
-            let n = noty({
-
-                text: 'Voulez-vous modifier ce prescripteur ?',
-                type: 'warning',
-                dismissQueue: true,
-                layout: 'center',
-                theme: 'defaultTheme',
-                buttons: [
-
-                    {
-                        addClass: 'btn btn-primary', text: 'OUI', onClick: function ($noty) {
-
-                            $noty.close();
-
-                            $.ajax({
-                                type: 'post',
-                                url: formulaire.attr('action'),
-                                data: formulaire.serialize(),
-                                success: function (response) {
-
-                                    if (response.statut == 1) {
-
-                                        resetFields('#form_update_prescripteur');
-
-                                        notifySuccess(response.message, function () {
-                                            location.reload();
-                                        });
-
-                                    } else {
-                                        notifyWarning(response.message);
-                                    }
-
-                                },
-                                error: function (request, status, error) {
-
-                                    notifyWarning("Erreur lors de l'enregistrement");
-                                }
-
-                            });
-
-                        }
-
-                    },
-
-                ]
-
-            });
-
-        } else {
-
-            notifyWarning("Veuillez renseigner correctement le formulaire");
-
-        }
-
-    });
-    // FIN PRESCRIPTEUR
 
     //FIN GESTION PRESTATAIRE
 
@@ -13470,116 +10707,6 @@ $(document).ready(function () {
     });
 
 
-
-    //afficher le modal pour joindre des prestataires à un réseau de soins
-    $(document).on("click", "#btn_modal_joindre_prestataires", function (e) {
-        e.preventDefault();
-
-        href = $(this).data('href');
-
-        $('#olea_std_dialog_box').load(href, function () {
-
-            $('#modal_joindre_prestataires').attr('data-backdrop', 'static').attr('data-keyboard', false);
-
-            $('#modal_joindre_prestataires').find('.modal-dialog').addClass('modal-xl').removeClass('modal-lg');
-
-            $('#modal_joindre_prestataires').modal();
-
-        });
-
-    });
-
-
-    //a la fermeture du dialog, rafraichir la page
-    $("#modal_joindre_prestataires").on("hidden.bs.modal", function () {
-        location.href = '';
-    });
-
-
-    $(document).on("click", ".btn_integrer_prestataire", function () {
-        let ce_bouton = $(this);
-        let href = $(this).data('href');
-
-        //confirmation obtenu
-        $.ajax({
-            type: 'post',
-            url: href,
-            success: function (response) {
-
-                if (response.statut == 1) {
-
-                    ce_bouton.replaceWith('<span class="badge badge-success"><i class="fa fa-check"></i> Intégré</span>');
-
-                } else {
-                    notifyWarning(response.message);
-                }
-
-            },
-            error: function (request, status, error) {
-
-                notifyWarning("Erreur lors de l'enregistrement");
-            }
-
-        });
-
-    });
-
-    $(document).on("click", ".btn_retirer_prestataire", function () {
-        let ce_bouton = $(this);
-        let href = $(this).data('href');
-
-        //demander confirmation
-        let n = noty({
-            text: 'Voulez-vous vraiment retirer ce prestataire du réseau de soins ?',
-            type: 'warning',
-            dismissQueue: true,
-            layout: 'center',
-            theme: 'defaultTheme',
-            buttons: [
-                {
-                    addClass: 'btn btn-primary', text: 'OUI', onClick: function ($noty) {
-                        $noty.close();
-
-                        //confirmation obtenu
-                        $.ajax({
-                            type: 'post',
-                            url: href,
-                            success: function (response) {
-
-                                if (response.statut == 1) {
-
-                                    location.href = '';
-
-                                } else {
-                                    notifyWarning(response.message);
-                                }
-
-                            },
-                            error: function (request, status, error) {
-
-                                notifyWarning("Erreur lors du retrait du prestataire du réseau de soins");
-                            }
-
-                        });
-
-                    }
-                },
-                {
-                    addClass: 'btn btn-danger', text: 'Annuler', onClick: function ($noty) {
-                        //confirmation refusée
-                        $noty.close();
-
-                    }
-                }
-            ]
-        });
-        //fin demande confirmation
-
-
-    });
-    //
-
-
     //GESTION TARIFS
 
     //afficher le détail d'un sinistre
@@ -13668,54 +10795,6 @@ $(document).ready(function () {
     //******************** GLOBALS ********************//
 
 
-
-
-
-    // PHARMACIE
-    $(document).on('keydown', '#numero_carte_pharmacie', function (event) {
-        if (event.keyCode === 13) {
-            event.preventDefault();
-
-            performSearchAlimentPharmacie($(event.target));
-        }
-    });
-    // recherche patient par numero_carte
-    $(document).on("click", "#btnSearchAssurePharmacie", function (e) {
-        performSearchAlimentPharmacie($(this));
-    });
-
-
-    function performSearchAlimentPharmacie(element) {
-        let formulaire = element.closest('form');
-        var action = formulaire.attr('action');
-        //  var numero_carte = $("#numero_carte_pharmacie").val();
-        var numero_carte = $("#numero_carte_pharmacie").val().trim();
-
-        $.ajax({
-            type: 'post',
-            url: action,
-            data: { numero_carte: numero_carte },
-            success: function (response) {
-
-                console.log(response);
-                if (response.statut == 1) {
-
-                    location.href = response.redirect;
-
-                } else {
-                    notifyWarning(response.message);
-                }
-
-            },
-            error: function (request, status, error) {
-
-                notifyWarning("Erreur lors du traitement");
-            }
-
-        });
-
-    }
-
     // Sélectionnez le modal
     var modal = $('#AddMedication');
     // Sélectionnez le bouton de fermeture du modal
@@ -13732,142 +10811,6 @@ $(document).ready(function () {
         // Fermez le modal
         modal.hide();
     });
-
-
-    $(document).on("click", '#btn_save_sinistre_medicament', function (e) {
-        btn_save_sinistre_medicament = $(this);
-
-        btn_save_sinistre_medicament.prop('disabled', true);
-
-        let formulaire = $('#formSaveMedication');
-        var formserialize = formulaire.serialize();
-
-        if (formulaire.valid()) {
-            $.ajax({
-                type: 'post',
-                url: formulaire.attr('action'),
-                data: formserialize,
-                success: function (response) {
-
-                    if (response.statut == 1) {
-                        // $('#btn_save_sinistre_medicament').prop('disabled', false);
-                        var row = '<tr>' +
-                            '<td>' + response.data.medicament + '</td>' +
-                            '<td style="text-align:center">' + response.data.qte_demande + '</td>' +
-                            '<td style="text-align:center">' + response.data.qte_servie + '</td>' +
-                            '<td style="text-align:center">' + response.data.prix_unitaire + '</td>' +
-                            '<td style="text-align:center">' + response.data.prix_total + '</td>' +
-                            '<td style="text-align:center">' + response.data.part_assureur + '</td>' +
-                            '<td style="text-align:center">' + response.data.part_assure + '</td>' +
-                            '<td><span class="badge badge-' + response.data.statut + '">' + response.data.statut + '</span></td>' +
-                            '<td class="text-center">' +
-                            '<a  class="btn text-gray"><i class="fas fa-lock"></i></a>' +
-                            '</td>' +
-                            '</tr>';
-
-                        $('#medicament_table').append(row);
-                        notifySuccess(response.message, function () {
-                            $('.liste_medicament').val([]).trigger('change');
-                            $('#formSaveMedication').find('#qte_medicament, #prix_unitaire_medicament').val('');
-                            // resetFields('#formSaveMedication');
-                            // location.reload();
-
-                            btn_save_sinistre_medicament.removeAttr('disabled');
-
-                        });
-
-                    } else {
-                        notifyWarning(response.message, function () {
-                            btn_save_sinistre_medicament.removeAttr('disabled');
-                        });
-                    }
-
-                },
-                error: function (request, status, error) {
-
-                    notifyWarning("Erreur lors de l'enregistrement", function () {
-                        btn_save_sinistre_medicament.removeAttr('disabled');
-                    });
-                }
-            });
-
-        } else {
-            //$('label.error').css({display:'none',height:'0px'}).removeClass('error').text('');
-
-            let validator = formulaire.validate();
-
-            $.each(validator.errorMap, function (index, value) {
-
-                console.log('Id: ' + index + ' Message: ' + value);
-
-            });
-
-            notifyWarning('Veuillez renseigner correctement le forumulaire', function () {
-                $('#btn_save_sinistre_medicament').removeAttr('disabled');
-            });
-
-        }
-
-
-
-    });
-
-
-
-    $(document).on("click", '.btn_update_medicament_sinistre', function (e) {
-        btn_update_medicament_sinistre = $(this);
-
-        btn_update_medicament_sinistre.prop('disabled', true);
-
-        let formulaire = $(this).closest('form');
-        var formserialize = formulaire.serialize();
-
-        if (formulaire.valid()) {
-
-            $.ajax({
-                type: 'post',
-                url: formulaire.attr('action'),
-                data: formserialize,
-                success: function (response) {
-
-                    if (response.statut == 1) {
-                        notifySuccess(response.message, function () {
-                            location.reload();
-                        });
-
-                    } else {
-                        notifyWarning(response.message, function () {
-                            btn_update_medicament_sinistre.removeAttr('disabled');
-                        });
-                    }
-
-                },
-                error: function (request, status, error) {
-                    notifyWarning("Erreur lors de l'enregistrement", function () {
-                        btn_update_medicament_sinistre.removeAttr('disabled');
-                    });
-                }
-            });
-
-        } else {
-
-            let validator = formulaire.validate();
-
-            $.each(validator.errorMap, function (index, value) {
-
-                console.log('Id: ' + index + ' Message: ' + value);
-
-            });
-
-            notifyWarning('Veuillez renseigner correctement le forumulaire', function () {
-                $('#btn_save_sinistre_medicament').removeAttr('disabled');
-            });
-
-        }
-
-    });
-
-
 
     //suppression de sinistre medicament
     $(document).on("click", ".btn_supprimer_sinistre", function (e) {
@@ -13978,244 +10921,6 @@ $(document).ready(function () {
             ]
         });
     });
-
-
-    // FIN PHARMACIE
-
-
-    //Added on 25112023 05:18
-    //MODULE SINISTRE
-    //AJOUT DES MEDICAMENTS SUR UN DOSSIER SINISTRE EXISTANT PAR LES GESTIONNAIRES
-
-    //afficher le popup
-    $(document).on("click", "#btn-popup_add_medicament_gestionnaire", function (e) {
-        e.preventDefault();
-
-        href = $(this).data('href');
-
-
-        $('#olea_std_dialog_box').load(href, function () {
-
-            $('#modal_add_medicament').attr('data-backdrop', 'static').attr('data-keyboard', false);
-
-            $('#modal_add_medicament').find('.modal-dialog').addClass('modal-xl').removeClass('modal-lg');
-
-            //appliquer datatable
-            $('#table_medicaments_gestionnaire').DataTable({
-                "language": {
-                    "url": "//cdn.datatables.net/plug-ins/9dcbecd42ad/i18n/French.json"
-                },
-                order: [[0, 'asc']],
-                paging: false,
-                searching: false,
-                lengthChange: false,
-            });
-
-            //
-            $('#modal_add_medicament_gestionnaire').modal();
-
-        });
-
-
-    });
-
-
-    //Ajout du médicament
-    $(document).on("click", "#btn_save_medicament_gestionnaire", function (e) {
-
-        let formulaire = $('#form_add_medicament_gestionnaire');
-        if (formulaire.valid()) {
-
-            $.ajax({
-                type: 'POST',
-                url: formulaire.attr('action'),
-                data: formulaire.serialize(),
-                success: function (response) {
-
-                    //notifySuccess(response.message);
-
-                    $('#quantite').val("1");
-                    $('#prix_unitaire').val("0");
-                    //$('#medicament_id').prop('selectedIndex',0);
-                    $('#medicament_id').val(null).trigger('change');
-
-
-                    //table_medicaments
-                    medicament = response.data;
-                    let t = $('#table_medicaments_gestionnaire').DataTable();
-
-                    t.row.add([
-                        medicament.libelle,
-                        '<span style="text-align:right"display:block;>' + medicament.taux_couverture + ' %</span>',
-                        medicament.qte_servie,
-                        medicament.prix_unitaire,
-                        medicament.prix_total,
-                        medicament.part_assureur,
-                        medicament.depassement,
-                        medicament.part_assure,
-                        medicament.actions_html,
-                    ])
-                        .draw(false);
-
-                },
-                error: function (error) {
-                    notifyWarning("Erreur lors du traitement");
-                }
-            });
-
-        } else {
-            notifyWarning("Veuillez renseigner correctement le formulaire");
-        }
-
-    });
-
-
-    //Suppression d'un médicament de la session
-    $(document).on("click", ".btnSupprimerLigneMedicamentGestionnaire", function (e) {
-        let ligne_acte = $(this).closest('tr');
-        let href = $(this).data('href');
-        //let medicament_id = $(this).data('medicament_id');
-        let medicamentLibelle = ligne_acte.find('td:first').text();
-
-        $.ajax({
-            type: 'post',
-            url: href,
-            success: function (response) {
-                ligne_acte.remove();
-
-                let t = $('#table_medicaments_gestionnaire').DataTable();
-
-                // Trouver la ligne correspondante dans le DataTable et la supprimer
-                t.rows().every(function (rowIdx, tableLoop, rowLoop) {
-                    let rowData = this.data();
-                    if (rowData[0] === medicamentLibelle) {
-                        this.remove().draw(false);
-                        return false; // Sortir de la boucle après la suppression
-                    }
-                    return true; // Continuer à parcourir les lignes
-                });
-
-
-            },
-            error: function () {
-                notifyWarning("Erreur lors de la suppression");
-            }
-        });
-    });
-
-
-    //valider pour enregistrer l'ensemble
-    $(document).on("click", "#btn_save_sinistre_medicament_gestionnaire", function (e) {
-        let href = $(this).data('href');
-
-        $.ajax({
-            type: 'post',
-            url: href,
-            data: $('#form_add_medicament_gestionnaire').serialize(),
-            success: function (response) {
-
-                if (response.statut == 1) {
-                    notifySuccess(response.message, function () {
-                        location.reload();
-                    });
-
-                } else {
-                    notifyWarning(response.message);
-                }
-
-            },
-            error: function () {
-                notifyWarning("Erreur lors de l'enregistrement");
-            }
-        });
-
-    });
-
-
-
-    //FIN AJOUT DES MEDICAMENTS SUR UN DOSSIER EXISTANT PAR LES GESTIONNAIRES
-
-
-
-
-    // C0NTROLE SUR LE PARAMETRAGE DU BAREME DE GARANTIE
-
-    $(document).on("change", "#form_add_bareme #rubrique", function () {
-        let rubrique_id = $(this).val();
-
-        if (rubrique_id == '') {
-            $('#form_add_bareme #plafond_rubrique').attr('readonly', 'readonly');
-            $('#form_add_bareme #plafond_acte').attr('readonly', 'readonly');
-            $('#form_add_bareme #plafond_sous_rubrique').attr('readonly', 'readonly');
-            $('#form_add_bareme #plafond_regroupement_acte').attr('readonly', 'readonly');
-        } else {
-            $('#form_add_bareme #plafond_rubrique').removeAttr('readonly');
-            $('#form_add_bareme #plafond_acte').attr('readonly', 'readonly');
-            $('#form_add_bareme #plafond_sous_rubrique').attr('readonly', 'readonly');
-            $('#form_add_bareme #plafond_regroupement_acte').attr('readonly', 'readonly');
-        }
-
-    });
-
-    $(document).on("change", "#form_add_bareme #sous_rubrique", function () {
-        let sous_rubrique_id = $(this).val();
-
-        if (sous_rubrique_id == '') {
-            $('#form_add_bareme #plafond_sous_rubrique').attr('readonly', 'readonly');
-        } else {
-            $('#form_add_bareme #plafond_sous_rubrique').removeAttr('readonly');
-            $('#form_add_bareme #plafond_acte').attr('readonly', 'readonly');
-            $('#form_add_bareme #plafond_rubrique').attr('readonly', 'readonly');
-            $('#form_add_bareme #plafond_regroupement_acte').attr('readonly', 'readonly');
-        }
-
-    });
-
-    $(document).on("change", "#form_add_bareme #regroupement_acte", function () {
-        let regroupement_acte_id = $(this).val();
-
-        if (regroupement_acte_id == '') {
-            $('#form_add_bareme #plafond_regroupement_acte').attr('readonly', 'readonly');
-        } else {
-            $('#form_add_bareme #plafond_regroupement_acte').removeAttr('readonly');
-            $('#form_add_bareme #plafond_acte').attr('readonly', 'readonly');
-            $('#form_add_bareme #plafond_rubrique').attr('readonly', 'readonly');
-            $('#form_add_bareme #plafond_sous_rubrique').attr('readonly', 'readonly');
-        }
-
-    });
-
-    $(document).on("change", "#form_add_bareme #sous_regroupement_acte", function () {
-        let sous_regroupement_acte_id = $(this).val();
-
-        if (sous_regroupement_acte_id == '') {
-            $('#form_add_bareme #plafond_sous_regroupement_acte').attr('readonly', 'readonly');
-        } else {
-            $('#form_add_bareme #plafond_sous_regroupement_acte').removeAttr('readonly');
-            $('#form_add_bareme #plafond_acte').attr('readonly', 'readonly');
-            $('#form_add_bareme #plafond_rubrique').attr('readonly', 'readonly');
-            $('#form_add_bareme #plafond_sous_rubrique').attr('readonly', 'readonly');
-        }
-
-    });
-
-    $(document).on("change", "#form_add_bareme #acte", function () {
-        let acte_id = $(this).val();
-
-        if (acte_id == '') {
-            $('#form_add_bareme #plafond_rubrique').removeAttr('readonly');
-            $('#form_add_bareme #plafond_acte').attr('readonly', 'readonly');
-        } else {
-            $('#form_add_bareme #plafond_acte').removeAttr('readonly');
-            $('#form_add_bareme #plafond_rubrique').attr('readonly', 'readonly');
-            $('#form_add_bareme #plafond_sous_rubrique').attr('readonly', 'readonly');
-            $('#form_add_bareme #plafond_regroupement_acte').attr('readonly', 'readonly');
-        }
-
-    });
-
-    // FIN DU C0NTROLE SUR LE PARAMETRAGE DU BAREME DE GARANTIE
-
 
     //CONTROLE DU TRAITEMENT DE REMBOURSEMENT
     // Sélectionner/désélectionner | APPROUVER OU REJETER DES ACTES
@@ -14526,100 +11231,6 @@ $(document).ready(function () {
     });
 
     // FIN ACTE
-
-
-    // MISSING CODE JS
-    // ADD MEMBRE FAMILLE D'UN BENEFICIAIRE
-    $(document).on('click', "#btn_save_membre_famille_beneficiaire", function () {
-
-        let formulaire = $('#form_add_membre_famille_beneficiaire');
-        let href = formulaire.attr('action');
-
-        $.validator.setDefaults({ ignore: [] });
-
-        let formData = new FormData();
-        let files = $('#form_add_membre_famille_beneficiaire #photo')[0].files;
-
-        if (formulaire.valid()) {
-
-            if (files.length > 0) {
-                formData.append('photo', files[0]);
-            }
-
-            let data_serialized = formulaire.serialize();
-            $.each(data_serialized.split('&'), function (index, elem) {
-                let vals = elem.split('=');
-
-                let key = vals[0];
-                let valeur = decodeURIComponent(vals[1].replace(/\+/g, '  '));
-
-                formData.append(key, valeur);
-
-            });
-
-            $.ajax({
-                type: 'post',
-                url: href,
-                data: formData,
-                processData: false,
-                contentType: false,
-                success: function (response) {
-
-                    if (response.statut == 1) {
-
-                        let aliment = response.data;
-
-                        let t = $('#table_famille').DataTable();
-
-                        //  console.log(JSON.stringify(aliment));
-
-                        //Vider le formulaire
-                        resetFields('#' + formulaire.attr('id'));
-
-                        notifySuccess(response.message);
-                        location.reload();
-
-                    } else {
-
-                        let errors = JSON.parse(JSON.stringify(response.errors));
-                        let errors_list_to_display = '';
-                        for (field in errors) {
-                            errors_list_to_display += '- ' + ucfirst(field) + ' : ' + errors[field] + '<br/>';
-                        }
-
-                        $('#modal-beneficiaire .alert .message').html(errors_list_to_display);
-
-                        $('#modal-beneficiaire .alert ').fadeTo(2000, 500).slideUp(500, function () {
-                            $(this).slideUp(500);
-                        }).removeClass('alert-success').addClass('alert-warning');
-
-                    }
-
-                },
-                error: function (request, status, error) {
-
-                    notifyWarning("Erreur lors de l'enregistrement");
-                }
-
-            });
-
-        } else {
-
-            $('label.error').css({ display: 'none', height: '0px' }).removeClass('error').text('');
-
-            let validator = formulaire.validate();
-
-            $.each(validator.errorMap, function (index, value) {
-
-                console.log('Id: ' + index + ' Message: ' + value);
-
-            });
-
-            notifyWarning('Veuillez renseigner tous les champs obligatoires');
-        }
-
-    });
-
 
     $(document).on("keypress", "input[type=number]", function (evt) {
         var charCode = (evt.which) ? evt.which : evt.keyCode
@@ -26645,6 +23256,3 @@ $(document).ready(function () {
     });
 
 });
-
-
-

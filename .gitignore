@@ -84,6 +84,7 @@ npm-debug.log*
 # Fichier de reglage ou autres
 settings.py
 manage.py
+requirements.txt
 debug.log
 wsgi.py
 passenger_wsgi.py

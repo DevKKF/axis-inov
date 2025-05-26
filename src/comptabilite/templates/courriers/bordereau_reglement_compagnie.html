@@ -1,7 +1,7 @@
 {% load my_filters %}
 <html>
 <head>
-<title>{{_('BORDEREAU_COMPAGNIE_DES_QUITTANCES_REGLEES')}}</title>
+<title>BORDEREAU COMPAGNIE DES QUITTANCES REGLEES</title>
 <style>
     @page {
         size: a4 landscape;
@@ -96,7 +96,7 @@
                 </td>
                 <td class="center" style="padding-bottom:0px; font-size: 14px; vertical-align: middle;" width="60%">
                     <h3>BORDEREAU COMPAGNIE DES QUITTANCES REGLEES - {{ operation.devise.libelle|default:"" }} ({{ operation.devise.code|default:"" }}) <br> Au {{ operation.date_operation|date:'d/m/Y'|default_if_none:"" }}</h3>
-                    {% comment %} <div style="margin-top:-20px;">{{_('COMPAGNIE')}}: <b>{{ compagnie|default:"" }}</b></div> {% endcomment %}
+                    {% comment %} <div style="margin-top:-20px;">COMPAGNIE: <b>{{ compagnie|default:"" }}</b></div> {% endcomment %}
                 </td>
                 <td width="20%" style="padding-left:20px;">
                 {{ compagnie.nom }}<br>
@@ -108,7 +108,7 @@
             <tr>
             <td>Code courtier : {{ bureau.code_courtier|default:"" }}</td>
             <td>&nbsp;</td>
-            <td><span style="background-color:#DFF2FF;">{{_('NUMERO_BORDEREAU')}} :</span> {{ operation.numero|default:"" }}</td>
+            <td><span style="background-color:#DFF2FF;">NUMERO BORDEREAU :</span> {{ operation.numero|default:"" }}</td>
             </tr>
         </table>
     </div>
@@ -125,17 +125,17 @@
         <table class="table" repeat="2">
             <thead>
                 <tr>
-                  <th scope="col">{{_("Numero Reg client")}}</th>
-                  <th scope="col">{{_("Numero client")}}</th>
-                  <th scope="col">{{_("Nom Client")}}</th>
-                  <th scope="col">{{_("Numero Police")}}</th>
-                  <th scope="col">{{_("Numero Quittance")}}</th>
-                  <th scope="col">{{_("Emission")}}</th>
-                  <th scope="col">{{_("Mt Reg clt")}}</th>
-                  <th scope="col">{{_("Mt CIE")}}</th>
-                  <th scope="col">{{_("Com court")}}</th>
-                  <th scope="col">{{_("Com Apport")}}</th>
-                  <th scope="col">{{_("Date Reg clt")}}</th>
+                  <th scope="col">Numero Reg client</th>
+                  <th scope="col">Numero client</th>
+                  <th scope="col">Nom Client</th>
+                  <th scope="col">Numero Police</th>
+                  <th scope="col">Numero Quittance</th>
+                  <th scope="col">Emission</th>
+                  <th scope="col">Mt Reg clt</th>
+                  <th scope="col">Mt CIE</th>
+                  <th scope="col">Com court</th>
+                  <th scope="col">Com Apport</th>
+                  <th scope="col">Date Reg clt</th>
                 </tr>
             </thead>
             <tbody>
@@ -165,24 +165,21 @@
                 </tr>
             </tfoot>
         </table>
-        
-{% comment %}          
+                 
         <br/>
         <br/>
-               
+
         <table>
             <tr>
                 <td width="5%" style="border:0px;"></td>
                 <td width="5%" style="border:0px;"></td>
                 <td width="40%" style="border:0px; text-align:left; font-size: 14px;"><br/><br/><br/></td>
-                <td width="40%" style="border:0px; text-align:right; font-size: 14px;">{{_('VISA_DIRECTION')}}<br/><br/><br/></td>
+                <td width="40%" style="border:0px; text-align:right; font-size: 14px;">VISA DIRECTION<br/><br/><br/></td>
                 <td width="10%" style="border:0px;"></td>
             </tr>
             <tr>
-                <td style="border:0px; text-align:left; font-size: 14px;width:100%;">{{_('Montant_total')}} : <strong>{{operation.montant_total|money_field|default_if_none:0}} FCFA</strong> </td>
+                <td style="border:0px; text-align:left; font-size: 14px;width:100%;">Montant total : <strong>{{operation.montant_total|money_field|default_if_none:0}} FCFA</strong> </td>
             </tr>
         </table>
- {% endcomment %}
-
 </body>
 </html>

@@ -3065,19 +3065,42 @@ def details_quittance(request, quittance_id):
     reglements = Reglement.objects.filter(quittance_id=quittance_id)
     documents = Document.objects.filter(quittance_id=quittance)
 
-    operations_reglements = OperationReglement.objects.filter(
-        reglement__quittance_id=quittance_id,
-        statut_bordereau = "VALIDE"
-    ).select_related('reglement', 'reglement__quittance')
-
     operations = Operation.objects.filter(
         operationreglement__reglement__quittance_id=quittance_id,
         statut_bordereau="VALIDE"
-    ).distinct()
+    ).distinct().prefetch_related(
+        'operationreglement_set__reglement'
+    )
+
+    operations_data = []
+
+    for operation in operations:
+        operation_reglements_for_current_op = operation.operationreglement_set.all()
+
+        # Initialize totals for the current operation
+        current_op_total_montant_compagnie = 0
+        current_op_total_montant_com_courtage = 0
+        current_op_total_montant_intermediaire = 0
+        current_op_nombre_reglements = 0
+
+        for option_reglement in operation_reglements_for_current_op:
+            if option_reglement.reglement:
+                current_op_total_montant_compagnie += option_reglement.reglement.montant_compagnie
+                current_op_total_montant_com_courtage += option_reglement.reglement.montant_com_courtage
+                current_op_total_montant_intermediaire += option_reglement.reglement.montant_com_intermediaire
+                current_op_nombre_reglements += 1
+
+        operations_data.append({
+            'operation': operation,
+            'total_montant_compagnie': current_op_total_montant_compagnie,
+            'total_montant_com_courtage': current_op_total_montant_com_courtage,
+            'total_montant_com_intermediaire': current_op_total_montant_intermediaire,
+            'current_op_nombre_reglements': current_op_nombre_reglements,
+        })
 
     return render(request, 'police/modal_details_quittance.html',
                   {'police': police, 'types_quittances': types_quittances, 'natures_quittances': natures_quittances,'types_documents':types_documents,
-                   'taxes_quittances': taxes_quittances, 'quittance': quittance, 'reglements': reglements,'documents':documents, 'operations': operations})
+                   'taxes_quittances': taxes_quittances, 'quittance': quittance, 'reglements': reglements,'documents':documents, 'operations_data': operations_data})
 
 
 @login_required

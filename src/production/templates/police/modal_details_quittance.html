@@ -4,22 +4,22 @@
 		<div class="modal-content">
 
 			<div class="modal-header">
-				<h4 class="modal-title">{{_('QUITTANCE')}} <b>N° {{quittance.numero}}</b> - {{_('CLIENT')}} <b>{{quittance.police.client.nom}}</b></h4>
+				<h4 class="modal-title">QUITTANCE <b>N° {{quittance.numero}}</b> - CLIENT <b>{{quittance.police.client.nom}}</b></h4>
 				<button type="button"class="close"data-dismiss="modal"aria-label="Close">
 					<span aria-hidden="true">×</span>
 				</button>
 			</div>
 			<div class="modal-body">
 				<div class="alert  alert-dismissible fade show hidden" role="alert">
-				  <span class="message">{{_('INFORMATIONS')}}</span>
+				  <span class="message">INFORMATIONS</span>
 				</div>
 
 				<div class="col-md-12 offset-0">
 					<ul class="nav nav-tabs" id="myTab" role="tablist">
-						<li class="nav-item"><a class="nav-link active" id="infos_quittance-tab" data-toggle="tab" href="#infos_quittance" role="tab" aria-controls="infos_quittance" aria-selected="true">{{_("INFORMATIONS GENERALES")}}</a></li>
-						<li class="nav-item"><a class="nav-link" id="reglements-tab" data-toggle="tab" href="#reglements" role="tab" aria-controls="reglements" aria-selected="false">{{_("LISTE DES REGLEMENTS")}}</a></li>
-						<li class="nav-item"><a class="nav-link" id="bordereau_paiement-tab" data-toggle="tab" href="#bordereau_paiement" role="tab" aria-controls="bordereau_paiement" aria-selected="false">{{_('BORDEREAUX DE PAIEMENT')}}</a></li>
-						<li class="nav-item"><a class="nav-link" id="ged_beneficiaire-tab" data-toggle="tab" href="#ged_beneficiaire" role="tab" aria-controls="ged" aria-selected="false">{{_('GED')}}</a></li>
+						<li class="nav-item"><a class="nav-link active" id="infos_quittance-tab" data-toggle="tab" href="#infos_quittance" role="tab" aria-controls="infos_quittance" aria-selected="true">INFORMATIONS GENERALES</a></li>
+						<li class="nav-item"><a class="nav-link" id="reglements-tab" data-toggle="tab" href="#reglements" role="tab" aria-controls="reglements" aria-selected="false">LISTE DES REGLEMENTS</a></li>
+						<li class="nav-item"><a class="nav-link" id="bordereau_paiement-tab" data-toggle="tab" href="#bordereau_paiement" role="tab" aria-controls="bordereau_paiement" aria-selected="false">BORDEREAUX DE PAIEMENT</a></li>
+						<li class="nav-item"><a class="nav-link" id="ged_beneficiaire-tab" data-toggle="tab" href="#ged_beneficiaire" role="tab" aria-controls="ged" aria-selected="false">GED</a></li>
 					</ul>
 					<div class="tab-content" id="myTabContent">
 
@@ -29,43 +29,43 @@
 							<div class="row">
 								<div class="col-md-6">
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_('Nature')}}</label>
+										<label class="col-sm-5 col-form-label">Nature</label>
 										<div class="col-sm-7">
 											<span type="text" class="form-control text-right">{{quittance.nature_quittance}}</span>
 										</div>
 									</div>
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_("Type de quittance")}}</label>
+										<label class="col-sm-5 col-form-label">Type de quittance</label>
 										<div class="col-sm-7">
 											<span type="text" class="form-control text-right">{{quittance.type_quittance}}</span>
 										</div>
 									</div>
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_("Date d'émission")}}</label>
+										<label class="col-sm-5 col-form-label">Date d'émission</label>
 										<div class="col-sm-7">
 											<span type="date" class="form-control text-right" name="date_emission">{{quittance.date_emission|date:"d/m/Y"}}</span>
 										</div>
 									</div>
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_("Date début")}}</label>
+										<label class="col-sm-5 col-form-label">Date début</label>
 										<div class="col-sm-7">
 											<span type="date" class="form-control text-right" name="date_debut">{{quittance.date_debut|date:"d/m/Y"}}</span>
 										</div>
 									</div>
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_("Date fin")}}</label>
+										<label class="col-sm-5 col-form-label">Date fin</label>
 										<div class="col-sm-7">
 											<span type="date" class="form-control text-right" name="date_fin">{{quittance.date_fin|date:"d/m/Y"}}</span>
 										</div>
 									</div>
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_("Prime HT")}} <span class="required"></span></label>
+										<label class="col-sm-5 col-form-label">Prime HT <span class="required"></span></label>
 										<div class="col-sm-7">
 											<span type="text" class="form-control money_field_negative calculs_handler_police" name="prime_ht" id="prime_ht">{{quittance.prime_ht}}</span>
 										</div>
 									</div>
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_("Coût police Cie")}} <span class="required"></span></label>
+										<label class="col-sm-5 col-form-label">Coût police Cie <span class="required"></span></label>
 										<div class="col-sm-7">
 											<span type="text" class="form-control money_field_negative calculs_handler_police" name="cout_police_compagnie" id="cout_police_compagnie">{{quittance.cout_police_compagnie}}</span>
 										</div>
@@ -75,19 +75,19 @@
 								<div class="col-md-5" style="border-left:0px;">
 
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_("Coût police courtier")}}<span class="required"></span></label>
+										<label class="col-sm-5 col-form-label">Coût police courtier<span class="required"></span></label>
 										<div class="col-sm-7">
 											<span type="text" class="form-control money_field_negative calculs_handler_police" name="cout_police_courtier" id="cout_police_courtier">{{quittance.cout_police_courtier}}</span>
 										</div>
 									</div>
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_('Taxe')}} <span class="required"></span></label>
+										<label class="col-sm-5 col-form-label">Taxe <span class="required"></span></label>
 										<div class="col-sm-7">
 											<span type="text" class="form-control money_field_negative calculs_handler_police" name="taxe" id="taxe">{{quittance.taxe}}</span>
 										</div>
 									</div>
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_("Autres Taxes")}}<span class="required"></span></label>
+										<label class="col-sm-5 col-form-label">Autres Taxes<span class="required"></span></label>
 										<div class="{% if quittance.autres_taxes <= 0 %}col-sm-7{% endif %} {% if quittance.autres_taxes > 0 %}col-sm-5{% endif %}" {% if quittance.autres_taxes > 0 %} style="padding-right:0px;"{% endif %}>
 											<span style="border-top-right-radius:0px;border-bottom-right-radius:0px;" type="text" class="form-control money_field_negative calculs_handler_police" name="autres_taxes" id="autres_taxes">{{quittance.autres_taxes}}</span>
 										</div>
@@ -98,20 +98,20 @@
 										{% endif %}
 									</div>
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_("Prime TTC")}} <span class="required"></span></label>
+										<label class="col-sm-5 col-form-label">Prime TTC <span class="required"></span></label>
 										<div class="col-sm-7">
 											<span type="text" class="form-control money_field_negative" name="prime_ttc" id="prime_ttc">{{quittance.prime_ttc}}</span>
 										</div>
 									</div>
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_("Com Courtage")}} ({{quittance.taux_com_courtage|default_if_none:"" }})%<span class="required"></span></label>
+										<label class="col-sm-5 col-form-label">Com Courtage ({{quittance.taux_com_courtage|default_if_none:"" }})%<span class="required"></span></label>
 										<div class="col-sm-7">
 											<input type="hidden" class="form-control" name="taux_com_courtage" id="taux_com_courtage" value="{{quittance.taux_com_courtage}}"/>
 											<span type="text" class="form-control money_field_negative" name="commission_courtage" id="commission_courtage">{{quittance.commission_courtage}}</span>
 										</div>
 									</div>
 									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_("Retrocession apporteur")}} <span class="required"></span></label>
+										<label class="col-sm-5 col-form-label">Retrocession apporteur <span class="required"></span></label>
 										<div class="col-sm-7">
 											<span type="text" class="form-control money_field_negative" name="commission_intermediaire" id="total_commission_intermediaire">{{quittance.commission_intermediaires}}</span>
 										</div>
@@ -131,18 +131,18 @@
 									<table class="table table-bordered table-striped dataTable dtr-inline" id="table_reglements">
 										<thead>
 										  <tr>
-											<th scope="col">{{_("N° Règlement")}}</th>
-											<th scope="col">{{_("N° Pièce")}}</th>
-											<th scope="col">{{_("Banque")}}</th>
-											<th scope="col">{{_("Mode règlement")}}</th>
-											<th scope="col">{{_("Montant reglé")}}</th>
-											<th scope="col">{{_("Dévise")}}</th>
-											<th scope="col">{{_("Date règlement")}}</th>
-											<th scope="col">{{_("Revers Cie")}}</th>
-											<th scope="col">{{_("Enc com")}}</th>
-											<th scope="col">{{_("Date saisie")}}</th>
-											<th scope="col">{{_("Enregistrer par")}}</th>
-											<th class="text-center" scope="col">{{_("Actions")}}</th>
+											<th scope="col">N° Règlement</th>
+											<th scope="col">N° Pièce</th>
+											<th scope="col">Banque</th>
+											<th scope="col">Mode règlement</th>
+											<th scope="col">Montant reglé</th>
+											<th scope="col">Dévise</th>
+											<th scope="col">Date règlement</th>
+											<th scope="col">Revers Cie</th>
+											<th scope="col">Enc com</th>
+											<th scope="col">Date saisie</th>
+											<th scope="col">Enregistrer par</th>
+											<th class="text-center" scope="col">Actions</th>
 										  </tr>
 										</thead>
 										<tbody>
@@ -179,52 +179,41 @@
 						<div class="tab-pane fade mt-3" id="bordereau_paiement" role="tabpanel" aria-labelledby="bordereau_paiement-tab">
 							<div class="rowd" style="padding-top:0px;">
 								<div class="card">
-									<div class="card-tools">
-									  <span class="btn btn-sm btn-info mb-1 imprimer_borderau_liste_reversement" id="imprimer_borderau_liste_reversement"><i class="fas fa-print"></i> Imprimer la liste de bordereau de revers. cie</span>
-									  <span class="btn btn-sm btn-primary mb-1 imprimer_borderau_liste_encaissement_com" id="imprimer_borderau_liste_encaissement_com"><i class="fas fa-print"></i> Imprimer la liste de bordereau de enc. com</span>
-									</div>
 									<div class="">
 										<table class="table table-bordered table-striped dataTable dtr-inline" id="table_bordereau_paiement">
 											<thead>
 											  <tr>
-												<th scope="col" width="3%"><input type="checkbox" class="form-control operation-checkbox-all" style="width: 1rem; height: 1.25rem;"></th>
-												<th scope="col">{{_("N° Bordereau")}}</th>
-												<th scope="col">{{_("Mont reglé")}}</th>
-												<th scope="col">{{_("Mont CIE")}}</th>
-												<th scope="col">{{_("Com courtage")}}</th>
-												<th scope="col">{{_("Date paiment")}}</th>
-												<th scope="col">{{_("Revers Cie")}}</th>
-												<th scope="col">{{_("Enc com")}}</th>
+												<th scope="col">N° Bordereau</th>
+												<th scope="col">Nombre Reg</th>
+												<th scope="col">Mont reglé</th>
+												<th scope="col">Mont CIE</th>
+												<th scope="col">Com courtage</th>
+												<th scope="col">Com Apporteur</th>
+												<th scope="col">Date paiment</th>
+												<th scope="col">Actions</th>
 											  </tr>
 											</thead>
-											<!--tbody>
-												{% for operation_reg in operations_reglements %}
-													<tr>
-													   <td><input type="checkbox" class="form-control operation-checkbox" name="operation_{{operation_reg.operation.id}}" value="{{operation_reg.operation.id}}" style="width: 1rem; height: 1.25rem;"></td>
-													   <td>{{ operation_reg.operation.numero|default:"" }} / ID OP {{ operation_reg.operation_id|default:"" }}</td>
-													   <td>{{ operation_reg.reglement.numero|default:"" }}</td>
-													   <td>{{ operation_reg.reglement.montant|money_field|default:"" }}</td>
-													   <td>{{ operation_reg.reglement.montant_compagnie|money_field|default:"" }}</td>
-													   <td>{{ operation_reg.reglement.montant_com_courtage|money_field|default:"" }}</td>
-													   <td>{{ operation_reg.reglement.date_paiement|date:'d/m/Y'|default:"" }}</td>
-													   <td><span class="badge badge-{{ operation_reg.reglement.statut_reversement_compagnie|lower|replace_espace }}">{{ operation_reg.reglement.statut_reversement_compagnie|default_if_none:"" }}</span></td>
-													   <td><span class="badge badge-{{ operation_reg.reglement.statut_commission|lower|replace_espace }}">{{ operation_reg.reglement.statut_commission|default_if_none:"" }}</span></td>
-													</tr>
-												{% endfor %}
-											</tbody-->
 											<tbody>
-												{% for operation in operations %}
-													<tr>
-														<td><input type="checkbox" class="form-control operation-checkbox" name="operation_{{operation.id}}" value="{{operation.id}}" style="width: 1rem; height: 1.25rem;"></td>
-														<td>{{ operation.numero|default:"" }}</td>
-														<td>{{ operation.montant_total|money_field|default:"" }}</td>
-														<td></td>
-														<td></td>
-														<td></td>
-														<td></td>
-														<td></td>
-													</tr>
-												{% endfor %}
+												{% if operations_data %}
+													{% for data in operations_data %}
+														<tr>
+															<td>{{ data.operation.numero }}</td>
+															<td>{{ data.current_op_nombre_reglements }}</td>
+															<td>{{ data.operation.montant_total|money_field }}</td>
+															<td>{{ data.total_montant_compagnie|money_field }}</td>
+															<td>{{ data.total_montant_com_courtage|money_field }}</td>
+															<td>{{ data.total_montant_com_intermediaire|money_field }}</td>
+															<td>{{ data.operation.date_operation|date:"Y-m-d" }}</td>
+															<td>
+																<a href="{% url 'generer_bordereau_reglement_compagnie_pdf' data.operation.id %}" class="badge badge-info" target="_blank"><i class="fa fa-file-word-o"></i> Imprimer le bordereau</a>
+															</td>
+														</tr>
+													{% endfor %}
+												{% else %}
+												<tr>
+													<td colspan="9" class="text-center">Aucune opération de règlement trouvée pour cette quittance.</td>
+												</tr>
+												{% endif %}
 											</tbody>
 										</table>
 									</div>
@@ -250,11 +239,11 @@
 										<table class="table table-bordered table-striped dataTable dtr-inline" id="table_documents">
 											<thead>
 											  <tr>
-												<th scope="col">{{_("Nom du document")}}</th>
-												<th scope="col">{{_("Type de document")}}</th>
-												<th scope="col">{{_("Fichier")}}</th>
-												<th scope="col">{{_("Date ajout")}}</th>
-												<th scope="col">{{_("Actions")}}</th>
+												<th scope="col">Nom du document</th>
+												<th scope="col">Type de document</th>
+												<th scope="col">Fichier</th>
+												<th scope="col">Date ajout</th>
+												<th scope="col">Actions</th>
 											  </tr>
 											</thead>
 											<tbody>
@@ -282,8 +271,7 @@
 
 				</div>
 				<div class="modal-footer justify-content-between">
-					<button type="button" class="btn btn-default" data-dismiss="modal">{{_('Fermer')}}</button>
-					<!--button type="button" class="btn btn-default" id="btnImprimerQuittance" data-quittance_id="{{quittance.id}}"><i class="fa fa-print"></i> Imprimer la quittance</button-->
+					<button type="button" class="btn btn-default" data-dismiss="modal">Fermer</button>
 				</div>
 			</div>
 
@@ -299,22 +287,22 @@
 			<form id="form_add_autres_taxes_quittance" action="" method="post">
 				{% csrf_token %}
 				<div class="modal-header">
-					<h4 class="modal-title">{{_("LISTE DES AUTRES TAXES")}}</h4>
+					<h4 class="modal-title">LISTE DES AUTRES TAXES</h4>
 					<button type="button"class="close"data-dismiss="modal"aria-label="Close">
 						<span aria-hidden="true">×</span>
 					</button>
 				</div>
 				<div class="modal-body">
 					<div class="alert  alert-dismissible fade show hidden" role="alert">
-						<span class="message"> {{_("TRAITEMENT EN COURS")}}</span>
+						<span class="message"> TRAITEMENT EN COURS</span>
 					</div>
 					<div class="col-md-12 offset-0">
 						<div class="row">
 							<table style="width:100%;" class="table table-bordered table-striped dataTable_ dtr-inline">
 								<thead>
 									<tr>
-										<th style="width:70%;">{{_("Taxe")}}</th>
-										<th>{{_("Montant")}}</th>
+										<th style="width:70%;">Taxe</th>
+										<th>Montant</th>
 									</tr>
 								</thead>
 								<tbody>
@@ -334,8 +322,8 @@
 					</div>
 				</div>
 				<div class="modal-footer justify-content-between">
-					<button type="button" class="btn btn-danger" data-dismiss="modal"><i class="fa fa-remove"></i> {{_('Fermer')}}</button>
-					<span>{{_('Montant_Total')}}: <span class="badge badge-warning money_field" style="font-weight:bold;">{{quittance.autres_taxes}}</span> {{quittance.police.client.pays.devise}}</span>
+					<button type="button" class="btn btn-danger" data-dismiss="modal"><i class="fa fa-remove"></i> Fermer</button>
+					<span>Montant Total: <span class="badge badge-warning money_field" style="font-weight:bold;">{{quittance.autres_taxes}}</span> {{quittance.police.client.pays.devise}}</span>
 				</div>
 			</form>
 		</div>

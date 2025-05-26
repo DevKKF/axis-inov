@@ -16,9 +16,10 @@
 
 				<div class="col-md-12 offset-0">
 					<ul class="nav nav-tabs" id="myTab" role="tablist">
-						<li class="nav-item"><a class="nav-link active" id="infos_quittance-tab" data-toggle="tab" href="#infos_quittance" role="tab" aria-controls="infos_quittance" aria-selected="true">INFORMATIONS GENERALES</a></li>
-						<li class="nav-item"><a class="nav-link" id="reglements-tab" data-toggle="tab" href="#reglements" role="tab" aria-controls="reglements" aria-selected="false">LISTE DES REGLEMENTS</a></li>
-						<li class="nav-item"><a class="nav-link" id="bordereau_paiement-tab" data-toggle="tab" href="#bordereau_paiement" role="tab" aria-controls="bordereau_paiement" aria-selected="false">BORDEREAUX DE PAIEMENT</a></li>
+						<li class="nav-item"><a class="nav-link active" id="infos_quittance-tab" data-toggle="tab" href="#infos_quittance" role="tab" aria-controls="infos_quittance" aria-selected="true">GENERALITES</a></li>
+						<li class="nav-item"><a class="nav-link" id="reglements-tab" data-toggle="tab" href="#reglements" role="tab" aria-controls="reglements" aria-selected="false">REGLEMENTS</a></li>
+						<li class="nav-item"><a class="nav-link" id="bordereau_reversement_compagnie-tab" data-toggle="tab" href="#bordereau_reversement_compagnie" role="tab" aria-controls="bordereau_reversement_compagnie" aria-selected="false">BORDEREAUX REVERSEMENT COMPAGNIE</a></li>
+						<li class="nav-item"><a class="nav-link" id="bordereau_encaissement_compagnie-tab" data-toggle="tab" href="#bordereau_encaissement_compagnie" role="tab" aria-controls="bordereau_encaissement_compagnie" aria-selected="false">BORDEREAUX ENCAISSEMENT COMMISSION</a></li>
 						<li class="nav-item"><a class="nav-link" id="ged_beneficiaire-tab" data-toggle="tab" href="#ged_beneficiaire" role="tab" aria-controls="ged" aria-selected="false">GED</a></li>
 					</ul>
 					<div class="tab-content" id="myTabContent">
@@ -175,12 +176,12 @@
 						</div>
 						<!-- FIN REGLEMENTS QUITTANCE -->
 
-                        <!-- TAB BORDEREAU GE PAIEMENT -->
-						<div class="tab-pane fade mt-3" id="bordereau_paiement" role="tabpanel" aria-labelledby="bordereau_paiement-tab">
+                        <!-- TAB BORDEREAU REVERSEMENT COMPAGNIE -->
+						<div class="tab-pane fade mt-3" id="bordereau_reversement_compagnie" role="tabpanel" aria-labelledby="bordereau_reversement_compagnie-tab">
 							<div class="rowd" style="padding-top:0px;">
 								<div class="card">
 									<div class="">
-										<table class="table table-bordered table-striped dataTable dtr-inline" id="table_bordereau_paiement">
+										<table class="table table-bordered table-striped dataTable dtr-inline" id="table_bordereau_reversement_compagnie">
 											<thead>
 											  <tr>
 												<th scope="col">N° Bordereau</th>
@@ -211,7 +212,7 @@
 													{% endfor %}
 												{% else %}
 												<tr>
-													<td colspan="9" class="text-center">Aucune opération de règlement trouvée pour cette quittance.</td>
+													<td colspan="9" class="text-center">Aucun bordereau de reversement compagnie trouvé pour cette quittance.</td>
 												</tr>
 												{% endif %}
 											</tbody>
@@ -220,7 +221,60 @@
 								</div>
 							</div>
 						</div>
-							<!-- FIN BORDEREAU GE PAIEMENT -->
+						<!-- FIN BORDEREAU REVERSEMENT COMPAGNIE -->
+						
+						<!-- TAB BORDEREAU ENCAISSEMENT COMMISSION -->
+						<div class="tab-pane fade mt-3" id="bordereau_encaissement_compagnie" role="tabpanel" aria-labelledby="bordereau_encaissement_compagnie-tab">
+							<div class="rowd" style="padding-top:0px;">
+								<div class="card">
+									<div class="">
+										<table class="table table-bordered table-striped dataTable dtr-inline" id="table_bordereau_encaissement_compagnie">
+											<thead>
+											  <tr>
+												<th scope="col">N° Bordereau</th>
+												<th scope="col">Nombre Reg</th>
+												<th scope="col">Mont reglé</th>
+												<th scope="col">Mont CIE</th>
+												<th scope="col">Com courtage</th>
+												<th scope="col">Com Apporteur</th>
+												<th scope="col">Date paiment</th>
+												<th scope="col">Actions</th>
+											  </tr>
+											</thead>
+											<tbody>
+												{% if operations_data %}
+													{% for data in operations_data %}
+                                                        {% if data.operation.fichier %}
+                                                            <tr>
+                                                                <td>{{ data.operation.numero }}</td>
+                                                                <td>{{ data.current_op_nombre_reglements }}</td>
+                                                                <td>{{ data.operation.montant_total|money_field }}</td>
+                                                                <td>{{ data.total_montant_compagnie|money_field }}</td>
+                                                                <td>{{ data.total_montant_com_courtage|money_field }}</td>
+                                                                <td>{{ data.total_montant_com_intermediaire|money_field }}</td>
+                                                                <td>{{ data.operation.date_operation|date:"Y-m-d" }}</td>
+                                                                <td>
+                                                                    <a href="" class="badge badge-info" target="_blank"><i class="fa fa-file-word-o"></i> Imprimer le bordereau</a>
+                                                                </td>
+                                                            </tr>
+                                                        {% else %}
+                                                            <tr>
+                                                                <td colspan="9" class="text-center">Aucun bordereau d'encaissement de commission trouvé pour cette quittance.</td>
+                                                            </tr>
+                                                        {% endif %}
+													{% endfor %}
+												{% else %}
+												<tr>
+													<td colspan="9" class="text-center">Aucun bordereau d'encaissement de commission trouvé pour cette quittance.</td>
+												</tr>
+												{% endif %}
+											</tbody>
+										</table>
+									</div>
+								</div>
+							</div>
+						</div>
+						<!-- FIN BORDEREAU ENCAISSEMENT COMMISSION -->
 
                         <!-- TAB GED -->
 						<div class="tab-pane fade mt-3" id="ged_beneficiaire" role="tabpanel" aria-labelledby="ged_beneficiaire-tab">

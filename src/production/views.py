@@ -3072,6 +3072,13 @@ def details_quittance(request, quittance_id):
         'operationreglement_set__reglement'
     )
 
+    encaissements = Operation.objects.filter(
+        operationreglement__reglement__quittance_id=quittance_id,
+        statut_bordereau="VALIDE",
+    ).distinct().prefetch_related(
+        'operationreglement_set__reglement'
+    )
+
     operations_data = []
 
     for operation in operations:

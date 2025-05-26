@@ -2271,7 +2271,7 @@ def add_mise_en_reglement_ordonnancement(request):
         nature_operation = NatureOperation.objects.filter(code=nature_operation_code).first()
 
         #enregistrer les infos dans operation
-        nombre_quittances = 0
+        nombre_reglements = 0
         montant_total_regle = 0
         operation = Operation.objects.create(nature_operation=nature_operation,
                                              montant_total=montant_total_regle,
@@ -2990,7 +2990,7 @@ def add_reglement_compagnie(request):
         nature_operation = NatureOperation.objects.filter(code=nature_operation_code).first()
 
         #enregistrer les infos dans operation
-        nombre_quittances = 0
+        nombre_reglements = 0
         montant_total_regle = 0
         operation = Operation.objects.create(nature_operation=nature_operation,
                                              numero_piece=numero_piece,
@@ -3030,7 +3030,7 @@ def add_reglement_compagnie(request):
         #mettre à jour le total dans operation
         operation.montant_total = montant_total_reglements_selectionne
         operation.devise = devise
-        operation.nombre_quittances = nombre_reglements_selectionnes
+        operation.nombre_reglements = nombre_reglements_selectionnes
         operation.numero = 'OP' + str(Date.today().year) + str(operation.pk).zfill(6)
         operation.save()
 
@@ -3215,11 +3215,9 @@ def add_encaissement_commission(request):
         devise = request.POST.get('devise')
         mode_reglement = request.POST.get('mode_reglement')
         compte_tresorerie = request.POST.get('compte_tresorerie')
-        #banque_id = request.POST.get('banque')
         banque_emettrice = request.POST.get('banque_emettrice')
         numero_piece = request.POST.get('numero_piece')
         date_paiement = request.POST.get('date_paiement')
-        #reglement = request.POST.getlist('reglement')
         reglements_selectionnes = request.POST.getlist('reglement_selectionne')
         date_encaissement_commission = datetime.now(tz=timezone.utc)
 
@@ -3230,27 +3228,20 @@ def add_encaissement_commission(request):
         credit_difference = 0 if credit_difference == "" else float(credit_difference)
         libelle_difference = request.POST.get('libelle_difference')
 
-        #dd(request.POST)
-        #dd(montant_encaisse_court_selectionnes[0])
-
         nature_operation_code = "ENCCOM"
         nature_operation = NatureOperation.objects.filter(code=nature_operation_code).first()
 
         #compte COMPTABLE si utilisé dans l'operation
         compte_comptable = CompteComptable.objects.filter(id=compte_difference).first() if compte_difference and compte_difference != "" else None
 
-        #banque si utilisée
-        # banque = Banque.objects.filter(id=banque_id).first() if banque_id and banque_id != "" else None
-
         #enregistrer les infos dans operation
-        nombre_quittances = 0
+        nombre_reglements = 0
         montant_total_regle = request.POST.get('montant_total_regle').replace(" ", "")
         operation = Operation.objects.create(nature_operation=nature_operation,
                                              numero_piece=numero_piece,
                                              montant_total=montant_total_regle,
                                              compte_tresorerie_id=compte_tresorerie,
                                              devise_id=devise,
-                                             #banque=banque,
                                              banque_emettrice=banque_emettrice,
                                              mode_reglement_id=mode_reglement,
                                              date_operation=date_paiement,
@@ -3270,19 +3261,13 @@ def add_encaissement_commission(request):
             montant_com_courtage = 0 if montant_com_courtage == "" else float(montant_com_courtage)
             montant_com_gestion = montant_encaisse_gest_selectionne.replace(" ", "")
             montant_com_gestion = 0 if montant_com_gestion == "" else float(montant_com_gestion)
-            #reglement_id = reglement[i]
+
             i = i + 1
-            #print(reglement_id)
             if reglement_id is not None:
                 reglement = Reglement.objects.get(id=reglement_id)
                 montant_total_reglements_selectionne += montant_com_courtage + montant_com_gestion
                 nombre_reglements_selectionnes = nombre_reglements_selectionnes + 1
 
-                """                 
-                #Lier l'opération au règlement
-                operation_reglement = OperationReglement.objects.create(operation=operation, reglement=reglement, created_by=request.user)
-                operation_reglement.save()
-                """
                 encaiss_com = EncaissementCommission.objects.create(operation=operation,
                                                              reglement=reglement,
                                                              created_by=request.user,
@@ -3327,8 +3312,9 @@ def add_encaissement_commission(request):
 
         #mettre à jour le total dans operation
         operation.montant_total = montant_total_reglements_selectionne
-        operation.nombre_quittances = nombre_reglements_selectionnes
+        operation.nombre_reglements = nombre_reglements_selectionnes
         operation.numero = 'OP' + str(Date.today().year) + str(operation.pk).zfill(6)
+        operation.statut_bordereau = "VALIDE"
         operation.devise = devise
         operation.save()
 
@@ -3427,7 +3413,7 @@ def add_encaissement_com_court_gest(request, type):
         # banque = Banque.objects.filter(id=banque_id).first() if banque_id and banque_id != "" else None
 
         #enregistrer les infos dans operation
-        nombre_quittances = 0
+        nombre_reglements = 0
         montant_total_regle = request.POST.get('montant_total_regle').replace(" ", "")
         operation = Operation.objects.create(nature_operation=nature_operation,
                                              numero_piece=numero_piece,
@@ -3529,8 +3515,9 @@ def add_encaissement_com_court_gest(request, type):
 
         #mettre à jour le total dans operation
         operation.montant_total = montant_total_reglements_selectionne
-        operation.nombre_quittances = nombre_reglements_selectionnes
+        operation.nombre_reglements = nombre_reglements_selectionnes
         operation.numero = 'OP' + str(Date.today().year) + str(operation.pk).zfill(6)
+        operation.statut_bordereau = "VALIDE"
         operation.devise = devise
         operation.save()
 
@@ -3579,7 +3566,6 @@ def generer_bordereau_encaissement_compagnie_pdf(request, operation_id):
     compagnie = encaissement_commissions.first().reglement.quittance.compagnie if encaissement_commissions.first() and encaissement_commissions.first().reglement and encaissement_commissions.first().reglement.quittance else None
     bureau = encaissement_commissions.first().reglement.bureau if encaissement_commissions.first() and encaissement_commissions.first().reglement else None
 
-    # dd(option_reglements.first())
     total_montant_compagnie = 0
     total_montant_com_courtage = 0
     total_montant_com_gestion = 0
@@ -3605,12 +3591,12 @@ def generer_bordereau_encaissement_compagnie_pdf(request, operation_id):
                 op_sens = "D"
             else:
                 op_sens = "C"
-        # total_montant_com_intermediaire += encaissement_commission.montant_com_intermediaire
+
+        total_montant_com_intermediaire += encaissement_commission.montant_com_intermediaire
 
     total_montant_percu_final = total_montant_com_encaisse - op_div if op_sens == "D" else total_montant_com_encaisse + op_div
 
     site_logo_url = request.build_absolute_uri(static(settings.JAZZMIN_SETTINGS['site_logo']))
-    print("Logo de l'entreprise : ", site_logo_url)
 
     contexte = {
         'operation': operation,
@@ -3628,7 +3614,7 @@ def generer_bordereau_encaissement_compagnie_pdf(request, operation_id):
         'op_designation': op_designation,
         'total_montant_percu_final': total_montant_percu_final,
         'type': type,
-        # 'total_montant_com_intermediaire': total_montant_com_intermediaire,
+        'total_montant_com_intermediaire': total_montant_com_intermediaire,
         'site_logo_url': site_logo_url,
     }
     pdf = render_pdf('courriers/bordereau_encaissement_compagnie.html', contexte) if type is None else render_pdf('courriers/bordereau_encaissement_compagnie_court_gest.html', contexte)

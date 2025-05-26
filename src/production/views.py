@@ -3065,67 +3065,42 @@ def details_quittance(request, quittance_id):
     reglements = Reglement.objects.filter(quittance_id=quittance_id)
     documents = Document.objects.filter(quittance_id=quittance)
 
-    operations_reglements = OperationReglement.objects.filter(
-        reglement__quittance_id=quittance_id,
-        statut_bordereau = "VALIDE"
-    ).select_related('reglement', 'reglement__quittance')
-
-    operation_s = Operation.objects.filter(
-        operationreglement__reglement__quittance_id=quittance_id,
-        statut_bordereau="VALIDE"
-    ).distinct()
-
     operations = Operation.objects.filter(
         operationreglement__reglement__quittance_id=quittance_id,
         statut_bordereau="VALIDE"
     ).distinct().prefetch_related(
-        'operationreglement_set__reglement'  # This fetches OperationReglement and its related Reglement
+        'operationreglement_set__reglement'
     )
 
-    # Initialize overall totals
-    overall_total_montant_compagnie = 0
-    overall_total_montant_com_courtage = 0
-    overall_total_montant_intermediaire = 0
-
-    # Prepare a list to hold data for each operation, including its calculated totals
     operations_data = []
 
     for operation in operations:
-        # For each distinct operation, get its associated option_reglements
-        # We can directly access them because of prefetch_related
         operation_reglements_for_current_op = operation.operationreglement_set.all()
 
         # Initialize totals for the current operation
         current_op_total_montant_compagnie = 0
         current_op_total_montant_com_courtage = 0
         current_op_total_montant_intermediaire = 0
+        current_op_nombre_reglements = 0
 
         for option_reglement in operation_reglements_for_current_op:
-            if option_reglement.reglement:  # Ensure reglement exists
+            if option_reglement.reglement:
                 current_op_total_montant_compagnie += option_reglement.reglement.montant_compagnie
                 current_op_total_montant_com_courtage += option_reglement.reglement.montant_com_courtage
                 current_op_total_montant_intermediaire += option_reglement.reglement.montant_com_intermediaire
-
-        # Add to overall totals
-        overall_total_montant_compagnie += current_op_total_montant_compagnie
-        overall_total_montant_com_courtage += current_op_total_montant_com_courtage
-        overall_total_montant_intermediaire += current_op_total_montant_intermediaire
+                current_op_nombre_reglements += 1
 
         operations_data.append({
             'operation': operation,
             'total_montant_compagnie': current_op_total_montant_compagnie,
             'total_montant_com_courtage': current_op_total_montant_com_courtage,
             'total_montant_com_intermediaire': current_op_total_montant_intermediaire,
+            'current_op_nombre_reglements': current_op_nombre_reglements,
         })
 
     return render(request, 'police/modal_details_quittance.html',
                   {'police': police, 'types_quittances': types_quittances, 'natures_quittances': natures_quittances,'types_documents':types_documents,
-                   'taxes_quittances': taxes_quittances, 'quittance': quittance, 'reglements': reglements,'documents':documents, 'operation_s': operation_s,
-                   'operations_data': operations_data,
-                   'overall_total_montant_compagnie': overall_total_montant_compagnie,
-                   'overall_total_montant_com_courtage': overall_total_montant_com_courtage,
-                   'overall_total_montant_com_intermediaire': overall_total_montant_intermediaire
-               })
+                   'taxes_quittances': taxes_quittances, 'quittance': quittance, 'reglements': reglements,'documents':documents, 'operations': operations})
 
 
 @login_required

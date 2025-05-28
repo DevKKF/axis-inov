@@ -232,29 +232,29 @@
 											<thead>
 											  <tr>
 												<th scope="col">N° Bordereau</th>
-												<th scope="col">Nombre Reg</th>
-												<th scope="col">Mont reglé</th>
-												<th scope="col">Mont CIE</th>
-												<th scope="col">Com courtage</th>
+												<th scope="col">Com Courtage</th>
+												<th scope="col">Prime Due</th>
+												<th scope="col">Com Réglée</th>
 												<th scope="col">Com Apporteur</th>
-												<th scope="col">Date paiment</th>
+												<th scope="col">Encaisser par</th>
+												<th scope="col">Date Encais.</th>
 												<th scope="col">Actions</th>
 											  </tr>
 											</thead>
 											<tbody>
-												{% if operations_data %}
-													{% for data in operations_data %}
-                                                        {% if data.operation.fichier %}
+												{% if encaissements_data %}
+													{% for data in encaissements_data %}
+                                                        {% if data.fichier %}
                                                             <tr>
-                                                                <td>{{ data.operation.numero }}</td>
-                                                                <td>{{ data.current_op_nombre_reglements }}</td>
-                                                                <td>{{ data.operation.montant_total|money_field }}</td>
-                                                                <td>{{ data.total_montant_compagnie|money_field }}</td>
+                                                                <td>{{ data.numero }}</td>
                                                                 <td>{{ data.total_montant_com_courtage|money_field }}</td>
+                                                                <td>{{ data.total_reglement_montant|money_field }}</td>
+                                                                <td>{{ data.total_montant_com_encaisse|money_field }}</td>
                                                                 <td>{{ data.total_montant_com_intermediaire|money_field }}</td>
-                                                                <td>{{ data.operation.date_operation|date:"Y-m-d" }}</td>
+                                                                <td>{{ data.created_by }}</td>
+                                                                <td>{{ data.date_operation|date:"Y-m-d" }}</td>
                                                                 <td>
-                                                                    <a href="" class="badge badge-info" target="_blank"><i class="fa fa-file-word-o"></i> Imprimer le bordereau</a>
+                                                                    <a href="{% url 'generer_bordereau_encaissement_compagnie_pdf' data.id %}" class="badge badge-info" target="_blank"><i class="fa fa-file-word-o"></i> Imprimer le bordereau</a>
                                                                 </td>
                                                             </tr>
                                                         {% else %}

@@ -3592,7 +3592,8 @@ def generer_bordereau_encaissement_compagnie_pdf(request, operation_id):
             else:
                 op_sens = "C"
 
-        total_montant_com_intermediaire += encaissement_commission.montant_com_intermediaire
+        if encaissement_commission.montant_com_intermediaire is not None:
+            total_montant_com_intermediaire += encaissement_commission.montant_com_intermediaire
 
     total_montant_percu_final = total_montant_com_encaisse - op_div if op_sens == "D" else total_montant_com_encaisse + op_div
 

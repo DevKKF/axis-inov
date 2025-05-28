@@ -3065,6 +3065,20 @@ def details_quittance(request, quittance_id):
     reglements = Reglement.objects.filter(quittance_id=quittance_id)
     documents = Document.objects.filter(quittance_id=quittance)
 
+    encaissements_data = Operation.objects.filter(
+        encaissementcommission__reglement__quittance_id=quittance_id
+    ).annotate(
+        total_reglement_montant=Sum('encaissementcommission__reglement__montant'),
+        total_montant_com_encaisse=Sum('encaissementcommission__montant_com_courtage'),
+        total_montant_com_courtage=Sum('encaissementcommission__reglement__montant_com_courtage'),
+        total_montant_com_intermediaire=Sum('encaissementcommission__reglement__montant_com_intermediaire'),
+    ).distinct()
+
+    print('encaissements_data', encaissements_data)
+
+    for operation in encaissements_data:
+        print(f"Operation: {operation.id}")
+
     operations = Operation.objects.filter(
         operationreglement__reglement__quittance_id=quittance_id,
         statut_bordereau="VALIDE"
@@ -3100,7 +3114,7 @@ def details_quittance(request, quittance_id):
 
     return render(request, 'police/modal_details_quittance.html',
                   {'police': police, 'types_quittances': types_quittances, 'natures_quittances': natures_quittances,'types_documents':types_documents,
-                   'taxes_quittances': taxes_quittances, 'quittance': quittance, 'reglements': reglements,'documents':documents, 'operations': operations})
+                   'taxes_quittances': taxes_quittances, 'quittance': quittance, 'reglements': reglements,'documents':documents, 'operations_data': operations_data, 'encaissements_data':encaissements_data})
 
 
 @login_required

@@ -46,13 +46,11 @@ class EncaissementCommission(models.Model):
     reglement = models.ForeignKey(Reglement, null=True, on_delete=models.RESTRICT, related_name="encaissement_commissions", related_query_name="encaissement_commission")
     montant_com_courtage = models.DecimalField(max_digits=20, decimal_places=0, blank=True, null=True)
     montant_com_gestion = models.DecimalField(max_digits=20, decimal_places=0, blank=True, null=True)
+    montant_com_intermediaire = models.DecimalField(max_digits=20, decimal_places=0, blank=True, null=True)
     type_commission = models.fields.CharField(choices=TypeEncaissementCommission.choices, default=None, max_length=15, null=True)
     created_by = models.ForeignKey(User, null=True, on_delete=models.RESTRICT)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return self.numero
 
     class Meta:
         db_table = 'encaissement_commission'

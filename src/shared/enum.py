@@ -68,12 +68,6 @@ class Genre(models.TextChoices):
     MASCULIN = 'M'
     FEMININ = 'F'
 
-class StatutFamilial(models.TextChoices):
-    MARIE = 'M'
-    CELIBATAIRE = 'C'
-    DIVORCE = 'D'
-    CHOISIR = ''
-
 class Statut(models.TextChoices):
     ACTIF = 'ACTIF'
     INACTIF = 'INACTIF'

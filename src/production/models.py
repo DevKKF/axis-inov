@@ -16,8 +16,8 @@ from configurations.models import Banque, Bureau, Civilite, Compagnie, Fractionn
     QualiteBeneficiaire, TypeAssurance, Devise, Profession, ModeCalcul, Taxe, Apporteur, BaseCalcul, TypeQuittance, \
     NatureQuittance, TypeCarosserie, CategorieVehicule, MarqueVehicule, NatureOperation, Prestataire, TypeTarif, Acte, \
     Rubrique, Periodicite, RegroupementActe, SousRubrique, TypePrefinancement, ReseauSoin, CompteTresorerie, TypeMouvement, \
-    SousRegroupementActe, Secteur, GroupeInter, Carosserie, Formule, Usage, Carburant, BusinessUnit, Garantie, ConditionsAssurance, MoyensTransport, TypeCourrier, Groupe
-from shared.enum import Genre, Statut, StatutRelation, StatutFamilial, OptionYesNo, PlacementEtGestion, \
+    Secteur, GroupeInter, Carosserie, Formule, Usage, Carburant, BusinessUnit, Garantie, ConditionsAssurance, MoyensTransport, TypeCourrier, Groupe
+from shared.enum import Genre, Statut, StatutRelation, OptionYesNo, PlacementEtGestion, \
     ModeRenouvellement, TypeEncaissementCommission, TypeMajorationContrat, CalculTM, StatutContrat, StatutPolice, \
     StatutQuittance, StatutBordereau, \
     StatutReversementCompagnie, StatutReglementApporteurs, StatutEncaissementCommission, Energie, StatutSinistre, \
@@ -769,7 +769,6 @@ class Bareme(models.Model):
     rubrique = models.ForeignKey(Rubrique, on_delete=models.RESTRICT, null=True)
     sous_rubrique = models.ForeignKey(SousRubrique, on_delete=models.RESTRICT, null=True)
     regroupement_acte = models.ForeignKey(RegroupementActe, on_delete=models.RESTRICT, null=True)
-    sous_regroupement_acte = models.ForeignKey(SousRegroupementActe, on_delete=models.RESTRICT, null=True)
     acte = models.ForeignKey(Acte, on_delete=models.RESTRICT, null=True)
     is_garanti = models.BooleanField(default=True)
     qualite_beneficiaire = models.ForeignKey(QualiteBeneficiaire, on_delete=models.RESTRICT, null=True)
@@ -887,7 +886,6 @@ class Aliment(models.Model):
     date_affiliation = models.DateField(blank=True, null=True)
     date_sortie = models.DateField(blank=True, null=True)
     photo = models.ImageField(max_length=255, blank=True, null=True, upload_to=upload_location_aliment)
-    statut_familiale = models.fields.CharField(choices=StatutFamilial.choices, default=StatutFamilial.CHOISIR, max_length=15, null=True)
     numero_piece = models.CharField(max_length=50, blank=True, null=True)
 
     code_postal = models.CharField(max_length=20, blank=True, null=True)

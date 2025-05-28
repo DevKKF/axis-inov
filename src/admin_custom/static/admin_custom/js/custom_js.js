@@ -7,20 +7,12 @@ $(document).ready(function () {
     //
     if (typeof $.fn.select2 === 'function') {
 
-        $('.tags-multiple_affection_soins_amb').select2();
         $('.tags-multiple').select2();
-        $('#affection_id').select2();
-        $('.tags-multiple_affection').select2();
-        $('.tags-multiple_affection_sa').select2();
-        $('.tags-multiple_affection_hospit').select2();
         $('.liste_medicament').select2({
             placeholder: 'Sélectionner un médicament',
             width: '100%',
             dropdownAutoWidth: true
         });
-        $('#form_add_sinistre_soins_ambulatoires #affection_id').select2();
-        $('#affection_id').select2();
-        $('#code_affection_detail_ds').select2();
 
         $('.select2-container').css({
             'width': '100%'
@@ -1547,7 +1539,6 @@ $(document).ready(function () {
                             url: '/sinistre/submit-generation-br-validation',
                             data: {
                                 'search_periode_comptable': $('#search_periode_comptable').val(),
-                                'search_prestataire': $('#search_prestataire').val(),
                                 'search_numero_bordereau': $('#search_numero_bordereau').val(),
                                 'search_type_remboursement': $('#search_type_remboursement').val(),
                                 'search_adherent_principal': $('#search_adherent_principal').val(),
@@ -5632,7 +5623,47 @@ $(document).ready(function () {
     });
     //************* FIN AJOUT DE QUITTANCES ***************//
 
+    let documentsDataTable;
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.startsWith(name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+
     //********* DETAILS QUITTANCE ***********//
+
+    function initializeDataTable(tableId) {
+        if (!$.fn.DataTable.isDataTable(tableId)) {
+            const dtConfig = {
+                "language": { "url": "//cdn.datatables.net/plug-ins/9dcbecd42ad/i18n/French.json" },
+                order: [[0, 'desc']],
+                lengthMenu: [[5, 10, 25, 50, 100], [5, 10, 25, 50, 100]],
+                responsive: true
+            };
+
+            if (tableId === '#table_document_quittance') {
+                 dtConfig.paging = false;
+                 dtConfig.ordering = false;
+                 dtConfig.info = false;
+                 dtConfig.searching = false;
+                 documentsDataTable = $(tableId).DataTable(dtConfig);
+            } else {
+                 $(tableId).DataTable(dtConfig);
+            }
+        } else if (tableId === '#table_document_quittance') {
+            documentsDataTable = $(tableId).DataTable();
+        }
+    }
 
     $(".btnOpenDialogDetailQuittance").on('dblclick', function () {
 
@@ -5643,6 +5674,7 @@ $(document).ready(function () {
         let model_name = $(this).data('model_name');
         let modal_title = $(this).data('modal_title');
         let href = $(this).data('href');
+        let quittance_id = $(this).data('quittance_id');
 
         $('#olea_std_dialog_box').load(href, function () {
 
@@ -5655,28 +5687,163 @@ $(document).ready(function () {
             $('#modal-details_quittance').find('#btn_valider').attr({ 'data-model_name': model_name, 'data-href': href });
             $('#modal-details_quittance').find('.modal-dialog').addClass('modal-xl').removeClass('modal-lg');
 
+            initializeDataTable('#table_reglements');
+            initializeDataTable('#table_bordereau_encaissement_compagnie');
+            initializeDataTable('#table_bordereau_reversement_compagnie');
+            initializeDataTable('#table_document_quittance');
+
+            if (!$.fn.DataTable.isDataTable('#table_document_quittance')) {
+                 documentsDataTable = $('#table_document_quittance').DataTable({
+                    "language": { "url": "//cdn.datatables.net/plug-ins/9dcbecd42ad/i18n/French.json" },
+                    order: [[0, 'desc']],
+                    lengthMenu: [[5, 10, 25, 50, 100], [5, 10, 25, 50, 100]],
+                    responsive: true,
+                    paging: false,
+                    ordering: false,
+                    info: false,
+                    searching: false
+                });
+            } else {
+                 documentsDataTable = $('#table_document_quittance').DataTable();
+            }
+
+            if (quittance_id) {
+                const documentsApiUrl = `/production/get_documents_quittance_session/?quittance_id=${quittance_id}`;
+                fetchAndDisplayDocuments(documentsApiUrl);
+            }
+
             //
             $('#modal-details_quittance').modal();
 
-            //init datatables
-            if (!$.fn.DataTable.isDataTable('#table_reglements')) {
 
-                $('#table_reglements_0').DataTable({
-                    "language": {
-                        "url": "//cdn.datatables.net/plug-ins/9dcbecd42ad/i18n/French.json"
-                    },
-                    order: [[0, 'desc']],
-                    lengthMenu: [
-                        [5, 10],
-                        [5, 10],
-                    ],
-                });
+            $('#btn_save_document').off('click').on('click', handleAddDocument);
 
-            }
+            $('#chargementDocumentQuittance').off('change').on('change', function () {
+                const currentQuittanceId = $(this).val();
+                if (currentQuittanceId) {
+                    const documentsApiUrl = `/production/get_documents_quittance_session/?quittance_id=${currentQuittanceId}`;
+                    fetchAndDisplayDocuments(documentsApiUrl);
+                } else {
+                    documentsDataTable.clear().draw();
+                }
+            });
 
         });
 
     });
+
+    function fetchAndDisplayDocuments(url) {
+        $.ajax({
+            url: url,
+            method: 'GET',
+            dataType: 'json',
+            success: function(response) {
+                if (response && response.success && response.data) {
+                    documentsDataTable.clear();
+                    response.data.forEach(function(document) {
+                        let fileLink = `<a target="_blank" href="${document.fichier_url}"><i class="fa fa-file" title="Aperçu"></i> Afficher</a>`;
+                        let actionsHtml = `
+                            <span class="btn_supprimer_document" data-document_id="${document.id}" onclick="supprimer_document(${document.id})" style="cursor:pointer;"><i class="fa fa-times text-danger"></i> </span>&nbsp;&nbsp;&nbsp;
+                            <span class="btn_modifier_on_modal" data-model_name="document" data-href="${document.modifier_url || '#'}" data-modal_title="Modification d'un document" title="Modifier" style="cursor:pointer;"><i class="fas fa-edit text-warning"></i></span>
+                        `;
+                        documentsDataTable.row.add([
+                            document.nom || '',
+                            document.type_libelle || '',
+                            fileLink,
+                            document.date_creation || '',
+                            actionsHtml
+                        ]);
+                    });
+                    documentsDataTable.draw();
+                } else {
+                    documentsDataTable.clear().draw();
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error("Erreur chargement documents :", status, error, xhr.responseText);
+            }
+        });
+    }
+
+    function handleAddDocument(e) {
+        e.preventDefault();
+
+        const form = $('#modal_form_document')[0];
+        const formData = new FormData(form);
+        const actionUrl = form.action;
+
+        const alertBox = $('#modal-document_quittance .alert');
+        alertBox.removeClass('hidden').addClass('alert-info').find('.message').text('TRAITEMENT EN COURS...');
+
+        $('.champ_obligatoire').removeClass('is-invalid is-valid');
+
+        let valide = true;
+        $('.champ_obligatoire').each(function () {
+            const value = $(this).val();
+            if ($(this).attr('type') === 'file') {
+                 if (this.files.length === 0) {
+                     $(this).addClass('is-invalid');
+                     valide = false;
+                 } else {
+                     $(this).addClass('is-valid');
+                 }
+            } else if (!value || (typeof value === 'string' && value.trim() === '')) {
+                $(this).addClass('is-invalid');
+                valide = false;
+            } else {
+                $(this).addClass('is-valid');
+            }
+        });
+
+        if (!valide) {
+            alertBox.removeClass('alert-info').addClass('alert-danger').find('.message').text('Veuillez remplir tous les champs obligatoires.');
+            setTimeout(() => { alertBox.addClass('hidden').removeClass('alert-danger'); }, 3000);
+            return;
+        }
+
+        $.ajax({
+            url: actionUrl,
+            method: 'POST',
+            data: formData,
+            processData: false,
+            contentType: false,
+            headers: { 'X-CSRFToken': getCookie('csrftoken') },
+            success: function(response) {
+                if (response.statut === 1) {
+                    alertBox.removeClass('alert-info').addClass('alert-success').find('.message').text(response.message || 'Document ajouté avec succès !');
+
+                    let newDocument = response.data;
+                    let fileHtml = newDocument.fichier;
+                    let actionsHtml = `
+                        <span class="btn_supprimer_document" data-document_id="${newDocument.id}" onclick="supprimer_document(${newDocument.id})" style="cursor:pointer;"><i class="fa fa-times text-danger"></i> </span>&nbsp;&nbsp;&nbsp;
+                        <span class="btn_modifier_on_modal" data-model_name="document" data-href="${newDocument.modifier_url || '#'}" data-modal_title="Modification d'un document" title="Modifier" style="cursor:pointer;"><i class="fas fa-edit text-warning"></i></span>
+                    `;
+
+                    documentsDataTable.row.add([
+                        newDocument.nom || '',
+                        newDocument.type_document || '',
+                        fileHtml,
+                        new Date().toLocaleDateString('fr-FR') || '',
+                        actionsHtml
+                    ]).draw(false);
+
+                    form.reset();
+                    $('.champ_obligatoire').removeClass('is-valid is-invalid');
+                    $("#modal_form_document select").prop('selectedIndex', 0).trigger('change');
+
+                    setTimeout(() => { alertBox.addClass('hidden').removeClass('alert-success'); }, 3000);
+
+                } else {
+                    alertBox.removeClass('alert-info').addClass('alert-danger').find('.message').text(response.message || 'Erreur lors de l\'ajout du document.');
+                    console.error("Erreur côté serveur :", response.message, response.errors);
+                }
+            },
+            error: function(xhr, status, error) {
+                alertBox.removeClass('alert-info').addClass('alert-danger').find('.message').text('Une erreur est survenue.');
+                console.error("Erreur Ajax ajout document :", status, error, xhr.responseText);
+            }
+        });
+    }
     //********* FIN DETAILS QUITTANCE ***********//
 
 
@@ -7289,7 +7456,6 @@ $(document).ready(function () {
                                     });
 
                                     //fin confirmation obtenue
-
                                 }
                             },
                             {
@@ -7304,7 +7470,6 @@ $(document).ready(function () {
                         ]
                     });
                     //fin demande confirmation
-
 
                 } else {
 
@@ -7330,931 +7495,6 @@ $(document).ready(function () {
         });
 
     });
-
-    //********** FAIRE UN REGLEMENT BORDEREAU D"ORDONNANCEMENT PAR GARANT */
-    $("#btnOpenDialogAddReglementBordereauParGarant").on('click', function () {
-
-        let model_name = $(this).data('model_name');
-        let modal_title = $(this).data('modal_title');
-        let href = $(this).data('href');
-
-        $('#olea_std_dialog_box').load(href, function () {
-
-            //appliquer le mask de saisie sur les champs montant
-            AppliquerMaskSaisie();
-
-            $('#modal-reglement_ordonnancement_par_garant').attr('data-backdrop', 'static').attr('data-keyboard', false);
-
-            $('#modal-reglement_ordonnancement_par_garant').find('.modal-title').text(modal_title);
-            $('#modal-reglement_ordonnancement_par_garant').find('#btn_valider').attr({ 'data-model_name': model_name, 'data-href': href });
-            $('#modal-reglement_ordonnancement_par_garant').find('.modal-dialog').addClass('modal-xl').removeClass('modal-lg');
-
-            //
-            $('#modal-reglement_ordonnancement_par_garant').modal();
-
-            //enregistrement
-            //TODO REGLEMENT PAR GARANT
-            $('#btn_save_reglement_ordonnancement_par_garant').on('click', function () {
-
-                let btn_save_reglement_ordonnancement_par_garant = $(this);
-
-                let formulaire = $('#form_add_reglement_ordonnancement_par_garant');
-                let href = formulaire.attr('action');
-
-                $.validator.setDefaults({ ignore: [] });
-
-                if (formulaire.valid()) {
-
-                    //désactiver le bouton Valider, pour empecher une double soumission du formulaire
-                    btn_save_reglement_ordonnancement_par_garant.attr('disabled', true);
-
-                    //demander confirmation
-                    let n = noty({
-                        text: 'Voulez-vous vraiment effectuer ce paiement ?',
-                        type: 'warning',
-                        dismissQueue: true,
-                        layout: 'center',
-                        theme: 'defaultTheme',
-                        buttons: [
-                            {
-                                addClass: 'btn btn-primary', text: 'OUI', onClick: function ($noty) {
-                                    $noty.close();
-
-                                    //confirmation obtenu
-                                    $.ajax({
-                                        type: 'post',
-                                        url: href,
-                                        data: formulaire.serialize(),
-                                        beforeSend: function () {
-                                            $('#loading_gif_reglement_ordonnancement_par_garant').show();
-                                            btn_save_reglement_ordonnancement_par_garant.hide();
-                                        },
-                                        success: function (response) {
-
-                                            if (response.statut == 1) {
-
-                                                notifySuccess(response.message, function () {
-                                                    // Rediriger pour afficher le bordereau de reglement compagnie en PDF
-                                                    let bordereau_pdf = response.bordereau_pdf;
-                                                    // Ouvrir le PDF dans une nouvelle fenêtre
-                                                    window.open(bordereau_pdf, '_blank');
-                                                    // Recharger la page après un délai de 2 secondes (2000 millisecondes)
-                                                    setTimeout(function () {
-
-                                                        if (response.statut_bordereau_pour_redirection == "PAYE") {
-                                                            window.location.href = "../../bordereauordonnance";
-                                                        }
-                                                        else {
-                                                            location.reload();
-                                                        }
-                                                    }, 2000);
-
-                                                });
-
-
-                                            } else {
-
-                                                $('#loading_gif_reglement_ordonnancement_par_garant').hide();
-                                                btn_save_reglement_ordonnancement_garant.show();
-
-                                                btn_save_reglement_ordonnancement_garant.removeAttr('disabled');
-
-                                                let errors = JSON.parse(JSON.stringify(response.errors));
-                                                let errors_list_to_display = '';
-                                                for (field in errors) {
-                                                    errors_list_to_display += '- ' + ucfirst(field) + ' : ' + errors[field] + '<br/>';
-                                                }
-
-                                                $('#modal-reglement_ordonnancement_par_garant .alert .message').html(errors_list_to_display);
-
-                                                $('#modal-reglement_ordonnancement_par_garant .alert ').fadeTo(2000, 500).slideUp(500, function () {
-                                                    $(this).slideUp(500);
-                                                }).removeClass('alert-success').addClass('alert-warning');
-
-                                            }
-
-                                        },
-                                        error: function (request, status, error) {
-
-                                            notifyWarning("Erreur lors de l'enregistrement");
-                                            $('#loading_gif_reglement_ordonnancement_par_garant').hide();
-                                            btn_save_reglement_ordonnancement_garant.show();
-
-                                            btn_save_reglement_ordonnancement_garant.removeAttr('disabled');
-
-                                        }
-
-                                    });
-
-                                    //fin confirmation obtenue
-
-                                }
-                            },
-                            {
-                                addClass: 'btn btn-danger', text: 'Annuler', onClick: function ($noty) {
-                                    //confirmation refusée
-                                    $noty.close();
-                                    $('#loading_gif_reglement_ordonnancement_par_garant').hide();
-                                    btn_save_reglement_ordonnancement_garant.show();
-
-                                    btn_save_reglement_ordonnancement_garant.removeAttr('disabled');
-
-                                }
-                            }
-                        ]
-                    });
-                    //fin demande confirmation
-
-
-                } else {
-
-                    $('label.error').css({ display: 'none', height: '0px' }).removeClass('error').text('');
-
-                    let validator = formulaire.validate();
-
-                    $.each(validator.errorMap, function (index, value) {
-
-                        console.log('Id: ' + index + ' Message: ' + value);
-
-                    });
-
-                    notifyWarning('Veuillez renseigner tous les champs obligatoires');
-
-                    $('#loading_gif_reglement_ordonnancement_par_garant').hide();
-                    btn_save_reglement_ordonnancement_garant.show();
-
-                    btn_save_reglement_ordonnancement_garant.removeAttr('disabled');
-
-                }
-
-
-            });
-
-        });
-
-    });
-
-    //********** FAIRE UNE INITIALISATION DE LA CAUTION D'UN GARANT | SUIVI DE TRÉSORERIE */
-    $("#btnOpenDialogInitialiserFDRGarant").on('click', function () {
-
-        let model_name = $(this).data('model_name');
-        let modal_title = $(this).data('modal_title');
-        let href = $(this).data('href');
-
-        $('#olea_std_dialog_box').load(href, function () {
-
-            //appliquer le mask de saisie sur les champs montant
-            AppliquerMaskSaisie();
-
-            $('#modal-initialiser_fdr_garant').attr('data-backdrop', 'static').attr('data-keyboard', false);
-
-            $('#modal-initialiser_fdr_garant').find('.modal-title').text(modal_title);
-            $('#modal-initialiser_fdr_garant').find('#btn_valider').attr({ 'data-model_name': model_name, 'data-href': href });
-            $('#modal-initialiser_fdr_garant').find('.modal-dialog').addClass('modal-lg');
-
-            //
-            $('#modal-initialiser_fdr_garant').modal();
-
-            //enregistrement
-            $('#btn_save_initialiser_fdr_garant').on('click', function () {
-
-                let btn_save_initialiser_fdr_garant = $(this);
-
-                let formulaire = $('#form_add_initialiser_fdr_garant');
-                let href = formulaire.attr('action');
-
-                $.validator.setDefaults({ ignore: [] });
-
-                if (formulaire.valid()) {
-
-                    btn_save_initialiser_fdr_garant.attr('disabled', true);
-
-                    //demander confirmation
-                    let n = noty({
-                        text: "Veuillez svp confirmer l'enregistrement de la caution ?",
-                        type: 'warning',
-                        dismissQueue: true,
-                        layout: 'center',
-                        theme: 'defaultTheme',
-                        buttons: [
-                            {
-                                addClass: 'btn btn-primary', text: 'OUI', onClick: function ($noty) {
-                                    //désactiver le bouton Valider, pour empecher une double soumission du formulaire
-                                    $noty.close();
-
-                                    //confirmation obtenu
-                                    $.ajax({
-                                        type: 'post',
-                                        url: href,
-                                        data: formulaire.serialize(),
-                                        beforeSend: function () {
-                                            $('#loading_gif_initialiser_fdr_garant').show();
-                                            btn_save_initialiser_fdr_garant.hide();
-                                        },
-                                        success: function (response) {
-
-                                            if (response.statut == 1) {
-
-                                                notifySuccess(response.message, function () {
-                                                    // Réinitialiser le formulaire
-                                                    location.href = '';
-
-                                                });
-
-                                            } else {
-
-                                                $('#loading_gif_initialiser_fdr_garant').hide();
-                                                btn_save_initialiser_fdr_garant.show();
-
-                                                btn_save_initialiser_fdr_garant.removeAttr('disabled');
-
-                                                let errors = JSON.parse(JSON.stringify(response.errors));
-                                                let errors_list_to_display = '';
-                                                for (field in errors) {
-                                                    errors_list_to_display += '- ' + ucfirst(field) + ' : ' + errors[field] + '<br/>';
-                                                }
-
-                                                $('#modal-initialiser_fdr_garant .alert .message').html(errors_list_to_display);
-
-                                                $('#modal-initialiser_fdr_garant .alert ').fadeTo(2000, 500).slideUp(500, function () {
-                                                    $(this).slideUp(500);
-                                                }).removeClass('alert-success').addClass('alert-warning');
-
-                                            }
-
-                                        },
-                                        error: function (request, status, error) {
-
-                                            notifyWarning("Erreur lors de l'enregistrement : " + error);
-
-                                            $('#loading_gif_initialiser_fdr_garant').hide();
-                                            btn_save_initialiser_fdr_garant.show();
-                                            btn_save_initialiser_fdr_garant.removeAttr('disabled');
-
-                                        }
-
-                                    });
-
-                                    //fin confirmation obtenue
-
-                                }
-                            },
-                            {
-                                addClass: 'btn btn-danger', text: 'Annuler', onClick: function ($noty) {
-                                    //confirmation refusée
-                                    $noty.close();
-                                    $('#loading_gif_initialiser_fdr_garant').hide();
-                                    btn_save_reglement_ordonnancement_garant.show();
-
-                                    btn_save_reglement_ordonnancement_garant.removeAttr('disabled');
-
-                                }
-                            }
-                        ]
-                    });
-                    //fin demande confirmation
-
-                } else {
-
-                    $('label.error').css({ display: 'none', height: '0px' }).removeClass('error').text('');
-
-                    let validator = formulaire.validate();
-
-                    $.each(validator.errorMap, function (index, value) {
-
-                        console.log('Id: ' + index + ' Message: ' + value);
-
-                    });
-
-                    notifyWarning('Veuillez renseigner tous les champs obligatoires');
-
-                    $('#loading_gif_initialiser_fdr_garant').hide();
-                    btn_save_reglement_ordonnancement_garant.show();
-
-                    btn_save_reglement_ordonnancement_garant.removeAttr('disabled');
-
-                }
-
-            });
-
-        });
-
-    });
-
-    //********** FAIRE UN REGLEMENT FACTURES GARANTS | SUIVI DE TRÉSORERIE */
-    $("#btnOpenDialogReglementFacturesGarant").on('click', function () {
-
-        let model_name = $(this).data('model_name');
-        let modal_title = $(this).data('modal_title');
-        let href = $(this).data('href');
-
-        $('#olea_std_dialog_box').load(href, function () {
-
-            //appliquer le mask de saisie sur les champs montant
-            AppliquerMaskSaisie();
-
-            $('#modal-reglement_factures_garant').attr('data-backdrop', 'static').attr('data-keyboard', false);
-
-            $('#modal-reglement_factures_garant').find('.modal-title').text(modal_title);
-            $('#modal-reglement_factures_garant').find('#btn_valider').attr({ 'data-model_name': model_name, 'data-href': href });
-            $('#modal-reglement_factures_garant').find('.modal-dialog').addClass('modal-xl');
-
-            //
-            $('#modal-reglement_factures_garant').modal();
-
-            //enregistrement
-            $('#btn_save_reglement_factures_garant').on('click', function () {
-
-                let btn_save_reglement_factures_garant = $(this);
-
-                let formulaire = $('#form_add_reglement_factures_garant');
-                let href = formulaire.attr('action');
-
-                $.validator.setDefaults({ ignore: [] });
-
-                if (formulaire.valid()) {
-
-                    //demander confirmation
-                    let n = noty({
-                        text: 'Voulez-vous vraiment effectuer ce paiement ?',
-                        type: 'warning',
-                        dismissQueue: true,
-                        layout: 'center',
-                        theme: 'defaultTheme',
-                        buttons: [
-                            {
-                                addClass: 'btn btn-primary', text: 'OUI', onClick: function ($noty) {
-                                    //désactiver le bouton Valider, pour empecher une double soumission du formulaire
-                                    btn_save_reglement_factures_garant.attr('disabled', true);
-                                    $noty.close();
-
-                                    //confirmation obtenu
-                                    $.ajax({
-                                        type: 'post',
-                                        url: href,
-                                        data: formulaire.serialize(),
-                                        beforeSend: function () {
-                                            $('#loading_gif_reglement_factures_garant').show();
-                                            btn_save_reglement_factures_garant.hide();
-                                        },
-                                        success: function (response) {
-
-                                            if (response.statut == 1) {
-
-                                                notifySuccess(response.message, function () {
-                                                    // Rediriger pour afficher le bordereau de reglement compagnie en PDF
-                                                    let bordereau_pdf = response.bordereau_pdf;
-                                                    // Ouvrir le PDF dans une nouvelle fenêtre
-                                                    window.open(bordereau_pdf, '_blank');
-                                                    // Recharger la page après un délai de 2 secondes (2000 millisecondes)
-                                                    setTimeout(function () {
-
-                                                        if (response.statut_bordereau_pour_redirection == "PAYE") {
-                                                            window.location.href = "../../bordereauordonnance";
-                                                        }
-                                                        else {
-                                                            location.reload();
-                                                        }
-                                                    }, 2000);
-
-                                                });
-
-
-                                            } else {
-
-                                                $('#loading_gif_reglement_factures_garant').hide();
-                                                btn_save_reglement_ordonnancement_garant.show();
-
-                                                btn_save_reglement_ordonnancement_garant.removeAttr('disabled');
-
-                                                let errors = JSON.parse(JSON.stringify(response.errors));
-                                                let errors_list_to_display = '';
-                                                for (field in errors) {
-                                                    errors_list_to_display += '- ' + ucfirst(field) + ' : ' + errors[field] + '<br/>';
-                                                }
-
-                                                $('#modal-reglement_factures_garant .alert .message').html(errors_list_to_display);
-
-                                                $('#modal-reglement_factures_garant .alert ').fadeTo(2000, 500).slideUp(500, function () {
-                                                    $(this).slideUp(500);
-                                                }).removeClass('alert-success').addClass('alert-warning');
-
-                                            }
-
-                                        },
-                                        error: function (request, status, error) {
-
-                                            notifyWarning("Erreur lors de l'enregistrement");
-                                            $('#loading_gif_reglement_factures_garant').hide();
-                                            btn_save_reglement_ordonnancement_garant.show();
-
-                                            btn_save_reglement_ordonnancement_garant.removeAttr('disabled');
-
-                                        }
-
-                                    });
-
-                                }
-                            },
-                            {
-                                addClass: 'btn btn-danger', text: 'Annuler', onClick: function ($noty) {
-                                    //confirmation refusée
-                                    $noty.close();
-                                    $('#loading_gif_reglement_factures_garant').hide();
-                                    btn_save_reglement_ordonnancement_garant.show();
-
-                                    btn_save_reglement_ordonnancement_garant.removeAttr('disabled');
-
-                                }
-                            }
-                        ]
-                    });
-                    //fin demande confirmation
-
-                } else {
-
-                    $('label.error').css({ display: 'none', height: '0px' }).removeClass('error').text('');
-
-                    let validator = formulaire.validate();
-
-                    $.each(validator.errorMap, function (index, value) {
-
-                        console.log('Id: ' + index + ' Message: ' + value);
-
-                    });
-
-                    notifyWarning('Veuillez renseigner tous les champs obligatoires');
-
-                    $('#loading_gif_reglement_factures_garant').hide();
-                    btn_save_reglement_ordonnancement_garant.show();
-
-                    btn_save_reglement_ordonnancement_garant.removeAttr('disabled');
-
-                }
-
-            });
-
-        });
-
-    });
-
-    // Reglement de facture garant unique / TRESO
-    $(document).on('click', '.btn_regler_facture_compagnie_treso', function () {
-
-        let model_name = $(this).attr('data-model_name');
-        let modal_title = $(this).attr('data-modal_title');
-        let href = $(this).attr('data-href');
-
-        $('#olea_std_dialog_box').load(href, function () {
-
-            //appliquer le mask de saisie sur les champs montant
-            AppliquerMaskSaisie();
-
-            $('#modal-regler_facture_compagnie_treso').attr('data-backdrop', 'static').attr('data-keyboard', false);
-
-            $('#modal-regler_facture_compagnie_treso').find('.modal-title').text(modal_title);
-            $('#modal-regler_facture_compagnie_treso').find('#btn_valider').attr({ 'data-model_name': model_name, 'data-href': href });
-            $('#modal-regler_facture_compagnie_treso').find('.modal-dialog').addClass('modal-xl').removeClass('modal-lg');
-
-            //
-            $('#modal-regler_facture_compagnie_treso').modal();
-
-            //gestion du clique sur valider les modifications
-            $("#btn_save_reglement_facture_compagnie_treso").on('click', function () {
-
-                let $button = $(this);
-
-                // Désactivation le bouton pour éviter les clics multiples
-                $button.prop('disabled', true);
-
-                console.log('Button disabled:', $button.prop('disabled')); // l'état du bouton dans la console
-
-                let formulaire = $('#form_regler_facture_unique');
-                let href = formulaire.attr('action');
-
-                $.validator.setDefaults({ ignore: [] });
-
-                let formData = new FormData();
-
-                if (formulaire.valid()) {
-
-                    //demander confirmation
-                    let n = noty({
-                        text: 'Vous confirmez le réglement sur cette facture ?',
-                        type: 'warning',
-                        dismissQueue: true,
-                        layout: 'center',
-                        theme: 'defaultTheme',
-                        buttons: [
-                            {
-                                addClass: 'btn bg-primary', text: 'OUI', onClick: function ($noty) {
-                                    $noty.close();
-
-                                    //confirmation obtenu
-
-                                    let data_serialized = formulaire.serialize();
-                                    $.each(data_serialized.split('&'), function (index, elem) {
-                                        let vals = elem.split('=');
-
-                                        let key = vals[0];
-                                        let valeur = decodeURIComponent(vals[1].replace(/\+/g, '  '));
-
-                                        formData.append(key, valeur);
-
-                                    });
-
-                                    $.ajax({
-                                        type: 'post',
-                                        url: href,
-                                        data: formData,
-                                        processData: false,
-                                        contentType: false,
-                                        success: function (response) {
-
-                                            if (response.statut == 1) {
-
-                                                notifySuccess(response.message, function () {
-                                                    location.reload();
-                                                });
-                                            }
-
-                                            else if (response.statut == 0) {
-
-                                                notifyWarning(response.message, function () {
-                                                    // Réactiver le button
-                                                    $button.prop('disabled', false);
-                                                });
-
-                                            } else {
-
-                                                let errors = JSON.parse(JSON.stringify(response.errors));
-                                                let errors_list_to_display = '';
-                                                for (field in errors) {
-                                                    errors_list_to_display += '- ' + ucfirst(field) + ' : ' + errors[field] + '<br/>';
-                                                }
-
-                                                $('#modal-regler_facture_compagnie_treso .alert .message').html(errors_list_to_display);
-
-                                                $('#modal-regler_facture_compagnie_treso .alert ').fadeTo(2000, 500).slideUp(500, function () {
-                                                    $(this).slideUp(500);
-                                                }).removeClass('alert-success').addClass('alert-warning');
-
-                                            }
-
-                                        },
-                                        error: function (request, status, error) {
-
-                                            notifyWarning("Erreur lors de l'enregistrement");
-                                        }
-
-                                    });
-
-                                }
-                            },
-                            {
-                                addClass: 'btn btn-danger', text: 'Annuler', onClick: function ($noty) {
-                                    //confirmation refusée
-                                    $noty.close();
-
-                                    // réactivation le bouton
-                                    $button.prop('disabled', false);
-
-                                }
-                            }
-
-                        ]
-                    });
-                    //fin demande confirmation
-
-                } else {
-                    // réactivation le bouton
-                    $button.prop('disabled', false);
-
-                    $('label.error').css({ display: 'none', height: '0px' }).removeClass('error').text('');
-
-                    let validator = formulaire.validate();
-
-                    $.each(validator.errorMap, function (index, value) {
-
-                        console.log('Id: ' + index + ' Message: ' + value);
-
-                    });
-
-                    notifyWarning('Veuillez renseigner tous les champs obligatoires');
-                }
-
-            });
-
-        });
-
-    });
-    //fin reglement de facture garant unique / TRESO
-
-    // Annulation de facture garant / TRESO
-    $(document).on('click', '.btn_annuler_une_facture_compagnie_treso', function () {
-
-        let model_name = $(this).attr('data-model_name');
-        let modal_title = $(this).attr('data-modal_title');
-        let href = $(this).attr('data-href');
-
-        $('#olea_std_dialog_box').load(href, function () {
-
-            //appliquer le mask de saisie sur les champs montant
-            AppliquerMaskSaisie();
-
-            $('#modal-annuler_une_facture_compagnie_treso').attr('data-backdrop', 'static').attr('data-keyboard', false);
-
-            $('#modal-annuler_une_facture_compagnie_treso').find('.modal-title').text(modal_title);
-            $('#modal-annuler_une_facture_compagnie_treso').find('#btn_valider').attr({ 'data-model_name': model_name, 'data-href': href });
-            $('#modal-annuler_une_facture_compagnie_treso').find('.modal-dialog').addClass('modal-xl').removeClass('modal-lg');
-
-            //
-            $('#modal-annuler_une_facture_compagnie_treso').modal();
-
-            //gestion du clique sur valider les modifications
-            $("#btn_annuler_une_facture_compagnie_treso").on('click', function () {
-
-                let $button = $(this);
-
-                // Désactivation le bouton pour éviter les clics multiples
-                $button.prop('disabled', true);
-
-                console.log('Button disabled:', $button.prop('disabled')); // l'état du bouton dans la console
-
-                let formulaire = $('#form_annuler_facture_garant');
-                let href = formulaire.attr('action');
-
-                $.validator.setDefaults({ ignore: [] });
-
-                let formData = new FormData();
-
-                if (formulaire.valid()) {
-
-                    //demander confirmation
-                    let n = noty({
-                        text: 'Souhaitez-vous annuler cette facture ?',
-                        type: 'warning',
-                        dismissQueue: true,
-                        layout: 'center',
-                        theme: 'defaultTheme',
-                        buttons: [
-                            {
-                                addClass: 'btn bg-primary', text: 'OUI', onClick: function ($noty) {
-                                    $noty.close();
-
-                                    //confirmation obtenu
-
-                                    let data_serialized = formulaire.serialize();
-                                    $.each(data_serialized.split('&'), function (index, elem) {
-                                        let vals = elem.split('=');
-
-                                        let key = vals[0];
-                                        let valeur = decodeURIComponent(vals[1].replace(/\+/g, '  '));
-
-                                        formData.append(key, valeur);
-
-                                    });
-
-                                    $.ajax({
-                                        type: 'post',
-                                        url: href,
-                                        data: formData,
-                                        processData: false,
-                                        contentType: false,
-                                        success: function (response) {
-
-                                            if (response.statut == 1) {
-
-                                                notifySuccess(response.message, function () {
-                                                    location.reload();
-                                                });
-                                            }
-
-                                            else if (response.statut == 0) {
-
-                                                notifyWarning(response.message, function () {
-                                                    // Réactiver le button
-                                                    $button.prop('disabled', false);
-                                                });
-
-                                            } else {
-
-                                                let errors = JSON.parse(JSON.stringify(response.errors));
-                                                let errors_list_to_display = '';
-                                                for (field in errors) {
-                                                    errors_list_to_display += '- ' + ucfirst(field) + ' : ' + errors[field] + '<br/>';
-                                                }
-
-                                                $('#modal-annuler_une_facture_compagnie_treso .alert .message').html(errors_list_to_display);
-
-                                                $('#modal-annuler_une_facture_compagnie_treso .alert ').fadeTo(2000, 500).slideUp(500, function () {
-                                                    $(this).slideUp(500);
-                                                }).removeClass('alert-success').addClass('alert-warning');
-
-                                            }
-
-                                        },
-                                        error: function (request, status, error) {
-
-                                            notifyWarning("Erreur lors de l'enregistrement");
-                                        }
-
-                                    });
-                                }
-                            },
-                            {
-                                addClass: 'btn btn-danger', text: 'NON', onClick: function ($noty) {
-                                    //confirmation refusée
-                                    $noty.close();
-
-                                    // réactivation le bouton
-                                    $button.prop('disabled', false);
-
-
-                                }
-                            }
-
-                        ]
-                    });
-                    //fin demande confirmation
-
-
-                } else {
-                    // réactivation le bouton
-                    $button.prop('disabled', false);
-
-                    $('label.error').css({ display: 'none', height: '0px' }).removeClass('error').text('');
-
-                    let validator = formulaire.validate();
-
-                    $.each(validator.errorMap, function (index, value) {
-
-                        console.log('Id: ' + index + ' Message: ' + value);
-
-                    });
-
-                    notifyWarning('Veuillez renseigner tous les champs obligatoires');
-                }
-
-            });
-
-        });
-
-    });
-    //fin Annulation de facture garant / TRESO
-
-
-    // Editer fonds de roulement compagnie / TRESO
-    $(document).on('click', '.btn_editer_fdr_compagnie', function () {
-
-        let model_name = $(this).attr('data-model_name');
-        let modal_title = $(this).attr('data-modal_title');
-        let href = $(this).attr('data-href');
-
-        $('#olea_std_dialog_box').load(href, function () {
-
-            //appliquer le mask de saisie sur les champs montant
-            AppliquerMaskSaisie();
-
-            $('#modal-editer_fdr_garant').attr('data-backdrop', 'static').attr('data-keyboard', false);
-
-            $('#modal-editer_fdr_garant').find('.modal-title').text(modal_title);
-            $('#modal-editer_fdr_garant').find('#btn_valider').attr({ 'data-model_name': model_name, 'data-href': href });
-            $('#modal-editer_fdr_garant').find('.modal-dialog').addClass('modal-xl').removeClass('modal-lg');
-
-            //
-            $('#modal-editer_fdr_garant').modal();
-
-            //gestion du clique sur valider la modifications
-            $("#btn_save_editer_fdr_compagnie").on('click', function () {
-
-                let $button = $(this);
-
-                // Désactivation le bouton pour éviter les clics multiples
-                $button.prop('disabled', true);
-
-                console.log('Button disabled:', $button.prop('disabled')); // l'état du bouton dans la console
-
-                let formulaire = $('#form_editer_fdr_compagnie');
-                let href = formulaire.attr('action');
-
-                $.validator.setDefaults({ ignore: [] });
-
-                let formData = new FormData();
-
-                if (formulaire.valid()) {
-
-                    //demander confirmation
-                    let n = noty({
-                        text: 'Souhaitez-vous valider l\'initialisation ?',
-                        type: 'warning',
-                        dismissQueue: true,
-                        layout: 'center',
-                        theme: 'defaultTheme',
-                        buttons: [
-                            {
-                                addClass: 'btn bg-primary', text: 'OUI', onClick: function ($noty) {
-                                    $noty.close();
-
-                                    //confirmation obtenu
-
-                                    let data_serialized = formulaire.serialize();
-                                    $.each(data_serialized.split('&'), function (index, elem) {
-                                        let vals = elem.split('=');
-
-                                        let key = vals[0];
-                                        let valeur = decodeURIComponent(vals[1].replace(/\+/g, '  '));
-
-                                        formData.append(key, valeur);
-
-                                    });
-
-                                    $.ajax({
-                                        type: 'post',
-                                        url: href,
-                                        data: formData,
-                                        processData: false,
-                                        contentType: false,
-                                        success: function (response) {
-
-                                            if (response.statut == 1) {
-
-                                                notifySuccess(response.message, function () {
-                                                    location.reload();
-                                                });
-                                            }
-
-                                            else if (response.statut == 0) {
-
-                                                notifyWarning(response.message, function () {
-                                                    // Réactiver le button
-                                                    $button.prop('disabled', false);
-                                                });
-
-                                            } else {
-
-                                                let errors = JSON.parse(JSON.stringify(response.errors));
-                                                let errors_list_to_display = '';
-                                                for (field in errors) {
-                                                    errors_list_to_display += '- ' + ucfirst(field) + ' : ' + errors[field] + '<br/>';
-                                                }
-
-                                                $('#modal-editer_fdr_garant .alert .message').html(errors_list_to_display);
-
-                                                $('#modal-editer_fdr_garant .alert ').fadeTo(2000, 500).slideUp(500, function () {
-                                                    $(this).slideUp(500);
-                                                }).removeClass('alert-success').addClass('alert-warning');
-
-                                            }
-
-                                        },
-                                        error: function (request, status, error) {
-
-                                            notifyWarning("Erreur lors de l'édition");
-                                        }
-
-                                    });
-
-                                }
-                            },
-                            {
-                                addClass: 'btn btn-danger', text: 'Annuler', onClick: function ($noty) {
-                                    //confirmation refusée
-                                    $noty.close();
-
-                                    // réactivation le bouton
-                                    $button.prop('disabled', false);
-                                }
-                            }
-
-                        ]
-                    });
-                    //fin demande confirmation
-
-
-                } else {
-                    // réactivation le bouton
-                    $button.prop('disabled', false);
-
-                    $('label.error').css({ display: 'none', height: '0px' }).removeClass('error').text('');
-
-                    let validator = formulaire.validate();
-
-                    $.each(validator.errorMap, function (index, value) {
-
-                        console.log('Id: ' + index + ' Message: ' + value);
-
-                    });
-
-                    notifyWarning('Veuillez renseigner tous les champs obligatoires');
-                }
-
-            });
-
-        });
-
-    });
-    //fin Editer fonds de roulement compagnie / TRESO
 
 
     function calculer_montant_total_a_regler_compagnie() {
@@ -8452,116 +7692,6 @@ $(document).ready(function () {
         performSearchAliment($(this));
     });
 
-    function performSearchAliment(element) {
-
-        let formulaire = element.closest('form');
-        let date_survenance = formulaire.find('#date_survenance').val();
-        let prestataire_id = formulaire.find('.prestataire_executant_id').val();
-        let type_prise_en_charge_id = formulaire.find('.type_prise_en_charge_id').val();
-        let href = element.data('href');
-
-        //
-        formulaire.find('#actes_du_tableau').val('');
-        formulaire.find('#box_table_actes_selected').html('');
-        //REMPLIR avec ses actes garantis
-        remplir_select_acte_prestation(formulaire.find('.acte_prestation'));
-
-        //alert(date_survenance);
-
-        $.ajax({
-            type: 'post',
-            url: href,
-            data: { date_survenance: date_survenance, prestataire_id: prestataire_id, type_prise_en_charge_id: type_prise_en_charge_id },
-            beforeSend: function () {
-                $('.varAlimentSinistreAutre').hide();
-            },
-            success: function (response) {
-
-                if (response.statut == 1) {
-
-                    formulaire.find('.error_box_aliment_not_found').html("").hide();
-
-                    hideAndEmptyOrShowSibbling('varAlimentSinistreAutre', formulaire, 'show');
-
-                    let aliment = response.data;
-                    formulaire.find('#current_searched_aliment_id').val(aliment.id);
-                    formulaire.find('#span-nom').html(aliment.nom);
-                    formulaire.find('#span-prenoms').html(aliment.prenoms);
-                    formulaire.find('#span-date_naissance').html(aliment.date_naissance);
-                    formulaire.find('#span-age').html(aliment.age);
-                    formulaire.find('#photo').attr('src', aliment.photo);
-                    formulaire.find('#span-assureur').html(aliment.nom_compagnie);
-                    formulaire.find('#span-police').html(aliment.nom_client + ' (' + aliment.numero_police + ')');
-                    formulaire.find('#span-taux').html(aliment.taux + " %");
-                    formulaire.find('#span-qualite_beneficiaire').html(aliment.qualite_beneficiaire);
-                    formulaire.find('#span-formule').html(aliment.formule);
-                    formulaire.find('#span-plafond_chambre').html(aliment.plafond_chambre);
-                    formulaire.find('#span-plafond_hospitalisation').html(aliment.plafond_hospitalisation);
-                    formulaire.find('#span-plafond_accouchement').html(aliment.plafond_accouchement);
-                    formulaire.find('#span-plafond_consommation_famille').html(aliment.plafond_consommation_famille);
-                    formulaire.find('#span-plafond_consommation_individuelle').html(aliment.plafond_consommation_individuelle);
-
-                    //remplir la liste des actes garantis
-                    let actes_garantis_json = aliment.actes_garantis;
-                    actes_garantis = JSON.parse(actes_garantis_json);
-
-                    //REMPLIR avec ses actes garantis
-                    remplir_select_acte_prestation(formulaire.find('.acte_prestation'));
-
-                } else {
-                    //notifyWarning(response.message);
-                    formulaire.find('.error_box_aliment_not_found').html(response.message).show();
-
-                    $('.varAlimentSinistreAutre').hide();
-
-                    formulaire.find('#current_searched_aliment_id').val("");
-                    formulaire.find('#span-nom').html("");
-                    formulaire.find('#span-prenoms').html("");
-                    formulaire.find('#span-date_naissance').html("");
-                    formulaire.find('#span-age').html("");
-                    formulaire.find('#photo').attr('src', "");
-                    formulaire.find('#span-assureur').html("");
-                    formulaire.find('#span-police').html("");
-                    formulaire.find('#span-taux').html("");
-                    formulaire.find('#span-qualite_beneficiaire').html("");
-                    formulaire.find('#span-formule').html("");
-                    formulaire.find('#span-plafond_chambre').html("");
-                    formulaire.find('#span-plafond_hospitalisation').html("");
-                    formulaire.find('#span-plafond_accouchement').html("");
-                    formulaire.find('#span-plafond_consommation_famille').html("");
-                    formulaire.find('#span-plafond_consommation_individuelle').html("");
-
-                }
-
-            },
-            error: function (request, status, error) {
-
-                //notifyWarning("Erreur lors de la recherche");
-                formulaire.find('.error_box_aliment_not_found').html("ERREUR LORS DE LA RECHERCHE").show();
-
-                $('.varAlimentSinistreAutre').hide();
-
-                formulaire.find('#current_searched_aliment_id').val("");
-                formulaire.find('#span-nom').html("");
-                formulaire.find('#span-prenoms').html("");
-                formulaire.find('#span-date_naissance').html("");
-                formulaire.find('#span-age').html("");
-                formulaire.find('#photo').attr('src', "");
-                formulaire.find('#span-assureur').html("");
-                formulaire.find('#span-police').html("");
-                formulaire.find('#span-taux').html("");
-                formulaire.find('#span-qualite_beneficiaire').html("");
-                formulaire.find('#span-formule').html("");
-                formulaire.find('#span-plafond_chambre').html("");
-                formulaire.find('#span-plafond_hospitalisation').html("");
-                formulaire.find('#span-plafond_accouchement').html("");
-                formulaire.find('#span-plafond_consommation_famille').html("");
-                formulaire.find('#span-plafond_consommation_individuelle').html("");
-
-            }
-
-        });
-    }
 
     function hideAndEmptyOrShowSibbling(classDependance, form, etat) {
 
@@ -8576,265 +7706,6 @@ $(document).ready(function () {
     function is_specials_keys(keyCode) {
         return (keyCode == 8 || keyCode == 9 || keyCode == 46 || keyCode == 37 || keyCode == 39);
     }
-
-    $('#nombre_jours').on('blur', function (e) {//keydown keyup change
-        // Récupérer le code de la touche pressée
-        var keyCode = e.keyCode || e.which;
-        console.log(keyCode);
-
-        //faire le traitement
-        let formulaire = $(this).closest('form');
-        // Supprimer les caractères non numériques
-        let input_value = $(this).val();
-        var newValue = input_value.replace(/[^0-9]/g, '');
-        //if (newValue > 5){newValue = 5;}
-        $(this).val(newValue);
-        console.log(newValue);
-
-        //
-        let nombre_jours = parseInt($(this).val());
-        var date_entree = $('#date_entree').val();
-
-        if (date_entree != '' && !isNaN(nombre_jours)) {
-            var date1 = new Date(date_entree);
-            date1.setHours(0, 0, 0, 0); // Définir l'heure à 00:00:00
-
-            var date2 = new Date(date1.getTime());
-            date2.setDate(date2.getDate() + nombre_jours);
-
-            var year = date2.getFullYear();
-            var month = date2.getMonth() + 1;
-            var day = date2.getDate();
-
-            var formattedDate = year + '-' + (month < 10 ? '0' : '') + month + '-' + (day < 10 ? '0' : '') + day;
-
-            $('#date_sortie').val(formattedDate);
-            console.log(formattedDate);
-
-            //Si l'acte est renseigné :
-            let acte_id = formulaire.find('.acte_prestation').val();
-            //alert(acte_id);
-            if (acte_id != "") {
-                // Simuler un onchange de acte pour que le calcul soit fait
-                formulaire.find('.acte_prestation').trigger('change');
-            }
-
-        } else {
-            $('#date_sortie').val("");
-        }
-
-
-    });
-
-    //Pendant la saisie des coûts des actes, désactiver le bouton valider pour l'activer après le calcul
-    $(document).on("keydown", ".cout_acte", function () {
-        //vérifier si la valeur a changé avant de recalculer
-        var new_cout_acte = parseInt($(this).val().replaceAll(' ', ''));
-        var old_cout_acte = parseInt($(this).closest('tr').find('.selected_acte_info').data('frais_reel'));
-
-        //en cas de changement de valeur simuler un onchange de acte pour que le calcul soit fait
-        if (new_cout_acte != old_cout_acte) {
-            $('.btn_save_sinistre').attr('disabled', true);
-        }
-    });
-
-    //Pour optique et dentaire, au changement de cout_acte sur chaque ligne
-    $(document).on("blur", ".cout_acte", function () {
-        let formulaire = $(this).closest('form');
-
-        //vérifier si la valeur a changé avant de recalculer
-        var new_cout_acte = parseInt($(this).val().replaceAll(' ', ''));
-        var old_cout_acte = parseInt($(this).closest('tr').find('.selected_acte_info').data('frais_reel'));
-
-
-        //en cas de changement de valeur simuler un onchange de acte pour que le calcul soit fait
-        if (new_cout_acte != old_cout_acte) {
-            formulaire.find('.acte_prestation').trigger('change');
-        }
-
-    });
-
-    //Pour soins ambulatoire, au changement de nombre_seance sur chaque ligne
-    $(document).on("blur", ".nombre_seance", function () {
-        let formulaire = $(this).closest('form');
-        //simuler un onchange de acte pour que le calcul soit fait
-        formulaire.find('.acte_prestation').trigger('change');
-    });
-
-    //pour hospit, rechercher au changement du montant
-    $(document).on("blur", "#cout_acte", function () {
-        let formulaire = $(this).closest('form');
-        //simuler un onchange de acte pour que le calcul soit fait
-        formulaire.find('.acte_prestation').trigger('change');
-    });
-
-    //Added on 06102023: désactiver ce fonctionnement - Lionel et Dr Amien
-    //si affection renseigné désactiver required sur renseignement clinique
-    /*$(document).on("change", "#affection_id" , function() {
-        let formulaire = $(this).closest('form');
-
-        let affection_id = $(this).val();
-        let renseignement_clinique = formulaire.find('#renseignement_clinique').val();
-
-        if(affection_id != ""){
-            formulaire.find('.renseignement_clinique').removeAttr('required');
-            formulaire.find('.label_renseignement_clinique_required').text('');
-        }else{
-            formulaire.find('.renseignement_clinique').attr('required', 'true');
-            formulaire.find('.label_renseignement_clinique_required').text('*');
-        }
-
-    });
-
-    //si affection renseigné désactiver required sur renseignement clinique
-    $(document).on("keyup", "#renseignement_clinique" , function() {
-        let formulaire = $(this).closest('form');
-
-        let affection_id = $(this).val();
-        let renseignement_clinique = formulaire.find('#renseignement_clinique').val();
-
-        if(renseignement_clinique.length >= 3){
-            formulaire.find('#affection_id').removeAttr('required');
-            formulaire.find('.label_affection_required').text('');
-        }else{
-            formulaire.find('#affection_id').attr('required', 'true');
-            formulaire.find('.label_affection_required').text('*');
-        }
-
-    });
-    */
-
-
-    var actes_garantis = '';
-
-    function remplir_select_acte_prestation(select_acte_prestation) {
-
-        //récupérer les actes à exclure
-        let actes_exclus = [];
-        $('.selected_acte_info').each(function () {
-            actes_exclus.push($(this).val());
-
-        });
-
-        select_acte_prestation.empty();
-        let option = $('<option>').val("").text("Choisir");
-        select_acte_prestation.append(option);
-
-        $.each(actes_garantis, function (index, acte) {
-
-            if (!actes_exclus.includes(acte.id.toString())) {
-                let option = $('<option>').val(acte.id).text(acte.libelle).data('type_pec', acte.rubrique__type_priseencharge__code);
-                select_acte_prestation.append(option);
-            }
-
-        });
-
-    }
-
-    //Suppression d'un élément du tableau - cas ambulatoire
-    $(document).on("click", ".btnSupprimerLigneActe", function (e) {
-        let ligne_acte = $(this).closest('tr');
-        let select_acte_prestation = $(this).closest('form').find('.acte_prestation');
-
-        //demander confirmation
-        let n = noty({
-            text: 'Voulez-vous vraiment supprimer cette ligne ?',
-            type: 'warning',
-            dismissQueue: true,
-            layout: 'center',
-            theme: 'defaultTheme',
-            buttons: [
-                {
-                    addClass: 'btn btn-primary', text: 'OUI', onClick: function ($noty) {
-                        $noty.close();
-
-
-                        //confirmation obtenu
-                        ligne_acte.remove();
-                        //remplir le champs tableau_
-                        //ajouter les lignes déjà dans le tableau
-                        let str_actes_du_tableau = '';
-                        $('.selected_acte_info').each(function () {
-                            var acteId = $(this).data('acte_id');
-                            str_actes_du_tableau += acteId + ',';
-                        });
-                        $('#actes_du_tableau').val(str_actes_du_tableau);
-
-                        remplir_select_acte_prestation(select_acte_prestation);
-
-                        //calculer
-                        //calculer_total_actes();
-
-                        let formulaire = $(this).closest('form');
-                        //simuler un onchange de acte pour que le calcul soit fait
-                        //formulaire.find('.acte_prestation').trigger('change').hide();
-
-                        select_acte_prestation.trigger('change');
-                        //alert("trigger");
-
-                    }
-                },
-                {
-                    addClass: 'btn btn-danger', text: 'Annuler', onClick: function ($noty) {
-                        //confirmation refusée
-                        $noty.close();
-
-                    }
-                }
-            ]
-        });
-        //fin demande confirmation
-
-    });
-
-
-    function calculer_total_actes() {
-        let total_frais_reel = 0;
-        let total_part_compagnie = 0;
-        let total_part_assure = 0;
-        let cpt = 0;
-
-        var formulaire = $(this).closest('form');
-        var type_prise_en_charge_id = formulaire.find(".type_prise_en_charge_id").val();
-
-        $('.selected_acte_info').each(function () {
-            let ligne_acte = $(this).closest('tr');
-
-            let nombre_seance = parseInt(ligne_acte.find('.nombre_seance').val());
-
-            let frais_reel = 0;
-            if (isNaN(nombre_seance)) {
-                let cout_acte = parseInt(ligne_acte.find('.cout_acte').val());
-                //alert(cout_actes);
-
-                frais_reel = cout_acte;
-            } else {
-                frais_reel = parseInt($(this).data('frais_reel'));
-            }
-
-
-            var part_compagnie = parseInt($(this).data('part_compagnie'));
-            var part_assure = parseInt($(this).data('part_assure'));
-
-            total_frais_reel += isNaN(frais_reel) ? 0 : frais_reel * nombre_seance;
-            total_part_compagnie += isNaN(part_compagnie) ? 0 : part_compagnie * nombre_seance;
-            total_part_assure += isNaN(part_assure) ? 0 : part_assure * nombre_seance;
-
-            cpt++;
-
-        });
-
-        $('#total_frais_reel').text(total_frais_reel);
-        $('#total_part_compagnie').text(total_part_compagnie);
-        $('#total_part_assure').text(total_part_assure);
-
-        // cacher le tableau si aucune donnée restante
-        if (cpt === 0) {
-            $('#box_table_actes_selected').hide();
-            $('.acte_prestation').attr('required', 'true');
-        }
-    }
-
 
     //soumission du formulaire de sinistre
     $(document).on("click", ".btn_save_sinistre", function (e) {

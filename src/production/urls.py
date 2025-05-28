@@ -74,11 +74,12 @@ urlpatterns = [
     path('police/<int:police_id>/<int:historique_police_id>/historique-details', views.DetailsHistoriquePoliceView.as_view(), name='police.historique.details'),
     path('police/<int:police_id>/quittances', PoliceQuittancesView.as_view(), name='police_quittances'),
     path('police/<int:police_id>/add_quittance', views.add_quittance, name='add_quittance'),
-    path('quittance/<int:quittance_id>/police/<int:police_id>/add_document', views.add_document_to_quittance, name='add_document_to_quittance'),
+    path('quittance/<int:quittance_id>/police/<int:police_id>/add_document', views.add_document_quittance, name='add_document_quittance'),
     #
     path('police/<int:police_id>/add_reglement', views.add_reglement, name='add_reglement'),
     path('police/<int:police_id>/add_lettrage', views.add_lettrage, name='add_lettrage'),
     path('quittance/<int:quittance_id>', views.details_quittance, name='details_quittance'),
+    path('get_documents_quittance_session/', views.get_documents_quittance_session, name='get_documents_quittance_session'),
     path('quittance/<int:quittance_id>/imprimer-recu-reglement/<int:reglement_id>', views.imprimer_recu_reglement, name='imprimer_recu_reglement'),
     path('police/<int:police_id>/mouvements', PoliceAvenantsView.as_view(), name='police_avenants'),
     path('police/<int:police_id>/add_avenant', views.add_avenant, name='add_avenant'),

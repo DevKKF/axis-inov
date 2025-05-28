@@ -56,7 +56,7 @@ from production.helper_production import create_alimet_helper
 from production.models import (FormuleRubriquePrefinance, ModePrefinancement, Motif, Mouvement, Client, Police, \
     Acompte, Document, Filiale, AutreRisque, PoliceGarantie, AlimentPolice, PoliceAssureur, Courrier, \
     Contact, Quittance, SecteurActivite, TypeDocument, Statut, MouvementPolice, StatutQuittance, \
-    Genre, StatutFamilial, PlacementEtGestion, ModeRenouvellement, CalculTM, ApporteurPolice, TaxePolice, \
+    Genre, PlacementEtGestion, ModeRenouvellement, CalculTM, ApporteurPolice, TaxePolice, \
     TaxeQuittance, Reglement, OptionYesNo, TypeMajorationContrat, Vehicule, VehiculePolice, Energie, \
     StatutPolice, Operation, PeriodeCouverture, \
     OperationReglement, HistoriquePolice, HistoriqueApporteurPolice, HistoriqueTaxePolice, Marchandise, HistoriqueAliment, \
@@ -3015,13 +3015,13 @@ class PoliceQuittancesView(TemplateView):
 
 # new code
 @login_required
-def add_document_to_quittance(request, quittance_id, police_id):
+def add_document_quittance(request, quittance_id, police_id):
+    police = get_object_or_404(Police, id=police_id)
+    quittance = get_object_or_404(Quittance, id=quittance_id)
+
     if request.method == "POST":
         form = DocumentForm(request.POST, request.FILES)
         if form.is_valid():
-            police = get_object_or_404(Police, id=police_id)
-            quittance = get_object_or_404(Quittance, id=quittance_id)
-
             type_document_id = request.POST.get('type_document')
 
             document = form.save(commit=False)
@@ -3049,6 +3049,39 @@ def add_document_to_quittance(request, quittance_id, police_id):
                 'errors': form.errors,
             }
             return JsonResponse(response)
+
+
+@login_required
+def get_documents_quittance_session(request):
+    quittance_id = request.GET.get('quittance_id')
+
+    if not quittance_id:
+        return JsonResponse({'success': False, 'message': 'ID de quittance manquant.'}, status=400)
+
+    try:
+        quittance = get_object_or_404(Quittance, id=quittance_id)
+        documents = Document.objects.filter(quittance=quittance).order_by('-created_at') # Ou ton champ de date
+
+        documents_data = []
+        for doc in documents:
+            documents_data.append({
+                'id': doc.pk,
+                'nom': doc.nom,
+                'type_libelle': doc.type_document.libelle if doc.type_document else '',
+                'fichier_url': doc.fichier.url if doc.fichier else '#',
+                'date_creation': doc.created_at.strftime('%d/%m/%Y') if doc.created_at else '',
+            })
+
+        return JsonResponse({
+            'success': True,
+            'message': 'Documents chargés avec succès.',
+            'data': documents_data
+        })
+
+    except Quittance.DoesNotExist:
+        return JsonResponse({'success': False, 'message': 'Quittance non trouvée.'}, status=404)
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': f'Erreur serveur : {str(e)}'}, status=500)
 
 
 @login_required
@@ -4259,7 +4292,6 @@ def sinistre_add_document(request, sinistre_id):
             }
 
             return JsonResponse(response)
-
 
 
 def police_save_sinistre(request, police_id):

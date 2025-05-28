@@ -2,7 +2,7 @@
 <div  class="modal fade" id="modal-details_quittance" data-backdrop="static" data-keyboard="false" aria-hidden="true"  style="display: none">
 	<div class="modal-dialog modal-xl">
 		<div class="modal-content">
-
+			<input type="hidden" name="quittance_id" id="quittance_id" value="{{quittance.id}}">
 			<div class="modal-header">
 				<h4 class="modal-title">QUITTANCE <b>N° {{quittance.numero}}</b> - CLIENT <b>{{quittance.police.client.nom}}</b></h4>
 				<button type="button"class="close"data-dismiss="modal"aria-label="Close">
@@ -133,8 +133,6 @@
 										<thead>
 										  <tr>
 											<th scope="col">N° Règlement</th>
-											<th scope="col">N° Pièce</th>
-											<th scope="col">Banque</th>
 											<th scope="col">Mode règlement</th>
 											<th scope="col">Montant reglé</th>
 											<th scope="col">Dévise</th>
@@ -150,8 +148,6 @@
 											{% for reglement in reglements %}
 											  <tr>
 												<td>{{ reglement.numero|default_if_none:"" }}</td>
-												<td>{{ reglement.numero_piece|default_if_none:"" }}</td>
-												<td>{{ reglement.banque_emettrice|default_if_none:"" }}</td>
 												<td>{{ reglement.mode_reglement|default_if_none:"" }}</td>
 												<td class="text-right">{{ reglement.montant|money_field }}</td>
 												<td>{{ reglement.devise.code|default_if_none:"" }}</td>
@@ -180,7 +176,7 @@
 						<div class="tab-pane fade mt-3" id="bordereau_reversement_compagnie" role="tabpanel" aria-labelledby="bordereau_reversement_compagnie-tab">
 							<div class="rowd" style="padding-top:0px;">
 								<div class="card">
-									<div class="">
+									<div class="col-12 col-md-12 col-sm-12 table-responsive">
 										<table class="table table-bordered table-striped dataTable dtr-inline" id="table_bordereau_reversement_compagnie">
 											<thead>
 											  <tr>
@@ -227,7 +223,7 @@
 						<div class="tab-pane fade mt-3" id="bordereau_encaissement_compagnie" role="tabpanel" aria-labelledby="bordereau_encaissement_compagnie-tab">
 							<div class="rowd" style="padding-top:0px;">
 								<div class="card">
-									<div class="">
+									<div class="col-12 col-md-12 col-sm-12 table-responsive">
 										<table class="table table-bordered table-striped dataTable dtr-inline" id="table_bordereau_encaissement_compagnie">
 											<thead>
 											  <tr>
@@ -280,17 +276,12 @@
 						<div class="tab-pane fade mt-3" id="ged_beneficiaire" role="tabpanel" aria-labelledby="ged_beneficiaire-tab">
 							<div class="rowd" style="padding-top:0px;">
 								<div class="card">
-									<div class="card-header nobg">
-										<div class="card-title">
-										  Liste des documents
-										</div>
-										<div class="card-tools">
-										  <span class="btn btn-sm btn-default" data-toggle="modal" data-target="#modal-document_beneficiaire"><i class="fas fa-plus-circle"></i> Nouveau document</span>
-										  <span class="btn btn-sm btn-default" data-toggle="modal" data-target="#modal-imprimer_document"><i class="fas fa-print"></i> Imprimer un document</span>
-										</div>
+									<div class="card-tools mb-2">
+									  <span class="btn btn-sm btn-primary" data-toggle="modal" data-target="#modal-document_quittance" style="float:right"><i class="fas fa-plus-circle"></i> Nouveau document</span>
+									  <span class="btn btn-sm btn-primary mr-2" data-toggle="modal" data-target="#modal-imprimer_document" style="float:right"><i class="fas fa-print"></i> Imprimer un document</span>
 									</div>
 									<div class="">
-										<table class="table table-bordered table-striped dataTable dtr-inline" id="table_documents">
+										<table class="table table-bordered table-striped dataTable dtr-inline" id="table_document_quittance">
 											<thead>
 											  <tr>
 												<th scope="col">Nom du document</th>
@@ -301,18 +292,18 @@
 											  </tr>
 											</thead>
 											<tbody>
-											{% for document in documents %}
-											  <tr>
-												<td>{{ document.nom }}</td>
-												<td>{{ document.type_document.libelle|default_if_none:"" }}</td>
-												<td><a target="_blank" href="{{ document.fichier.url }}"><i class="fa fa-file" title="Aperçu"></i> Afficher</a></td>
-												<td>{{ document.created_at|date:'d/m/Y'|default_if_none:"" }}</td>
-												<td class="">
-													<span class="btn_supprimer_document" data-document_id="{{ document.id }}" onclick="supprimer_document({{ document.id }})" style="cursor:pointer;"><i class="fa fa-times text-danger"></i> </span>&nbsp;&nbsp;&nbsp;
-													<span class="btn_modifier_on_modal" data-model_name="document" data-href="{% url 'modifier_document' document.id %}" data-modal_title="Modification d'un document" title="Modifier" style="cursor:pointer;"><i class="fas fa-edit text-warning"></i></span>
-												</td>
-											  </tr>
-											{% endfor %}
+												{% for document in documents %}
+												  <tr>
+													<td>{{ document.nom }}</td>
+													<td>{{ document.type_document.libelle|default_if_none:"" }}</td>
+													<td><a target="_blank" href="{{ document.fichier.url }}"><i class="fa fa-file" title="Aperçu"></i> Afficher</a></td>
+													<td>{{ document.created_at|date:'d/m/Y'|default_if_none:"" }}</td>
+													<td class="">
+														<span class="btn_supprimer_document" data-document_id="{{ document.id }}" onclick="supprimer_document({{ document.id }})" style="cursor:pointer;"><i class="fa fa-times text-danger"></i> </span>&nbsp;&nbsp;&nbsp;
+														<span class="btn_modifier_on_modal" data-model_name="document" data-href="{% url 'modifier_document' document.id %}" data-modal_title="Modification d'un document" title="Modifier" style="cursor:pointer;"><i class="fas fa-edit text-warning"></i></span>
+													</td>
+												  </tr>
+												{% endfor %}
 											</tbody>
 										</table>
 									</div>
@@ -386,10 +377,10 @@
 <!-- fin modal interne des autres taxes -->
 
 <!-- modal interne du document -->
-<div class="modal fade modal_interne" id="modal-document_beneficiaire" data-backdrop="static" data-keyboard="false" aria-hidden="true" style="display: none">
+<div class="modal fade modal_interne" id="modal-document_quittance" data-backdrop="static" data-keyboard="false" aria-hidden="true" style="display: none">
 	<div class="modal-dialog modal-lg">
 	  <div class="modal-content">
-		<form enctype="multipart/form-data" method="post" action="{% url 'add_document_to_quittance' quittance.id police.id %}" id="modal_form_document" validate>
+		<form enctype="multipart/form-data" method="post" action="{% url 'add_document_quittance' quittance.id police.id %}" id="modal_form_document" validate>
 		{% csrf_token %}
 		<div class="modal-header">
 		  <h4 class="modal-title">AJOUT D'UN DOCUMENT</h4>
@@ -404,7 +395,7 @@
 				  <div class="form-group row">
 					  <label class="col-sm-5 col-form-label">Type de document <span class="required">*</span></label>
 					  <div class="col-sm-7">
-					  <select class="form-control" name="type_document" id="type_document" required>
+					  <select class="form-control champ_obligatoire" name="type_document" id="type_document" required>
 						  <option value="">Choisir</option>
 						  {% for type_document in types_documents %}
 						  <option value="{{ type_document.id }}">{{ type_document.libelle }}</option>
@@ -415,13 +406,13 @@
 				  <div class="form-group row">
 					  <label class="col-sm-5 col-form-label">Nom du document <span class="required">*</span></label>
 					  <div class="col-sm-7">
-					  <input type="text" class="form-control" name="nom" id="nom" required/>
+					  <input type="text" class="form-control champ_obligatoire" name="nom" id="nom" required/>
 					  </div>
 				  </div>
 				  <div class="form-group row">
 					  <label class="col-sm-5 col-form-label">Fichier <span class="required">*</span></label>
 					  <div class="col-sm-7">
-						  <input type="file" class="form-control" name="fichier" id="fichier" required/>
+						  <input type="file" class="form-control champ_obligatoire" name="fichier" id="fichier" required/>
 					  </div>
 				  </div>
 				  <div class="form-group row">
@@ -479,10 +470,7 @@
 		</div>
 		<div class="modal-footer justify-content-between">
 		  <button type="button" class="btn btn-danger" data-dismiss="modal"><i class="fa fa-remove"></i> Retour</button>
-
-
-<!--			<button  id="btn_save_imprimer_document" ><i ><a href="{% url 'generer_pdf' police_id=quittance.police.id courrier_id=30 quittance_id=quittance.id %}"></a></i> Imprimer</button>-->
-			<button type="button" data-option="aliment"  class="btn bg-info"><a style="cursor:pointer;"  href="{% url 'generer_word' police_id=quittance.police.id courrier_id=30 quittance_id=quittance.id %}"><i class="fa fa-print"></i> Imprimer</a>&nbsp;</button>
+		  <button type="button" data-option="aliment"  class="btn bg-info"><a style="cursor:pointer;"  href="{% url 'generer_word' police_id=quittance.police.id courrier_id=30 quittance_id=quittance.id %}"><i class="fa fa-print"></i> Imprimer</a>&nbsp;</button>
 		</div>
 		  </form>
 	  </div>

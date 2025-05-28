@@ -2,7 +2,7 @@ from django.db import models
 
 from configurations.models import Profession, Pays, Civilite, QualiteBeneficiaire, Bureau, User
 from production.models import Police, FormuleGarantie, Aliment, Mouvement
-from shared.enum import Genre, StatutFamilial, Statut, StatutEnrolement, StatutValidite
+from shared.enum import Genre, Statut, StatutEnrolement, StatutValidite
 
 
 # Create your models here.
@@ -66,7 +66,6 @@ class Prospect(models.Model):
     
     photo = models.ImageField(upload_to='prospects/', max_length=255, blank=True, null=True) # UPDATED
     
-    statut_familiale = models.fields.CharField(choices=StatutFamilial.choices, default=StatutFamilial.CHOISIR, max_length=15, null=True)
     numero_piece = models.CharField(max_length=50, blank=True, null=True)
 
     code_postal = models.CharField(max_length=20, blank=True, null=True)

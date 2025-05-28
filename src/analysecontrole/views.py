@@ -1,52 +1,26 @@
 # Create your views here.
 import datetime
-import os
-from ast import literal_eval
-from decimal import Decimal
 from pprint import pprint
-from sqlite3 import Date
-from datetime import date
 
-import openpyxl
-from openpyxl.styles import Font, Alignment, Border, Side
+from openpyxl.styles import Alignment
 from collections import defaultdict
 from io import BytesIO
 import base64
-import pandas as pd
 from django.contrib import admin
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth.forms import PasswordChangeForm
 from django.contrib.auth.mixins import PermissionRequiredMixin
-from django.contrib.auth.models import Permission
-from django.contrib.sessions.models import Session
-from django.core import serializers
-from django.core.cache import cache
-from django.core.files.storage import FileSystemStorage
 from django.core.paginator import Paginator
-from django.db.models import Q
-from django.forms import model_to_dict
-from django.http import HttpResponse, JsonResponse, HttpResponseRedirect
-from django.shortcuts import redirect, render, get_object_or_404
-from django.template.backends.django import Template
+from django.http import HttpResponse, JsonResponse
 from django.urls import reverse
 from django.utils import timezone
-from django.utils.decorators import method_decorator
-from django.utils.text import slugify
-from django.utils.translation import gettext as _
 from django.views.generic import TemplateView
-from django_dump_die.middleware import dd
 from openpyxl import Workbook
-from openpyxl.styles import Font, PatternFill, Border, Side
+from openpyxl.styles import Font, Border, Side
 from datetime import datetime, timezone
-from django.db.models import Sum, Q, ExpressionWrapper, F, DurationField, Max
-from django.utils.timezone import now
+from django.db.models import Q, Max
 from datetime import timedelta
-from django.db.models import Sum
 import tempfile
 import os
-from django.core.files import File
 from openpyxl.utils import get_column_letter
-import xlwings as xw
 from django.db.models import Subquery, OuterRef
 
 from configurations.helper_config import verify_sql_query

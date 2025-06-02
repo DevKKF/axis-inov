@@ -44,14 +44,6 @@
 									<div class="col-md-2">
 										<button type="button" id="btn_save_portefeuille_commercial" style="margin-left:15px" class="btn btn-sm btn-info btn-block mt-30"><i class="fa fa-check-circle"></i> Exporter vers Excel</button>
 									</div>
-									<!--div class="col-md-2">
-										<span class="text-right" style="margin-top:5px;">Date début : </span>
-										<input id="search_date_debut" class="form-control" type="date" name="search_date_debut" style="border-radius:3px;border:1px solid rgba(0, 0, 0, 0.3);text-transform:uppercase;">
-									</div>
-									<div class="col-md-2">
-										<span class="text-right" style="margin-top:5px;">Date fin : </span>
-										<input id="search_date_fin" class="form-control" type="date" name="search_date_fin" style="border-radius:3px;border:1px solid rgba(0, 0, 0, 0.3);text-transform:uppercase;">
-									</div-->
 								</div>
 							</div>
 							<div class="row">
@@ -70,7 +62,6 @@
 													<th width="10%">Date échéance</th>
 													<th width="12%">Mode de renouvellement</th>
 													<th width="7%">Statut</th>
-													<th width="10%">Date création</th>
 													<th width="12%">Date résiliation</th>
 													<th>Prime HT</th>
 													<th>Com Courtage</th>
@@ -87,7 +78,6 @@
 				</div>
 				<div class="modal-footer justify-content-between">
 					<button type="button" class="btn btn-danger" data-dismiss="modal"><i class="fa fa-remove"></i> Retour</button>
-					<!--button type="button" id="btn_save_portefeuille_commercial_1" class="btn btn-info"><i class="fa fa-check-circle"></i> Importer la requête</button-->
 				</div>
 			</div>
 			</form>
@@ -103,8 +93,6 @@
 		$('#bouton_search_police_commercial').on('click', function () {
 			const commercial_id = $('#search_commercial').val();
 			const mode_renouvellement = $('#search_mode_renouvellement').val();
-			const date_debut = $('#search_date_debut').val();
-			const date_fin = $('#search_date_fin').val();
 
 			$('#polices_commercial').prepend('<div id="loading-msg" class="text-center mb-3 text-primary">Chargement en cours...</div>');
 
@@ -114,15 +102,11 @@
 				data: {
 					commercial_id: commercial_id,
 					mode_renouvellement: mode_renouvellement,
-					date_debut: date_debut,
-					date_fin: date_fin,
 				},
 				success: function (data) {
 					$('#loading-msg').remove();
 
 					const formattedData = [];
-
-					console.log("commercial_id", commercial_id);
 
 					// Vider le tableau si l'option "Choisir" est sélectionnée
 					if (commercial_id === "") {
@@ -154,7 +138,6 @@
 									police.date_fin_effet || '',
 									police.mode_renouvellement || '',
 									police.statut || '',
-									police.date_creation || '',
 									police.date_resiliation || '',
 									police.prime_ht || '',
 									police.commission_courtage || ''
@@ -181,7 +164,6 @@
 								{ title: "Date échéance" },
 								{ title: "Mode de renouvellement" },
 								{ title: "Statut" },
-								{ title: "Date création" },
 								{ title: "Date résiliation" },
 								{ title: "Prime HT" },
 								{ title: "Com Courtage" }

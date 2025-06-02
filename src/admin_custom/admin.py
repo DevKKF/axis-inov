@@ -3,16 +3,11 @@
 from django.contrib import admin
 from django.contrib.admin.sites import AdminSite
 from django.contrib.auth.models import Group
-from django.shortcuts import redirect
-from django.utils import timezone
-from django.utils.timezone import now
-from datetime import timedelta
-from datetime import datetime, date
-from django.db.models import Q
+from datetime import datetime
 
 from api.serializers import BureauSerializer
 from configurations.models import Rubrique, User, Bureau, TypeRemboursement, AdminGroupeBureau
-from production.models import Police, HistoriquePolice
+from production.models import Police, HistoriquePolice, MouvementPolice
 from shared.enum import StatutSinistre, Statut, StatutValidite
 # Register your models here.
 from sinistre.models import DossierSinistre
@@ -36,13 +31,6 @@ class CustomAdminSite(admin.AdminSite):
         else:
             bureaux_serializer = []
 
-
-        today = now()
-        in_90_days = today + timedelta(days=90)
-        count_polices_en_cours = 0
-        count_polices_a_echeance = 0
-        count_polices_non_renouvelees_resilies = 0
-
         """
         if user.is_commercial:
             count_polices_en_cours = Police.objects.filter(date_fin_effet__gt=today, commercial_id=user.id).count()
@@ -58,23 +46,49 @@ class CustomAdminSite(admin.AdminSite):
             count_polices_non_renouvelees_resilies = 0
         """
 
-        count_polices_en_cours = (Police.objects.filter(
-            Q(date_fin_effet__gt=today) | Q(date_fin_police__gt=today)
-        ).exclude(Q(statut="ANNULE") | Q(statut="INACTIF")).count())
-        #count_polices_a_echeance = Police.objects.filter(date_fin_effet__lte=in_90_days, date_fin_effet__gt=today).count()
-        count_polices_a_echeance = Police.objects.filter(
-            (Q(date_fin_effet__lte=in_90_days) & Q(date_fin_effet__gt=today)) |
-            (Q(date_fin_police__lte=in_90_days) & Q(date_fin_police__gt=today))
-        ).exclude(Q(statut="ANNULE") | Q(statut="INACTIF")).count()
+        polices_qs = Police.objects.filter(
+            client__isnull=False,
+            historique_polices__isnull=False,
+        ).distinct()
 
-        count_polices_non_renouvelees_resilies = Police.objects.filter(
-            Q(date_fin_effet__lt=today) | Q(date_fin_police__lt=today)
-        ).exclude(Q(statut="ANNULE") | Q(statut="INACTIF")).count()
+        date_comparaison = datetime.today().date()
+
+        nombre_police = 0
+        nombre_police_en_cours = 0
+        nombre_arrivant_echeance = 0
+        nombre_a_echeance = 0
+        nombre_resilie_annule = 0
+        for plc in polices_qs:
+            date_echeance_police = None
+            if plc.date_fin_effet:
+                date_echeance_police = plc.date_fin_effet
+            elif plc.date_fin_police:
+                date_echeance_police = plc.date_fin_police
+
+            if plc.etat_police not in ["Annulé", "Résilié", "Suspendu"]:
+                nombre_police += 1
+                if date_echeance_police and date_echeance_police > date_comparaison:
+                    difference_jours = (date_echeance_police - date_comparaison).days
+                    if difference_jours <= 90:
+                        nombre_arrivant_echeance += 1
+                    nombre_police_en_cours += 1
+                else:
+                    nombre_a_echeance += 1
+            else:
+                nombre_resilie_annule += 1
+
+        print(f'Date de comparaison {date_comparaison}')
+        print(f'Police en état {nombre_police}')
+        print(f'Police en cours dénombrées {nombre_police_en_cours}')
+        print(f'Police arrivant à échéance {nombre_arrivant_echeance}')
+        print(f'Police a atteint son échéance {nombre_a_echeance}')
+        print(f'Police annulée, résilié ou suspendu {nombre_resilie_annule}')
 
         # Ajout au contexte
-        extra_context['count_polices_en_cours'] = count_polices_en_cours
-        extra_context['count_polices_a_echeance'] = count_polices_a_echeance
-        extra_context['count_polices_non_renouvelees_resilies'] = count_polices_non_renouvelees_resilies
+        extra_context['count_polices_en_cours'] = nombre_police_en_cours
+        extra_context['count_polices_a_echeance'] = nombre_arrivant_echeance
+        extra_context['count_polices_non_renouvelees_resilies'] = nombre_a_echeance
+        extra_context['count_polices_annulees_resilies_suspendues'] = nombre_resilie_annule
 
         return super(CustomAdminSite, self).index(request, extra_context)
 

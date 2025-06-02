@@ -3,8 +3,8 @@ from django.urls import path
 
 from . import views
 from .views import ClientsView, DetailsClientView, PoliceClientView, ContactClientView, FilialeClientView, AcompteClientView, GEDClientView, QuittancesClientView, \
-    PoliceGedView, PoliceAvenantsView, PoliceQuittancesView, PoliceSinistresView, AnnulerQuittanceView, CourrierView, PolicesEncoursView, PolicesArrivantEcheanceView, PolicesNonRenouvelleesResilieesView, \
-    DetailsSinistreView, SinistreGedView, SinistreAvenantsView
+    PoliceGedView, PoliceAvenantsView, PoliceQuittancesView, PoliceSinistresView, AnnulerQuittanceView, CourrierView, PolicesEncoursView,\
+    DetailsSinistreView, SinistreGedView, SinistreAvenantsView, PolicesArrivantEcheanceView, PolicesNonRenouvelleesResilieesView
 
 urlpatterns = [
     path('apporteurs/ajax_apporteurs', views.ajax_apporteurs, name='ajax_apporteurs'),
@@ -64,6 +64,7 @@ urlpatterns = [
 
     path('polices-en-cours/', PolicesEncoursView.as_view(), name='polices_en_cours'),
     path('polices_en_cours_datatable/', views.polices_en_cours_datatable, name='polices_en_cours_datatable'),
+
     path('polices-a-echeance-dans-90-jours/', PolicesArrivantEcheanceView.as_view(), name='polices_arrivant_echeance'),
     path('polices_arrivant_echeance_datatable/', views.polices_arrivant_echeance_datatable, name='polices_arrivant_echeance_datatable'),
 

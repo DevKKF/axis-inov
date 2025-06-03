@@ -2184,7 +2184,7 @@ def modifier_police(request, police_id):
 
         # pour la creation de police
         produits = Produit.objects.all().order_by('nom')
-        apporteurs = Apporteur.objects.filter(Q(bureau=request.user.bureau) | Q(bureau__isnull=True)).filter(status=True).order_by('nom')
+        apporteurs = Apporteur.objects.filter(status=True).order_by('nom')
         fractionnements = Fractionnement.objects.all().order_by('libelle')
         modes_reglements = ModeReglement.objects.all().order_by('libelle')
         regularisations = Regularisation.objects.all().order_by('libelle')
@@ -2271,7 +2271,7 @@ def modifier_police(request, police_id):
                     nouv_date_debut_effet = dernier_historique.date_debut_effet + relativedelta(months=duree)
                     nouv_date_fin_effet = dernier_historique.date_fin_effet + relativedelta(months=duree)
 
-
+        print(f"Apporteur {apporteurs_police}")
         return render(request, 'police/modal_police_modification.html',
                       {'police': police, 'periode_couverture':periode_couverture,
                        'branches': branches, 'produits': produits,
@@ -2303,7 +2303,6 @@ def get_aliments_session(request):
 
     # Charger les aliments existants depuis la session
     aliments = request.session.get('aliments', [])
-    print('aliments', aliments)
     if vehicules.exists():
         immatriculations_en_session = {alim['immat'] for alim in aliments}
 
@@ -2342,11 +2341,7 @@ def get_aliments_session(request):
         aliments.extend(nouveaux_aliments)
         request.session['aliments'] = aliments
 
-
     aliments = request.session.get('aliments', [])
-
-    print('aliments chargés : ',aliments)
-    print('vehicules chargés : ',vehicules)
 
     return JsonResponse({'success': True, 'data': aliments})
 
@@ -2733,9 +2728,8 @@ def polices_restantes(request, police_id):
 @login_required
 # récupère le taux paramétré sur le produit en fonction de la compagnie
 def ajax_infos_compagnie(request, compagnie_id, produit_id):
-    param_produit_compagnie = ParamProduitCompagnie.objects.filter(compagnie_id=compagnie_id,
-                                                                   produit_id=produit_id).first()
-    print(param_produit_compagnie)
+    param_produit_compagnie = ParamProduitCompagnie.objects.filter(compagnie_id=compagnie_id, produit_id=produit_id).first()
+
     if (param_produit_compagnie is not None):
         response = {
             'id': param_produit_compagnie.compagnie.id,
@@ -2759,7 +2753,7 @@ def ajax_infos_compagnie(request, compagnie_id, produit_id):
 # récupère le taux paramétré sur le produit en fonction de la compagnie
 def ajax_infos_compagnie_modification(request, compagnie_id, produit_id):
     param_produit_compagnie = ParamProduitCompagnie.objects.filter(compagnie_id=compagnie_id, produit_id=produit_id).first()
-    print(param_produit_compagnie)
+
     if (param_produit_compagnie is not None):
         response = {
             'id': param_produit_compagnie.compagnie.id,
@@ -8336,69 +8330,6 @@ class AnnulerQuittanceView(TemplateView):
             context['numero_quittance'] = numero_quittance
             context['quittance'] = quittance
 
-        """
-        # cette condition précise que nous venons faire l'annulation de la quittance
-        if submit_delete_item and id_item:
-
-            quittance = Quittance.objects.filter(id=id_item, statut=StatutQuittance.IMPAYE).first()
-
-            if quittance:
-
-                #récupérer les règlements sur la quittance
-                reglements = Reglement.objects.filter(quittance=quittance)
-
-                if reglements:
-                    context['reglements_existants'] = True
-
-                    '''
-                    #TODO: Traitement à discuter et confirmer avec Marius
-                    #vérifier s'il existe un règlement déjà reversé compagnie
-                    if reglements.filter(statut_reversement_compagnie=StatutReversementCompagnie.REVERSE).first():
-                        context['reverse_reglement'] = True
-                        #Avoir l'accord de la finance (GILDAS)
-
-                    else:
-                        context['reglements_existants_annules'] = True
-                        #Annuler les règlements sur la quittances
-                        for reglement in reglements:
-                            # traitement reglement
-                            reglement.reg_deleted_by = request.user
-                            reglement.statut_validite = StatutValidite.SUPPRIME
-                            reglement.observation = motif_delete_item
-                            #reglement.save #décommenter après
-
-                            ActionLog.objects.create(done_by=request.user, action="annulation_reglement", description="Annulation d'un règlement", table="reglement", row=reglement.pk)
-                            #
-
-                        # Annuler la quittance
-                        quittance.deleted_by = request.user
-                        quittance.statut_validite = StatutValidite.SUPPRIME
-                        quittance.observation = motif_delete_item
-                        quittance.save()
-                        context['old_quittance'] = quittance.numero
-                        #
-                    '''
-
-                else:
-                    context['reglements_existants'] = False
-
-                    # Annuler la quittance
-                    quittance.deleted_by = request.user
-                    quittance.statut_validite = StatutValiditeQuittance.ANNULEE
-                    quittance.observation = motif_delete_item
-                    quittance.save()
-                    context['old_quittance'] = quittance.numero
-                    #
-
-                    #Créer une ligne dans mouvement_quittances
-
-
-
-                # enregistrer dans les log
-                ActionLog.objects.create(done_by=request.user, action="annulation_quittance",
-                                         description="Annulation d'une quittances", table="quittances",
-                                         row=quittance.pk)
-        """
         # print(code_dossier_police) """
         return self.render_to_response(context)
 

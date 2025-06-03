@@ -247,6 +247,34 @@
 																<td style="vertical-align:middle;padding:5px;"><span style="cursor:pointer;" class="btn btn-sm btn-danger btnSupprimerLigneApporteur_modification"><i class="fa fa-trash" style="font-size:12px;"></i></span></td>
 															</tr>
 														{% endfor %}
+													{% else %}
+														<tr id="tr_initial">
+															<td style="vertical-align:middle;">
+																<div class="row" style="margin-right:5px;">
+																	<select class="form-control calculs_handler_police intermediaire intermediaire_champ_obligatoire" name="intermediaires" id="intermediaires">
+																		<option value="">Choisir</option>
+																		{% for apporteur in apporteurs %}
+																			<option value="{{ apporteur.id }}">{{ apporteur.nom|default_if_none:"" }} {{ apporteur.prenoms|default_if_none:"" }}</option>
+																		{% endfor %}
+																	</select>
+																</div>
+															</td>
+															<td style="vertical-align:middle;padding:5px;">
+																<select class="form-control calculs_handler_police base_calcul_taux_retrocession not_select2 intermediaire_champ_obligatoire" name="base_calcul_taux_retrocession" >
+																	<option value="">Choisir</option>
+																	{% for bc in bases_calculs %}
+																		<option value="{{ bc.id }}">{{ bc.libelle }}</option>
+																	{% endfor %}
+																</select>
+															</td>
+															<td style="vertical-align:middle;padding:5px;">
+																<input maxlength="5" type="text" class="form-control money_field_avec_virgule calculs_handler_police taux_com_affaire_nouvelle intermediaire_champ_obligatoire" name="taux_com_affaire_nouvelle" value="" />
+															</td>
+															<td style="vertical-align:middle;padding:5px;">
+																<input maxlength="5" type="text" class="form-control money_field_avec_virgule calculs_handler_police taux_com_renouvelement intermediaire_champ_obligatoire" name="taux_com_renouvelement" value="" />
+															</td>
+															<td style="vertical-align:middle;padding:5px;"><span style="cursor:pointer;" class="btn btn-sm btn-danger btnSupprimerLigneApporteur"><i class="fa fa-trash" style="font-size:12px;"></i></span></td>
+														</tr>
 													{% endif %}
 												</tbody>
 												<tfoot style="display:none;">

@@ -82,6 +82,414 @@ class AnalysePortefeuilleView(PermissionRequiredMixin,TemplateView):
         }
 
 
+# Portefeuille par compagnie
+def generate_excel_portefeuille_compagnie(compagnies, date_requete):
+    workbook = Workbook()
+    sheet = workbook.active
+    sheet.title = "Portefeuille"
+
+    headers = [
+        "POLICE", "COMPAGNIE", "CLIENT", "TYPE DE CLIENT", "BRANCHE", "PRODUIT",
+        "RECONDUCTION", "STATUT", "DATE DE RENOUVELEMENT", "DATE DE FIN",
+        "PRIME HT EX N-1", "PRIME HT EX N", "PRIME TTC EX N"
+    ]
+
+    # Largeur des colonnes
+    for i, header in enumerate(headers, 1):
+        col_letter = get_column_letter(i)
+        if header in ["DATE DE RENOUVELEMENT", "DATE DE FIN", "PRIME HT EX N-1", "PRIME HT EX N", "PRIME TTC EX N"]:
+            sheet.column_dimensions[col_letter].width = 23
+        else:
+            sheet.column_dimensions[col_letter].width = 28
+
+    # Style d'en-tête
+    header_font = Font(bold=True)
+    thin_border = Border(
+        left=Side(style="thin"),
+        right=Side(style="thin"),
+        top=Side(style="thin"),
+        bottom=Side(style="thin")
+    )
+    sheet.append(headers)
+    for cell in sheet[1]:
+        cell.font = header_font
+        cell.border = thin_border
+        cell.alignment = Alignment(horizontal="center")
+
+    # 👉 Ajouter le filtre automatique ici :
+    sheet.auto_filter.ref = f"A1:{get_column_letter(len(headers))}1"
+
+    data_start_row = 2
+    recap_data = defaultdict(lambda: {'count': 0, 'ht': 0, 'ttc': 0})
+    row_index = data_start_row
+
+    for compagnie in compagnies:
+        polices_qs = Police.objects.filter(
+            historique_polices__id__in=PoliceAssureur.objects.filter(
+                compagnie_id=compagnie.id, type_compagnie_id=1
+            ).values('historique_police_id')
+        ).distinct()
+
+        if not polices_qs.exists():
+            continue
+
+        for police in polices_qs:
+            dernier_historique = HistoriquePolice.objects.filter(police_id=police.id).order_by('-date_du_jour').first()
+            prime_ht = dernier_historique.prime_ht if dernier_historique and dernier_historique.prime_ht else 0
+            prime_ttc = dernier_historique.prime_ttc if dernier_historique and dernier_historique.prime_ttc else 0
+
+            historique_annee_precedente = HistoriquePolice.objects.filter(
+                police_id=police.id,
+                date_du_jour__year__lt=dernier_historique.date_du_jour.year if dernier_historique else datetime.now().year
+            ).order_by('-date_du_jour').first()
+            prime_ht_n = historique_annee_precedente.prime_ht if historique_annee_precedente else 0
+
+            dernier_mouvement = MouvementPolice.objects.filter(police_id=police.id).order_by('-created_at').first()
+            statut = "NON renouvelé"
+            if dernier_mouvement and dernier_mouvement.date_fin_periode_garantie:
+                diff = (dernier_mouvement.date_fin_periode_garantie - datetime.today().date()).days
+                if diff > 90:
+                    statut = police.etat_police
+                elif diff > 0:
+                    statut = "A renouveler"
+
+            date_fin_effet = ''
+            if dernier_historique and dernier_historique.mode_renouvellement == "Tacite Reconduction":
+                date_fin_effet = dernier_historique.date_fin_effet.strftime("%d/%m/%Y") if dernier_historique.date_fin_effet else ''
+
+            date_fin_police = ''
+            if dernier_historique and dernier_historique.mode_renouvellement == "Sans Tacite Reconduction":
+                date_fin_police = dernier_historique.date_fin_police.strftime("%d/%m/%Y") if dernier_historique.date_fin_police else ''
+
+            row_data = [
+                police.numero,
+                compagnie.nom,
+                police.client.nom if police.client else '',
+                police.client.type_personne.libelle if police.client else '',
+                police.produit.branche.nom if police.produit and police.produit.branche else '',
+                police.produit.nom if police.produit else '',
+                dernier_historique.mode_renouvellement if dernier_historique else '',
+                statut,
+                date_fin_effet,
+                date_fin_police,
+                prime_ht_n,
+                prime_ht,
+                prime_ttc
+            ]
+            sheet.append(row_data)
+
+            # Format nombre en milliers
+            for i in [11, 12, 13]:  # Colonnes 11,12,13 = "PRIME HT EX N-1", "PRIME HT EX N", "PRIME TTC EX N"
+                cell = sheet.cell(row=row_index, column=i)
+                cell.number_format = '#,##0'
+
+            # Appliquer bordure à toute la ligne
+            for col in range(1, len(headers) + 1):
+                sheet.cell(row=row_index, column=col).border = thin_border
+
+            # Mise à jour du récap
+            recap_data[compagnie.nom]['count'] += 1
+            recap_data[compagnie.nom]['ht'] += prime_ht
+            recap_data[compagnie.nom]['ttc'] += prime_ttc
+
+            row_index += 1
+
+    # Position de départ du récapitulatif
+    recap_start = row_index + 3
+
+    # Titre "RÉCAPITULATIF PAR COMPAGNIE" fusionné sur B à E
+    sheet.merge_cells(start_row=recap_start, start_column=2, end_row=recap_start, end_column=5)
+    title_cell = sheet.cell(row=recap_start, column=2)
+    title_cell.value = "RÉCAPITULATIF PAR COMPAGNIE"
+    title_cell.font = Font(bold=True, size=12)
+    title_cell.alignment = Alignment(horizontal="center")
+
+    # Ligne d'en-tête
+    recap_header_row = recap_start + 1
+    recap_headers = ["", "COMPAGNIE", "NOMBRE DE POLICE", "MONTANT TOTAL HT EX N", "MONTANT TTC EX N"]
+    sheet.append(recap_headers)
+
+    # Appliquer le style à l'en-tête
+    for col in range(2, 6):  # Colonnes B à E
+        cell = sheet.cell(row=recap_header_row, column=col)
+        cell.font = Font(bold=True)
+        cell.border = thin_border
+        cell.alignment = Alignment(horizontal="center")
+
+    # Initialisation des totaux
+    total_polices = total_ht = total_ttc = 0
+    recap_data_row = recap_header_row
+
+    # Remplissage des lignes de récapitulatif
+    for compagnie, vals in recap_data.items():
+        recap_data_row += 1
+        sheet.cell(row=recap_data_row, column=2, value=compagnie)
+        sheet.cell(row=recap_data_row, column=3, value=vals['count'])
+        sheet.cell(row=recap_data_row, column=4, value=vals['ht'])
+        sheet.cell(row=recap_data_row, column=5, value=vals['ttc'])
+
+        for i in [4, 5]:  # Colonnes montants
+            sheet.cell(row=recap_data_row, column=i).number_format = '#,##0'
+
+        for col in range(2, 6):  # Appliquer bordure à toutes les cellules de la ligne
+            sheet.cell(row=recap_data_row, column=col).border = thin_border
+
+        total_polices += vals['count']
+        total_ht += vals['ht']
+        total_ttc += vals['ttc']
+
+    # Ligne TOTAL GENERAL
+    total_row = recap_data_row + 2
+    sheet.cell(row=total_row, column=2, value="TOTAL GENERAL").font = Font(bold=True)
+    sheet.cell(row=total_row, column=3, value=total_polices).font = Font(bold=True)
+    sheet.cell(row=total_row, column=4, value=total_ht).font = Font(bold=True)
+    sheet.cell(row=total_row, column=5, value=total_ttc).font = Font(bold=True)
+
+    for i in [4, 5]:
+        sheet.cell(row=total_row, column=i).number_format = '#,##0'
+
+    for col in range(2, 6):
+        sheet.cell(row=total_row, column=col).border = thin_border
+
+    output = BytesIO()
+    workbook.save(output)
+    output.seek(0)
+    return output
+
+
+def add_portefeuille_compagnie(request):
+    compagnie_id = request.POST.get('compagnie_id')
+    date_requete = request.POST.get('date_requete') or datetime.today().strftime("%d/%m/%Y")
+
+    if compagnie_id == "TOUT":
+        compagnies = Compagnie.objects.all()
+
+        if not compagnies.exists():
+            return JsonResponse({
+                'statut': 0,
+                'message': "Aucune compagnie trouvée."
+            })
+
+        output = generate_excel_portefeuille_compagnie(compagnies, date_requete)
+
+        # Enregistrement de génération du portefeuille
+        """analyse_portefeuille = AnalysePortefeuille.objects.create(
+            type_portefeuille=TypePortefeuille.ALL_CIE,
+            created_at=datetime.now(),
+            created_by=request.user
+        )"""
+
+        # Créer un fichier temporaire
+        with tempfile.NamedTemporaryFile(delete=False, suffix='.xlsx') as tmp_file:
+            tmp_file.write(output.getvalue())
+            tmp_file_path = tmp_file.name
+
+        # Enregistrer le fichier dans le champ `fichier`
+        """with open(tmp_file_path, 'rb') as file:
+            analyse_portefeuille.fichier.save("Portefeuille_Global.xlsx", File(file))"""
+
+        # Supprimer le fichier temporaire après l'avoir enregistré
+        os.unlink(tmp_file_path)
+
+        return JsonResponse({
+            'statut': 1,
+            'message': "Portefeuille global généré avec succès !",
+            'data': {
+                'filename': date_requete+'_'+"Portefeuille_Global_Compagnie.xlsx",
+                'file_base64': base64.b64encode(output.getvalue()).decode()
+            }
+        })
+
+    else:
+        compagnie = Compagnie.objects.filter(id=compagnie_id).first()
+        polices_qs = Police.objects.filter(
+            historique_polices__id__in=PoliceAssureur.objects.filter(
+                compagnie_id=compagnie_id, type_compagnie_id=1
+            ).values('historique_police_id')
+        ).distinct()
+
+        if not polices_qs.exists():
+            return JsonResponse({
+                'statut': 0,
+                'message': "Aucune police trouvée pour cette compagnie."
+            })
+
+        workbook = generate_excel_portefeuille_compagnie([compagnie], date_requete)
+
+        # Enregistrement de génération du portefeuille
+        """analyse_portefeuille = AnalysePortefeuille.objects.create(
+            compagnie=compagnie,
+            type_portefeuille=TypePortefeuille.PAR_CIE,
+            created_at=datetime.now(),
+            created_by=request.user
+        )"""
+
+        # Créer un fichier temporaire
+        with tempfile.NamedTemporaryFile(delete=False, suffix='.xlsx') as tmp_file:
+            tmp_file.write(workbook.getvalue())
+            tmp_file_path = tmp_file.name
+
+        # Enregistrer le fichier dans le champ `fichier`
+        """with open(tmp_file_path, 'rb') as file:
+            analyse_portefeuille.fichier.save(f"Portefeuille_{compagnie.nom}.xlsx", File(file))"""
+
+        # Supprimer le fichier temporaire après l'avoir enregistré
+        os.unlink(tmp_file_path)
+
+        return JsonResponse({
+            'statut': 1,
+            'message': "Portefeuille par compagnie généré avec succès !",
+            'data': {
+                'filename': f"{date_requete}_Portefeuille_{compagnie.nom}.xlsx",
+                'file_base64': base64.b64encode(workbook.getvalue()).decode()
+            }
+        })
+
+
+# Chargement des polices liées à la compagnie
+def get_client_by_compagnie(request):
+    compagnie_id = request.GET.get('compagnie_id')
+    search_mode_renouvellement = request.GET.get("mode_renouvellement")
+    today = datetime.today().date()
+    date_for_calcul = datetime.today().date()
+    polices_par_compagnie = {}
+
+    dernier_historique_subquery = HistoriquePolice.objects.filter(
+        police_id=OuterRef('pk')
+    ).order_by('-date_du_jour').values('mode_renouvellement')[:1]
+
+    if compagnie_id == "TOUT":
+        compagnies = Compagnie.objects.all().order_by('nom')
+
+        for compagnie in compagnies:
+
+            polices_qs = Police.objects.filter(
+                historique_polices__id__in=PoliceAssureur.objects.filter(
+                    compagnie_id=compagnie.id, type_compagnie_id=1
+                ).values('historique_police_id')
+            ).annotate(
+                dernier_mode_renouvellement=Subquery(dernier_historique_subquery)
+            ).distinct()
+
+            if search_mode_renouvellement:
+                polices_qs = polices_qs.filter(dernier_mode_renouvellement__iexact=search_mode_renouvellement)
+
+            polices = []
+            for plc in polices_qs:
+                dernier_historique = HistoriquePolice.objects.filter(police_id=plc.id).order_by('-date_du_jour').first()
+                dernier_mouvement = MouvementPolice.objects.filter(police_id=plc.id).order_by('-created_at').first()
+
+                etat_police = None
+
+                date_echeance_police = None
+                if plc.date_fin_effet:
+                    date_echeance_police = plc.date_fin_effet
+                elif plc.date_fin_police:
+                    date_echeance_police = plc.date_fin_police
+
+                if plc.etat_police not in ["Annulé", "Résilié", "Suspendu"]:
+                    if date_echeance_police and date_echeance_police > today:
+                        difference_jours = (date_echeance_police - date_for_calcul).days
+                        if difference_jours <= 90:
+                            etat_police = f'<span class="badge badge-warning">A renouveler</span>'
+                        else:
+                            etat_police = f'<span class="badge badge-success">{plc.etat_police}</span>'
+                    else:
+                        etat_police = f'<span class="badge badge-danger">NON renouvelé</span>'
+                else:
+                    etat_police = f'<span class="badge badge-danger">{plc.etat_police}</span>'
+
+                detail_url = reverse('police.details', args=[plc.id])
+                numero_html = f'<a href="{detail_url}" class="text-center bouton_action" style="color:#F16623;" target="_blank">{plc.numero}</a>'
+
+                polices.append({
+                    'id': plc.id,
+                    'nom': plc.client.nom if plc.client else '',
+                    'prenoms': plc.client.prenoms if plc.client else '',
+                    'numero': numero_html,
+                    'produit': plc.produit.nom,
+                    'date_debut_effet': plc.date_debut_effet.strftime("%d/%m/%Y") if plc.date_debut_effet else '',
+                    'date_fin_effet': plc.date_fin_effet.strftime("%d/%m/%Y") if plc.date_fin_effet else (plc.date_fin_police.strftime("%d/%m/%Y") if plc.date_fin_police else None),
+                    'date_resiliation': dernier_mouvement.date_effet.strftime("%d/%m/%Y") if plc.etat_police == "Résilié" and dernier_mouvement else '',
+                    'statut': etat_police,
+                    'mode_renouvellement': dernier_historique.mode_renouvellement if dernier_historique else '',
+                    'prime_ht': money_field(dernier_historique.prime_ht) if dernier_historique else '',
+                    'commission_courtage': money_field(dernier_historique.commission_courtage) if dernier_historique else '',
+                })
+
+            if polices:
+                polices_par_compagnie[compagnie.nom] = {
+                    "polices": polices,
+                }
+
+    else:
+        compagnie = Compagnie.objects.filter(id=compagnie_id).first()
+
+        polices_qs = Police.objects.filter(
+            historique_polices__id__in=PoliceAssureur.objects.filter(
+                compagnie_id=compagnie_id, type_compagnie_id=1
+            ).values('historique_police_id')
+        ).annotate(
+            dernier_mode_renouvellement=Subquery(dernier_historique_subquery)
+        ).distinct()
+
+        if search_mode_renouvellement:
+            polices_qs = polices_qs.filter(dernier_mode_renouvellement__iexact=search_mode_renouvellement)
+
+        polices = []
+        for plc in polices_qs:
+            dernier_historique = HistoriquePolice.objects.filter(police_id=plc.id).order_by('-date_du_jour').first()
+            dernier_mouvement = MouvementPolice.objects.filter(police_id=plc.id).order_by('-created_at').first()
+
+            etat_police = None
+
+            date_echeance_police = None
+            if plc.date_fin_effet:
+                date_echeance_police = plc.date_fin_effet
+            elif plc.date_fin_police:
+                date_echeance_police = plc.date_fin_police
+
+            if plc.etat_police not in ["Annulé", "Résilié", "Suspendu"]:
+                if date_echeance_police and date_echeance_police > today:
+                    difference_jours = (date_echeance_police - date_for_calcul).days
+                    if difference_jours <= 90:
+                        etat_police = f'<span class="badge badge-warning">A renouveler</span>'
+                    else:
+                        etat_police = f'<span class="badge badge-success">{plc.etat_police}</span>'
+                else:
+                    etat_police = f'<span class="badge badge-danger">NON renouvelé</span>'
+            else:
+                etat_police = f'<span class="badge badge-danger">{plc.etat_police}</span>'
+
+            detail_url = reverse('police.details', args=[plc.id])
+            numero_html = f'<a href="{detail_url}" class="text-center bouton_action" style="color:#F16623;" target="_blank">{plc.numero}</a>'
+
+            polices.append({
+                'id': plc.id,
+                'nom': plc.client.nom if plc.client else '',
+                'prenoms': plc.client.prenoms if plc.client else '',
+                'numero': numero_html,
+                'produit': plc.produit.nom,
+                'date_debut_effet': plc.date_debut_effet.strftime("%d/%m/%Y") if plc.date_debut_effet else '',
+                'date_fin_effet': plc.date_fin_effet.strftime("%d/%m/%Y") if plc.date_fin_effet else (plc.date_fin_police.strftime("%d/%m/%Y") if plc.date_fin_police else None),
+                'date_resiliation': dernier_mouvement.date_effet.strftime("%d/%m/%Y") if plc.etat_police == "Résilié" and dernier_mouvement else '',
+                'statut': etat_police,
+                'mode_renouvellement': dernier_historique.mode_renouvellement if dernier_historique else '',
+                'prime_ht': money_field(dernier_historique.prime_ht) if dernier_historique else '',
+                'commission_courtage': money_field(dernier_historique.commission_courtage) if dernier_historique else '',
+            })
+
+        if polices:
+            polices_par_compagnie[compagnie.nom] = {
+                "polices": polices,
+            }
+
+    print(f"Nombre de police {polices_par_compagnie}")
+    return JsonResponse({
+        'polices_par_compagnie': polices_par_compagnie,
+    })
+
+
 # Portefeuille par commercial
 def generate_excel_portefeuille_commercial(polices_qs, commercial_nom=""):
     workbook = Workbook()

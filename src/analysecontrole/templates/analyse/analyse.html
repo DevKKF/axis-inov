@@ -26,7 +26,7 @@
         <div class="button-link pull-right mb-2">
             <a class="btn btn-sm btn-primary mb-2" data-toggle="modal" data-target="#modal-compagnie"><i class="fas fa-building"></i> {{_("Portefeuille par compagnie")}}</a>
             <a class="btn btn-sm btn-primary mb-2" data-toggle="modal" data-target="#modal-commercial"><i class="fas fa-users"></i> {{_("Portefeuille par commercial")}}</a>
-            <!--a class="btn btn-sm btn-primary mb-2" data-toggle="modal" data-target="#modal-business_unit"><i class="fas fa-globe"></i> {{_("Portefeuille par Business unit")}}</a-->
+            <a class="btn btn-sm btn-primary mb-2" data-toggle="modal" data-target="#modal-business_unit"><i class="fas fa-globe"></i> {{_("Portefeuille par Business unit")}}</a>
         </div>
 
       <div id="example1_wrapper" class="dataTables_wrapper dt-bootstrap4">
@@ -80,6 +80,7 @@
 
 {% include 'analyse/modal_commercial.html' %}
 {% include 'analyse/modal_compagnie.html' %}
+{% include 'analyse/modal_business_unit.html' %}
 
 
 {% endblock %}

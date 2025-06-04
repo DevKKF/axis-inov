@@ -759,6 +759,7 @@ def add_police(request, client_id):
                 created_by=request.user,
                 produit_id=produit.id,
                 commercial_id=commercial_id,
+                compagnie_id=compagnie.id,
                 gestionnaire_id=gestionnaire_id,
                 production_id=production_id,
                 numero=numero,
@@ -837,6 +838,7 @@ def add_police(request, client_id):
                 client_id=client_id,
                 produit_id=produit.id,
                 commercial_id=commercial_id,
+                compagnie_id=compagnie.id,
                 gestionnaire_id=gestionnaire_id,
                 numero=police.numero,
                 apporteur=apporteur,
@@ -1452,7 +1454,7 @@ def modifier_police(request, police_id):
                                                        taux_com_renouvellement=taux_com_renew, ).save()
                 i += 1
 
-        # Désactivation  des garanties polices
+        # Désactivation des garanties polices
         if garantie_reponse == "NON":
             garanties = PoliceGarantie.objects.filter(police_id=police_id, statut="ACTIF", deleted_at=None).all()
             for garantie in garanties:
@@ -1646,6 +1648,7 @@ def modifier_police(request, police_id):
             client_id=police_old.client_id,
             bureau_id=police_old.client.bureau_id,
             commercial_id=commercial_id,
+            compagnie_id=compagnie.id,
             gestionnaire_id=gestionnaire_id,
             production_id=production_id,
             produit=police_old.produit,
@@ -1688,6 +1691,7 @@ def modifier_police(request, police_id):
             produit_id=produit.id,
             devise_id=devise_id,
             commercial_id=commercial_id,
+            compagnie_id=compagnie.id,
             gestionnaire_id=gestionnaire_id,
             production_id=production_id,
             created_by=request.user,

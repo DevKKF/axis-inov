@@ -20,5 +20,7 @@ urlpatterns = [
     path('add_portefeuille_commercial/', views.add_portefeuille_commercial, name='add_portefeuille_commercial'),
     path('get_client_by_commercial/', views.get_client_by_commercial, name='get_client_by_commercial'),
 
+    path('commande-perso/', views.commande_perso, name='commande_perso'),
+
     
 ]

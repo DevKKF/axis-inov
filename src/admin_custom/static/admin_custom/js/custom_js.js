@@ -18997,11 +18997,6 @@ $(document).ready(function () {
         });
     });
 
-
-
-
-
-
     //TODO ANALYSE & CONTRÔLE
     //Création d'un portefeuille par compagnie
     $(document).on('click', "#btn_save_portefeuille_compagnie", function () {
@@ -19378,8 +19373,6 @@ $(document).ready(function () {
 
     });
 
-
-
      //TODO GARANTIE / FORMULE
     // Insertion d'une ligne supplémentaire dans l'onglet GARANTIES/FORMULE - lors de l'ajout
     $(document).on("click", "#table_garanties #btnAddLigneGarantie", function () {
@@ -19537,162 +19530,161 @@ $(document).ready(function () {
         });
     }
 
-
     // Insertion d'une ligne supplémentaire dans l'onglet GARANTIES/GARANTIES - lors de l'ajout
-$(document).on("click", "#table_garanties #btnAddLigneGarantieCirconstance", function () {
-    // Vérifier que toutes les lignes existantes ont une garantie sélectionnée
-    let allValid = true;
-    $('#table_garanties tbody tr').each(function () {
-        let selectField = $(this).find('.garantiecirconstance');
+    $(document).on("click", "#table_garanties #btnAddLigneGarantieCirconstance", function () {
+        // Vérifier que toutes les lignes existantes ont une garantie sélectionnée
+        let allValid = true;
+        $('#table_garanties tbody tr').each(function () {
+            let selectField = $(this).find('.garantiecirconstance');
 
-        if (!selectField.val()) {
-            allValid = false;
-            selectField[0].reportValidity();
-        }
-    });
-
-    if (!allValid) {
-        return;
-    }
-
-    let tr = $('#table_garanties tbody tr:first');
-    let timestamp = Date.now();
-
-    // Ajouter une nouvelle ligne
-    $('#table_garanties tbody tr:last')
-        .after('<tr id="tr_' + timestamp + '">' + tr.html() + '</tr>')
-        .ready(function () {
-            let newTr = $('#tr_' + timestamp);
-
-            // Réinitialiser les champs de la nouvelle ligne
-            newTr.find('.garantiecirconstance').val('');
-
-            // Mettre à jour les options de chaque ligne
-            updateOptions();
-        });
-});
-
-// Supprimer une ligne
-$(document).on("click", ".btnSupprimerLigneGarantieCirconstance", function () {
-    let nombre_ligne = $('#table_garanties tbody tr').length;
-
-    if (nombre_ligne > 1) {
-        $(this).parent().parent().remove();
-    } else {
-        let tr_ligne_id = $('#table_garanties tbody tr').attr('id');
-        resetFields('#' + tr_ligne_id);
-    }
-
-    updateOptions();
-});
-
-// Fonction pour réinitialiser les champs (si nécessaire)
-function resetFields(selector) {
-    $(selector).find('.garantiecirconstance').val('');
-
-}
-
-// Fonction pour mettre à jour les options des menus déroulants
-function updateOptions() {
-    let selectedGaranties = [];
-    $('#table_garanties tbody tr').each(function () {
-        let selectedValue = $(this).find('.garantiecirconstance').val();
-        if (selectedValue) {
-            selectedGaranties.push(selectedValue);
-        }
-    });
-
-    // Mettre à jour les menus déroulants
-    $('#table_garanties tbody tr').each(function () {
-        let currentSelect = $(this).find('.garantiecirconstance');
-        let currentValue = currentSelect.val();
-
-        currentSelect.find('option').each(function () {
-            let optionValue = $(this).val();
-            if (selectedGaranties.includes(optionValue) && optionValue !== currentValue) {
-                $(this).hide();
-            } else {
-                $(this).show();
+            if (!selectField.val()) {
+                allValid = false;
+                selectField[0].reportValidity();
             }
         });
-    });
-}
 
-// Insertion ligne supplémentaire dans l'onglet GARANTIES/CIRCONSTANCES - lors de la modification
-$(document).on("click", "#table_garanties_modification #btnAddLigneGarantieCirconstance_modification", function () {
-    let allValid = true;
-    $('#table_garanties_modification tbody tr').each(function () {
-        let selectField = $(this).find('.garantiecirconstance_modification');
-
-        // Validation HTML5 "required"
-        if (!selectField.val()) {
-            allValid = false;
-            selectField[0].reportValidity();
+        if (!allValid) {
+            return;
         }
+
+        let tr = $('#table_garanties tbody tr:first');
+        let timestamp = Date.now();
+
+        // Ajouter une nouvelle ligne
+        $('#table_garanties tbody tr:last')
+            .after('<tr id="tr_' + timestamp + '">' + tr.html() + '</tr>')
+            .ready(function () {
+                let newTr = $('#tr_' + timestamp);
+
+                // Réinitialiser les champs de la nouvelle ligne
+                newTr.find('.garantiecirconstance').val('');
+
+                // Mettre à jour les options de chaque ligne
+                updateOptions();
+            });
     });
 
-    if (!allValid) {
-        // Si une ligne n'est pas valide, on arrête l'ajout
-        return;
+    // Supprimer une ligne
+    $(document).on("click", ".btnSupprimerLigneGarantieCirconstance", function () {
+        let nombre_ligne = $('#table_garanties tbody tr').length;
+
+        if (nombre_ligne > 1) {
+            $(this).parent().parent().remove();
+        } else {
+            let tr_ligne_id = $('#table_garanties tbody tr').attr('id');
+            resetFields('#' + tr_ligne_id);
+        }
+
+        updateOptions();
+    });
+
+    // Fonction pour réinitialiser les champs (si nécessaire)
+    function resetFields(selector) {
+        $(selector).find('.garantiecirconstance').val('');
+
     }
 
-    let trTemplate = $('#tr_initial_vide').html();
-    let timestamp = Date.now();
+    // Fonction pour mettre à jour les options des menus déroulants
+    function updateOptions() {
+        let selectedGaranties = [];
+        $('#table_garanties tbody tr').each(function () {
+            let selectedValue = $(this).find('.garantiecirconstance').val();
+            if (selectedValue) {
+                selectedGaranties.push(selectedValue);
+            }
+        });
 
-    // Ajouter une nouvelle ligne
-    $('#table_garanties_modification tbody tr:last')
-        .after('<tr id="tr_' + timestamp + '">' + trTemplate + '</tr>')
-        .ready(function () {
-            let newTr = $('#tr_' + timestamp);
+        // Mettre à jour les menus déroulants
+        $('#table_garanties tbody tr').each(function () {
+            let currentSelect = $(this).find('.garantiecirconstance');
+            let currentValue = currentSelect.val();
 
-            // Réinitialiser les champs de la nouvelle ligne
-            newTr.find('.garantiecirconstance_modification').val('');
+            currentSelect.find('option').each(function () {
+                let optionValue = $(this).val();
+                if (selectedGaranties.includes(optionValue) && optionValue !== currentValue) {
+                    $(this).hide();
+                } else {
+                    $(this).show();
+                }
+            });
+        });
+    }
+
+    // Insertion ligne supplémentaire dans l'onglet GARANTIES/CIRCONSTANCES - lors de la modification
+    $(document).on("click", "#table_garanties_modification #btnAddLigneGarantieCirconstance_modification", function () {
+        let allValid = true;
+        $('#table_garanties_modification tbody tr').each(function () {
+            let selectField = $(this).find('.garantiecirconstance_modification');
+
+            // Validation HTML5 "required"
+            if (!selectField.val()) {
+                allValid = false;
+                selectField[0].reportValidity();
+            }
+        });
+
+        if (!allValid) {
+            // Si une ligne n'est pas valide, on arrête l'ajout
+            return;
+        }
+
+        let trTemplate = $('#tr_initial_vide').html();
+        let timestamp = Date.now();
+
+        // Ajouter une nouvelle ligne
+        $('#table_garanties_modification tbody tr:last')
+            .after('<tr id="tr_' + timestamp + '">' + trTemplate + '</tr>')
+            .ready(function () {
+                let newTr = $('#tr_' + timestamp);
+
+                // Réinitialiser les champs de la nouvelle ligne
+                newTr.find('.garantiecirconstance_modification').val('');
+
+                updateOptionsModification();
+            });
+    });
+
+    // Supprimer une ligne
+    $(document).on("click", "#table_garanties_modification .btnSupprimerLigneGarantieCirconstance_modification", function () {
+        let nombre_ligne = $('#table_garanties_modification tbody tr').length;
+
+        if (nombre_ligne > 1) {
+            // Supprimer la ligne sélectionnée
+            $(this).parent().parent().remove();
 
             updateOptionsModification();
-        });
-});
-
-// Supprimer une ligne
-$(document).on("click", "#table_garanties_modification .btnSupprimerLigneGarantieCirconstance_modification", function () {
-    let nombre_ligne = $('#table_garanties_modification tbody tr').length;
-
-    if (nombre_ligne > 1) {
-        // Supprimer la ligne sélectionnée
-        $(this).parent().parent().remove();
-
-        updateOptionsModification();
-    } else {
-        alert("Vous ne pouvez pas supprimer toutes les lignes de garanties. Au moins une ligne doit être conservée.");
-    }
-});
-
-// Fonction pour mettre à jour les options des menus déroulants
-function updateOptionsModification() {
-    // Récupérer toutes les garanties déjà sélectionnées
-    let selectedGaranties = [];
-    $('#table_garanties_modification tbody tr').each(function () {
-        let selectedValue = $(this).find('.garantiecirconstance_modification').val();
-        if (selectedValue) {
-            selectedGaranties.push(selectedValue);
+        } else {
+            alert("Vous ne pouvez pas supprimer toutes les lignes de garanties. Au moins une ligne doit être conservée.");
         }
     });
 
-    // Mettre à jour les menus déroulants
-    $('#table_garanties_modification tbody tr').each(function () {
-        let currentSelect = $(this).find('.garantiecirconstance_modification');
-        let currentValue = currentSelect.val();
-
-        // Conserver uniquement les options non sélectionnées ou la valeur actuelle
-        currentSelect.find('option').each(function () {
-            let optionValue = $(this).val();
-            if (selectedGaranties.includes(optionValue) && optionValue !== currentValue) {
-                $(this).hide();
-            } else {
-                $(this).show();
+    // Fonction pour mettre à jour les options des menus déroulants
+    function updateOptionsModification() {
+        // Récupérer toutes les garanties déjà sélectionnées
+        let selectedGaranties = [];
+        $('#table_garanties_modification tbody tr').each(function () {
+            let selectedValue = $(this).find('.garantiecirconstance_modification').val();
+            if (selectedValue) {
+                selectedGaranties.push(selectedValue);
             }
         });
-    });
-}
+
+        // Mettre à jour les menus déroulants
+        $('#table_garanties_modification tbody tr').each(function () {
+            let currentSelect = $(this).find('.garantiecirconstance_modification');
+            let currentValue = currentSelect.val();
+
+            // Conserver uniquement les options non sélectionnées ou la valeur actuelle
+            currentSelect.find('option').each(function () {
+                let optionValue = $(this).val();
+                if (selectedGaranties.includes(optionValue) && optionValue !== currentValue) {
+                    $(this).hide();
+                } else {
+                    $(this).show();
+                }
+            });
+        });
+    }
 
     //TODO SIAKA
     //Création de courrier
@@ -19866,7 +19858,6 @@ function updateOptionsModification() {
         });
 
     });
-
 
 });
 

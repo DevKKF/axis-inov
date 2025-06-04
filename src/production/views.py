@@ -27,7 +27,7 @@ from django.contrib import admin
 from django.contrib.auth.decorators import login_required
 from django.core import serializers
 from django.core.paginator import Paginator
-from django.db.models import Q, ExpressionWrapper, F, DurationField, Max, Case, When, Sum
+from django.db.models import Q, ExpressionWrapper, F, DurationField, Max, Case, When, OuterRef, Sum, Subquery
 from django.http import JsonResponse, HttpResponse, FileResponse
 from django.shortcuts import redirect, render, get_object_or_404
 from django.urls import reverse
@@ -40,6 +40,7 @@ from docx import Document as WordDocument
 from datetime import datetime, timezone
 from django.utils.timezone import now
 from django.db import transaction
+from django.utils.translation import gettext as _
 
 from configurations.models import Compagnie, MarqueVehicule, Pays, Civilite, Profession, \
     Produit, Formule, GarantieBranche, GarantieFormule, ConditionsAssurance, MoyensTransport, \
@@ -758,6 +759,7 @@ def add_police(request, client_id):
                 created_by=request.user,
                 produit_id=produit.id,
                 commercial_id=commercial_id,
+                compagnie_id=compagnie.id,
                 gestionnaire_id=gestionnaire_id,
                 production_id=production_id,
                 numero=numero,
@@ -836,6 +838,7 @@ def add_police(request, client_id):
                 client_id=client_id,
                 produit_id=produit.id,
                 commercial_id=commercial_id,
+                compagnie_id=compagnie.id,
                 gestionnaire_id=gestionnaire_id,
                 numero=police.numero,
                 apporteur=apporteur,
@@ -1451,7 +1454,7 @@ def modifier_police(request, police_id):
                                                        taux_com_renouvellement=taux_com_renew, ).save()
                 i += 1
 
-        # Désactivation  des garanties polices
+        # Désactivation des garanties polices
         if garantie_reponse == "NON":
             garanties = PoliceGarantie.objects.filter(police_id=police_id, statut="ACTIF", deleted_at=None).all()
             for garantie in garanties:
@@ -1645,6 +1648,7 @@ def modifier_police(request, police_id):
             client_id=police_old.client_id,
             bureau_id=police_old.client.bureau_id,
             commercial_id=commercial_id,
+            compagnie_id=compagnie.id,
             gestionnaire_id=gestionnaire_id,
             production_id=production_id,
             produit=police_old.produit,
@@ -1687,6 +1691,7 @@ def modifier_police(request, police_id):
             produit_id=produit.id,
             devise_id=devise_id,
             commercial_id=commercial_id,
+            compagnie_id=compagnie.id,
             gestionnaire_id=gestionnaire_id,
             production_id=production_id,
             created_by=request.user,
@@ -8714,88 +8719,61 @@ class PolicesEncoursView(TemplateView):
 
 #Chargement des lignes de police en cours
 def polices_en_cours_datatable(request):
-    items_per_page = 10
-    page_number = request.GET.get('page')
-    start = int(request.GET.get('start', 0))
-    length = int(request.GET.get('length', items_per_page))
-    sort_column_index = int(request.GET.get('order[0][column]'))
-    sort_direction = request.GET.get('order[0][dir]')
+    date_comparaison = datetime.today().date()
+
+    # Champs de recherche
     search_client = request.GET.get('search_client', '').strip()
     search_numero_police = request.GET.get('search_numero_police', '').strip()
     search_produit = request.GET.get('search_produit', '').strip()
     search_commercial = request.GET.get('search_commercial', '').strip()
-    today = now()
 
-    user = request.user
-    queryset = Police.objects.filter(Q(date_fin_effet__gt=today) | Q(date_fin_police__gt=today)).exclude(Q(statut="ANNULE") | Q(statut="INACTIF"))
+    queryset = (Police.objects.filter(
+        client__isnull=False,
+        historique_polices__isnull=False,
+    ).distinct())
 
-    """
-    if user.is_commercial:
-        queryset = Police.objects.filter(date_fin_effet__gt=today, commercial_id=user.id)
-    elif user.is_production:
-        queryset = Police.objects.filter(date_fin_effet__gt=today)
-    else:
-        queryset = Police.objects.none
-    """
-
+    # Filtres
     if search_client:
-        queryset = queryset.filter(
-            Q(client_id=search_client)
-        )
-
+        queryset = queryset.filter(client_id=search_client)
     if search_numero_police:
-        queryset = queryset.filter(
-            Q(numero__icontains=search_numero_police)
-        )
-
-
+        queryset = queryset.filter(numero__icontains=search_numero_police)
     if search_produit:
-        queryset = queryset.filter(
-            Q(produit_id=search_produit)
-        )
-
+        queryset = queryset.filter(produit_id=search_produit)
     if search_commercial:
-        queryset = queryset.filter(
-            Q(commercial_id=search_commercial)
-        )
+        queryset = queryset.filter(commercial_id=search_commercial)
 
-    # Apply sorting
+    # Tri
     queryset = queryset.order_by('-numero')
 
-    paginator = Paginator(queryset, length)
-    page_obj = paginator.get_page(page_number)
-
-    # Prepare the data in the expected format
     data = []
-    for c in page_obj:
+    nombre_police = 0
+    for plc in queryset:
+        date_echeance_police = None
+        if plc.date_fin_effet:
+            date_echeance_police = plc.date_fin_effet
+        elif plc.date_fin_police:
+            date_echeance_police = plc.date_fin_police
 
-        detail_url = reverse('police.details', args=[c.id])  # URL to the detail view
-        numero_html = f'<a href="{detail_url}" class="text-center bouton_action" style="color:#F16623;" target="_blank">{c.numero}</a>&nbsp;&nbsp;'
-        actions_html = f'<a href="{detail_url}" class="text-center" target="_blank"><span class="badge btn-sm btn-details rounded-pill"><i class="fa fa-eye"></i> {_("Détails")}</span></a>&nbsp;&nbsp;'
+        if plc.etat_police not in ["Annulé", "Résilié", "Suspendu"]:
+            if date_echeance_police and date_echeance_police > date_comparaison:
+                nombre_police += 1
 
-        if not c.client.nom: c.client.nom = ''
-        if not c.client.prenoms: c.client.prenoms = ''
-        if not c.client.code: c.client.code = ''
+                detail_url = reverse('police.details', args=[plc.id])
+                numero_html = f'<a href="{detail_url}" class="text-center bouton_action" style="color:#F16623;" target="_blank">{plc.numero}</a>'
+                actions_html = f'<a href="{detail_url}" class="text-center" target="_blank"><span class="badge btn-sm btn-details rounded-pill"><i class="fa fa-eye"></i> Détails</span></a>'
 
-        if c.date_fin_effet:
-            date_fin = c.date_fin_effet
-        else:
-            date_fin = c.date_fin_police
-
-        data.append({
-            "id": c.id,
-            "num_police": numero_html,
-            "nom_client": c.client.nom + ' ' + c.client.prenoms+ '- (' + c.client.code + ')',
-            "nom_produit": c.produit.nom if c.produit else "",
-            "date_debut": c.avenant_encours.date_effet if c.avenant_encours else "",
-            "date_fin": date_fin if date_fin else "",
-            "actions": actions_html,
-        })
+                data.append({
+                    "id": plc.id,
+                    "num_police": numero_html,
+                    "nom_client": f"{plc.client.nom or ''} {plc.client.prenoms or ''} - ({plc.client.code or ''})",
+                    "nom_produit": plc.produit.nom if plc.produit else "",
+                    "date_debut": plc.date_debut_effet.strftime('%d/%m/%Y') if plc.date_debut_effet else "",
+                    "date_fin": date_echeance_police.strftime('%d/%m/%Y') if date_echeance_police else "",
+                    "actions": actions_html,
+                })
 
     return JsonResponse({
         "data": data,
-        "recordsTotal": queryset.count(),
-        "recordsFiltered": paginator.count,
         "draw": int(request.GET.get('draw', 1)),
     })
 
@@ -8839,91 +8817,64 @@ class PolicesArrivantEcheanceView(TemplateView):
 
 #Chargement des lignes de polices arrivant à échéance dans 90 jours
 def polices_arrivant_echeance_datatable(request):
-    items_per_page = 10
-    page_number = request.GET.get('page')
-    start = int(request.GET.get('start', 0))
-    length = int(request.GET.get('length', items_per_page))
-    sort_column_index = int(request.GET.get('order[0][column]'))
-    sort_direction = request.GET.get('order[0][dir]')
+    date_comparaison = datetime.today().date()
+
+    # Champs de recherche
     search_client = request.GET.get('search_client', '').strip()
     search_numero_police = request.GET.get('search_numero_police', '').strip()
     search_produit = request.GET.get('search_produit', '').strip()
     search_commercial = request.GET.get('search_commercial', '').strip()
-    today = now()
-    in_90_days = today + timedelta(days=90)
 
-    user = request.user
-    queryset = Police.objects.filter(
-        (Q(date_fin_effet__lte=in_90_days) & Q(date_fin_effet__gt=today)) |
-        (Q(date_fin_police__lte=in_90_days) & Q(date_fin_police__gt=today))
-    ).exclude(Q(statut="ANNULE") | Q(statut="INACTIF"))
+    queryset = (Police.objects.filter(
+        client__isnull=False,
+        historique_polices__isnull=False,
+    ).distinct())
 
-    """
-    if user.is_commercial:
-        queryset = Police.objects.filter(date_fin_effet__lte=in_90_days, date_fin_effet__gt=today, commercial_id=user.id)
-    elif user.is_production:
-        queryset = Police.objects.filter(date_fin_effet__lte=in_90_days, date_fin_effet__gt=today)
-    else:
-        queryset = Police.objects.none
-    """
-
+    # Filtres
     if search_client:
-        queryset = queryset.filter(
-            Q(client_id=search_client)
-        )
-
+        queryset = queryset.filter(client_id=search_client)
     if search_numero_police:
-        queryset = queryset.filter(
-            Q(numero__icontains=search_numero_police)
-        )
-
+        queryset = queryset.filter(numero__icontains=search_numero_police)
     if search_produit:
-        queryset = queryset.filter(
-            Q(produit_id=search_produit)
-        )
-
+        queryset = queryset.filter(produit_id=search_produit)
     if search_commercial:
-        queryset = queryset.filter(
-            Q(commercial_id=search_commercial)
-        )
+        queryset = queryset.filter(commercial_id=search_commercial)
 
-    # Apply sorting
+    # Tri
     queryset = queryset.order_by('-numero')
 
-    paginator = Paginator(queryset, length)
-    page_obj = paginator.get_page(page_number)
-
-    # Prepare the data in the expected format
     data = []
-    for c in page_obj:
+    nombre_police = 0
+    for plc in queryset:
+        date_echeance_police = None
+        if plc.date_fin_effet:
+            date_echeance_police = plc.date_fin_effet
+        elif plc.date_fin_police:
+            date_echeance_police = plc.date_fin_police
 
-        detail_url = reverse('police.details', args=[c.id])  # URL to the detail view
-        numero_html = f'<a href="{detail_url}" class="text-center bouton_action" style="color:#F16623;" target="_blank">{c.numero}</a>&nbsp;&nbsp;'
-        actions_html = f'<a href="{detail_url}" class="text-center" target="_blank"><span class="badge btn-sm btn-details rounded-pill"><i class="fa fa-eye"></i> {_("Détails")}</span></a>&nbsp;&nbsp;'
+        if plc.etat_police not in ["Annulé", "Résilié", "Suspendu"]:
+            if date_echeance_police and date_echeance_police > date_comparaison:
 
-        if not c.client.nom: c.client.nom = ''
-        if not c.client.prenoms: c.client.prenoms = ''
-        if not c.client.code: c.client.code = ''
+                difference_jours = (date_echeance_police - date_comparaison).days
+                if difference_jours <= 90:
+                    nombre_police += 1
 
-        if c.date_fin_effet:
-            date_fin = c.date_fin_effet
-        else:
-            date_fin = c.date_fin_police
+                    detail_url = reverse('police.details', args=[plc.id])
+                    numero_html = f'<a href="{detail_url}" class="text-center bouton_action" style="color:#F16623;" target="_blank">{plc.numero}</a>'
+                    actions_html = f'<a href="{detail_url}" class="text-center" target="_blank"><span class="badge btn-sm btn-details rounded-pill"><i class="fa fa-eye"></i> Détails</span></a>'
 
-        data.append({
-            "id": c.id,
-            "num_police": numero_html,
-            "nom_client": c.client.nom + ' ' + c.client.prenoms+ '- (' + c.client.code + ')',
-            "nom_produit": c.produit.nom if c.produit else "",
-            "date_debut": c.avenant_encours.date_effet if c.avenant_encours else "",
-            "date_fin": date_fin if date_fin else "",
-            "actions": actions_html,
-        })
+                    data.append({
+                        "id": plc.id,
+                        "num_police": numero_html,
+                        "nom_client": f"{plc.client.nom or ''} {plc.client.prenoms or ''} - ({plc.client.code or ''})",
+                        "nom_produit": plc.produit.nom if plc.produit else "",
+                        "date_debut": plc.date_debut_effet.strftime('%d/%m/%Y') if plc.date_debut_effet else "",
+                        "date_fin": date_echeance_police.strftime('%d/%m/%Y') if date_echeance_police else "",
+                        "actions": actions_html,
+                    })
 
     return JsonResponse({
         "data": data,
-        "recordsTotal": queryset.count(),
-        "recordsFiltered": paginator.count,
         "draw": int(request.GET.get('draw', 1)),
     })
 
@@ -8965,89 +8916,66 @@ class PolicesNonRenouvelleesResilieesView(TemplateView):
         }
 
 
-#Chargement des lignes de polices non résiliée et renouvelée
+#Chargement des lignes de polices non résiliées ou renouvelées
 def polices_non_renouvellees_resiliees_datatable(request):
-    items_per_page = 10
-    page_number = request.GET.get('page')
-    start = int(request.GET.get('start', 0))
-    length = int(request.GET.get('length', items_per_page))
-    sort_column_index = int(request.GET.get('order[0][column]'))
-    sort_direction = request.GET.get('order[0][dir]')
+    date_comparaison = datetime.today().date()
+
+    # Champs de recherche
     search_client = request.GET.get('search_client', '').strip()
     search_numero_police = request.GET.get('search_numero_police', '').strip()
     search_produit = request.GET.get('search_produit', '').strip()
     search_commercial = request.GET.get('search_commercial', '').strip()
-    today = now()
 
-    user = request.user
-    queryset = Police.objects.filter(Q(date_fin_effet__lt=today) | Q(date_fin_police__lt=today)).exclude(Q(statut="ANNULE") | Q(statut="INACTIF"))
+    queryset = (Police.objects.filter(
+        client__isnull=False,
+        historique_polices__isnull=False,
+    ).distinct())
 
-    """
-    if user.is_commercial:
-        queryset = Police.objects.filter(Q(date_fin_effet__lt=today) | Q(date_fin_police__lt=today) , commercial_id=user.id)
-    elif user.is_production:
-        queryset = Police.objects.filter(date_fin_effet__lt=today)
-    else:
-        queryset = Police.objects.none
-    """
-
+    # Filtres
     if search_client:
-        queryset = queryset.filter(
-            Q(client_id=search_client)
-        )
-
+        queryset = queryset.filter(client_id=search_client)
     if search_numero_police:
-        queryset = queryset.filter(
-            Q(numero__icontains=search_numero_police)
-        )
-
-
+        queryset = queryset.filter(numero__icontains=search_numero_police)
     if search_produit:
-        queryset = queryset.filter(
-            Q(produit_id=search_produit)
-        )
-
+        queryset = queryset.filter(produit_id=search_produit)
     if search_commercial:
-        queryset = queryset.filter(
-            Q(commercial_id=search_commercial)
-        )
+        queryset = queryset.filter(commercial_id=search_commercial)
 
-    # Apply sorting
+    # Tri
     queryset = queryset.order_by('-numero')
 
-    paginator = Paginator(queryset, length)
-    page_obj = paginator.get_page(page_number)
-
-    # Prepare the data in the expected format
     data = []
-    for c in page_obj:
+    nombre_police = 0
+    for plc in queryset:
+        date_echeance_police = None
+        if plc.date_fin_effet:
+            date_echeance_police = plc.date_fin_effet
+        elif plc.date_fin_police:
+            date_echeance_police = plc.date_fin_police
 
-        detail_url = reverse('police.details', args=[c.id])  # URL to the detail view
-        numero_html = f'<a href="{detail_url}" class="text-center bouton_action" style="color:#F16623;" target="_blank">{c.numero}</a>&nbsp;&nbsp;'
-        actions_html = f'<a href="{detail_url}" class="text-center" target="_blank"><span class="badge btn-sm btn-details rounded-pill"><i class="fa fa-eye"></i> {_("Détails")}</span></a>&nbsp;&nbsp;'
+        if plc.etat_police not in ["Annulé", "Résilié", "Suspendu"]:
+            if date_echeance_police and date_echeance_police > date_comparaison:
+               continue
+            else:
+                nombre_police += 1
+                detail_url = reverse('police.details', args=[plc.id])
+                numero_html = f'<a href="{detail_url}" class="text-center bouton_action" style="color:#F16623;" target="_blank">{plc.numero}</a>'
+                actions_html = f'<a href="{detail_url}" class="text-center" target="_blank"><span class="badge btn-sm btn-details rounded-pill"><i class="fa fa-eye"></i> Détails</span></a>'
 
-        if not c.client.nom: c.client.nom = ''
-        if not c.client.prenoms: c.client.prenoms = ''
-        if not c.client.code: c.client.code = ''
-
-        if c.date_fin_effet:
-            date_fin = c.date_fin_effet
-        else:
-            date_fin = c.date_fin_police
-
-        data.append({
-            "id": c.id,
-            "num_police": numero_html,
-            "nom_client": c.client.nom + ' ' + c.client.prenoms+ '- (' + c.client.code + ')',
-            "nom_produit": c.produit.nom if c.produit else "",
-            "date_debut": c.avenant_encours.date_effet if c.avenant_encours else "",
-            "date_fin": date_fin if date_fin else "",
-            "actions": actions_html,
-        })
+                data.append({
+                    "id": plc.id,
+                    "num_police": numero_html,
+                    "nom_client": f"{plc.client.nom or ''} {plc.client.prenoms or ''} - ({plc.client.code or ''})",
+                    "nom_produit": plc.produit.nom if plc.produit else "",
+                    "date_debut": plc.date_debut_effet.strftime('%d/%m/%Y') if plc.date_debut_effet else "",
+                    "date_fin": date_echeance_police.strftime('%d/%m/%Y') if date_echeance_police else "",
+                    "actions": actions_html,
+                })
 
     return JsonResponse({
         "data": data,
-        "recordsTotal": queryset.count(),
-        "recordsFiltered": paginator.count,
         "draw": int(request.GET.get('draw', 1)),
     })
+
+
+

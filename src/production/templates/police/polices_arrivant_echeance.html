@@ -94,26 +94,23 @@
 {% block extrajs %}
 <script>
     $(document).ready(function() {
-        $('#garantie').removeClass('o-bg-primary');
-        $('#garantie').addClass('o-active');
+        $('#garantie').removeClass('o-bg-primary').addClass('o-active');
 
-        //
         dataTable = $('#table_polices').DataTable({
             "language": {
-                "url": "https://cdn.datatables.net/plug-ins/9dcbecd42ad/i18n/French.json"
+                "url": "https://cdn.datatables.net/plug-ins/9dcbecd42ad/i18n/French.json",
+                "lengthMenu": "Afficher _MENU_ éléments",
+                "info": "Affichage de _START_ à _END_ sur _TOTAL_ éléments",
             },
-            "serverSide": true,
+            "serverSide": false,
             "ajax": {
                 "url": "{% url 'polices_arrivant_echeance_datatable' %}",
-                "data": function (data) {
-                    data.page = data.start / data.length + 1;
-                    data.search_client = $('#search_client').val();
-                    data.search_numero_police = $('#search_numero_police').val();
-                    data.search_produit = $('#search_produit').val();
-                    data.search_commercial = $('#search_commercial').val();
-                },
-                "dataSrc": function (json) {
-                    return json.data;
+                "dataSrc": "data",
+                "data": function(d) {
+                    d.search_client = $('#search_client').val();
+                    d.search_numero_police = $('#search_numero_police').val();
+                    d.search_produit = $('#search_produit').val();
+                    d.search_commercial = $('#search_commercial').val();
                 }
             },
             "columns": [
@@ -126,35 +123,45 @@
             ],
             "paging": true,
             "pageLength": 100,
-            "processing": false,  // Show the loading indicator
-            "searching": false,   // Enable the search feature
-            "search": {
-                "search": $('#table_polices-table_filter input').val()
-            },
             "lengthMenu": [
-                [100, 250, 500, 1000, 5000, 10000],
-                [100, 250, 500, 1000, 5000, 10000]
-            ]
-        });
-
-        dataTable.on('xhr.dt', function (e, settings, json, xhr) {
-            // Hide the spinner when the data is loaded
-            $('.spinner-border').hide();
-        });
-
-        // Show the spinner when the table is processing
-        dataTable.on('processing.dt', function (e, settings, processing) {
-            if (processing) {
-                $('.spinner-border').show();
+                [100, 250, 500, 1000, -1],
+                [100, 250, 500, 1000, "Tout"]
+            ],
+            "searching": false,
+            "processing": true,
+            "deferRender": true,
+            "dom": '<"top"lf>rt<"bottom"ip>',
+            "initComplete": function(settings, json) {
+                // Gestion de l'option "Tout"
+                $('div.dataTables_length select').on('change', function() {
+                    if ($(this).val() == -1) {
+                        dataTable.page.len(dataTable.data().count()).draw();
+                    }
+                });
             }
         });
 
-        // Add custom search functionality for code, name, and prenoms columns
-        $('#search_client, #search_numero_police, #search_produit, #search_commercial').on('keyup change', function() {
-            dataTable.search('').draw(); // Clear existing search
-            dataTable.draw(); // Trigger a new draw, which will include the updated search parameters
+        // Gestion personnalisée de l'option "Tout"
+        $(document).on('change', 'select[name="table_polices_length"]', function() {
+            if ($(this).val() == -1) {
+                dataTable.page.len(dataTable.data().count()).draw();
+            }
         });
 
+        // Gestion des événements de recherche
+        $('#search_client, #search_numero_police, #search_produit, #search_commercial').on('change keyup', function() {
+            dataTable.ajax.reload();
+        });
+
+        // Gestion des indicateurs de chargement
+        dataTable.on('processing.dt', function(e, settings, processing) {
+            if (processing) {
+                $('.spinner-border').show();
+            } else {
+                $('.spinner-border').hide();
+            }
+        });
     });
 </script>
+
 {% endblock %}

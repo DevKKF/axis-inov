@@ -4,73 +4,71 @@
 			<form enctype="multipart/form-data" id="form_add_portefeuille_compagnie" action="{% url 'add_portefeuille_compagnie' %}" method="post">
 			{% csrf_token %}
 			 <div class="modal-header">
-				<h4 class="modal-title">{{_("ANALYSE DU PORTEFEUILLE PAR COMPAGNIE")}}</h4>
+				<h4 class="modal-title">ANALYSE DU PORTEFEUILLE PAR COMPAGNIE</h4>
 				<button type="button"class="close"data-dismiss="modal"aria-label="Close">
 					<span aria-hidden="true">×</span>
 				</button>
 			 </div>
 			<div class="modal-body">
 				<div class="alert alert-dismissible fade show hidden" role="alert">
-				  <span class="message">{{_("TRAITEMENT EN COURS")}}</span>
+				  <span class="message">TRAITEMENT EN COURS</span>
 				</div>
 				<div class="col-md-12 offset-0">
 
 					<div class="tab-content" id="myTabContent">
 						<div class="tab-pane fade show active mt-3" id="identity" role="tabpanel" aria-labelledby="identity-tab">
-							<div class="row" style="max-height:550px;">
-								<div class="col-md-6">
-                                    <div class="form-group row">
-										<label class="col-sm-4 col-form-label">{{_('Compagnie')}} <span class="required">*</span></label>
-										<div class="col-sm-8">
-											<select class="form-control tags-multiple" name="compagnie_id" id="compagnie" autocomplete="off" required>
-												<option value="">{{_('Choisir')}}</option>
-												{% for compagnie in compagnies %}
-													<option value="{{ compagnie.id }}" data-compagnie_id="{{ compagnie.id }}">{{ compagnie.nom }}</option>
-												{% endfor %}
-												<option value="TOUT" data-compagnie_id="TOUT">Toute les compagnies</option>
-											</select>
-										</div>
+							<div class="row" style="display:none__;background:#CCCCCC;padding:10px;border-bottom:1px solid #eee;padding-bottom:10px;margin-bottom:10px;">
+								<div class="col-12 col-md-12 col-sm-12 row">
+									<div class="col-md-5">
+										<span class="text-right" style="margin-top:5px;">Compagnie : </span>
+										<select class="form-control tags-multiple" name="search_compagnie" id="search_compagnie" style="border:1px solid rgba(0, 0, 0, 0.3);">
+											<option value="">Choisir</option>
+											{% for compagnie in compagnies %}
+												<option  value="{{compagnie.id}}">{{compagnie.nom}}</option>
+											{% endfor %}
+											<option value="TOUT" data-compagnie_id="TOUT">Toutes les compagnies</option>
+										</select>
+									</div>
+									<div class="col-md-3">
+										<span class="text-right" style="margin-top:5px;">Mode renouvellement : </span>
+										<select class="form-control" name="search_mode_renouvellement" id="search_mode_renouvellement" autocomplete="off">
+											<option selected value="">Choisir</option>
+											<option value="{{ mode_renouvellement.TACITE_RECONDUCTION }}">{{ mode_renouvellement.TACITE_RECONDUCTION }}</option>
+											<option value="{{ mode_renouvellement.SANS_TACITE_RECONDUCTION }}">{{ mode_renouvellement.SANS_TACITE_RECONDUCTION }}</option>
+										</select>
+									</div>
+									<div class="col-md-2">
+										<button type="button" class="btn btn-sm btn-primary btn-block mt-30" id="bouton_search_police_compagnie"><i class="fa fa-search"></i> Rechercher</button>
+									</div>
+									<div class="col-md-2">
+										<button type="button" id="btn_save_portefeuille_compagnie" style="margin-left:15px" class="btn btn-sm btn-info btn-block mt-30"><i class="fa fa-check-circle"></i> Exporter vers Excel</button>
 									</div>
 								</div>
-								<div class="vl"></div>
-								<div class="col-md-5">
-									<div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_("Date du jour")}}</label>
-										<div class="col-sm-7">
-											<input type="date" class="form-control" name="date_requete" required value="{{ today|date:'Y-m-d' }}" readonly>
-										</div>
-									</div>
-								</div>
-								<br>
-								<div class="col-12 col-md-12 col-sm-12" style="border-top:2px solid #F16623">
+							</div>
+							<div class="row">
+								<div class="col-12 col-md-12 col-sm-12">
 									<div class="alert alert-danger text-danger text-white mb-2" id="message-error" style="display: none;"></div>
 									<div class="alert alert-warning text-warning text-white mb-2" id="message-warning" style="display: none;"></div>
-									<div class="table-responsive" id="polices_compagnie" style="display:none;">
+									<div class="table-responsive" id="polices_compagnie">
 										<h6 class="mt-3">Liste des polices des compagnies</h6>
 										<table class="table table-bordered table-striped dataTable dtr-inline" id="table_polices_compagnie">
 											<thead>
 												<tr>
-													<th>{{_("Client")}}</th>
-													<th>{{_("Numero")}}</th>
-													<th width="10%">{{_("Date échéance")}}</th>
-													<th width="7%">{{_("Statut")}}</th>
-													<th width="10%">{{_("Date création")}}</th>
-													<th width="12%">{{_("Date résiliation")}}</th>
-													<th>{{_("Prime HT")}}</th>
-													<th>{{_("Com Courtage")}}</th>
+													<th>Client</th>
+													<th>Numero</th>
+													<th>Produit</th>
+													<th width="10%">Date début</th>
+													<th width="10%">Date échéance</th>
+													<th width="12%">Mode de renouvellement</th>
+													<th width="7%">Statut</th>
+													<th width="12%">Date résiliation</th>
+													<th>Prime HT</th>
+													<th>Com Courtage</th>
 												</tr>
 											</thead>
-											<tbody>
+											<tbody class="body_tableau_police_compagnie">
 											</tbody>
-											<tfoot>
-												<tr>
-													<td colspan="6" class="text-right f-bold">TOTAL GENERAL :</td>
-													<td class="f-bold"><span class="form-control money_field readonly" id="com_total_ht" style="background: rgb(240, 220, 200); border: rgb(240, 220, 200); text-align: right; color:#000; font-weight:bold"></span></td>
-													<td class="f-bold"><span class="form-control money_field readonly" id="com_total_com_courtage" style="background: rgb(240, 220, 200); border: rgb(240, 220, 200); text-align: right; color:#000; font-weight:bold"></span></td>
-												</tr>
-											</tfoot>
 										</table>
-										<hr>
 									</div>
 								</div>
 							</div>
@@ -78,11 +76,126 @@
 					</div>
 				</div>
 				<div class="modal-footer justify-content-between">
-					<button type="button" class="btn btn-danger" data-dismiss="modal"><i class="fa fa-remove"></i> {{_('Retour')}}</button>
-					<button type="button" id="btn_save_portefeuille_compagnie" class="btn btn-info"><i class="fa fa-check-circle"></i> {{_('Importer la requête')}}</button>
+					<button type="button" class="btn btn-danger" data-dismiss="modal"><i class="fa fa-remove"></i> Retour</button>
 				</div>
 			</div>
 			</form>
 		</div>
 	</div>
 </div>
+<script>
+	$(document).ready(function () {
+
+		// Désactiver le bouton au chargement
+		$('#btn_save_portefeuille_compagnie').prop('disabled', true);
+
+		$('#bouton_search_police_compagnie').on('click', function () {
+			const compagnie_id = $('#search_compagnie').val();
+			const mode_renouvellement = $('#search_mode_renouvellement').val();
+
+			$('#polices_compagnie').prepend('<div id="loading-msg" class="text-center mb-3 text-primary">Chargement en cours...</div>');
+
+			$.ajax({
+				url: "{% url 'get_client_by_compagnie' %}",
+				type: "GET",
+				data: {
+					compagnie_id: compagnie_id,
+					mode_renouvellement: mode_renouvellement,
+				},
+				success: function (data) {
+					$('#loading-msg').remove();
+
+					const formattedData = [];
+
+					// Vider le tableau si l'option "Choisir" est sélectionnée
+					if (compagnie_id === "") {
+						const table = $('#table_polices_compagnie').DataTable();
+						table.clear().draw();
+						$('#btn_save_portefeuille_compagnie').prop('disabled', true);
+						return;
+					}
+
+					if (Object.keys(data.polices_par_compagnie).length === 0) {
+						const table = $('#table_polices_compagnie').DataTable();
+						table.clear().draw();
+
+						// Aucun résultat => bouton désactivé
+						$('#btn_save_portefeuille_compagnie').prop('disabled', true);
+						return;
+					}
+
+					let hasResults = false;
+					$.each(data.polices_par_compagnie, function (nom_compagnie, info) {
+						if (info.polices.length > 0) {
+							hasResults = true;
+							$.each(info.polices, function (i, police) {
+								formattedData.push([
+									`${police.nom} ${police.prenoms}`,
+									police.numero,
+									police.produit,
+									police.date_debut_effet || '',
+									police.date_fin_effet || '',
+									police.mode_renouvellement || '',
+									police.statut || '',
+									police.date_resiliation || '',
+									police.prime_ht || '',
+									police.commission_courtage || ''
+								]);
+							});
+						}
+					});
+
+					if (!hasResults) {
+						const table = $('#table_polices_compagnie').DataTable();
+						table.clear().draw();
+						$('#btn_save_portefeuille_compagnie').prop('disabled', true);
+						return;
+					}
+
+					if (!$.fn.DataTable.isDataTable('#table_polices_compagnie')) {
+						$('#table_polices_compagnie').DataTable({
+							data: formattedData,
+							columns: [
+								{ title: "Client" },
+								{ title: "Numéro" },
+								{ title: "Produit" },
+								{ title: "Date début" },
+								{ title: "Date échéance" },
+								{ title: "Mode de renouvellement" },
+								{ title: "Statut" },
+								{ title: "Date résiliation" },
+								{ title: "Prime HT" },
+								{ title: "Com Courtage" }
+							],
+							language: {
+								url: "../../static/admin_custom/js/French.json"
+							},
+							lengthMenu: [
+								[100, 250, 500, 1000, -1], [100, 250, 500, 1000, "Tout"]
+							],
+							paging: true,
+							searching: true,
+							lengthChange: true,
+							bSort: false
+						});
+					} else {
+						const table = $('#table_polices_compagnie').DataTable();
+						table.clear();
+						table.rows.add(formattedData);
+						table.draw();
+					}
+
+					// Des résultats => bouton activé
+					$('#btn_save_portefeuille_compagnie').prop('disabled', false);
+				},
+				error: function (xhr, status, error) {
+					$('#loading-msg').remove();
+					$('#message-error').text("Erreur lors de la récupération des données.").show();
+
+					// En cas d'erreur => désactiver aussi par sécurité
+					$('#btn_save_portefeuille_compagnie').prop('disabled', true);
+				}
+			});
+		});
+	});
+</script>

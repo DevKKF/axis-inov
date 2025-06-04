@@ -111,6 +111,7 @@ class Police(models.Model):
     updated_by = models.ForeignKey(User, related_name="police_updated_by", null=True, on_delete=models.RESTRICT)
     produit = models.ForeignKey(Produit, null=True, on_delete=models.RESTRICT)
     commercial = models.ForeignKey(User, related_name="commercial", null=True, on_delete=models.RESTRICT)
+    compagnie = models.ForeignKey(Compagnie, related_name="compagnie_principal", null=True, on_delete=models.RESTRICT)
     gestionnaire = models.ForeignKey(User, related_name="gestionnaire_sinistre", null=True, on_delete=models.RESTRICT)
     production = models.ForeignKey(User, related_name="production", null=True, on_delete=models.RESTRICT)
     #
@@ -278,6 +279,7 @@ class HistoriquePolice(models.Model):
     created_by = models.ForeignKey(User, null=True, on_delete=models.RESTRICT)
     updated_by = models.ForeignKey(User, related_name="historique_police_updated_by", null=True, on_delete=models.RESTRICT)
     commercial = models.ForeignKey(User, related_name="histo_commercial", null=True, on_delete=models.RESTRICT)
+    compagnie = models.ForeignKey(Compagnie, related_name="compagnie_principal_histo", null=True, on_delete=models.RESTRICT)
     gestionnaire = models.ForeignKey(User, related_name="histo_gestionnaire_sinistre", null=True, on_delete=models.RESTRICT)
     production = models.ForeignKey(User, related_name="histo_production", null=True, on_delete=models.RESTRICT)
     produit = models.ForeignKey(Produit, null=True, on_delete=models.RESTRICT)
@@ -845,16 +847,7 @@ def upload_location_aliment(instance, filename):
 
 
 class Aliment(models.Model):
-    # champs pour la migration veos
     sms_active = models.BooleanField(default=False)
-    veos_id_npol = models.CharField(max_length=50, null=True, blank=True)
-    veos_code_aliment = models.CharField(max_length=50, blank=True, null=True)
-    veos_adherent_principal = models.CharField(max_length=50, null=True, blank=True)
-    veos_adherent_principal_id_per = models.CharField(max_length=50, null=True, blank=True)
-    veos_code_qualite_beneficiaire = models.CharField(max_length=50, null=True, blank=True)
-    veos_code_formule = models.CharField(max_length=50, null=True, blank=True)
-    veos_code_college = models.CharField(max_length=50, null=True, blank=True)
-    veos_numero_carte = models.CharField(max_length=50, null=True, blank=True)
     observation = models.CharField(max_length=255, null=True, blank=True)
 
     #
@@ -911,12 +904,8 @@ class Aliment(models.Model):
 
     user_extranet = models.ForeignKey(User, related_name="aliments", null=True, on_delete=models.RESTRICT)
     numero_famille_du_mois = models.IntegerField(blank=True, null=True)
-    has_photo_veos = models.BooleanField(default=True)
-    statut_import_photo_veos = models.BooleanField(default=False)
     etat = models.CharField(max_length=50, blank=True, null=True)
 
-    # formulegarantie = models.ForeignKey(FormuleGarantie, null=True, on_delete=models.RESTRICT)
-    # police = models.ForeignKey(Police, null=True, on_delete=models.RESTRICT)
 
     def __str__(self):
         return f'{self.nom} {self.prenoms}'

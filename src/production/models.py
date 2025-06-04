@@ -111,6 +111,7 @@ class Police(models.Model):
     updated_by = models.ForeignKey(User, related_name="police_updated_by", null=True, on_delete=models.RESTRICT)
     produit = models.ForeignKey(Produit, null=True, on_delete=models.RESTRICT)
     commercial = models.ForeignKey(User, related_name="commercial", null=True, on_delete=models.RESTRICT)
+    compagnie = models.ForeignKey(Compagnie, related_name="compagnie_principal", null=True, on_delete=models.RESTRICT)
     gestionnaire = models.ForeignKey(User, related_name="gestionnaire_sinistre", null=True, on_delete=models.RESTRICT)
     production = models.ForeignKey(User, related_name="production", null=True, on_delete=models.RESTRICT)
     #
@@ -278,6 +279,7 @@ class HistoriquePolice(models.Model):
     created_by = models.ForeignKey(User, null=True, on_delete=models.RESTRICT)
     updated_by = models.ForeignKey(User, related_name="historique_police_updated_by", null=True, on_delete=models.RESTRICT)
     commercial = models.ForeignKey(User, related_name="histo_commercial", null=True, on_delete=models.RESTRICT)
+    compagnie = models.ForeignKey(Compagnie, related_name="compagnie_principal_histo", null=True, on_delete=models.RESTRICT)
     gestionnaire = models.ForeignKey(User, related_name="histo_gestionnaire_sinistre", null=True, on_delete=models.RESTRICT)
     production = models.ForeignKey(User, related_name="histo_production", null=True, on_delete=models.RESTRICT)
     produit = models.ForeignKey(Produit, null=True, on_delete=models.RESTRICT)

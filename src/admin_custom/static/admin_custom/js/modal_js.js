@@ -218,8 +218,11 @@ $(document).ready(function() {
         dateFinPoliceLabelStar.hide();
 
         // 2. Réinitialiser champ "Fractionnement"
-        fractionnementSelect.val(''); // vide la sélection
-        fractionnementSelect.prop('disabled', false); // réactive le champ
+        fractionnementSelect.prop('disabled', false);
+        fractionnement_hint.hide();
+
+        // Toujours s'assurer que toutes les options sont visibles (y compris "Échéance unique")
+        fractionnementSelect.find('option').show();
 
         // 3. Si mode = Temporaire → forcer "Échéance unique" et désactiver
         if (modeRenouvellement === "Temporaire") {
@@ -228,7 +231,7 @@ $(document).ready(function() {
             dateFinPoliceLabelStar.show();
             fractionnement_hint.show();
 
-            // Trouver et sélectionner "Échéance unique"
+            // Forcer "Échéance unique"
             let optionUnique = fractionnementSelect.find('option').filter(function () {
                 return $(this).text().trim() === "Echéance unique";
             });
@@ -237,21 +240,10 @@ $(document).ready(function() {
                 fractionnementSelect.val(optionUnique.val());
                 fractionnementSelect.prop('disabled', true);
             }
-        }
-        else {
-            dateFinPoliceLabelStar.hide();
+        } else {
+            // Ne rien forcer — laisser l'utilisateur choisir librement
             dateDebutPoliceInput.removeAttr('required');
             dateFinPoliceInput.removeAttr('required');
-            fractionnement_hint.hide();
-
-            // Réactiver et vider le champ "Fractionnement"
-            fractionnementSelect.prop('disabled', false);
-            fractionnementSelect.val('');
-
-            // Cacher "Échéance unique" dans les autres cas
-            fractionnementSelect.find('option').filter(function () {
-                return $(this).text().trim() === "Echéance unique";
-            }).hide();
         }
     }
 

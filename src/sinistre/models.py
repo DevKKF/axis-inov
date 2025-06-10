@@ -44,6 +44,8 @@ class Sinistre(models.Model):
     date_ouverture = models.DateTimeField(null=True)
     date_reouverture = models.DateTimeField(null=True)
     date_cloture = models.DateTimeField(null=True)
+    date_depot_vehicule_garage = models.DateTimeField(null=True)
+    date_recep_rapport_expert = models.DateTimeField(null=True)
 
     statut = models.fields.CharField(choices=StatutSinistre.choices, default=StatutSinistre.ATTENTE, max_length=15, null=True)
     statut_validite = models.fields.CharField(choices=StatutValidite.choices, default=StatutValidite.BROUILLON, max_length=15, null=True)

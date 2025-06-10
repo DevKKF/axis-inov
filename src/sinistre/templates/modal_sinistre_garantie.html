@@ -1,0 +1,176 @@
+<div  class="modal fade"  id="modal-sinistre_garantie" data-backdrop="static" data-keyboard="false" aria-hidden="true"  style="display: none">
+	<div class="modal-dialog modal-xl">
+		<div class="modal-content">
+			<form enctype="multipart/form-data" id="form_add_police" action="" method="post">
+				{% csrf_token %}
+				<div class="modal-header">
+					<h4 class="modal-title">CREATION D'UNE POLICE</h4>
+					<button type="button"class="close"data-dismiss="modal"aria-label="Close">
+						<span aria-hidden="true">×</span>
+					</button>
+				</div>
+				<div class="modal-body">
+				<div class="alert  alert-dismissible fade show hidden" role="alert">
+				  <span class="message"> TRAITEMENT EN COURS</span>
+				</div>
+				<div class="col-md-12 offset-0">
+					<div class="tab-content" id="myTabContent">
+
+						<div class="tab-pane fade mt-3 show active" id="general" role="tabpanel" aria-labelledby="general-tab">
+							<div class="row">
+								<div class="col-md-6">
+									<input type="hidden" class="form-control notreset" name="statut_contrat" value="{{ statut_contrat }}" readonly/>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">Branche <span class="required">*</span></label>
+										<div class="col-sm-7">
+											<select class="form-control tags-multiple branche" name="branche" id="branche" required>
+												<option value="">Choisir</option>
+												{% for branche in branches %}
+													<option value="{{ branche.id }}" data-code="{{ branche.code }}">{{ branche.nom }}</option>
+												{% endfor %}
+											</select>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">Produit <span class="required">*</span></label>
+										<div class="col-sm-7">
+											<select class="form-control tags-multiple produit" name="produit" id="produit" autocomplete="off" required>
+												<option value="">Choisir un produit</option>
+											</select>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">Assureur <span class="required">*</span></label>
+										<div class="col-sm-7">
+											<select class="form-control tags-multiple" name="compagnie" id="compagnie" autocomplete="off" required>
+												<option value="">Choisir</option>
+												{% for compagnie in compagnies %}
+													<option value="{{ compagnie.id }}" data-compagnie_id="{{ compagnie.id }}">{{ compagnie.nom }}</option>
+												{% endfor %}
+											</select>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">Gestionnaire sinistre</label>
+										<div class="col-sm-7">
+											<select name="gestionnaire_id" id="gestionnaire_id" class="form-control tags-multiple">
+												<option value="">Choisir</option>
+												{% for gest in gestionnaires %}
+													<option value="{{gest.id}}">{{gest.first_name}} {{gest.last_name}}</option>
+												{% endfor %}
+											</select>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">Gestionnaire production</label>
+										<div class="col-sm-7">
+											<select name="production_id" id="production_id" class="form-control tags-multiple">
+												<option value="">Choisir</option>
+												{% for prod in productions %}
+													<option value="{{prod.id}}">{{prod.first_name}} {{prod.last_name}}</option>
+												{% endfor %}
+											</select>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">Commercial</label>
+										<div class="col-sm-7">
+											<select class="form-control tags-multiple" name="commercial_id" id="commercials_id">
+												<option value="">Choisir</option>
+												{% for comm in commercials %}
+													<option value="{{comm.id}}" {% if client.commercial_id == comm.id %} selected {% endif %}>{{comm.first_name}} {{comm.last_name}}</option>
+												{% endfor %}
+											</select>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">Numéro police Cie</label>
+										<div class="col-sm-7">
+											<input type="text" class="form-control" name="numero" autocomplete="off" value="" />
+										</div>
+									</div>
+								</div>
+								<div class="vl"></div>
+								<div class="col-md-6" style="border-left:0px;margin-left:-10px;padding-left:20px;">
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">Mode renouvellement <span class="required">*</span></label>
+										<div class="col-sm-7">
+											<select class="form-control" name="mode_renouvellement" id="mode_renouvellement" autocomplete="off" required>
+												<option selected value="">Choisir</option>
+												<option value="{{ mode_renouvellement.TACITE_RECONDUCTION }}">{{ mode_renouvellement.TACITE_RECONDUCTION }}</option>
+												<option value="{{ mode_renouvellement.SANS_TACITE_RECONDUCTION }}">{{ mode_renouvellement.SANS_TACITE_RECONDUCTION }}</option>
+												<option value="{{ mode_renouvellement.TEMPORAIRE }}">{{ mode_renouvellement.TEMPORAIRE }}</option>
+											</select>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">Date début période <span class="required">*</span></label>
+										<div class="col-sm-7">
+											<input type="date" class="form-control" name="date_debut_effet" id="date_debut_effet" autocomplete="off" value=""/>
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">Date fin période</label>
+										<div class="col-sm-7">
+											<input type="date" class="form-control" name="date_fin_effet" id="date_fin_effet" autocomplete="off" value="">
+										</div>
+									</div>
+									<div class="form-group row temporaire">
+										<label id="label_date_fin_police" class="col-sm-5 col-form-label">
+											Date fin contrat <span class="required" style="display:none">*</span>
+										</label>
+										<div class="col-sm-7">
+											<input type="date" class="form-control" name="date_fin_police" id="date_fin_police" autocomplete="off" value="">
+										</div>
+									</div>
+									<div class="form-group row">
+										<label class="col-sm-5 col-form-label">Préavis de résiliation <span class="required">*</span></label>
+										<div class="col-sm-7">
+											<select class="form-control champ_obligatoire" name="preavis_de_resiliation" autocomplete="off" required>
+												<option value="">Choisir</option>
+												<option value="1">1 Mois</option>
+												<option value="2">2 Mois</option>
+												<option value="3">3 Mois</option>
+												<option value="4">4 Mois</option>
+												<option value="5">5 Mois</option>
+												<option value="6">6 Mois</option>
+												<option value="Aucun">Aucun</option>
+											</select>
+										</div>
+									</div>
+
+									<div class="form-group row box_typecompagnie">
+										<label class="col-sm-5 col-form-label">Autre assureur</label>
+										<div class="col-sm-7">
+											<select class="form-control tags-multiple champ_obligatoire" name="typecompagnie" id="typecompagnie" autocomplete="off">
+												<option value="" selected>Aucun</option>
+												{% for type in typecompagnie %}
+													<option value="{{ type.id }}" data-typecompagnie_id="{{ type.id }}">{{ type.libelle }}</option>
+												{% endfor %}
+											</select>
+										</div>
+									</div>
+									<div class="form-group row" id="box_compagnie" style="display:none;">
+										<label class="col-sm-5 col-form-label">Choisir l'assureur <span class="required">*</span></label>
+										<div class="col-sm-7">
+											<select class="form-control tags-multiple" name="compagnie_id" id="compagnie_id" autocomplete="off">
+												<option value="">Choisir</option>
+											</select>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+
+					</div>
+
+				</div>
+				<div class="modal-footer justify-content-between">
+					<button type="button" class="btn btn-danger" data-dismiss="modal"><i class="fa fa-remove"></i> Retour</button>
+					<button type="button" id="btn_save_police" class="btn btn-info"><i class="fa fa-check-circle"></i> Enregistrer</button>
+				</div>
+			</div>
+			</form>
+		</div>
+	</div>
+</div>

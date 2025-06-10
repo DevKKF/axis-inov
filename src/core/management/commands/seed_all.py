@@ -18,7 +18,7 @@ class Command(BaseCommand):
         ]
 
         for seeder in seeders:
-            self.stdout.write(self.style.NOTICE(f"→ Exécution de {seeder}..."))
+            self.stdout.write(self.style.NOTICE(f"🔄 Exécution de {seeder}..."))
             call_command(seeder)
 
         self.stdout.write(self.style.SUCCESS("✅  Tous les seeders ont été exécutés avec succès !"))

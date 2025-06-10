@@ -3,7 +3,7 @@
 
   <div class="card">
       <div class="card-header" style="background-color:var(--colorJauneOlea) important!">
-          <h3 class="card-title"><b>{{_("INFORMATIONS DU CLIENT ET DU CONTRAT")}}</b></h3>
+          <h3 class="card-title"><b>INFORMATIONS DU CLIENT ET DU CONTRAT</b></h3>
           <div class="card-tools"></div>
       </div>
 
@@ -13,43 +13,79 @@
             <div class="row">
                 <div class="col-md-6">
                     <div class="form-group row">
-                        <label class="col-sm-5 col-form-label">{{_("Code assuré")}} </label>
+                        <label class="col-sm-5 col-form-label">Code assuré</label>
                         <div class="col-sm-7">
                             <span class="form-control">{{ client.code|default:client.code_provisoire|default:"" }}</span>
                         </div>
                     </div>
                     <div class="form-group row">
-                        <label class="col-sm-5 col-form-label">{{_("N° Contrat")}}</label>
+                        <label class="col-sm-5 col-form-label">N° Contrat</label>
                         <div class="col-sm-7">
                             <span class="form-control">{{ police.numero|default:police.numero_provisoire|default:"" }}</span>
                         </div>
                     </div>
-                    <div class="form-group row">
-                        <label class="col-sm-5 col-form-label">{{_("Branche")}} </label>
+                    <div class="form-group row d-none">
+                        <label class="col-sm-5 col-form-label">Branche</label>
                         <div class="col-sm-7">
                             <span class="form-control" title="{{ police.produit.branche.nom|default_if_none:'' }}">{{ police.produit.branche.nom|default_if_none:""|slice:":35" }}</span>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-sm-5 col-form-label">Gestionnaire sinistre</label>
+                        <div class="col-sm-7">
+                            <span class="form-control" title="{{ police.gestionnaire.first_name|default_if_none:'' }}">{{ police.gestionnaire.first_name }}</span>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-sm-5 col-form-label">Date début période</label>
+                        <div class="col-sm-7">
+                            <span class="form-control" title="{{ police.date_debut_effet|date:'d/m/Y' }}">{{ police.date_debut_effet|date:'d/m/Y' }}</span>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-sm-5 col-form-label">Mouvement</label>
+                        <div class="col-sm-7">
+                            <select class="form-control" name="mouvement_id" id="mouvement_id" required>
+                                <option value="">Choisir</option>
+                                <option value="OUVSIN" selected>Ouverture Sinistre</option>
+                            </select>
                         </div>
                     </div>
                 </div>
                 <div class="vl"></div>
                 <div class="col-md-5" style="border-left:0px;">
                     <div class="form-group row">
-                        <label class="col-sm-5 col-form-label">{{_("Nom assuré")}} </label>
+                        <label class="col-sm-5 col-form-label">Nom assuré</label>
                         <div class="col-sm-7">
                             <span class="form-control">{{ client.nom|default_if_none:'' }} {{ client.prenoms|default_if_none:'' }}</span>
                         </div>
                     </div>
                     <div class="form-group row">
-                        <label class="col-sm-5 col-form-label">{{_("Compagnie")}} </label>
+                        <label class="col-sm-5 col-form-label">Compagnie</label>
                         <div class="col-sm-7">
                             <input type="hidden" name="compagnie_id" id="compagnie_id" value="{{ assureur_police.compagnie_id }}" class="form-control">
                             <span class="form-control">{{ assureur_police.compagnie.nom|default_if_none:"" }}</span>
                         </div>
                     </div>
                     <div class="form-group row">
-                        <label class="col-sm-5 col-form-label">{{_("Produit")}} </label>
+                        <label class="col-sm-5 col-form-label">Produit</label>
                         <div class="col-sm-7">
                             <span class="form-control" title="{{ police.produit.nom|default_if_none:'' }}">{{ police.produit.nom|default_if_none:""|slice:":35" }}</span>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-sm-5 col-form-label">Date fin période</label>
+                        <div class="col-sm-7">
+                            <span class="form-control" title="{% if police.date_fin_effet %} {{ police.date_fin_effet|date:'d/m/Y' }} {% else %} {{ police.date_fin_police|date:'d/m/Y' }} {% endif %}">{% if police.date_fin_effet %} {{ police.date_fin_effet|date:'d/m/Y' }} {% else %} {{ police.date_fin_police|date:'d/m/Y' }} {% endif %}</span>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-sm-5 col-form-label">Motif</label>
+                        <div class="col-sm-7">
+                            <select class="form-control" name="motif_mouvement_id" id="motif_mouvement_id" required>
+                                <option value="">Choisir</option>
+                                <option value="OUVSIN" selected>Ouverture Sinistre</option>
+                            </select>
                         </div>
                     </div>
                 </div>
@@ -62,15 +98,15 @@
   <div class="card ">
       <div class="card-header">
           <h3 class="card-title">
-              {{_("SAISIE DES INFORMATIONS DU SINISTRE")}}
+              SAISIE DES INFORMATIONS DU SINISTRE
           </h3>
-          <div class="card-tools"><a style="cursor: pointer;color:white;" data-toggle="modal" data-target="#modal_choose_client"><i class="fa fa-refresh"></i> {{_("Cliquez pour changer de client")}}</a></b></div>
+          <div class="card-tools"><a style="cursor: pointer;color:white;" data-toggle="modal" data-target="#modal_choose_client"><i class="fa fa-refresh"></i> Cliquez pour changer de police</a></b></div>
       </div>
 
       <div class="card-body">
             <div class="modal-body" style="padding:0px;margin:0px;">
                 <div class="alert  alert-dismissible fade show hidden" role="alert">
-                    <span class="message">{{_("TRAITEMENT EN COURS")}}</span>
+                    <span class="message">TRAITEMENT EN COURS</span>
                 </div>
                 <div class="col-md-12 offset-0">
                   <div class="card offset" style="padding:0px;margin:0px;border:none;">
@@ -84,7 +120,7 @@
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group row">
-                                    <label class="col-sm-5 col-form-label">{{_("Recherche risque")}} </label>
+                                    <label class="col-sm-5 col-form-label">Recherche risque</label>
                                     <div class="col-sm-7">
                                         {% if police.produit.code == '10001' or police.produit.code == '10002' %}
                                             <select class="form-control tags-multiple vehicule" name="vehicule_id" id="vehicule_id">
@@ -107,25 +143,25 @@
                                     </div>
                                 </div>
                                 <div class="form-group row">
-                                    <label class="col-sm-5 col-form-label">{{_("Date survenance")}} <span class="required">*</span></label>
+                                    <label class="col-sm-5 col-form-label">Date survenance <span class="required">*</span></label>
                                     <div class="col-sm-7">
                                         <input type="date" class="form-control" name="date_survenance" id="date_survenance" autocomplete="off" value="" required>
                                     </div>
                                 </div>
                                 <div class="form-group row">
-                                    <label class="col-sm-5 col-form-label">{{_("Date ouverture")}} <span class="required">*</span></label>
+                                    <label class="col-sm-5 col-form-label">Date ouverture <span class="required">*</span></label>
                                     <div class="col-sm-7">
                                         <input type="date" class="form-control" name="date_ouverture" id="date_ouverture" autocomplete="off" value="{{ today|date:'Y-m-d' }}" max="{{ today|date:'Y-m-d' }}" required>
                                     </div>
                                 </div>
                                 <div class="form-group row">
-                                    <label class="col-sm-5 col-form-label">{{_("Date clôture")}}</label>
+                                    <label class="col-sm-5 col-form-label">Date clôture</label>
                                     <div class="col-sm-7">
                                         <input type="date" class="form-control" name="date_cloture" id="date_cloture" autocomplete="off" value="">
                                     </div>
                                 </div>
                                 <div class="form-group row d-none">
-                                    <label class="col-sm-5 col-form-label">{{_("Numéro sinistre")}}</label>
+                                    <label class="col-sm-5 col-form-label">Numéro sinistre</label>
                                     <div class="col-sm-7">
                                         <input type="text" class="form-control" name="numero" autocomplete="off" value="" />
                                     </div>
@@ -135,7 +171,7 @@
                             <div class="col-md-5" style="border-left:0px;">
 
                                 <div class="form-group row">
-                                    <label class="col-sm-5 col-form-label">{{_("Risque")}} <span class="required">*</span></label>
+                                    <label class="col-sm-5 col-form-label">Risque <span class="required">*</span></label>
                                     <div class="col-sm-7">
                                         {% if police.produit.code == '10001' or police.produit.code == '10002' %}
                                             <input type="text" class="form-control" name="risque" id="risque" readonly required>
@@ -147,19 +183,19 @@
                                     </div>
                                 </div>
                                 <div class="form-group row">
-                                    <label class="col-sm-5 col-form-label">{{_("Date déclaration")}} <span class="required">*</span></label>
+                                    <label class="col-sm-5 col-form-label">Date déclaration <span class="required">*</span></label>
                                     <div class="col-sm-7">
                                         <input type="date" class="form-control" name="date_declaration" id="date_declaration" autocomplete="off" value="" required>
                                     </div>
                                 </div>
                                 <div class="form-group row">
-                                    <label class="col-sm-5 col-form-label">{{_("Date réouverture")}}</label>
+                                    <label class="col-sm-5 col-form-label">Date réouverture</label>
                                     <div class="col-sm-7">
                                         <input type="date" class="form-control" name="date_reouverture" id="date_reouverture" autocomplete="off" value="">
                                     </div>
                                 </div>
                                 <div class="form-group row">
-                                    <label class="col-sm-5 col-form-label">{{_("Sinistre avec recours")}} ? <span class="required">*</span></label>
+                                    <label class="col-sm-5 col-form-label">Sinistre avec recours? <span class="required">*</span></label>
                                     <div class="col-sm-7" style="margin-top:10px">
                                         <input type="radio" value="OUI" name="sinistre_recours" id="sinistre_recours_oui">
                                         <label class="form-check-label" for="sinistre_recours_oui">OUI</label>
@@ -175,7 +211,7 @@
                             </div>
                             <div class="col-md-6">
                                 <div class="form-group row">
-                                    <label class="col-sm-5 col-form-label">{{_("Circonstance")}} <span class="required">*</span></label>
+                                    <label class="col-sm-5 col-form-label">Circonstance <span class="required">*</span></label>
                                     <div class="col-sm-7">
                                         <select class="form-control" name="circonstance_id" id="circonstance_id" required>
                                             <option value="">Choisir</option>
@@ -186,13 +222,13 @@
                                     </div>
                                 </div>
                                 <div class="form-group row">
-                                    <label class="col-sm-5 col-form-label">{{_("Lieu de survenance")}}</label>
+                                    <label class="col-sm-5 col-form-label">Lieu de survenance</label>
                                     <div class="col-sm-7">
                                         <input type="text" class="form-control" name="lieu_survenance" id="lieu_survenance" autocomplete="off" value="">
                                     </div>
                                 </div>
                                 <div class="form-group row">
-                                    <label class="col-sm-5 col-form-label">{{_("TVA récupérée")}}</label>
+                                    <label class="col-sm-5 col-form-label">TVA récupérée</label>
                                     <div class="col-sm-7">
                                         <select class="form-control" name="tva_recuperee" id="tva_recuperee">
                                             <option value="">Choisir</option>
@@ -206,7 +242,7 @@
                             <div class="col-md-5" style="border-left:0px;">
 
                                 <div class="form-group row">
-                                    <label class="col-sm-5 col-form-label">{{_("Type sinistre")}} <span class="required">*</span></label>
+                                    <label class="col-sm-5 col-form-label">Type sinistre <span class="required">*</span></label>
                                     <div class="col-sm-7">
                                         <select class="form-control" name="type_sinistre_id" id="type_sinistre_id" required>
                                             <option value="">Choisir</option>
@@ -217,13 +253,13 @@
                                     </div>
                                 </div>
                                 <div class="form-group row">
-                                    <label class="col-sm-5 col-form-label">{{_("Franchise")}}</label>
+                                    <label class="col-sm-5 col-form-label">Franchise</label>
                                     <div class="col-sm-7">
                                         <input type="text" class="form-control money_field" name="franchise" id="franchise" autocomplete="off" value="">
                                     </div>
                                 </div>
                                 <div class="form-group row">
-                                    <label class="col-sm-5 col-form-label">{{_("Taux de responsabilité")}} <span class="required">*</span></label>
+                                    <label class="col-sm-5 col-form-label">Taux de responsabilité <span class="required">*</span></label>
                                     <div class="col-sm-7">
                                         <select class="form-control" name="responsabilite_id" id="responsabilite_id" required>
                                             <option value="">Choisir</option>
@@ -240,19 +276,19 @@
                             </div>
                             <div class="col-md-12">
                                 <div class="form-group row">
-                                    <label class="col-sm-12 col-form-label">{{_("Fait générateur")}} </label>
+                                    <label class="col-sm-12 col-form-label">Fait générateur</label>
                                     <div class="col-sm-12">
                                         <textarea class="form-control" name="fait_generateur" id="fait_generateur" cols="3" rows="1"></textarea>
                                     </div>
                                 </div>
                                 <div class="form-group row">
-                                    <label class="col-sm-12 col-form-label">{{_("Point de choc")}} </label>
+                                    <label class="col-sm-12 col-form-label">Point de choc</label>
                                     <div class="col-sm-12">
                                         <textarea class="form-control" name="point_de_choc" id="point_de_choc" cols="3" rows="2"></textarea>
                                     </div>
                                 </div>
                                 <div class="form-group row">
-                                    <label class="col-sm-12 col-form-label">{{_("Commentaire")}} </label>
+                                    <label class="col-sm-12 col-form-label">Commentaire</label>
                                     <div class="col-sm-12">
                                         <textarea class="form-control" name="commentaire" id="commentaire" cols="10" rows="5"></textarea>
                                     </div>
@@ -263,14 +299,14 @@
                                 <h6><mark class="match">Garanties mise en cause</mark></h6>
                             </div>
                             <div class="col-md-12" id="test_garantie_sinistre">
-                                <span class="btn btn-success mb-2" id="btn-ajout-garantie"><i class="fa fa-plus-circle"></i> Ajout de garantie</span>
+                                <span class="btn btn-success mb-2" id="btn-ajout-garantie" data-toggle="modal" data-target="#modal_choose_client"><i class="fa fa-plus-circle"></i> Ajout de garantie</span>
                                 <table id="table_garantie_sinistre" style="width:100%;" class="table table-bordered table-striped dataTable_ dtr-inline">
                                     <thead>
                                         <tr>
                                             <th style="width:5%"></th>
-                                            <th>{{_("Libellé")}}</th>
-                                            <th class="text-center" style="width:20%">{{_("Mouvement")}}</th>
-                                            <th class="text-center" style="width:20%;">{{_("Date")}}</th>
+                                            <th>Libellé</th>
+                                            <th class="text-center" style="width:20%">Mouvement</th>
+                                            <th class="text-center" style="width:20%;">Date</th>
                                         </tr>
                                     </thead>
                                     <tbody></tbody>

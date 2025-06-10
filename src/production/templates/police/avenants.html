@@ -21,12 +21,12 @@
 <div class="col-12 col-md-12 order-2 order-md-1">
   <div class="card">
     <div class="card-header">
-        <h3 class="card-title text-white">{{_('MOUVEMENTS')}}</h3>
+        <h3 class="card-title text-white">MOUVEMENTS</h3>
     </div>
     <div class="card-body">
       {% if request.user.is_production %}
         <div class="button-link pull-right mb-2">
-            <a class="btn btn-sm btn-primary mb-1" data-toggle="modal"  data-target="#modal-avenant"><i class="fas fa-plus-circle"></i> {{_("Faire un mouvement")}}</a>
+            <a class="btn btn-sm btn-primary mb-1" data-toggle="modal"  data-target="#modal-avenant"><i class="fas fa-plus-circle"></i> Faire un mouvement</a>
         </div>
       {% endif %}
       <div id="example1_wrapper" class="dataTables_wrapper dt-bootstrap4 ">
@@ -36,13 +36,13 @@
               <thead>
                 <tr>
                   <th class="d-none"></th>
-                  <th scope="col">{{_("Mouvement")}}</th>
-                  <th scope="col">{{_("Motif")}}</th>
-                  <th scope="col">{{_("Date éffet")}}</th>
-                  <th scope="col">{{_("Date fin période garantie")}}</th>
-                  <th scope="col">{{_("Effectué le")}}</th>
-                  <th scope="col">{{_("Effectué par")}}</th>
-                  <th scope="col">{{_("Action")}}</th>
+                  <th scope="col">Mouvement</th>
+                  <th scope="col">Motif</th>
+                  <th scope="col">Date éffet</th>
+                  <th scope="col">Date fin période garantie</th>
+                  <th scope="col">Effectué le</th>
+                  <th scope="col">Effectué par</th>
+                  <th scope="col">Action</th>
                 </tr>
               </thead>
               <tbody>

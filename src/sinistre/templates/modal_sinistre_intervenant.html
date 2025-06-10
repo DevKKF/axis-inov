@@ -1,0 +1,130 @@
+{% load my_filters %}
+<div  class="modal fade modal_interne"  id="modal-sinistre_intervenant" data-backdrop="static" data-keyboard="false" aria-hidden="true" style="display: none">
+	<div class="modal-dialog modal-xl" style="width:;">
+		<div class="modal-content">
+			<form id="form_add_sinistre_intervenant" action="" method="post" enctype="multipart/form-data">
+				{% csrf_token %}
+				<input type="hidden" name="police_id" value="{{ police.id }}">
+                <div class="modal-header">
+                    <h4 class="modal-title">{{_("AJOUTER UN INTERVENANT AU SINISTRE")}}</h4>
+                    <button type="button" data-dismiss="modal" aria-label="Close" style="border:none;background:none; color:#3F3F3F">
+                        <span aria-hidden="true"><i class="fa fa-remove"></i></span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert  alert-dismissible fade show hidden" role="alert">
+                        <span class="message"> {{_("TRAITEMENT EN COURS")}}</span>
+                    </div>
+                    <div class="col-md-12 offset-0">
+                        <div class="row" style="max-height:550px;">
+							<div class="col-md-12">
+                                <div id="intervenant-modal-success" class="alert alert-success" style="display:none;"></div>
+                                <div id="intervenant-modal-warning" class="alert alert-warning" style="display:none;"></div>
+                                <div id="intervenant-modal-error" class="alert alert-danger" style="display:none;"></div>
+                            </div>
+							<div class="col-md-12 text-uppercase" style="margin-bottom:10px !important; border-top:2px solid #F16623">
+								<h6><mark class="match" style="margin-left:-15px">Coordonnées</mark></h6>
+							</div>
+							<div class="col-md-6">
+								<div class="form-group row">
+									<label class="col-sm-5 col-form-label">{{_("Type intervenant")}} <span class="required">*</span></label>
+									<div class="col-sm-7">
+										<select class="form-control typeintervenant intervenant_champ_obligatoire" name="typeintervenant_id" id="typeintervenant_id" required>
+											<option value="">Choisir</option>
+											{% for typeintervenant in typeintervenants %}
+												<option value="{{ typeintervenant.id }}">{{ typeintervenant.libelle|default_if_none:"" }}</option>
+											{% endfor %}
+										</select>
+									</div>
+								</div>
+
+								<div class="form-group row">
+									<label class="col-sm-5 col-form-label">{{_("Prénoms")}} <span class="required">*</span></label>
+									<div class="col-sm-7">
+										<input type="text" class="form-control intervenant_champ_obligatoire" name="prenoms" id="prenoms" autocomplete="off" value="" required>
+									</div>
+								</div>
+								<div class="form-group row">
+									<label class="col-sm-5 col-form-label">{{_("Téléphone")}}</label>
+									<div class="col-sm-7">
+										<input type="text" class="form-control" name="telephone" id="telephone" autocomplete="off" value="" onkeypress="isInputNumber(event)">
+									</div>
+								</div>
+								<div class="form-group row">
+									<label class="col-sm-5 col-form-label">{{_("Email")}}</label>
+									<div class="col-sm-7">
+										<input type="email" class="form-control" name="email" id="email" autocomplete="off" value="">
+									</div>
+								</div>
+							</div>
+							<div class="vl"></div>
+							<div class="col-md-5" style="border-left:0px;">
+
+								<div class="form-group row">
+									<label class="col-sm-5 col-form-label">{{_("Nom")}} <span class="required">*</span></label>
+									<div class="col-sm-7">
+										<input type="text" class="form-control intervenant_champ_obligatoire" name="nom" id="nom" autocomplete="off" value="" required>
+									</div>
+								</div>
+								<div class="form-group row">
+									<label class="col-sm-5 col-form-label">{{_("Portable")}} <span class="required">*</span></label>
+									<div class="col-sm-7">
+										<input type="text" class="form-control intervenant_champ_obligatoire" name="portable" id="portable" autocomplete="off" value="" onkeypress="isInputNumber(event)" required>
+									</div>
+								</div>
+								<div class="form-group row">
+									<label class="col-sm-5 col-form-label">{{_("Fax")}}</label>
+									<div class="col-sm-7">
+										<input type="text" class="form-control" name="fax" id="fax" autocomplete="off" onkeypress="isInputNumber(event)" value="">
+									</div>
+								</div>
+							</div>
+
+							<div class="col-md-12 text-uppercase" style="margin-bottom:10px !important; border-top:2px solid #F16623">
+								<h6><mark class="match" style="margin-left:-15px">Adresses</mark></h6>
+							</div>
+							<div class="col-md-6">
+								<div class="form-group row">
+									<label class="col-sm-5 col-form-label">{{_("Code postal")}}</label>
+									<div class="col-sm-7">
+										<input type="text" class="form-control" name="code_postal" id="code_postal" autocomplete="off" value="">
+									</div>
+								</div>
+								<div class="form-group row">
+									<label class="col-sm-5 col-form-label">{{_('Pays')}} <span class="required">*</span></label>
+									<div class="col-sm-7">
+										<select class="form-control tags-multiple intervenant_champ_obligatoire" name="pays_id" id="pays_id" autocomplete="off" required>
+											<option value="">{{_('Choisir')}}</option>
+											{% for p in pays %}
+												<option value="{{ p.id }}" {% if p.code == "CI" %} selected {% endif %}>{{ p.nom }}</option>
+											{% endfor %}
+										</select>
+									</div>
+								</div>
+							</div>
+							<div class="vl"></div>
+							<div class="col-md-5" style="border-left:0px;">
+								<div class="form-group row">
+									<label class="col-sm-5 col-form-label">{{_("Boite postale")}}</label>
+									<div class="col-sm-7">
+										<input type="text" class="form-control" name="boite_postale" id="boite_postale" autocomplete="off" value="">
+									</div>
+								</div>
+								<div class="form-group row">
+									<label class="col-sm-5 col-form-label">{{_("Ville")}}</label>
+									<div class="col-sm-7">
+										<input type="text" class="form-control" name="ville" id="ville" autocomplete="off" value="">
+									</div>
+								</div>
+							</div>
+						</div>
+                    </div>
+                </div>
+                <div class="modal-footer justify-content-between">
+                    <button type="button" class="btn btn-danger" data-dismiss="modal"><i class="fa fa-remove"></i> {{_('Fermer')}}</button>
+                    <button type="button" id="btn_save_sinistre_intervenant" class="btn btn-info"><i class="fa fa-check-circle"></i> {{_('Valider')}}</button>
+                </div>
+            </form>
+		</div>
+	</div>
+</div>

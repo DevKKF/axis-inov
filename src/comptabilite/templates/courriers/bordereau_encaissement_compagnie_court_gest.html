@@ -68,8 +68,7 @@
 </head>
 
 <body>
-    <div id="header_content">
-
+    <!--div id="header_content">
         <table style="">
             <tr>
                 <td class="left" width="25%">
@@ -103,6 +102,50 @@
                 <td>{{_("Code courtier")}} : {{ bureau.code_courtier|default:"" }}</td>
                 <td>&nbsp;</td>
                 <td><span style="background-color:#DFF2FF;">{{_("NUMERO BORDEREAU")}} :</span> {{ operation.numero|default:"" }}<br><br><br></td>
+            </tr>
+        </table>
+    </div-->
+    <div id="header_content">
+        <table>
+            <tr>
+                <td class="left" width="15%">
+                    <div>
+                        <img width="100" src="{{ site_logo_url }}">
+                    </div>
+                </td>
+                <td width="70%" class="center bold" style="font-size: 14px;">
+
+                </td>
+                <td class="right" width="15%">
+                </td>
+            </tr>
+            <tr>
+            <td class="" width="20%">
+            <br/>{{ bureau.nom }} ({{ bureau.code }})<br>
+                {{ bureau.addresse|default:"" }}<br>
+                {% comment %}
+                Résidence élégance<br>
+                00225 ABIDJAN<br>
+                {% endcomment %}
+                Tel. : {{ bureau.telephone|default:"" }} Fax. : {{ bureau.fax|default:"" }}<br>
+                Mail : {{ bureau.email|default:"" }}
+                </td>
+                <td class="center" style="padding-bottom:0px; font-size: 14px; vertical-align: middle;" width="60%">
+                    <h3>BORDEREAU COMPAGNIE DES QUITTANCES REGLEES - {{ operation.devise.libelle|default:"" }} ({{ operation.devise.code|default:"" }}) <br> Au {{ operation.date_operation|date:'d/m/Y'|default_if_none:"" }}</h3>
+                    {% comment %} <div style="margin-top:-20px;">COMPAGNIE: <b>{{ compagnie|default:"" }}</b></div> {% endcomment %}
+                </td>
+                <td width="20%" style="padding-left:20px;">
+                {{ compagnie.nom }}<br>
+                {{ compagnie.adresse|default:"" }}<br>
+                {% comment %} 01 BP 3832<br>
+                ABIDJAN 01<br> {% endcomment %}
+                </td>
+            </tr>
+            <tr>
+            <td>Code courtier : {{ bureau.code_courtier|default:"" }}</td>
+            <td>&nbsp;</td>
+            <td></td>
+            <!--td><span style="background-color:#DFF2FF;">NUMERO BORDEREAU :</span> {{ operation.numero|default:"" }}</td-->
             </tr>
         </table>
     </div>

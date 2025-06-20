@@ -41,16 +41,18 @@ from django.views.decorators.cache import never_cache
 from django.views.generic import TemplateView, ListView
 from num2words import num2words
 from xhtml2pdf import pisa
+import re
+from uuid import uuid4
 
 from configurations.helper_config import execute_query, create_query_background_task
-from configurations.models import Compagnie, User, Rubrique, \
-    TypePriseencharge, Pays, TypeIntervenant, Responsabilite, TypeSinistre, Circonstance, \
+from configurations.models import Compagnie, User, Rubrique, EtapeSinistre, \
+    TypePriseencharge, Pays, TypeIntervenant, Responsabilite, TypeSinistre, Circonstance, GarantieCirconstance, PosteDommage, \
     ActionLog, PeriodeComptable, TypeRemboursement, ModeCreation, \
     BackgroundQueryTask, TypePrefinancement
 from production.models import Statut, TypeDocument, Client
 #
-from production.models import Police, HistoriquePolice, PoliceAssureur, Mouvement, AlimentPolice
-from production.templatetags.my_filters import money_field
+from production.models import Police, HistoriquePolice, PoliceAssureur, Mouvement, Motif, AlimentPolice
+from production.templatetags.my_filters import money_field, supprimer_espaces
 from shared.enum import StatutPolice
 from shared.enum import StatutSinistre, StatutSinistreBordereau, StatutSinistrePrestation, StatutValidite, \
     StatutRemboursement, StatutRemboursementSinistre, DesignationRemboursementSinistre, SatutBordereauDossierSinistres, \
@@ -65,8 +67,10 @@ from sinistre.helper_sinistre import exportation_en_excel_avec_style, \
     requete_liste_sinistre_saisies_entre_2date, requete_sinistres_traites_et_valides_par_les_gestionnaires, \
     requete_analyse_prime_compta_apporteur, get_retenue_selon_contexte
 # Create your views here.
-from sinistre.models import PaiementComptable, Sinistre, DossierSinistre, ProrogationSinistre, \
+from sinistre.models import PaiementComptable, Sinistre, DossierSinistre, AlimentPoliceSinistre, MouvementSinistre, SinistreEtape, \
     RemboursementSinistre, BordereauOrdonnancement, HistoriqueOrdonnancementSinistre
+
+from sinistre.forms import SinistreForm
 
 
 @method_decorator(login_required, name='dispatch')
@@ -80,8 +84,26 @@ class SaisieSinistreView(TemplateView):
         today = timezone.now().date()
         clients = Client.objects.order_by('-nom')
 
+        pays = Pays.objects.all().order_by('nom')
+        typeintervenants = TypeIntervenant.objects.filter(statut=1).order_by('libelle')
+
         context['today'] = today
         context['clients'] = clients
+        context['pays'] = pays
+        context['typeintervenants'] = typeintervenants
+
+        intervenants = request.session.get('intervenants', None)
+        # Vider les intervenants enregistrés en session
+        if 'intervenants' in request.session:
+            del request.session['intervenants']
+
+        garanties = request.session.get('garanties', None)
+        # Vider les garanties enregistrées en session
+        if 'garanties' in request.session:
+            del request.session['garanties']
+
+        print(f'Intervenants : {intervenants}')
+        print(f'garanties : {garanties}')
 
         return self.render_to_response(context)
 
@@ -94,81 +116,6 @@ class SaisieSinistreView(TemplateView):
             **admin.site.each_context(self.request),
             "opts": self.model._meta,
         }
-
-
-@csrf_exempt
-def recherche_clientpolice(request):
-    if request.method == 'POST':
-        numero_client = request.POST.get('nc', '').strip().upper()
-        nom_client = request.POST.get('nomc', '').strip().upper()
-
-        if not numero_client and not nom_client:
-            return JsonResponse({'success': False, 'message': 'Aucun champ de recherche saisi.'})
-
-        # Recherche stricte par code client si renseigné
-        if numero_client:
-            clients = Client.objects.filter(code=numero_client)
-        else:
-            # Sinon, recherche approximative par nom et prénoms
-            clients = Client.objects.filter(
-                Q(nom__icontains=nom_client) |
-                Q(prenoms__icontains=nom_client)
-            )
-
-        # Vérification si un client a été trouvé
-        if not clients.exists():
-            return JsonResponse({'success': False, 'message': 'Client non trouvé.'})
-
-        client = clients.first()  # Récupérer le premier client trouvé
-        today = datetime.date.today()
-
-        # Sous-requête pour obtenir la dernière ligne de `historique_police`
-        last_historique = HistoriquePolice.objects.filter(
-            police=OuterRef('pk')
-        ).order_by('-created_at').values('id')[:1]
-
-        # Sous-requête pour obtenir la dernière ligne de `assureur_police`
-        last_assureur = PoliceAssureur.objects.filter(
-            historique_police=OuterRef('pk')
-        ).order_by('-created_at').values('compagnie__nom')[:1]
-
-        # Filtrer les polices valides et récupérer la compagnie via les sous-requêtes
-        polices = (Police.objects.filter(
-            client=client,
-            date_fin_effet__isnull=False
-
-        ).filter(
-            Q(date_fin_effet__isnull=True) | Q(date_fin_effet__gt=today)
-        ).annotate(
-            compagnie_nom=Subquery(last_assureur)
-        ).values(
-            'id',
-            'numero',
-            'produit__nom',
-            'compagnie_nom',  # Nom de la compagnie récupéré via les sous-requêtes
-            'date_debut_effet',
-            'date_fin_effet'
-        ))
-
-        # Vérification si des polices existent
-        if not polices.exists():
-            return JsonResponse({'success': False, 'message': 'Aucune police active trouvée pour ce client.'})
-
-        police_list = [
-            {
-                'id': police['id'],
-                'numero': police['numero'],
-                'produit': police['produit__nom'],
-                'assureur': police['compagnie_nom'] if police['compagnie_nom'] else 'Non défini',
-                'date_debut': police['date_debut_effet'],
-                'date_echeance': police['date_fin_effet'],
-            }
-            for police in polices
-        ]
-
-        return JsonResponse({'success': True, 'polices': police_list})
-
-    return JsonResponse({'success': False, 'message': 'Méthode non autorisée.'})
 
 
 @csrf_exempt
@@ -280,14 +227,12 @@ def recuperer_information_police(request):
         assureur_police = PoliceAssureur.objects.filter(historique_police_id=dernier_historique.id, type_compagnie_id=1).first() if dernier_historique else None
         today = timezone.now().date()
 
-        mouvements = Mouvement.objects.filter(type_mouvement_id=2).order_by('libelle')
         typesinistres = TypeSinistre.objects.filter(statut=1).order_by('libelle')
         typeintervenants = TypeIntervenant.objects.filter(statut=1).order_by('libelle')
         typedocuments = TypeDocument.objects.filter(is_sinistre=1).order_by('libelle')
         responsabilites = Responsabilite.objects.filter(statut=1)
         circonstances = Circonstance.objects.filter(statut=1, branche_id=police.produit.branche_id).order_by('libelle')
 
-        garanties = ''
         pays = Pays.objects.all().order_by('nom')
 
         aliments = 0
@@ -305,13 +250,11 @@ def recuperer_information_police(request):
             'dernier_historique': dernier_historique,
             'assureur_police': assureur_police,
             'today': today,
-            'mouvements': mouvements,
             'typesinistres': typesinistres,
             'typeintervenants': typeintervenants,
             'typedocuments': typedocuments,
             'responsabilites': responsabilites,
             'circonstances': circonstances,
-            'garanties': garanties,
             'pays': pays,
             'aliments': aliments,
             'aliment': aliment
@@ -325,101 +268,429 @@ def recuperer_information_police(request):
 
 
 @csrf_exempt
-def get_intervenants_session(request):
-    try:
-        police_id = request.GET.get('police_id')
-        police = Police.objects.filter(
-            id=police_id,
-            bureau=request.user.bureau,
-            statut_validite=StatutValidite.VALIDE
-        ).first()
-
-        if not police:
-            return JsonResponse({'success': False, 'message': "Police non trouvée."}, status=404)
-
-        client = Client.objects.filter(id=police.client_id).first()
-        intervenants = request.session.setdefault('intervenants', [])
-
-        if client:
-            client_intervenant = {
-                'id': str(uuid.uuid4()),  # ID unique pour le client
-                'police_id': police.id,
-                'type_intervenant_id': 1,
-                'typeintervenant': 'Tiers Personne',
-                'nom': client.nom.strip().upper(),
-                'prenoms': client.prenoms.strip().upper(),
-                'portable': client.telephone_fixe.strip() if client.telephone_fixe else '',
-                'telephone': client.telephone_mobile.strip() if client.telephone_mobile else '',
-                'email': client.email.strip().lower() if client.email else '',
-                'code_postal': client.adresse,
-                'boite_postale': client.adresse_postale,
-                'ville': client.ville,
-                'pays_id': client.pays_id
-            }
-
-            # Vérification simplifiée de l'existence de l'intervenant
-            existe_deja = any(
-                intervenant['nom'] == client_intervenant['nom'] and
-                intervenant['prenoms'] == client_intervenant['prenoms'] and
-                intervenant['typeintervenant'] == client_intervenant['typeintervenant']
-                for intervenant in intervenants
-            )
-
-            if not existe_deja:
-                intervenants.insert(0, client_intervenant)
-                request.session['intervenants'] = intervenants
-
-        return JsonResponse({'success': True, 'data': intervenants}, status=200)
-
-    except Exception as e:
-        return JsonResponse({'success': False, 'message': str(e)}, status=500)
-
-
-@csrf_exempt
 def recuperer_intervenant_police(request):
     police_id = request.GET.get('police_id')
 
     try:
         police = Police.objects.get(id=police_id, bureau=request.user.bureau, statut_validite='VALIDE')
 
-        # Récupération de client
-        client = Client.objects.get(id=police.client_id)
+        client = Client.objects.filter(id=police.client_id).first()
 
-        if client:
-            client_intervenant = {
-                'id': str(uuid.uuid4()),  # ID unique pour le client
-                'police_id': police.id,
-                'type_intervenant_id': 1,
-                'typeintervenant': 'Tiers Personne',
-                'nom': client.nom.strip().upper(),
-                'prenoms': client.prenoms.strip().upper(),
-                'portable': client.telephone_fixe.strip() if client.telephone_fixe else '',
-                'telephone': client.telephone_mobile.strip() if client.telephone_mobile else '',
-                'email': client.email.strip().lower() if client.email else '',
-                'code_postal': client.adresse,
-                'boite_postale': client.adresse_postale,
-                'ville': client.ville,
-                'pays_id': client.pays_id
-            }
+        intervenants_existant = list(request.session.get('intervenants', []))
+        print(f'intervenants_existant : {intervenants_existant}')
+        nouveau_intervenant = {
+            'id': str(uuid4()),
+            'nom': client.nom,
+            'prenoms': client.prenoms,
+            'telephone': client.telephone_mobile,
+            'email': client.email,
+            'portable': client.telephone_fixe,
+            'pays_id': client.pays_id,
+            'type_intervenant_id': 1,
+            'type_intervenant': "Tiers Personne",
+            'boite_postale': client.adresse,
+            'code_postal': client.adresse_postale,
+            'ville': client.ville,
+        }
 
-            # Vérification simplifiée de l'existence de l'intervenant
-            existe_deja = any(
-                intervenant['nom'] == client_intervenant['nom'] and
-                intervenant['prenoms'] == client_intervenant['prenoms'] and
-                intervenant['typeintervenant'] == client_intervenant['typeintervenant']
-                for intervenant in intervenants
-            )
+        intervenants_existant.append(nouveau_intervenant)
+        request.session['intervenants'] = intervenants_existant
 
-            if not existe_deja:
-                intervenants.insert(0, client_intervenant)
-                request.session['intervenants'] = intervenants
+        print(f'Intervenant : {intervenants_existant}')
 
-        return JsonResponse({'success': True, 'data': intervenants}, status=200)
+        return JsonResponse({
+            'success': True,
+            'message': "Ajout d'intervenant effectué avec succès !",
+            'data': intervenants_existant
+        }, status=200)
+
 
     except Police.DoesNotExist:
         return JsonResponse({'error': 'Police non trouvée.'}, status=404)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
+
+
+@csrf_exempt
+def save_session_intervenants(request):
+    if request.method == 'POST':
+        try:
+            type_intervenant_id = request.POST.get('type_intervenant_id')
+            type_intervenant = TypeIntervenant.objects.filter(id=type_intervenant_id).first()
+            if not type_intervenant:
+                return JsonResponse({'success': False, 'message': 'Type Intervenant non trouvé.'}, status=400)
+
+            # Nettoyage et normalisation du numéro de téléphone
+            raw_portable = request.POST.get('portable', '')
+            portable = re.sub(r'\D', '', raw_portable)  # Garde uniquement les chiffres
+
+            if not portable:
+                return JsonResponse({'success': False, 'message': 'Le numéro de portable est requis.'}, status=400)
+
+            intervenants_existant = list(request.session.get('intervenants', []))
+
+            # Vérification d’unicité : normalise les téléphones en session aussi
+            existing_numbers = [re.sub(r'\D', '', i.get('portable', '')) for i in intervenants_existant]
+
+            if portable in existing_numbers:
+                return JsonResponse({
+                    'success': False,
+                    'message': f"Un intervenant avec le numéro de téléphone '{raw_portable}' existe déjà."
+                }, status=400)
+
+            nouveau_intervenant = {
+                'id': str(uuid4()),
+                'nom': request.POST.get('nom'),
+                'prenoms': request.POST.get('prenoms'),
+                'telephone': request.POST.get('telephone'),  # On garde le format d'origine pour l'affichage
+                'email': request.POST.get('email'),
+                'portable': raw_portable,
+                'fax': request.POST.get('fax'),
+                'pays_id': request.POST.get('pays_id'),
+                'type_intervenant_id': type_intervenant_id,
+                'type_intervenant': type_intervenant.libelle,
+                'code_postal': request.POST.get('code_postal'),
+                'boite_postale': request.POST.get('boite_postale'),
+                'ville': request.POST.get('ville'),
+            }
+
+            intervenants_existant.append(nouveau_intervenant)
+            request.session['intervenants'] = intervenants_existant
+            request.session.modified = True
+
+            return JsonResponse({
+                'success': True,
+                'message': "Ajout d'intervenant effectué avec succès !",
+                'data': intervenants_existant
+            }, status=200)
+
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'message': f"Erreur lors de l'enregistrement : {str(e)}"
+            }, status=500)
+
+    return JsonResponse({
+        'success': False,
+        'message': 'Requête invalide ou méthode non autorisée.'
+    }, status=400)
+
+
+@csrf_exempt
+def supprimer_intervenant(request, intervenant_id):
+    print('Suppression intervenant par ID...')
+    if request.method == 'POST':
+        try:
+            intervenants = request.session.get('intervenants', [])
+            intervenants = [i for i in intervenants if str(i.get('id')) != str(intervenant_id)]
+            request.session['intervenants'] = intervenants
+            return JsonResponse({'success': True, 'message': 'Intervenant supprimé.'})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': str(e)}, status=500)
+    return JsonResponse({'success': False, 'error': 'Méthode non autorisée.'}, status=405)
+
+
+#Chargement des garanties de la circonstance
+def get_garanties_by_circonstance(request):
+    circonstance_id = request.GET.get('circonstance_id')
+    garanties = GarantieCirconstance.objects.filter(circonstance_id=circonstance_id).values('garantie__id', 'garantie__nom')
+    garanties = [{'id': g['garantie__id'], 'nom': g['garantie__nom']} for g in garanties]
+    return JsonResponse({'garanties': list(garanties)})
+
+
+def save_session_garanties(request):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            garanties_existant = list(request.session.get('garanties', []))
+            today = timezone.now().date()
+
+            # Extraire les IDs existants pour vérifier les doublons
+            existing_ids = {g['garantie_id'] for g in garanties_existant}
+
+            for g in data.get('garanties', []):
+                garantie_id = g.get('id')
+                if garantie_id in existing_ids:
+                    continue  # ✅ Ignore les doublons
+
+                nouvelle_garantie = {
+                    'id': str(uuid4()),
+                    'garantie_id': garantie_id,
+                    'nom': g.get('nom'),
+                    'franchise': g.get('franchise'),
+                    'capital': g.get('capital'),
+                    'mouvement': "Ouverture Sinistre",
+                    'date_ajout': today.isoformat(),
+                }
+                garanties_existant.append(nouvelle_garantie)
+                existing_ids.add(garantie_id)  # ✅ Ajout au set pour les prochains tours
+
+            request.session['garanties'] = garanties_existant
+            request.session.modified = True
+
+            return JsonResponse({
+                'success': True,
+                'message': "Ajout de garantie effectué avec succès !",
+                'data': garanties_existant
+            }, status=200)
+
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'message': f"Erreur lors de l'enregistrement : {str(e)}"
+            }, status=500)
+
+    return JsonResponse({
+        'success': False,
+        'message': 'Requête invalide ou méthode non autorisée.'
+    }, status=400)
+
+
+def get_garanties_by_circonstance_clean(request):
+    try:
+        if 'garanties' in request.session:
+            del request.session['garanties']
+            request.session.modified = True
+
+            garanties = request.session.get('garanties', None)
+            print(f'garantie après suppression {garanties}')
+
+            return JsonResponse({
+                'success': True,
+                'message': 'Les garanties ont été supprimées de la session.'
+            }, status=200)
+        else:
+            return JsonResponse({
+                'success': True,
+                'message': 'Aucune garantie n\'était enregistrée en session.'
+            }, status=200)
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'message': f'Erreur lors de la suppression des garanties : {str(e)}'
+        }, status=500)
+
+
+def supprimer_garantie(request, garantie_id):
+    if request.method == 'POST':
+        garanties = request.session.get("garanties", [])
+
+        garanties = [g for g in garanties if str(g["id"]) != str(garantie_id)]
+
+        request.session["garanties"] = garanties
+        request.session.modified = True
+        request.session.save()
+
+        print(f'Garanties après suppression 0 : {garanties}')
+        return JsonResponse({"success": True})
+    return JsonResponse({"success": False, "message": "Méthode non autorisée."}, status=405)
+
+
+def recuperer_garanties_sinistre(request):
+    garanties = request.session.get("garanties", [])
+    print(f'Garanties après suppression 1 : {garanties}')
+
+    formatted_garanties = []
+    for garantie in garanties:
+        formatted_garanties.append({
+            "id": garantie.get('id'),
+            "garantie_id": garantie.get('garantie_id'),
+            "nom": garantie.get('nom'),
+            "franchise": garantie.get('franchise', ''),
+            "capital": garantie.get('capital', ''),
+            "mouvement": garantie.get('mouvement', ''),
+            "date_ajout": garantie.get('date_ajout', ''),
+        })
+
+    return JsonResponse({"garanties": formatted_garanties})
+
+
+def afficher_provision_sinistre(request):
+    postedommages = PosteDommage.objects.filter(statut=1)
+    garanties = request.session.get("garanties", [])
+    print(f'Garanties après suppression 2 : {garanties}')
+
+    postedommages_list = [{
+        "id": poste.id,
+        "libelle": poste.libelle,
+    } for poste in postedommages]
+
+    context = {
+        'postedommages': postedommages_list,
+        'garanties': garanties,
+    }
+
+    return render(request, 'sinistre_provision_table.html', context)
+
+
+def add_sinistre_gestionnaire(request):
+
+    if request.method == 'POST':
+
+        form = SinistreForm(request.POST)
+
+        if form.is_valid():
+            police = Police.objects.get(id=request.POST.get('police_id'))
+            client = Client.objects.get(id=police.client_id)
+            vehicule_id = request.POST.get('vehicule_id')
+            marchandise_id = request.POST.get('marchandise_id')
+            autre_risque_id = request.POST.get('autre_risque_id')
+            autre_risque = request.POST.get('autre_risque')
+            compagnie_id = request.POST.get('compagnie_id')
+            mouvement_id = request.POST.get('mouvement_id')
+            motif_mouvement_id = request.POST.get('motif_mouvement_id')
+            date_survenance = request.POST.get('date_survenance')
+            date_ouverture = request.POST.get('date_ouverture')
+            date_cloture = request.POST.get('date_cloture')
+            risque = request.POST.get('risque')
+            date_declaration = request.POST.get('date_declaration')
+            date_reouverture = request.POST.get('date_reouverture')
+            circonstance_id = request.POST.get('circonstance_id')
+            lieu_survenance = request.POST.get('lieu_survenance')
+            tva_recuperee = request.POST.get('tva_recuperee')
+            type_sinistre_id = request.POST.get('type_sinistre_id')
+            franchise = request.POST.get('franchise').replace(' ', '')
+            responsabilite_id = request.POST.get('responsabilite_id')
+            fait_generateur = request.POST.get('fait_generateur')
+            point_de_choc = request.POST.get('point_de_choc')
+            commentaire = request.POST.get('commentaire')
+            saisie_circonstance = request.POST.get('saisie_circonstance')
+            numero = request.POST.get('numero')
+
+            sinistre_created = Sinistre(
+                client_id=client.id,
+                police_id=police.id,
+                compagnie_id=compagnie_id,
+                type_sinistre_id=type_sinistre_id,
+                responsabilite_id=responsabilite_id,
+                circonstance_id=circonstance_id,
+                created_by=request.user,
+                numero=numero,
+                date_survenance=date_survenance if date_survenance else None,
+                date_declaration=date_declaration if date_declaration else None,
+                date_ouverture=date_ouverture if date_ouverture else None,
+                date_cloture=date_cloture if date_cloture else None,
+                date_reouverture=date_reouverture if date_reouverture else None,
+                lieu_survenance=lieu_survenance,
+                tva_recuperee=tva_recuperee,
+                fait_generateur=fait_generateur,
+                point_de_choc=point_de_choc,
+                commentaire=commentaire,
+                autre_circonstance=saisie_circonstance,
+                franchise=supprimer_espaces(franchise) if franchise else 0,
+            )
+            sinistre_created.save()
+
+            code_bureau = request.user.bureau.code
+            sinistre_created.numero_provisoire = str(code_bureau) + 'S' + str(Date.today().year)[-2:] + str(
+                sinistre_created.pk).zfill(6)
+            if sinistre_created.numero == "":
+                sinistre_created.numero = sinistre_created.numero_provisoire
+
+            sinistre_created.save()
+
+            sinistre = Sinistre.objects.get(id=sinistre_created.pk)
+
+            # Créer une ligne de mouvement_sinistre avec le mouvement ouverture sinistre et le motif ouverture sinistre
+            ms = MouvementSinistre()
+            ms.sinistre = sinistre
+            ms.police = police
+            ms.mouvement = Mouvement.objects.get(code=mouvement_id)
+            ms.motif = Motif.objects.get(code=motif_mouvement_id)
+            ms.date_effet = sinistre.date_ouverture
+            ms.created_by = request.user
+            ms.save()
+
+            # Créer une ligne de sinistre_etape avec le mouvement ouverture sinistre et le motif ouverture sinistre
+            sinetap = SinistreEtape()
+            sinetap.sinistre = sinistre
+            sinetap.etape_sinistre = EtapeSinistre.objects.get(code='OUVSIN')
+            sinetap.numero_ordre = 1
+            sinetap.date_effet = sinistre.date_ouverture
+            sinetap.created_by = request.user
+            sinetap.save()
+
+            # Créer la ligne de l'aliment lié au sinistre
+            aliment_police = None
+
+            if vehicule_id:
+                try:
+                    aliment_police = AlimentPolice.objects.get(vehicule_id=vehicule_id)
+                except AlimentPolice.DoesNotExist:
+                    pass  # Gérer l'absence de l'objet si nécessaire
+
+            if marchandise_id:
+                try:
+                    aliment_police = AlimentPolice.objects.get(marchandise_id=marchandise_id)
+                except AlimentPolice.DoesNotExist:
+                    pass  # Gérer l'absence de l'objet si nécessaire
+
+            if autre_risque_id:
+                try:
+                    aliment_police = AlimentPolice.objects.get(autre_risque_id=autre_risque_id)
+
+                    aliment_police.risque = autre_risque
+                    aliment_police.save()
+
+                except AlimentPolice.DoesNotExist:
+                    pass  # Gérer l'absence de l'objet si nécessaire
+
+            if aliment_police:
+                aliment_sinitre_created = AlimentPoliceSinistre(
+                    police=police,
+                    sinistre=sinistre,
+                    aliment_police=aliment_police,
+                    risque=risque,
+                )
+                aliment_sinitre_created.save()
+            else:
+                # Ajouter une gestion si l'aliment_police n'existe pas.
+                print(f"Aucun AlimentPolice trouvé pour vehicule_id={vehicule_id} ou marchandise_id={marchandise_id} ou autre_risque_id={autre_risque_id}")
+
+            response = {
+                'statut': 1,
+                'message': "Sinistre enregistré avec succès !",
+                'data': {
+                    'id': sinistre.pk,
+                    'numero': sinistre.numero,
+                }
+            }
+
+            return JsonResponse(response)
+
+        else:
+            response = {
+                'statut': 0,
+                'message': "Veuillez renseigner correctement le formulaire",
+                'errors': form.errors,
+            }
+
+            return JsonResponse(response)
+    else:
+        response = {
+            'statut': 0,
+            'message': "Cette méthode n'est pas reconnue !",
+        }
+
+        return JsonResponse(response)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -6150,7 +6421,7 @@ def search_benef_by_name_datatable(request):
 
 
 @login_required
-def add_sinistre_gestionnaire(request):
+def add_sinistre_gestionnaires(request):
     if request.method == 'POST':
 
         # vider toute la session de calcul de prise en charge pour reprendre

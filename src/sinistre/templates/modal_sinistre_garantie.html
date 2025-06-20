@@ -16,9 +16,9 @@
                     <div class="col-md-12 offset-0">
                         <div class="row">
                             <div class="col-md-12">
-                                <div id="message-modal-success" class="alert alert-success" style="display:none;"></div>
-                                <div id="message-modal-warning" class="alert alert-warning" style="display:none;"></div>
-                                <div id="message-modal-error" class="alert alert-danger" style="display:none;"></div>
+                                <div id="garantie-modal-success" class="alert alert-success" style="display:none;"></div>
+                                <div id="garantie-modal-warning" class="alert alert-warning" style="display:none;"></div>
+                                <div id="garantie-modal-error" class="alert alert-danger" style="display:none;"></div>
                             </div>
                             <div class="col-md-12">
                                <table id="table_add_sinistre_garantie" style="width:100%;" class="table table-bordered table-striped dataTable_ dtr-inline">
@@ -30,22 +30,7 @@
                                             <th class="text-center" style="width:15%;">Capital</th>
                                         </tr>
                                     </thead>
-                                    <tbody>
-                                        {% for p_garantie in garanties %}
-                                            <tr>
-                                                <td style="vertical-align:middle;">
-                                                    <input type="checkbox" class="form-control sinistre_garantie-checkbox" name="garantie_{{p_garantie.id}}" value="{{p_garantie.id}}" style="width: 0.6qrem; height: 1.25rem;">
-                                                </td>
-                                                <td style="vertical-align:middle;">{{ p_garantie.nom }}</td>
-                                                <td style="vertical-align:middle;padding:5px;">
-                                                    <input type="text" class="form-control form-control-sm sinistre_franchise-input" name="franchise_{{p_garantie.id}}" value="" onkeypress="isInputNumber(event)" oninput="formatMontant(this)" disabled>
-                                                </td>
-                                                <td style="vertical-align:middle;padding:5px;">
-                                                    <input type="text" class="form-control form-control-sm sinistre_capital-input" name="capital_{{p_garantie.id}}" value="" onkeypress="isInputNumber(event)" oninput="formatMontant(this)" disabled>
-                                                </td>
-                                            </tr>
-                                        {% endfor %}
-                                    </tbody>
+                                    <tbody></tbody>
                                 </table>
                             </div>
                         </div>

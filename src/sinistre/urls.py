@@ -38,8 +38,16 @@ urlpatterns = [
     path('recherche_client_police/', views.recherche_client_police, name='recherche_client_police'),
     path('recuperer_information_police/', views.recuperer_information_police, name='recuperer_information_police'),
     path('recuperer_intervenant_police/', views.recuperer_intervenant_police, name='recuperer_intervenant_police'),
-    path('get_intervenants_session/', views.get_intervenants_session, name='get_intervenants_session'),
+    path('ajout-intervenant-sinistre/', views.save_session_intervenants, name='save_session_intervenants'),
+    path('supprimer_intervenant/<str:intervenant_id>/', views.supprimer_intervenant, name='supprimer_intervenant'),
+    path('get_garanties_by_circonstance/', views.get_garanties_by_circonstance, name='get_garanties_by_circonstance'),
+    path('ajout-garantie-sinistre/', views.save_session_garanties, name='save_session_garanties'),
+    path('supprimer_garantie/<str:garantie_id>/', views.supprimer_garantie, name='supprimer_garantie'),
+    path('get_garanties_by_circonstance_clean/', views.get_garanties_by_circonstance_clean, name='get_garanties_by_circonstance_clean'),
+    path('afficher-provision-sinistre/', views.afficher_provision_sinistre, name='afficher_provision_sinistre'),
+    path('recuperer-garanties-sinistre/', views.recuperer_garanties_sinistre, name='recuperer_garanties_sinistre'),
 
+    path('add_sinistre_gestionnaire', views.add_sinistre_gestionnaire, name='add_sinistre_gestionnaire'),
 
 
 
@@ -100,7 +108,6 @@ urlpatterns = [
     path('add_sinistre', views.add_sinistre, name='add_sinistre'),#les autres
     path('add_sinistre_optique', views.add_sinistre_optique, name='add_sinistre_optique'),
     path('add_sinistre_soins_ambulatoire', views.add_sinistre_soins_ambulatoire, name='add_sinistre_soins_ambulatoire'),
-    path('add_sinistre_gestionnaire', views.add_sinistre_gestionnaire, name='add_sinistre_gestionnaire'),
     path('add_medicament_session_gestionnaire', views.add_medicament_session_gestionnaire, name='add_medicament_session_gestionnaire'),
 
     path('update_sinistre_hospitalisation/<int:dossier_sinistre_id>', views.update_sinistre_hospitalisation, name='update_sinistre_hospitalisation'),

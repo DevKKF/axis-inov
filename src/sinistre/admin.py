@@ -42,4 +42,4 @@ class DemandeRemboursementMobileAdmin(admin.ModelAdmin):
 
     action.short_description = 'Action'
 
-admin.site.register(DemandeRemboursementMobile, DemandeRemboursementMobileAdmin)
+#admin.site.register(DemandeRemboursementMobile, DemandeRemboursementMobileAdmin)

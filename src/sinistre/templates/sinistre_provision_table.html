@@ -1,0 +1,140 @@
+{% load i18n static jazzmin admin_urls %}
+{% load my_filters %}
+<style>
+    #table_provision_sinistre input[type="text"] {
+        min-width: 120px;
+        max-width: 140px;
+        height: 30px;
+        width: 130px;
+        box-sizing: border-box;
+    }
+</style>
+
+<div style="overflow-x: auto;">
+    <table id="table_provision_sinistre" style="width:100%;" class="table table-bordered table-striped dtr-inline">
+        <thead>
+            <tr>
+                <th rowspan="2">Postes dommages</th>
+                {% for garantie in garanties %}
+                    <th colspan="3" class="garantie-header text-center" data-garantie-id="{{ garantie.garantie_id }}">{{ garantie.nom }}</th>
+                {% endfor %}
+            </tr>
+            <tr>
+                {% for garantie in garanties %}
+                    <th style="width: 100px;">Estimation</th>
+                    <th style="width: 100px;">Déjà réglé</th>
+                    <th style="width: 100px;">Provision</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for postedommage in postedommages %}
+                <tr>
+                    <td style="width:200px !important;">{{ postedommage.libelle|default_if_none:"" }}</td>
+                    {% for garantie in garanties %}
+                        {% with key=postedommage.id|stringformat:"s"|add:"_"|add:garantie.garantie_id %}
+                            {% with provision=provisions_dict|get_item:key %}
+                                <td>
+                                    <input type="text" id="estimation_{{ postedommage.id }}_{{ garantie.garantie_id }}"
+                                           name="estimation_{{ garantie.garantie_id }}" class="form-control form-control-sm money_field calculs_montant_garantie_sinistre"
+                                           data-type="estimation" value="{{ provision.estimation|default_if_none:'' }}"
+                                           onkeypress="isInputNumber(event)" oninput="formatMontant(this)">
+                                </td>
+                                <td>
+                                    <input type="text" id="deja_regle_{{ postedommage.id }}_{{ garantie.garantie_id }}"
+                                           name="deja_regle_{{ garantie.garantie_id }}" class="form-control form-control-sm money_field calculs_montant_garantie_sinistre"
+                                           data-type="deja_regle" value="{{ provision.deja_regle|default_if_none:'' }}"
+                                           onkeypress="isInputNumber(event)" oninput="formatMontant(this)">
+                                </td>
+                                <td>
+                                    <input type="text" id="provision_{{ postedommage.id }}_{{ garantie.garantie_id }}"
+                                           name="provision_{{ garantie.garantie_id }}" class="form-control form-control-sm money_field calculs_montant_garantie_sinistre"
+                                           data-type="provision" value="{{ provision.provision|default_if_none:'' }}"
+                                           onkeypress="isInputNumber(event)" oninput="formatMontant(this)">
+                                </td>
+                            {% endwith %}
+                        {% endwith %}
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+
+            <!-- Ligne Totaux -->
+            <tr style="background:#17A2B8; text-align:center; font-weight:bold; color:#fff">
+                <td>Totaux</td>
+                {% for garantie in garanties %}
+                    <td><input type="text" id="total_estimation_{{ garantie.garantie_id }}" class="form-control form-control-sm money_field total_estimation" value="" readonly></td>
+                    <td><input type="text" id="total_deja_regle_{{ garantie.garantie_id }}" class="form-control form-control-sm money_field total_deja_regle" value="" readonly></td>
+                    <td><input type="text" id="total_provision_{{ garantie.garantie_id }}" class="form-control form-control-sm money_field total_provision" value="" readonly></td>
+                {% endfor %}
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<script>
+    function formatMontant(input) {
+        // Supprimez d'abord tous les caractères non numériques
+        var montant = input.value.replace(/\D/g, '');
+
+        // Ajoutez un espace comme séparateur pour les milliers
+        montant = addSpacesForThousands(montant);
+
+        // Mettez à jour la valeur de l'input
+        input.value = montant;
+    }
+
+    // Fonction pour ajouter un espace comme séparateur pour les milliers
+    function addSpacesForThousands(x) {
+        return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+    }
+
+    $(document).on("keyup change", "#table_provision_sinistre .calculs_montant_garantie_sinistre", function (event) {
+        if (event.which == 13) {
+            event.preventDefault();
+        }
+        calculer_montant_garantie_sinistre();
+    });
+    
+    function calculer_montant_garantie_sinistre() {
+        let totaux = {};
+    
+        // Remettre à zéro tous les champs de total
+        $("#table_provision_sinistre .total_estimation, #table_provision_sinistre .total_deja_regle, #table_provision_sinistre .total_provision").val("");
+    
+        // Parcourir toutes les lignes SAUF la ligne des totaux
+        $("#table_provision_sinistre tbody tr").not(':last').each(function () {
+            // On peut aussi utiliser un attribut ou une classe pour cibler la ligne des totaux si besoin
+            $(this).find("input").each(function () {
+                let input = $(this);
+                let idParts = input.attr("id").split("_");
+                let garantieId = idParts[idParts.length - 1];
+                let type = input.data("type");
+                let valeur = parseInt(input.val().replaceAll(' ', '')) || 0;
+    
+                // Si la ligne concerne la franchise, on multiplie par -1
+                let postedommageLabel = $(this).closest("tr").find("td:first").text().trim().toLowerCase();
+                if (postedommageLabel.includes("franchise")) {
+                    valeur *= -1;
+                }
+    
+                // Initialiser l'objet de stockage des totaux
+                if (!totaux[garantieId]) {
+                    totaux[garantieId] = { estimation: 0, deja_regle: 0, provision: 0 };
+                }
+                totaux[garantieId][type] += valeur;
+            });
+        });
+    
+        // Mise à jour des champs de total
+        for (const [garantieId, total] of Object.entries(totaux)) {
+            $(`#total_estimation_${garantieId}`).val(total.estimation.toLocaleString('fr-FR'));
+            $(`#total_deja_regle_${garantieId}`).val(total.deja_regle.toLocaleString('fr-FR'));
+            $(`#total_provision_${garantieId}`).val(total.provision.toLocaleString('fr-FR'));
+        }
+    }
+    
+    // Calcul initial au chargement de la page
+    $(document).ready(function() {
+        calculer_montant_garantie_sinistre();
+    });
+</script>

@@ -1932,7 +1932,7 @@ def modifier_police(request, police_id):
                         aliment_police.save()
 
             aliments = request.session.get('aliments', None)
-            # Vider les aliements enregistrer en session
+            # Vider les aliements enregistrés en session
             if 'aliments' in request.session:
                 del request.session['aliments']
 

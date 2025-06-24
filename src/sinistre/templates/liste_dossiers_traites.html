@@ -1,7 +1,7 @@
 {% extends "admin/base_site.html" %}
 {% load my_filters %}
 {% block extrastyle %}
-
+{% load i18n %}
 <style>
     div.dataTables_processing>div:last-child>div {
         background: rgb(187 65 38) !important;
@@ -12,6 +12,21 @@
 </style>
 
 {% endblock %}
+
+{% block content_title %}
+    <div class="row mb-2">
+          <div class="col-sm-6">
+                <h1 class="m-0">{% trans 'Liste des dossiers sinistres traités' %}</h1>
+          </div>
+          <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                      <li class="breadcrumb-item"><a href="{% url 'admin:index' %}">{% trans 'Home' %}</a></li>
+                      <li class="breadcrumb-item">{% trans 'Sinistre' %}</li>
+                      <li class="breadcrumb-item active">{% trans 'Liste des dossiers traités' %}</li>
+                </ol>
+          </div>
+    </div>
+{% endblock %}
 {% block content %}
 
  <div class="col-12 col-md-12 order-2 order-md-1">
@@ -19,97 +34,74 @@
       <div class="card">
           <div class="card-header">
               <h3 class="card-title"><b>
-                  {{_('LISTE_DES_DEMANDES_TRAITEES')}}
+                  LISTE DES DEMANDES TRAITEES
               </b></h3>
               <div class="card-tools">
               </div>
           </div>
 
-
-      <div style="background:#CCCCCC;padding:10px;border-bottom:1px solid #eee;padding-bottom:10px;margin-bottom:10px;">
-            <form method="get"><label style="font-weight:normal;font-size:12px;display:none;"><i>{{_('Formulaire_de_recherche')}}</i></label>
-                <div class="row">
-                    <div class="col-12 col-md-12 col-sm-12 row">
-                        <div class="col-md-1 row" style="margin-top:5px;display:none;">
-
-                        </div>
-                        <div class="col-md-3 row">
-                            <span class="col-sm-6 text-right" style="margin-top:5px;">{{_('Numero_feuille')}} : </span>
-                            <div class="col-sm-6">
-                                <input autocomplete="off" class="form-control" type="text" id="num_feuille_soins" style="border-radius:3px;border:1px solid brown;text-transform:uppercase;">
+          <div style="background:#CCCCCC;padding:10px;border-bottom:1px solid #eee;padding-bottom:10px;margin-bottom:10px;">
+                <form method="get"><label style="font-weight:normal;font-size:12px;display:none;"><i>Formulaire de recherche</i></label>
+                    <div class="row">
+                        <div class="col-12 col-md-12 col-sm-12 row">
+                            <div class="col-md-3">
+                                <label for="num_sinistre">N° Sinistre :</label>
+                                <input autocomplete="off" class="form-control" type="text" id="num_sinistre" style="border-radius:3px;border:1px solid brown;text-transform:uppercase;">
                             </div>
-                        </div>
-                        <div class="col-md-3 row">
-                            <span class="col-sm-6 text-right" style="margin-top:5px;">{{_('Numero_Carte')}} : </span>
-                            <div class="col-sm-6">
-                                <input autocomplete="off" class="form-control" type="text" id="num_assure" style="border-radius:3px;border:1px solid brown;text-transform:uppercase;">
+                            <div class="col-md-3">
+                                <label for="num_police">N° Police :</label>
+                                <input autocomplete="off" class="form-control" type="text" id="num_police" style="border-radius:3px;border:1px solid brown;text-transform:uppercase;">
                             </div>
-                        </div>
-                        {% if not request.user.is_prestataire %}
-                        <div class="col-md-3 row">
-                            <span class="col-sm-6 text-right" style="margin-top:5px;">{{_('Prestataire')}} : </span>
-                            <div class="col-sm-6">
-                                <select class="form-control tags-multiple" id="prestataire" style="border:1px solid rgba(0, 0, 0, 0.3);">
-                                    <option  value="">{{_('Choisir')}}</option>
-                                    {% for prestataire in prestataires %}
-                                        <option  value="{{prestataire.id}}">{{prestataire}}</option>
+                            <div class="col-md-3">
+                                <label for="client">Client :</label>
+                                <select class="form-control tags-multiple" id="client" style="border-radius:3px;border:1px solid brown;text-transform:uppercase;">
+                                    <option  value="">Choisir</option>
+                                    {% for clt in clients %}
+                                        <option  value="{{clt.id}}">{{clt}}</option>
                                     {% endfor %}
                                 </select>
                             </div>
-                        </div>
-                        {% endif %}
-                        <div class="col-md-3 row">
-                            <span class="col-sm-6 text-right" style="margin-top:5px;">{{_('Date')}} : </span>
-                            <div class="col-sm-6">
-                                <input autocomplete="off" class="form-control" type="date" id="date_prestation" value="" style="border-radius:3px;border:1px solid brown;text-transform:uppercase;">
+                            <div class="col-md-3">
+                                <label for="date_declaration">Date déclaration:</label>
+                                <input autocomplete="off" class="form-control" type="date" id="date_declaration" value="" style="border-radius:3px;border:1px solid brown;text-transform:uppercase;">
+                            </div>
+                            <div class="col-md-6 mt-3">
+                                <button type="submit" class="btn btn-complement-rouge"><i class="fa fa-search"></i> Rechercher</button>
+                                <a href="/sinistre/dossiers-traites" class="btn btn-secondary" title="Vider le formulaire de recherche"><i class="fa fa-refresh"></i> Rafraichir</a>
                             </div>
                         </div>
-                        <!--div class="col-md-2 row">
-                            <div class="col-sm-7 text-right">
-                                <button type="submit" class="btn btn-complement-rouge">Rechercher</button>
-                            </div>
-                            <div class="col-sm-5 text-right" style="padding-left:20px;">
-                                <a href="/sinistre/dossiersinistre" class="btn btn-secondary" title="Vider le formulaire de recherche">Rafraichir</a>
-                            </div>
-                        </div-->
+                    </div>
+                </form>
+              </div>
+
+          <div class="card-body">
+            <div id="example_wrapper" class="dataTables_wrapper dt-bootstrap4">
+              <div class="row">
+                <div class="col-12 col-md-12 col-sm-12 ">
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-striped dataTable__ customDataTable__ dtr-inline" id="table_dossiers_sinistres_traites" style="width: 100%;" data-orderby="0">
+                        <thead>
+                          <tr>
+                            <th scope="col">Numero sinistre</th>
+                            <th scope="col">Numero police</th>
+                            <th scope="col">Client</th>
+                            <th scope="col">Type</th>
+                            <th scope="col">Circonstance</th>
+                            <th scope="col">Date déclaration</th>
+                            <th scope="col">Date survenance</th>
+                            <th scope="col">Statut</th>
+                            <th scope="col">Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
                     </div>
                 </div>
-            </form>
-          </div>
-
-
-      <div class="card-body">
-        <div id="example_wrapper" class="dataTables_wrapper dt-bootstrap4">
-          <div class="row">
-            <div class="col-12 col-md-12 col-sm-12 ">
-                <div class="table-responsive">
-                    <table class="table table-bordered table-striped dataTable__ customDataTable__ dtr-inline" id="table_dossiers_sinistres_traites" style="width: 100%;" data-orderby="0">
-                    <thead>
-                      <tr>
-                        <th scope="col" style="display:none;">{{_('ID')}}</th>
-                        <th scope="col">{{_('Numero_feuille_de_soins')}}</th>
-                        <th scope="col">{{_('Prestataire')}}</th>
-                        <th scope="col">{{_('Type')}}</th>
-                        <th scope="col">{{_('Numero_Carte')}}</th>
-                        <th scope="col">{{_('Nom_du_beneficiaire')}}</th>
-                        <th scope="col">{{_('Frais_reel')}}</th>
-                        <th scope="col">{{_('Part_assureur')}}</th>
-                        <th scope="col">{{_('Part_benef')}}</th>
-                        <th scope="col">{{_('Date_prestation')}}</th>
-                        <th scope="col">Date traitement</th>
-                        <th scope="col">{{_('Statut')}}</th>
-                        <th scope="col">{{_('Actions')}}</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                    </tbody>
-                </table>
-                </div>
+              </div>
             </div>
           </div>
-        </div>
       </div>
-    </div>
   </div>
 
 {% endblock %}
@@ -122,7 +114,7 @@
         $('#garantie').addClass('o-active');
 
 
-  dataTable = $('#table_dossiers_sinistres_traites').DataTable({
+        dataTable = $('#table_dossiers_sinistres_traites').DataTable({
             "language": {
                 "url": "https://cdn.datatables.net/plug-ins/9dcbecd42ad/i18n/French.json"
             },
@@ -131,10 +123,10 @@
                 "url": "{% url 'dossiersinistre_traites_datatable' %}",
                 "data": function (data) {
                     data.page = data.start / data.length + 1;
-                    data.num_feuille_soins = $('#num_feuille_soins').val();
-                    data.num_assure = $('#num_assure').val();
-                    data.date_prestation = $('#date_prestation').val();
-                    data.prestataire = $('#prestataire').val();
+                    data.num_sinistre = $('#num_sinistre').val();
+                    data.num_police = $('#num_police').val();
+                    data.date_declaration = $('#date_declaration').val();
+                    data.client = $('#client').val();
                 },
                 "dataSrc": function (json) {
                     return json.data;
@@ -142,15 +134,12 @@
             },
             "columns": [
                 {"data": "numero", "orderable": false},
-                {"data": "prestataire", "orderable": false},
-                {"data": "type_or_numero_carte", "orderable": false},
-                {"data": "numero_carte", "orderable": false},
-                {"data": "nom", "orderable": false},
-                {"data": "total_frais_reel", "orderable": false},
-                {"data": "total_part_compagnie", "orderable": false},
-                {"data": "total_part_assure", "orderable": false},
-                {"data": "date_prestation", "orderable": false},
-                {"data": "date_traitement_bymedecin", "orderable": false},
+                {"data": "numero_police", "orderable": false},
+                {"data": "client", "orderable": false},
+                {"data": "type_sinistre", "orderable": false},
+                {"data": "circonstance", "orderable": false},
+                {"data": "date_declaration", "orderable": false},
+                {"data": "date_survenance", "orderable": false},
                 {"data": "statut", "orderable": false},
                 {"data": "actions", "orderable": false, "searchable": false},
             ],
@@ -177,11 +166,10 @@
         });
 
         // Add custom search functionality
-        $('#num_feuille_soins, #num_assure, #date_prestation, #prestataire').on('keyup change', function() {
+        $('#num_sinistre, #num_police, #date_declaration, #client').on('keyup change', function() {
             dataTable.search('').draw();
             dataTable.draw();
         });
-
 
     });
 </script>

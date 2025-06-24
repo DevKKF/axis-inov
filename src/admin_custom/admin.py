@@ -77,13 +77,6 @@ class CustomAdminSite(admin.AdminSite):
             else:
                 nombre_resilie_annule += 1
 
-        print(f'Date de comparaison {date_comparaison}')
-        print(f'Police en état {nombre_police}')
-        print(f'Police en cours dénombrées {nombre_police_en_cours}')
-        print(f'Police arrivant à échéance {nombre_arrivant_echeance}')
-        print(f'Police a atteint son échéance {nombre_a_echeance}')
-        print(f'Police annulée, résilié ou suspendu {nombre_resilie_annule}')
-
         # Ajout au contexte
         extra_context['count_polices_en_cours'] = nombre_police_en_cours
         extra_context['count_polices_a_echeance'] = nombre_arrivant_echeance

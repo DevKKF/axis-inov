@@ -29,14 +29,6 @@ class Campagne(models.Model):
         verbose_name_plural = 'campagnes'
 
 
- #  def save(self, *args, **kwargs):
- #      if not self.code:
- #          self.code = f'COM-{self.pk}'
- #          while Campagne.objects.filter(code=self.code).exists():
- #              self.code = f'COM-{self.pk + 1}'
- #      super().save(*args, **kwargs)
-
-
 class Prospect(models.Model):
     bureau = models.ForeignKey(Bureau, null=True, on_delete=models.RESTRICT)
     police = models.ForeignKey(Police, null=True, on_delete=models.RESTRICT)

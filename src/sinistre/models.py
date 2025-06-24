@@ -1239,31 +1239,6 @@ class SinistreTemporaire(models.Model):
         verbose_name_plural = 'Sinistres temporaires'
 
 
-class DemandeRemboursementMobile(models.Model):
-    date_sinistre = models.DateField(blank=True)
-    acte = models.ForeignKey(Acte, on_delete=models.RESTRICT)
-    prestataire = models.ForeignKey(Prestataire, on_delete=models.RESTRICT)
-    beneficiaire = models.ForeignKey(Aliment, related_name='beneficiaire_remboursements', on_delete=models.RESTRICT)
-    adherent_principal = models.ForeignKey(Aliment, null=True, on_delete=models.RESTRICT)
-    bureau = models.ForeignKey(Bureau,  null=True, on_delete=models.RESTRICT)
-    montant_a_rembourser = models.DecimalField(max_digits=20, decimal_places=2)
-    mode_remboursement = models.ForeignKey(ModeReglement, on_delete=models.RESTRICT)
-    numero_remboursement = models.CharField(max_length=100, null=True, blank=True)
-    prescription_medical = models.FileField(upload_to='sinistre/documents/prescription_medical/', blank=True, default=None)
-    facture_normalisee = models.FileField(upload_to='sinistre/documents/facture_normalisee/', blank=True, default=None)
-    acquittee_laboratoire = models.FileField(upload_to='sinistre/documents/acquittee_laboratoire/', blank=True, default=None, null=True)
-    autre_document = models.FileField(upload_to='sinistre/documents/autres/', null=True, blank=True)
-    statut = models.fields.CharField(choices=StatutRemboursement.choices, default=StatutRemboursement.ATTENTE, max_length=25)
-
-    def _str_(self):
-        return f"Demande de remboursement {self.id}"
-
-    class Meta:
-        db_table = 'demande_remboursement_mobile'
-        verbose_name = "Demande de remboursement mobile"
-        verbose_name_plural = "Demandes de remboursement mobiles"
-
-
 #suivi du traitement des factures prestataires
 class TrackFacture(models.Model):
     created_by = models.ForeignKey(User, null=True, on_delete=models.RESTRICT)

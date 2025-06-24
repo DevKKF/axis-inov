@@ -4,7 +4,6 @@ from django.core.management.base import BaseCommand, CommandError
 from django.db.models import Q
 
 from configurations.helper_config import send_dev_notification_background_task_mail
-from configurations.models import AlimentBaobab
 from production.models import Carte, Aliment, AlimentFormule, Police
 from shared.enum import StatutValidite, Statut
 from shared.helpers import generer_qrcode_carte

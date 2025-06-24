@@ -74,22 +74,6 @@ class SecteurActiviteAdmin(admin.ModelAdmin):
     list_display = ('libelle', 'status', 'created_at')
 
 
-class AlimentBaobabAdmin(ImportExportModelAdmin):
-    list_display = ('num_benef', 'nom', 'prenom', 'formule', 'formule_id')
-    list_filter = ('num_benef', 'nom', 'prenom', 'formule', 'formule_id')
-    search_fields = ('num_benef', 'nom', 'prenom', 'formule', 'formule_id')
-    list_per_page = 10
-
-
-class ChangementFormuleAdmin(ImportExportModelAdmin):
-    list_display = ('NOM', 'PRENOMS', 'NUMERO_CARTE', 'QUALITE_BENEFICIAIRE',
-                    'LIB_FORMULE', 'CD_FORMULE', 'DATE_DEBUT')
-
-    search_fields = ('NOM', 'PRENOMS', 'NUMERO_CARTE', 'QUALITE_BENEFICIAIRE',
-                     'LIB_FORMULE', 'CD_FORMULE', 'DATE_DEBUT')
-    list_per_page = 10
-
-
 class ProfessionAdmin(ImportExportModelAdmin):
     list_filter = ('name', 'code')
     list_display = ('name', 'code')

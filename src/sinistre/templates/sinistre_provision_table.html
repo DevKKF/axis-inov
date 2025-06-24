@@ -16,7 +16,7 @@
             <tr>
                 <th rowspan="2">Postes dommages</th>
                 {% for garantie in garanties %}
-                    <th colspan="3" class="garantie-header text-center" data-garantie-id="{{ garantie.id }}">{{ garantie.nom }}</th>
+                    <th colspan="3" class="garantie-header text-center" data-garantie-id="{{ garantie.garantie_id }}">{{ garantie.nom }}</th>
                 {% endfor %}
             </tr>
             <tr>
@@ -32,23 +32,23 @@
                 <tr>
                     <td style="width:200px !important;">{{ postedommage.libelle|default_if_none:"" }}</td>
                     {% for garantie in garanties %}
-                        {% with key=postedommage.id|stringformat:"s"|add:"_"|add:garantie.id %}
+                        {% with key=postedommage.id|stringformat:"s"|add:"_"|add:garantie.garantie_id %}
                             {% with provision=provisions_dict|get_item:key %}
                                 <td>
-                                    <input type="text" id="estimation_{{ postedommage.id }}_{{ garantie.id }}"
-                                           name="estimation_{{ garantie.id }}" class="form-control form-control-sm money_field calculs_montant_garantie_sinistre"
+                                    <input type="text" id="estimation_{{ postedommage.id }}_{{ garantie.garantie_id }}"
+                                           name="estimation_{{ garantie.garantie_id }}" class="form-control form-control-sm money_field calculs_montant_garantie_sinistre"
                                            data-type="estimation" value="{{ provision.estimation|default_if_none:'' }}"
                                            onkeypress="isInputNumber(event)" oninput="formatMontant(this)">
                                 </td>
                                 <td>
-                                    <input type="text" id="deja_regle_{{ postedommage.id }}_{{ garantie.id }}"
-                                           name="deja_regle_{{ garantie.id }}" class="form-control form-control-sm money_field calculs_montant_garantie_sinistre"
+                                    <input type="text" id="deja_regle_{{ postedommage.id }}_{{ garantie.garantie_id }}"
+                                           name="deja_regle_{{ garantie.garantie_id }}" class="form-control form-control-sm money_field calculs_montant_garantie_sinistre"
                                            data-type="deja_regle" value="{{ provision.deja_regle|default_if_none:'' }}"
                                            onkeypress="isInputNumber(event)" oninput="formatMontant(this)">
                                 </td>
                                 <td>
-                                    <input type="text" id="provision_{{ postedommage.id }}_{{ garantie.id }}"
-                                           name="provision_{{ garantie.id }}" class="form-control form-control-sm money_field calculs_montant_garantie_sinistre"
+                                    <input type="text" id="provision_{{ postedommage.id }}_{{ garantie.garantie_id }}"
+                                           name="provision_{{ garantie.garantie_id }}" class="form-control form-control-sm money_field calculs_montant_garantie_sinistre"
                                            data-type="provision" value="{{ provision.provision|default_if_none:'' }}"
                                            onkeypress="isInputNumber(event)" oninput="formatMontant(this)">
                                 </td>
@@ -62,9 +62,9 @@
             <tr style="background:#17A2B8; text-align:center; font-weight:bold; color:#fff">
                 <td>Totaux</td>
                 {% for garantie in garanties %}
-                    <td><input type="text" id="total_estimation_{{ garantie.id }}" class="form-control form-control-sm money_field total_estimation" value="" readonly></td>
-                    <td><input type="text" id="total_deja_regle_{{ garantie.id }}" class="form-control form-control-sm money_field total_deja_regle" value="" readonly></td>
-                    <td><input type="text" id="total_provision_{{ garantie.id }}" class="form-control form-control-sm money_field total_provision" value="" readonly></td>
+                    <td><input type="text" id="total_estimation_{{ garantie.garantie_id }}" class="form-control form-control-sm money_field total_estimation" value="" readonly></td>
+                    <td><input type="text" id="total_deja_regle_{{ garantie.garantie_id }}" class="form-control form-control-sm money_field total_deja_regle" value="" readonly></td>
+                    <td><input type="text" id="total_provision_{{ garantie.garantie_id }}" class="form-control form-control-sm money_field total_provision" value="" readonly></td>
                 {% endfor %}
             </tr>
         </tbody>

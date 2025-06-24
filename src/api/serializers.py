@@ -6,7 +6,7 @@ from api.models import InfoActe
 from configurations.models import KeyValueData, User, TypePrestataire, Prestataire, Acte, Bureau, ModeReglement, \
     TypeActe, Civilite, QualiteBeneficiaire, Pays, Profession
 from production.models import Aliment, Carte, Client, FormuleGarantie, Bareme, CarteDigitalDematerialisee
-from sinistre.models import Sinistre, DemandeRemboursementMobile
+from sinistre.models import Sinistre
 
 from grh.models import Prospect
 
@@ -301,7 +301,7 @@ class ModeRemboursementSerializer(ModelSerializer):
 
 class DemandeRemboursementSerializer(ModelSerializer):
     class Meta:
-        model = DemandeRemboursementMobile
+        model = ""
         fields = "__all__"
 
 class ProspectSerializer(serializers.ModelSerializer):

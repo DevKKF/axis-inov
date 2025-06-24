@@ -7708,6 +7708,7 @@ $(document).ready(function () {
     }
 
     //soumission du formulaire de sinistre
+    /*
     $(document).on('click', "#btn_save_sinistre_gestionnaire", function () {
 
         let formulaire = $('#form_add_sinistre_gestionnaire');
@@ -7716,8 +7717,6 @@ $(document).ready(function () {
         $.validator.setDefaults({ ignore: [] });
 
         let formData = new FormData();
-
-        console.log('Soumission du formulaire');
 
         if (formulaire.valid()) {
 
@@ -7810,7 +7809,125 @@ $(document).ready(function () {
             notifyWarning('Veuillez renseigner correctement le forumulaire');
         }
 
+    });*/
+
+    $(document).on('click', "#btn_save_sinistre_gestionnaire", function () {
+        let formulaire = $('#form_add_sinistre_gestionnaire');
+        let href = formulaire.attr('action');
+    
+        $.validator.setDefaults({ ignore: [] });
+        let formData = new FormData();
+    
+        if (formulaire.valid()) {
+            let n = noty({
+                text: 'Voulez-vous vraiment enregistrer ce sinistre  code 2 ?',
+                type: 'warning',
+                dismissQueue: true,
+                layout: 'center',
+                theme: 'defaultTheme',
+                buttons: [
+                    {
+                        addClass: 'btn btn-primary', text: 'OUI', onClick: function ($noty) {
+                            $noty.close();
+    
+                            let data_serialized = formulaire.serialize();
+                            $.each(data_serialized.split('&'), function (index, elem) {
+                                let vals = elem.split('=');
+                                let key = vals[0];
+                                let valeur = decodeURIComponent(vals[1].replace(/\+/g, '  '));
+                                formData.append(key, valeur);
+                            });
+    
+                            // Ajouter les données des provisions
+                            let provisionsData = collecterDonneesProvisions();
+                            
+                            formData.append('provisions_data', JSON.stringify(provisionsData));
+
+                            $.ajax({
+                                type: 'post',
+                                url: href,
+                                data: formData,
+                                processData: false,
+                                contentType: false,
+                                success: function (response) {
+                                    if (response.statut == 1) {
+                                        //Vider le formulaire
+                                        resetFields('#' + formulaire.attr('id'));
+    
+                                        notifySuccess(response.message, function () {
+                                            location.reload();
+                                        });
+                                    } else {
+                                        let errors = JSON.parse(JSON.stringify(response.errors));
+                                        let errors_list_to_display = '';
+                                        for (field in errors) {
+                                            errors_list_to_display += '- ' + ucfirst(field) + ' : ' + errors[field] + '<br/>';
+                                        }
+    
+                                        $('#formulaire_page .alert .message').html(errors_list_to_display);
+                                        $('#formulaire_page .alert ').fadeTo(2000, 500).slideUp(500, function () {
+                                            $(this).slideUp(500);
+                                        }).removeClass('alert-success').addClass('alert-warning');
+                                    }
+                                },
+                                error: function (request, status, error) {
+                                    notifyWarning("Erreur lors de l'enregistrement");
+                                }
+                            });
+                        }
+                    },
+                    {
+                        addClass: 'btn btn-danger', text: 'Annuler', onClick: function ($noty) {
+                            $noty.close();
+                        }
+                    }
+                ]
+            });
+        } else {
+            $('label.error').css({ display: 'none', height: '0px' }).removeClass('error').text('');
+            let validator = formulaire.validate();
+            $.each(validator.errorMap, function (index, value) {
+                console.log('Id: ' + index + ' Message: ' + value);
+            });
+            notifyWarning('Veuillez renseigner correctement le forumulaire');
+        }
     });
+    
+    // Fonction pour collecter les données des provisions
+    function collecterDonneesProvisions() {
+        let donnees = [];
+        
+        $("#table_provision_sinistre tbody tr").not(':last').each(function () {
+            let postedommageId = $(this).find("td:first").text().trim();
+            
+            $(this).find("input.calculs_montant_garantie_sinistre").each(function () {
+                let input = $(this);
+                let idParts = input.attr("id").split("_");
+                let garantieId = idParts[idParts.length - 1];
+                let type = input.data("type");
+                let valeur = parseInt(input.val().replaceAll(' ', '')) || 0;
+                
+                let existingIndex = donnees.findIndex(item => 
+                    item.poste_dommage_id === postedommageId && 
+                    item.garantie_id === garantieId
+                );
+                
+                if (existingIndex === -1) {
+                    donnees.push({
+                        poste_dommage_id: postedommageId,
+                        garantie_id: garantieId,
+                        estimation: type === 'estimation' ? valeur : 0,
+                        deja_regle: type === 'deja_regle' ? valeur : 0,
+                        provision: type === 'provision' ? valeur : 0
+                    });
+                } else {
+                    donnees[existingIndex][type] = valeur;
+                }
+            });
+        });
+        
+        return donnees;
+    }
 
     //soumission d'un sinistre via une police
     $(document).on('click', "#btn_save_police_sinistre", function () {

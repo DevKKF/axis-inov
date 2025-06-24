@@ -48,7 +48,7 @@ from shared.enum import EtatPolice, Statut, StatutSinistre, StatutEnrolement
 from shared.enum import StatutRemboursement
 from shared.helpers import get_tarif_acte_from_bareme, generate_numero_carte
 from sinistre.helper_sinistre import get_retenue_selon_contexte
-from sinistre.models import DossierSinistre, Sinistre, DemandeRemboursementMobile, DocumentDossierSinistre
+from sinistre.models import DossierSinistre, Sinistre, DocumentDossierSinistre
 
 
 def get_user_id_from_token(token):
@@ -760,10 +760,10 @@ class DemandeRemboursementView(views.APIView):
         user = self.request.user
 
         if user.aliment.adherent_principal:
-            demande = DemandeRemboursementMobile.objects.filter(adherent_principal_id=user.aliment.adherent_principal)
+            demande = ""
 
         elif user.aliment:
-            demande = DemandeRemboursementMobile.objects.filter(beneficiaire_id=user.aliment)
+            demande = ""
 
         else:
             return Response(

@@ -70,6 +70,7 @@
                             <label class="col-sm-5 col-form-label">Produit</label>
                             <div class="col-sm-7">
                                 <span class="form-control" title="{{ police.produit.nom|default_if_none:'' }}">{{ police.produit.nom|default_if_none:""|slice:":35" }}</span>
+                                <input type="hidden" name="produit_code" id="produit_code" value="{{ police.produit.code }}" class="form-control" />
                             </div>
                         </div>
                         <div class="form-group row">
@@ -131,22 +132,22 @@
                                         <label class="col-sm-5 col-form-label">Recherche risque</label>
                                         <div class="col-sm-7">
                                             {% if police.produit.code == '10001' or police.produit.code == '10002' %}
-                                            <select class="form-control tags-multiple vehicule" name="vehicule_id" id="vehicule_id">
-                                                <option value=""></option>
-                                                {% for aliment in aliments %}
-                                                <option value="{{ aliment.vehicule.id }}">{{ aliment.vehicule.marque|default_if_none:"" }}-{{ aliment.vehicule.numero_immatriculation|default_if_none:"" }}</option>
-                                                {% endfor %}
-                                            </select>
+                                                <select class="form-control tags-multiple vehicule" name="vehicule_id" id="vehicule_id">
+                                                    <option value=""></option>
+                                                    {% for aliment in aliments %}
+                                                        <option value="{{ aliment.vehicule.id }}">{{ aliment.vehicule.marque|default_if_none:"" }}-{{ aliment.vehicule.numero_immatriculation|default_if_none:"" }}</option>
+                                                    {% endfor %}
+                                                </select>
                                             {% elif police.produit.code == '50001' or police.produit.code == '50002' %}
-                                            <select class="form-control tags-multiple marchandise" name="marchandise_id" id="marchandise_id">
-                                                <option value=""></option>
-                                                {% for aliment in aliments %}
-                                                <option value="{{ aliment.marchandise.id }}">{{ aliment.marchandise.num_certificat|default_if_none:"" }}</option>
-                                                {% endfor %}
-                                            </select>
+                                                <select class="form-control tags-multiple marchandise" name="marchandise_id" id="marchandise_id">
+                                                    <option value=""></option>
+                                                    {% for aliment in aliments %}
+                                                        <option value="{{ aliment.marchandise.id }}">{{ aliment.marchandise.num_certificat|default_if_none:"" }}</option>
+                                                    {% endfor %}
+                                                </select>
                                             {% else %}
-                                            <input type="text" class="form-control" readonly />
-                                            <input type="hidden" class="form-control" name="autre_risque_id" value="{{ aliment.autre_risque_id }}" />
+                                                <input type="text" class="form-control" readonly>
+                                                <input type="hidden" class="form-control" name="autre_risque_id" value="{{ aliment.autre_risque_id }}" />
                                             {% endif %}
                                         </div>
                                     </div>
@@ -181,11 +182,11 @@
                                         <label class="col-sm-5 col-form-label">Risque <span class="required">*</span></label>
                                         <div class="col-sm-7">
                                             {% if police.produit.code == '10001' or police.produit.code == '10002' %}
-                                            <input type="text" class="form-control" name="risque" id="risque" readonly required />
+                                                <input type="text" class="form-control" name="risque" id="risque" readonly />
                                             {% elif police.produit.code == '50001' or police.produit.code == '50002' %}
-                                            <input type="text" class="form-control" name="risque" id="marchandise" value="{{ aliment.marchandise.num_certificat }}" required />
+                                                <input type="text" class="form-control" name="risque" id="marchandise" value="{{ aliment.marchandise.num_certificat }}" required />
                                             {% else %}
-                                            <input type="text" class="form-control" name="risque" id="risque" value="{{ aliment.autre_risque.libelle }}" required />
+                                                <input type="text" class="form-control" name="risque" id="risque" value="{{ aliment.autre_risque.libelle }}" required />
                                             {% endif %}
                                         </div>
                                     </div>

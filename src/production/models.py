@@ -7,37 +7,20 @@ from django.utils import timezone
 from django.db import models
 from django.db.models import Q
 from django.utils.safestring import mark_safe
-from django_dump_die.middleware import dd
 from django.db.models import F, ExpressionWrapper, DurationField
 
 from configurations.helper_config import execute_query
 from configurations.models import Banque, Bureau, Civilite, Compagnie, Fractionnement, ModeReglement, \
-    Regularisation, Territorialite, TicketModerateur, User, Langue, Pays, Produit, TypeClient, TypePersonne, TypeCompagnie, \
+    Regularisation, Territorialite, User, Langue, Pays, Produit, TypeClient, TypePersonne, TypeCompagnie, \
     QualiteBeneficiaire, TypeAssurance, Devise, Profession, ModeCalcul, Taxe, Apporteur, BaseCalcul, TypeQuittance, \
     NatureQuittance, TypeCarosserie, CategorieVehicule, MarqueVehicule, NatureOperation, Prestataire, TypeTarif, Acte, \
-    Rubrique, Periodicite, RegroupementActe, SousRubrique, TypePrefinancement, ReseauSoin, CompteTresorerie, TypeMouvement, \
-    Secteur, GroupeInter, Carosserie, Formule, Usage, Carburant, BusinessUnit, Garantie, ConditionsAssurance, MoyensTransport, TypeCourrier, Groupe
+    Rubrique, Periodicite, RegroupementActe, SousRubrique, TypePrefinancement, CompteTresorerie, TypeMouvement, \
+    Secteur, Carosserie, Formule, Usage, Carburant, BusinessUnit, Garantie, ConditionsAssurance, MoyensTransport, TypeCourrier, Groupe
 from shared.enum import Genre, Statut, StatutRelation, OptionYesNo, PlacementEtGestion, \
     ModeRenouvellement, TypeEncaissementCommission, TypeMajorationContrat, CalculTM, StatutContrat, StatutPolice, \
     StatutQuittance, StatutBordereau, \
-    StatutReversementCompagnie, StatutReglementApporteurs, StatutEncaissementCommission, Energie, StatutSinistre, \
+    StatutReversementCompagnie, StatutReversementApporteur, StatutEncaissementCommission, Energie, StatutSinistre, \
     StatutValidite, StatutIncorporation, StatutTraitement
-
-
-# Create your models here.
-class Monnaie(models.Model):
-    code = models.CharField(max_length=5, blank=False, null=False)
-    libelle = models.CharField(max_length=100, blank=False, null=False)
-    created_at = models.DateTimeField(auto_now=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return self.libelle
-
-    class Meta:
-        db_table = 'monnaies'
-        verbose_name = 'Monnaie'
-        verbose_name_plural = 'Monnaies'
 
 
 def upload_location_client(instance, filename):
@@ -627,7 +610,6 @@ class ModePrefinancement(models.Model):
 
 class FormuleGarantie(models.Model):
     mode_prefinancement = models.ForeignKey(ModePrefinancement, null=True, on_delete=models.RESTRICT)
-    reseau_soin = models.ForeignKey(ReseauSoin, null=True, on_delete=models.RESTRICT)
     created_by = models.ForeignKey(User, null=True, on_delete=models.RESTRICT)
     updated_by = models.ForeignKey(User, related_name="fg_updated_by", null=True, on_delete=models.RESTRICT)
     deleted_by = models.ForeignKey(User, related_name="fg_deleted_by", null=True, on_delete=models.RESTRICT)
@@ -821,23 +803,6 @@ class TauxCouvertureVariable(models.Model):
         verbose_name_plural = "Taux de couverture"
 
 
-class FormuleRubriquePrefinance(models.Model):
-    created_by = models.ForeignKey(User, null=True, on_delete=models.RESTRICT)
-    formulegarantie = models.ForeignKey(FormuleGarantie, on_delete=models.RESTRICT)
-    rubrique = models.ForeignKey(Rubrique, null=True, on_delete=models.RESTRICT)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    statut_validite = models.fields.CharField(choices=StatutValidite.choices, default=StatutValidite.VALIDE, max_length=15, null=True)
-
-    def __str__(self):
-        return f'{self.formulegarantie.libelle} - {self.rubrique.name}'
-
-    class Meta:
-        db_table = 'formule_rubrique_prefinance'
-        verbose_name = "Rubrique préfinancé sur la formule"
-        verbose_name_plural = "Rubriques préfinancés sur la formule"
-
-
 def upload_location_aliment(instance, filename):
     filebase, extension = filename.rsplit('.', 1)
     file_name = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
@@ -921,7 +886,6 @@ class Aliment(models.Model):
         if self.date_naissance:
             today = date.today()
             a = today.year - self.date_naissance.year
-            pprint(self.date_naissance.year)
 
             if today.month < self.date_naissance.month or (
                     today.month == self.date_naissance.month and today.day < self.date_naissance.day):
@@ -990,8 +954,6 @@ class Aliment(models.Model):
         if date_prise_en_charge is None:
             date_prise_en_charge = datetime.datetime.now(tz=datetime.timezone.utc).date()
             # date_debut=date_prise_en_charge
-            # pprint("date_prise_en_charge")
-            # pprint(date_prise_en_charge)
 
         try:
             query = Q(aliment_id=self.id, date_debut__date__lte=date_prise_en_charge) & (
@@ -1016,11 +978,6 @@ class Aliment(models.Model):
         if date_prise_en_charge is None:
             date_prise_en_charge = datetime.datetime.now(tz=datetime.timezone.utc).date()
             # date_debut=date_prise_en_charge
-            pprint("La date survenance n'est pas renseigné, on considère la date du jour")
-
-        pprint("La date survenance est renseigné")
-        pprint("date_prise_en_charge")
-        pprint(date_prise_en_charge)
 
         try:
             query = Q(aliment_id=self.id, date_debut__date__lte=date_prise_en_charge) & (
@@ -1045,13 +1002,9 @@ class Aliment(models.Model):
         if date_prise_en_charge is None:
             date_prise_en_charge = datetime.datetime.now(tz=datetime.timezone.utc).date()
             # date_debut=date_prise_en_charge
-            pprint("La date survenance n'est pas renseigné, on considère la date du jour")
         else:
             if isinstance(date_prise_en_charge, datetime.datetime):
                 date_prise_en_charge = date_prise_en_charge.date()
-
-        pprint("date_prise_en_charge")
-        pprint(date_prise_en_charge)
 
         try:
             query = Q(aliment_id=self.id, date_debut__date__lte=date_prise_en_charge) & (
@@ -1061,9 +1014,6 @@ class Aliment(models.Model):
             if aliment_formules:
                 aliment_formule = AlimentFormule.objects.filter(query).latest('id')
                 formule = aliment_formule.formule if aliment_formule else None
-
-                pprint("la formule du bénéficiaire est")
-                pprint(formule)
 
                 return formule
 
@@ -1079,23 +1029,9 @@ class Aliment(models.Model):
         query = Q(aliment_id=self.id, statut_validite=StatutValidite.VALIDE)
         aliment_formule = AlimentFormule.objects.filter(query).latest('id')
 
-        pprint("last_formule")
-        pprint(aliment_formule)
         formule = aliment_formule.formule if aliment_formule else None
 
         return formule
-        '''
-        try:
-            query = Q(aliment_id=self.id)
-            aliment_formule = AlimentFormule.objects.filter(query).latest('id')
-            formule = aliment_formule.formule if aliment_formule else None
-
-            return formule
-
-        except FormuleGarantie.DoesNotExist:
-            pprint("FormuleGarantie.DoesNotExist")
-            return None
-        '''
 
     @property
     def last_sinistre(self):
@@ -1115,8 +1051,6 @@ class Aliment(models.Model):
         elif isinstance(date_reference, datetime.datetime):
             date_reference = date_reference.date()
 
-        pprint("date_reference")
-        pprint(date_reference)
         if date_reference:
             last_mouvement = self.ses_mouvements.all().filter(
                 date_effet__lte=date_reference,
@@ -1229,11 +1163,6 @@ class Aliment(models.Model):
                 if code_mouvement == "DMDSORTIE":
                     etat_beneficiaire = "SORTIE EN COURS"
 
-                pprint("code_mouvement")
-                pprint(code_mouvement)
-                pprint("etat_beneficiaire")
-                pprint(etat_beneficiaire)
-
             else:
                 etat_beneficiaire = "ACTIF" if self.statut_incorporation == "INCORPORE" else "ENTREE EN COURS"
 
@@ -1279,20 +1208,6 @@ class AlimentFormule(models.Model):
         db_table = 'aliment_formule'
         verbose_name = "Bénéficiaire d'une formule"
         verbose_name_plural = "Bénéficiaires d'un formule"
-
-
-class AlimentTemporaire(models.Model):
-    created_by = models.ForeignKey(User, null=True, on_delete=models.RESTRICT)
-    session_import = models.CharField(max_length=255, blank=True, null=True)
-    aliment = models.ForeignKey(Aliment, on_delete=models.RESTRICT)
-    numero_famille_import = models.CharField(max_length=50, blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        db_table = 'aliment_temporaire'
-        verbose_name = "Aliment temporaire"
-        verbose_name_plural = "Aliments temporaires"
 
 
 class TaxePolice(models.Model):
@@ -1507,6 +1422,7 @@ class Quittance(models.Model):
     nature_quittance = models.ForeignKey(NatureQuittance, null=True, on_delete=models.RESTRICT)
     police = models.ForeignKey(Police, null=True, on_delete=models.RESTRICT)
     compagnie = models.ForeignKey(Compagnie, null=True, on_delete=models.RESTRICT)
+    apporteur = models.ForeignKey(Apporteur, null=True, on_delete=models.RESTRICT)
     devise = models.ForeignKey(Devise, null=True, on_delete=models.RESTRICT)
     taxes = models.ManyToManyField(Taxe, through='TaxeQuittance')
     numero = models.CharField(max_length=20, unique=True, blank=True, null=True)
@@ -1618,6 +1534,7 @@ class Operation(models.Model):
     observation = models.CharField(max_length=255, null=True)
     statut_validite = models.fields.CharField(choices=StatutValidite.choices, default=StatutValidite.VALIDE, max_length=15, null=True)
     statut_bordereau = models.fields.CharField(choices=StatutBordereau.choices, default=StatutBordereau.BROUILLON, max_length=15, null=True)
+    type_commission = models.fields.CharField(choices=TypeEncaissementCommission.choices, default=TypeEncaissementCommission.AUCUN, max_length=15, null=True)
     uuid = models.CharField(max_length=255, null=True)
 
     def __str__(self):
@@ -1641,6 +1558,7 @@ class Reglement(models.Model):
     compte_tresorerie = models.ForeignKey(CompteTresorerie, null=True, on_delete=models.RESTRICT)
     quittance = models.ForeignKey(Quittance, on_delete=models.RESTRICT, related_name="ses_quittances", related_query_name="quittance")
     compagnie = models.ForeignKey(Compagnie, null=True, on_delete=models.RESTRICT, related_name="reglements", related_query_name="reglement")
+    apporteur = models.ForeignKey(Apporteur, null=True, on_delete=models.RESTRICT, related_name="app_reglements", related_query_name="app_reglement")
     devise = models.ForeignKey(Devise, null=True, on_delete=models.CASCADE)
     montant = models.DecimalField(max_digits=20, decimal_places=0, blank=True, null=True)
     montant_compagnie = models.DecimalField(max_digits=20, decimal_places=0, blank=True, null=True)
@@ -1653,10 +1571,11 @@ class Reglement(models.Model):
     motif_annulation = models.CharField(max_length=255, null=True)
     statut_reversement_compagnie = models.fields.CharField(choices=StatutReversementCompagnie.choices, default=StatutReversementCompagnie.NON_REVERSE, max_length=15, null=True)
     statut_commission = models.fields.CharField(choices=StatutEncaissementCommission.choices, default=StatutEncaissementCommission.NON_ENCAISSEE, max_length=15, null=True)
-    statut_reglement_apporteurs = models.fields.CharField(choices=StatutReglementApporteurs.choices, default=StatutReglementApporteurs.NON_REGLE, max_length=15, null=True)
+    statut_reversement_apporteur = models.fields.CharField(choices=StatutReversementApporteur.choices, default=StatutReversementApporteur.NON_REVERSE, max_length=15, null=True)
     statut_validite = models.fields.CharField(choices=StatutValidite.choices, default=StatutValidite.VALIDE, max_length=15, null=True)
     date_reversement_compagnie = models.DateTimeField(null=True)
     date_encaissement_commission = models.DateTimeField(null=True)
+    date_reversement_retro_apporteur = models.DateTimeField(null=True)
     created_at = models.DateTimeField(auto_now=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -1672,7 +1591,6 @@ class Reglement(models.Model):
         montant = 0
         for encaissement in self.encaissement_commissions.exclude(type_commission=TypeEncaissementCommission.GESTION):
             montant += encaissement.montant()
-        # print(f"{self.numero} {montant}")
         return montant
 
     def montant_com_courtage_solde(self):
@@ -1682,20 +1600,10 @@ class Reglement(models.Model):
         montant = 0
         for encaissement in self.encaissement_commissions.exclude(type_commission=TypeEncaissementCommission.COURTAGE):
             montant += encaissement.montant()
-        # print(f"{self.numero} {montant}")
         return montant
 
     #def montant_com_gestion_solde(self):
         #return (self.montant_com_gestion - self.montant_com_gestion_encaisse())
-
-    # def montant_com_intermediaire_encaisse(self):
-    #     montant = 0
-    #     for encaissement in self.encaissement_commissions.all():
-    #         montant += encaissement.montant_com_intermediaire
-    #     return montant
-    #
-    # def montant_com_intermediaire_solde(self):
-    #     return (self.montant_com_intermediaire - self.montant_com_intermediaire_encaisse())
 
     def montant_com_encaisse(self):
         return (self.montant_com_courtage_encaisse() + self.montant_com_gestion_encaisse())
@@ -1755,7 +1663,6 @@ class Reglement(models.Model):
         montant = 0
         for encaissement in self.encaissement_commissions.exclude(type_commission=TypeEncaissementCommission.GESTION):
             montant += encaissement.montant()
-        # print(montant)
         if montant == self.montant_com_courtage:
             return True
         else:
@@ -1765,7 +1672,6 @@ class Reglement(models.Model):
         montant = 0
         for encaissement in self.encaissement_commissions.exclude(type_commission=TypeEncaissementCommission.COURTAGE):
             montant += encaissement.montant()
-        # print(montant)
         if montant == self.montant_com_gestion:
             return True
         else:
@@ -1779,7 +1685,44 @@ class Reglement(models.Model):
         montant = 0
         for encaissement in self.encaissement_commissions.all():
             montant += encaissement.montant()
-        # print(montant)
+        if montant == self.montant_com_global():
+            return True
+        else:
+            return False
+
+    # POUR LES RETROCESSIONS APPORTEURS
+
+    def montant_retrocession_apporteur_global(self):
+        return self.montant_com_intermediaire
+
+    def montant_retrocession_apporteur_encaisse(self):
+        montant = 0
+        for encaissement in self.encaissement_commissions.exclude(type_commission=TypeEncaissementCommission.COURTAGE):
+            montant += encaissement.montant()
+        return montant
+
+    def montant_retrocession_apporteur_solde(self):
+        return (self.montant_com_intermediaire - self.montant_retrocession_apporteur_encaisse())
+
+    def etat_encaisse_retrocession(self):
+        montant = 0
+        for encaissement in self.encaissement_commissions.exclude(
+                type_commission=TypeEncaissementCommission.COURTAGE).exclude(
+                type_commission=TypeEncaissementCommission.GESTION):
+            montant += encaissement.montant()
+        if montant == self.montant_com_intermediaire:
+            return True
+        else:
+            return False
+
+    def etat_encaisse_retrocession_apporteur(self):
+        if self.etat_encaisse_retrocession() == True:
+            return True
+        else:
+            return False
+        montant = 0
+        for encaissement in self.encaissement_commissions.all():
+            montant += encaissement.montant()
         if montant == self.montant_com_global():
             return True
         else:

@@ -75,7 +75,6 @@
                             <th scope="col">{{_("Début période")}}</th>
                             <th scope="col">{{_("Montant HT")}}</th>
                             <th scope="col">{{_("Montant TTC")}}</th>
-                            <!--th scope="col">Mt cie</th-->
                             <th scope="col">{{_("Com Courtage")}}</th>
                             <th scope="col">{{_("Retro Apporteur")}}</th>
                             <th scope="col">{{_('Solde')}}</th>
@@ -94,7 +93,6 @@
                               <td>{{ quittance.date_debut|date:'d/m/Y'|default_if_none:"" }}</td>
                               <td class="text-right">{{ quittance.prime_ht|money_field }}</td>
                               <td class="text-right">{{ quittance.prime_ttc|money_field }}</td>
-                              <!--td class="text-right">{{ quittance.montant_cie|money_field }}</td-->
                               <td class="text-right">{{ quittance.commission_courtage|money_field }}</td>
                               <td class="text-right">{{ quittance.commission_intermediaires|money_field }}</td>
                               <td class="text-right">{{ quittance.solde|money_field }}</td>

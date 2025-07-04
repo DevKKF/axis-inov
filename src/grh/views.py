@@ -27,10 +27,10 @@ User = get_user_model()
 
 from production.models import Aliment, AlimentFormule, Bareme, Document, FormuleGarantie, Mouvement, \
     MouvementAliment, MouvementPolice, Police, Quittance, Reglement, TarifPrestataireClient, TypeDocument, Client
-from configurations.models import Civilite, Pays, Prestataire, PrestataireReseauSoin, QualiteBeneficiaire, \
-    ReseauSoin, TypePrestataire, User
+from configurations.models import Civilite, Pays, Prestataire, QualiteBeneficiaire, User
 from shared.enum import Statut, StatutQuittance, Genre, StatutEnrolement, StatutValidite, StatutIncorporation, \
     StatutTraitement
+
 
 from django.db.models import ExpressionWrapper, F, DurationField, Q, Value
 from django.db.models import Count
@@ -920,7 +920,7 @@ class DetailsFormulePoliceView(TemplateView):
         reseau_soins = []
 
         for tarif_prestataire_client in tarif_prestataire_clients:
-            prestataire_reseaux = PrestataireReseauSoin.objects.filter(prestataire=tarif_prestataire_client.prestataire)
+            prestataire_reseaux = ""
             for prestataire_reseau in prestataire_reseaux:
                 reseau_soin = prestataire_reseau.reseau_soin
                 if reseau_soin not in reseau_soins:
@@ -970,7 +970,7 @@ class ReseauDeSoinView(TemplateView):
         police = get_object_or_404(Police, id=police_id)
         formule = get_object_or_404(FormuleGarantie, id=formule_id, police=police)
         prestataires = Prestataire.objects.filter(tarifprestataireclient__formule_id=formule_id).distinct()
-        reseau_soin = get_object_or_404(ReseauSoin, id=reseau_soin_id)
+        reseau_soin = ""
 
         context['police'] = police
         context['formule'] = formule
@@ -994,14 +994,10 @@ class PrestataireMedicalView(TemplateView):
         police = get_object_or_404(Police, id=police_id)
         formule = get_object_or_404(FormuleGarantie, id=formule_id, police=police)
         prestataire = get_object_or_404(Prestataire, id=prestataire_id)
-        types_prestataire = TypePrestataire.objects.all()
-        selected_type = get_object_or_404(TypePrestataire, prestataire=prestataire_id)
 
         context['police'] = police
         context['formule'] = formule
         context['prestataire'] = prestataire
-        context['types_prestataire'] = types_prestataire
-        context['selected_type'] = selected_type
 
         return context
 

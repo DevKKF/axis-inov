@@ -3,7 +3,7 @@ from rest_framework.serializers import ModelSerializer
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 from api.models import InfoActe
-from configurations.models import KeyValueData, User, TypePrestataire, Prestataire, Acte, Bureau, ModeReglement, \
+from configurations.models import KeyValueData, User, Prestataire, Acte, Bureau, ModeReglement, \
     TypeActe, Civilite, QualiteBeneficiaire, Pays, Profession
 from production.models import Aliment, Carte, Client, FormuleGarantie, Bareme, CarteDigitalDematerialisee
 from sinistre.models import Sinistre
@@ -98,11 +98,6 @@ class BarremeSerializer(ModelSerializer):
         depth = 1
         # extra_kwargs = {'user_extranet': {'write_only': True}}
 
-class TypePrestataireSerializer(ModelSerializer):
-    class Meta:
-        model = TypePrestataire
-        fields = "__all__"
-        # depth = 1
 
 class PrestataireSerializer(ModelSerializer):
     class Meta:

@@ -49,12 +49,12 @@ from configurations.models import Compagnie, MarqueVehicule, Pays, Civilite, Pro
     Devise, Taxe, BureauTaxe, Apporteur, BaseCalcul, TypeQuittance, NatureQuittance, TypeClient, TypePersonne, Langue, \
     Branche, ParamProduitCompagnie, CategorieVehicule, Banque, Carburant, Usage, Carosserie, GarantieCirconstance, \
     NatureOperation, TypeTarif, Rubrique, Periodicite, AuthGroup, ActionLog, SousRubrique, TypePrefinancement, CompteTresorerie, \
-    GroupeInter, TypeFichier, EtapeSinistre
+    TypeFichier, EtapeSinistre
 
 from inov import settings
 from production.forms import ContactForm, FilialeForm, AcompteForm, DocumentForm, PoliceForm, PhotoUploadForm
 from production.helper_production import create_alimet_helper
-from production.models import (FormuleRubriquePrefinance, ModePrefinancement, Motif, Mouvement, Client, Police, \
+from production.models import (ModePrefinancement, Motif, Mouvement, Client, Police, \
     Acompte, Document, Filiale, AutreRisque, PoliceGarantie, AlimentPolice, PoliceAssureur, Courrier, \
     Contact, Quittance, SecteurActivite, TypeDocument, Statut, MouvementPolice, StatutQuittance, \
     Genre, PlacementEtGestion, ModeRenouvellement, CalculTM, ApporteurPolice, TaxePolice, \
@@ -3106,10 +3106,7 @@ def details_quittance(request, quittance_id):
         total_montant_com_intermediaire=Sum('encaissementcommission__reglement__montant_com_intermediaire'),
     ).distinct()
 
-    print('encaissements_data', encaissements_data)
-
-    for operation in encaissements_data:
-        print(f"Operation: {operation.id}")
+    print(f"encaissements_data: {encaissements_data}")
 
     operations = Operation.objects.filter(
         operationreglement__reglement__quittance_id=quittance_id,
@@ -3195,13 +3192,15 @@ def add_quittance(request, police_id):
         # Récupérer le dernier historique
         dernier_historique = HistoriquePolice.objects.filter(police_id=police.id).order_by('-date_du_jour').first()
 
-        # Récupérer les assureurs associés à l'historique
+        # Récupérer les assureurs associés à l'historique et l'apporteur
         assureur_police = PoliceAssureur.objects.filter(historique_police_id=dernier_historique.id,type_compagnie_id=1).first()
         autre_assureur_police = PoliceAssureur.objects.filter(historique_police_id=dernier_historique.id).exclude(type_compagnie_id=1).first()
+        apporteur_police = ApporteurPolice.objects.filter(police_id=police_id, statut_validite=StatutValidite.VALIDE).first()
 
         # Create Quittance object
         quittance = Quittance.objects.create(police_id=police_id,
                                             compagnie=assureur_police.compagnie,
+                                            apporteur=apporteur_police.apporteur if apporteur_police else None,
                                             devise=devise,
                                             nature_quittance_id=nature_quittance_id,
                                             type_quittance_id=type_quittance_id,
@@ -3415,6 +3414,7 @@ def add_reglement(request, police_id):
                                                              montant=montant_regle,
                                                              montant_compagnie=montant_compagnie,
                                                              compagnie=quittance.compagnie,
+                                                             apporteur=quittance.apporteur,
                                                              devise_id=devise_id,
                                                              banque_emettrice=banque_emettrice,
                                                              compte_tresorerie_id=compte_tresorerie_id,
@@ -3739,6 +3739,7 @@ def add_lettrage(request, police_id):
                         montant=obj_quittance.montant_regle,
                         montant_compagnie=montant_compagnie,
                         compagnie=obj_quittance.compagnie,
+                        apporteur=obj_quittance.apporteur,
                         montant_com_courtage=montant_com_courtage,
                         montant_com_intermediaire=montant_com_intermediaire,
                         date_paiement=date_paiement,

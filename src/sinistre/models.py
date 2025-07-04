@@ -7,7 +7,7 @@ from django.utils import timezone
 
 
 from configurations.models import CompteTresorerie, Devise, Medicament, Compagnie, User, TypePriseencharge, Prestataire, Prescripteur, Acte, \
-    Affection, Rubrique, SousRubrique, RegroupementActe, TypePrefinancement, PeriodeComptable, ModeCreation, Bureau, Circonstance, TypeSinistre, Responsabilite, TypeIntervenant, PosteDommage, Pays, \
+    Rubrique, SousRubrique, RegroupementActe, TypePrefinancement, PeriodeComptable, ModeCreation, Bureau, Circonstance, TypeSinistre, Responsabilite, TypeIntervenant, PosteDommage, Pays, \
     TypeRemboursement, ModeReglement, Banque, BordereauLettreCheque, Garantie, TypeRecours, EtapeSinistre
 from production.models import TypeDocument, Aliment, Police, PeriodeCouverture, FormuleGarantie, Bareme, Client, AlimentPolice, Mouvement, Motif
 from shared.enum import StatutFacture, StatutSinistre, SatutBordereauDossierSinistres, StatutSinistreBordereau, \
@@ -425,7 +425,6 @@ class DossierSinistre(models.Model):
     compagnie = models.ForeignKey(Compagnie, null=True, on_delete=models.RESTRICT)
     formulegarantie = models.ForeignKey(FormuleGarantie, null=True, on_delete=models.RESTRICT)
     police = models.ForeignKey(Police, null=True, on_delete=models.RESTRICT)
-    affection = models.ForeignKey(Affection, null=True, on_delete=models.RESTRICT)
     renseignement_clinique = models.TextField(blank=False, null=True)
     commentaire = models.TextField(blank=False, null=True)
     numero = models.CharField(max_length=25, blank=False, null=False)
@@ -1192,7 +1191,6 @@ class SinistreTemporaire(models.Model):
     bareme = models.ForeignKey(Bareme, null=True, blank=True, on_delete=models.RESTRICT)
     acte = models.ForeignKey(Acte, null=True, on_delete=models.RESTRICT)
     medicament = models.ForeignKey(Medicament, null=True, on_delete=models.RESTRICT)
-    affection = models.ForeignKey(Affection, null=True, on_delete=models.RESTRICT)
     prestataire = models.ForeignKey(Prestataire, null=True, on_delete=models.RESTRICT)
     prescripteur = models.ForeignKey(Prescripteur, null=True, on_delete=models.RESTRICT)
     numero = models.CharField(max_length=50, blank=True, null=True)
@@ -1237,50 +1235,6 @@ class SinistreTemporaire(models.Model):
         db_table = 'sinistres_temporaires'
         verbose_name = 'Sinistre temporaire'
         verbose_name_plural = 'Sinistres temporaires'
-
-
-#suivi du traitement des factures prestataires
-class TrackFacture(models.Model):
-    created_by = models.ForeignKey(User, null=True, on_delete=models.RESTRICT)
-    prestataire = models.ForeignKey(Prestataire, null=True, on_delete=models.RESTRICT)
-    code_systeme = models.CharField(max_length=255, blank=True, null=True)
-    reference_facture_prestataire = models.CharField(max_length=255, blank=True, null=True)
-    montant_facture = models.DecimalField(max_digits=20, decimal_places=6, null=True)
-    nombre_feuilles_soins = models.DecimalField(max_digits=20, decimal_places=6, null=True)
-    date_reception = models.CharField(max_length=255, blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        db_table = 'track_facture'
-        verbose_name = 'track_facture'
-        verbose_name_plural = 'track_facture'
-
-
-class TrackEtape(models.Model):
-    code = models.CharField(max_length=50, blank=True, null=True)
-    libelle = models.CharField(max_length=255, blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        db_table = 'track_etape'
-        verbose_name = 'Etape'
-        verbose_name_plural = 'Etape'
-
-
-class TrackEtapeFacture(models.Model):
-    created_by = models.ForeignKey(User, null=True, on_delete=models.RESTRICT)
-    track_facture = models.ForeignKey(TrackFacture, on_delete=models.RESTRICT)
-    etape = models.ForeignKey(TrackEtape, null=True, on_delete=models.RESTRICT)
-    observation = models.CharField(max_length=255, blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        db_table = 'track_etape_facture'
-        verbose_name = 'Etape Facture'
-        verbose_name_plural = 'Etapes Factures'
 
 
 # Historique des sinistres payés

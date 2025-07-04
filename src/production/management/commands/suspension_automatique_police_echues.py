@@ -4,7 +4,6 @@ from django.core.management.base import BaseCommand, CommandError
 from django.db.models import Q
 from django.utils import timezone
 
-from configurations.models import AlimentMatricule
 from production.models import Aliment, Police
 
 

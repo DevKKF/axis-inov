@@ -37,18 +37,18 @@ from django.views.generic import TemplateView
 from django_dump_die.middleware import dd
 from django.db import transaction
 
-from comptabilite.models import BordereauOrdonnance, CompteComptable, EncaissementCommission, Journal, ReglementReverseCompagnie
+from comptabilite.models import BordereauOrdonnance, CompteComptable, EncaissementCommission, Journal, ReglementReverseCompagnie, ReglementReverseApporteur
 from configurations.helper_config import create_query_background_task, execute_query
 from configurations.models import Bureau, Caution, Compagnie, MailingList, NatureOperation, Devise, ModeReglement, Banque, PeriodeComptable, \
     CompteTresorerie, ActionLog, TypeRemboursement
-from configurations.models import Compagnie, NatureOperation, Devise, ModeReglement, Banque, PeriodeComptable, \
+from configurations.models import Compagnie, Apporteur, NatureOperation, Devise, ModeReglement, Banque, PeriodeComptable, \
     CompteTresorerie, ActionLog, TypeRemboursement, ModelLettreCheque, \
     BordereauLettreCheque, BusinessUnit
 from production.models import Aliment, Reglement, Police, Quittance, Operation, OperationReglement, MouvementPolice, \
-    Client, PoliceAssureur, HistoriquePolice
+    Client, PoliceAssureur, HistoriquePolice, ApporteurPolice
 from production.templatetags.my_filters import money_field
 from shared.enum import MoyenPaiement, SatutBordereauDossierSinistres, StatutPaiementSinistre, \
-    StatutReversementCompagnie, StatutEncaissementCommission, StatutReglementApporteurs, \
+    StatutReversementCompagnie, StatutEncaissementCommission, StatutReversementApporteur, \
     StatutValidite, Statut, StatutBordereau
 from shared.helpers import generate_random_string, render_pdf
 from sinistre.helper_sinistre import requete_analyse_prime_compta
@@ -1331,7 +1331,7 @@ def regenerateFactureGarantpdf(request, facture_id):
                 'status':200
             }
         )
-    
+
 
 @method_decorator(login_required, name="dispatch")
 class SuiviTresorerie(TemplateView):
@@ -3405,6 +3405,7 @@ def add_encaissement_com_court_gest(request, type):
 
         nature_operation_code = "ENCCOM"
         nature_operation = NatureOperation.objects.filter(code=nature_operation_code).first()
+        type_commission = "COURTAGE" if type == "courtage" else "GESTION"
 
         #compte COMPTABLE si utilisé dans l'operation
         compte_comptable = CompteComptable.objects.filter(id=compte_difference).first() if compte_difference and compte_difference != "" else None
@@ -3424,6 +3425,7 @@ def add_encaissement_com_court_gest(request, type):
                                              banque_emettrice=banque_emettrice,
                                              mode_reglement_id=mode_reglement,
                                              date_operation=date_paiement,
+                                             type_commission=type_commission,
                                              created_by=request.user)
         operation.save()
 
@@ -3442,7 +3444,6 @@ def add_encaissement_com_court_gest(request, type):
             montant_com_courtage = 0 if montant_com_courtage == "" else float(montant_com_courtage)
             montant_com_gestion = montant_encaisse_gest_selectionne.replace(" ", "") if type == "gestion" else 0
             montant_com_gestion = 0 if montant_com_gestion == "" else float(montant_com_gestion)
-            type_commission = "COURTAGE" if type == "courtage" else "GESTION"
             #reglement_id = reglement[i]
             i = i + 1
             #print(reglement_id)
@@ -3639,22 +3640,26 @@ def generer_bordereau_encaissement_compagnie_pdf(request, operation_id):
 
 
 @method_decorator(login_required, name='dispatch')
-class ReglementApporteursView(TemplateView):
+class ReversesementApporteursView(TemplateView):
     # permission_required = "comptabilite.view_reglement"
-    template_name = 'comptabilite/reglements_apporteurs.html'
+    template_name = 'comptabilite/encaissement_retrocession_apporteur.html'
     model = Reglement
 
     def get(self, request, *args, **kwargs):
 
-        reglements_compagnies = Reglement.objects.filter(
-            statut_reversement_compagnie=StatutReversementCompagnie.REVERSE,
-            statut_commission=StatutEncaissementCommission.ENCAISSEE,
-            statut_reglement_apporteurs=StatutReglementApporteurs.NON_REGLE)
-        compagnies = Compagnie.objects.all().order_by('nom')
+        apporteurs = Apporteur.objects.filter(bureau=request.user.bureau).order_by('nom')
+
+        for apporteur in apporteurs:
+            if apporteur.nombre_reglements_a_recevoir_retrocession == 0:
+                apporteurs = apporteurs.exclude(id=apporteur.id)
+
+        reglements_apporteurs = Reglement.objects.filter(
+            statut_reversement_apporteur=StatutReversementApporteur.REVERSE,
+            statut_commission=StatutEncaissementCommission.ENCAISSEE)
 
         context = self.get_context_data(**kwargs)
-        context['compagnies'] = compagnies
-        context['reglements_compagnies'] = reglements_compagnies
+        context['apporteurs'] = apporteurs
+        context['reglements_apporteurs'] = reglements_apporteurs
 
         return self.render_to_response(context)
 
@@ -3665,6 +3670,202 @@ class ReglementApporteursView(TemplateView):
             **admin.site.each_context(self.request),
             "opts": self.model._meta,
         }
+
+
+@login_required
+def add_encaissement_retrocession_apporteur(request):
+    if request.method == 'POST':
+        devise = request.POST.get('devise')
+        mode_reglement = request.POST.get('mode_reglement')
+        compte_tresorerie = request.POST.get('compte_tresorerie')
+        banque_emettrice = request.POST.get('banque_emettrice')
+        numero_piece = request.POST.get('numero_piece')
+        date_paiement = request.POST.get('date_paiement')
+        reglements_selectionnes = request.POST.getlist('reglement_selectionne')
+        date_encaissement_commission = datetime.now(tz=timezone.utc)
+
+        nature_operation_code = "ENCCOM"
+        nature_operation = NatureOperation.objects.filter(code=nature_operation_code).first()
+        type_commission = "RETROCESSION"
+
+        # enregistrer les infos dans operation
+        nombre_reglements = 0
+        montant_total_regle = request.POST.get('montant_total_regle').replace(" ", "")
+        operation = Operation.objects.create(nature_operation=nature_operation,
+                                             numero_piece=numero_piece,
+                                             montant_total=montant_total_regle,
+                                             compte_tresorerie_id=compte_tresorerie,
+                                             devise_id=devise,
+                                             banque_emettrice=banque_emettrice,
+                                             mode_reglement_id=mode_reglement,
+                                             date_operation=date_paiement,
+                                             type_commission=type_commission,
+                                             created_by=request.user)
+        operation.save()
+
+        # enregistrer le details dans reglements (liste les quittances reglées avec chaque montant)
+        nombre_reglements_selectionnes = 0
+        montant_total_reglements_selectionne = 0
+        i = 0
+        for reglement_id in reglements_selectionnes:
+
+            montant_encaisse_retro_selectionne = request.POST.get(
+                'montant_encaisse_retro{}'.format(reglement_id))
+
+            montant_com_intermediaire = montant_encaisse_retro_selectionne.replace(" ", "")
+            montant_com_intermediaire = 0 if montant_com_intermediaire == "" else float(montant_com_intermediaire)
+            i = i + 1
+            if reglement_id is not None:
+                reglement = Reglement.objects.get(id=reglement_id)
+                montant_total_reglements_selectionne += montant_com_intermediaire
+                nombre_reglements_selectionnes = nombre_reglements_selectionnes + 1
+
+                encaiss_com = EncaissementCommission.objects.create(operation=operation,
+                                                                    reglement=reglement,
+                                                                    created_by=request.user,
+                                                                    montant_com_intermediaire=montant_com_intermediaire,
+                                                                    type_commission=type_commission)
+                encaiss_com.save()
+
+                # on constate l'encaissement total pour mettre à jour ledit statut
+                if reglement.etat_encaisse_retrocession_apporteur() == True:
+                    reglement.statut_reversement_apporteur = StatutReversementApporteur.REVERSE
+                    reglement.date_encaissement_commission = date_encaissement_commission
+                    reglement.save()
+                    print("Changement de statut de la commission & Date du jour", date_encaissement_commission)
+
+                nombre_reglements_selectionnes = i
+                devise = reglement.devise
+
+        # mettre à jour le total dans operation
+        operation.montant_total = montant_total_reglements_selectionne
+        operation.nombre_reglements = nombre_reglements_selectionnes
+        operation.numero = 'OP' + str(Date.today().year) + str(operation.pk).zfill(6)
+        operation.statut_bordereau = "VALIDE"
+        operation.devise = devise
+        operation.save()
+
+        pdf_url = reverse('generer_bordereau_encaissement_apporteur_pdf', args=[operation.pk])
+
+        response = {
+            'statut': 1,
+            'message': "Encaissement effectué avec succès !",
+            'data': {'montant_total_reglements_selectionne': montant_total_reglements_selectionne,
+                     'nombre_reglements_selectionnes': nombre_reglements_selectionnes, 'operation_id': operation.pk,
+                     'pdf_url': pdf_url}
+        }
+
+        return JsonResponse(response)
+
+    else:
+        natures_operations = NatureOperation.objects.all()
+        devises = Devise.objects.all()
+        modes_reglements = ModeReglement.objects.all()
+        banques = Banque.objects.filter(bureau=request.user.bureau).order_by('libelle')
+        comptes_tresoreries = CompteTresorerie.objects.exclude(code="REGCIE").order_by('libelle')
+        reglements_apporteurs = Reglement.objects.filter(
+            statut_reversement_apporteur=StatutReversementApporteur.NON_REVERSE,
+            statut_validite=StatutValidite.VALIDE).exclude(statut_commission=StatutEncaissementCommission.NON_ENCAISSEE)
+
+        apporteurs = Apporteur.objects.filter(bureau=request.user.bureau).order_by('nom')
+
+        comptes_exercices = CompteComptable.objects.all()
+
+        for apporteur in apporteurs:
+            if apporteur.nombre_reglements_a_recevoir_retrocession == 0:
+                apporteurs = apporteurs.exclude(id=apporteur.id)
+
+        today = datetime.now(tz=timezone.utc)
+
+        return render(request, 'modal_add_encaissement_retrocession_apporteur.html',
+                      {'reglements_apporteurs': reglements_apporteurs, 'apporteurs': apporteurs, 'today': today,
+                       'devises': devises, 'natures_operations': natures_operations,
+                       'modes_reglements': modes_reglements, 'banques': banques,
+                       'comptes_tresoreries': comptes_tresoreries, 'comptes_exercices': comptes_exercices})
+
+
+@login_required
+def ajax_reglements_reverses_retrocession_apporteur(request, apporteur_id):
+
+    polices = Police.objects.filter(
+        id__in=ApporteurPolice.objects.filter(
+            apporteur_id=apporteur_id
+        ).values('police_id')
+    ).distinct()
+
+    reglements_apporteurs = ReglementReverseApporteur.objects.filter(quittance__police__in=polices, statut_reversement_apporteur=StatutReversementApporteur.NON_REVERSE, statut_validite=StatutValidite.VALIDE).exclude(statut_commission=StatutEncaissementCommission.NON_ENCAISSEE)
+
+    return render(request, 'reglements_reverses_retrocession_apporteur.html', {'reglements_apporteurs':reglements_apporteurs})
+
+
+@login_required
+def generer_bordereau_encaissement_apporteur_pdf(request, operation_id):
+    operation = Operation.objects.get(id=operation_id)
+
+    encaissement_commissions = EncaissementCommission.objects.filter(operation=operation)
+
+    apporteur = encaissement_commissions.first().reglement.quittance.apporteur if encaissement_commissions.first() and encaissement_commissions.first().reglement and encaissement_commissions.first().reglement.quittance else None
+    bureau = encaissement_commissions.first().reglement.bureau if encaissement_commissions.first() and encaissement_commissions.first().reglement else None
+
+    total_montant_com_intermediaire = 0
+    total_montant_retrocession = 0
+    total_montant_com_encaisse = 0
+    op_div = 0
+    op_sens = None
+    op_designation = None
+
+    for encaissement_commission in encaissement_commissions:
+        total_montant_com_intermediaire += encaissement_commission.montant_com_intermediaire
+        total_montant_retrocession += encaissement_commission.reglement.montant_com_intermediaire
+        total_montant_com_encaisse += encaissement_commission.montant()
+        for journal in encaissement_commission.journals.all():
+            op_div = journal.montant
+            op_designation = journal.designation
+            if journal.sens == "D":
+                op_sens = "D"
+            else:
+                op_sens = "C"
+
+        if encaissement_commission.montant_com_intermediaire is not None:
+            total_montant_com_intermediaire += encaissement_commission.montant_com_intermediaire
+
+    total_montant_percu_final = total_montant_com_encaisse - op_div if op_sens == "D" else total_montant_com_encaisse + op_div
+
+    site_logo_url = request.build_absolute_uri(static(settings.JAZZMIN_SETTINGS['site_logo']))
+
+    contexte = {
+        'operation': operation,
+        'encaissement_commissions': encaissement_commissions,
+        # 'nombre_pages': nombre_pages,
+        'bureau': bureau,
+        'apporteur': apporteur,
+        'total_montant_com_intermediaire': total_montant_com_intermediaire,
+        'total_montant_retrocession': total_montant_retrocession,
+        'total_montant_com_encaisse': total_montant_com_encaisse,
+        'op_div': op_div,
+        'op_sens': op_sens,
+        'op_designation': op_designation,
+        'total_montant_percu_final': total_montant_percu_final,
+        'site_logo_url': site_logo_url,
+    }
+    pdf = render_pdf('courriers/bordereau_encaissement_apporteur.html', contexte)
+
+    pdf_file = PyPDF2.PdfReader(pdf)
+    nombre_pages = len(pdf_file.pages)
+
+    #ajout du nombre de page obtenu au contexte pour le rendu final
+    contexte['nombre_pages'] = nombre_pages
+    pdf = render_pdf('courriers/bordereau_encaissement_apporteur.html', contexte)
+
+    # Update bordereau data and save
+    operation.fichier.save(f'bordereau_encaissement_apporteur{operation.numero}.pdf', File(pdf))
+    operation.save()
+
+
+    #return pdf
+
+    #AFFICHER DIRECTEMENT
+    return HttpResponse(File(pdf), content_type='application/pdf')
 
 
 def get_montant_caution(bureau, compagnie=None):
@@ -3908,16 +4109,6 @@ def prepare_chart_line_data(bureau, compagnie=None):
     }
 
     return context
-
-
-@login_required
-def ajax_reglements_apporteurs(request, compagnie_id):
-
-    polices = Police.objects.filter(compagnie_id=compagnie_id)
-
-    reglements_compagnies = ReglementReverseCompagnie.objects.filter(quittance__police__in=polices, statut_reversement_compagnie=StatutReversementCompagnie.NON_REVERSE, statut_validite=StatutValidite.VALIDE)
-
-    return render(request, 'reglements_a_reverser_by_compagnie.html', {'reglements_compagnies':reglements_compagnies})
 
 
 @method_decorator(login_required, name='dispatch')

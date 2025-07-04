@@ -9,7 +9,7 @@ from import_export.admin import ImportExportModelAdmin
 from django import forms
 from admin_custom.admin import custom_admin_site
 from configurations.forms import ActionLogForm, PermissionForm, SousRubriqueForm, TarifForm, \
-    CompagnieAdminForm, BanqueAdminForm, ApporteurInternationalForm, GroupeInterForm, GarantieBrancheForm, \
+    CompagnieAdminForm, BanqueAdminForm, ApporteurInternationalForm, GarantieBrancheForm, \
     GarantieFormuleForm
 from configurations.models import *
 from production.models import Quittance, SecteurActivite, TypeDocument, Mouvement, Motif
@@ -167,13 +167,6 @@ class TypeEtablissementAdmin(admin.ModelAdmin):
     list_display = ('libelle', 'code')
     list_filter = ('libelle', 'code')
     search_field = ('libelle', 'code')
-    list_per_page = 10
-
-
-class SpecialiteAdmin(ImportExportModelAdmin):
-    list_filter = ('name', 'status')
-    list_display = ('name', 'status')
-    search_field = ('name', 'status')
     list_per_page = 10
 
 
@@ -515,32 +508,6 @@ class BackgroundQueryTaskAdmin(admin.ModelAdmin):
 class ApporteurInternationalAdmin(admin.ModelAdmin):
     list_display = ('code', 'nom', 'pays')
     form = ApporteurInternationalForm
-
-
-class GroupeInterAdmin(admin.ModelAdmin):
-    list_display = ('code', 'nom', 'apporteur', 'status')
-    form = GroupeInterForm
-
-    def has_add_permission(self, request):
-        if request.user.is_superuser:
-            return True
-        else:
-            return False
-
-    def has_delete_permission(self, request, obj=None):
-        return False
-
-    def has_change_permission(self, request, obj=None):
-        if request.user.is_superuser:
-            return True
-        else:
-            return False
-
-    def has_update_permission(self, request, obj=None):
-        if request.user.is_superuser:
-            return True
-        else:
-            return False
 
 
 class ModelLettreChequeAdmin(admin.ModelAdmin):

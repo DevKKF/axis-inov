@@ -1,0 +1,153 @@
+<div  class="modal fade"  id="modal-encaissement-retrocession"  aria-hidden="true"  style="display: none">
+	<div class="modal-dialog modal-xl">
+		<div class="modal-content">
+			<form enctype="multipart/form-data" id="form_add_encaissement_retrocession" action="{% url 'add_encaissement_retrocession_apporteur' %}" method="post">
+			{% csrf_token %}
+			<div class="modal-header">
+				<h4 class="modal-title">FORMULAIRE D'ENCAISSEMENT DE RETROCESSION APPORTEUR</b></h4>
+				<button type="button"class="close"data-dismiss="modal" aria-label="Close">
+					<span aria-hidden="true">×</span>
+				</button>
+			</div>
+			<div class="modal-body">
+				<div class="alert  alert-dismissible fade show hidden" role="alert">
+				  <span class="message"> TRAITEMENT EN COURS</span>
+				</div>
+				<div class="col-md-12 offset-0">
+					<div class="row">
+						<div class="col-md-6">
+
+							<div class="form-group row">
+									<label class="col-sm-6 col-form-label">Compte d'encaissement <span class="required">*</span></label>
+								<div class="col-sm-6">
+									<select class="form-control form-add_reglement_apporteur-select" name="compte_tresorerie" id="compte_tresorerie" required>
+										<option value="" selected>Choisir</option>
+										{% for ct in comptes_tresoreries %}
+											<option value="{{ ct.id }}">{{ ct.libelle }}</option>
+										{% endfor %}
+									</select>
+								</div>
+							</div>
+
+							<div class="form-group row">
+								<label class="col-sm-6 col-form-label">Apporteur <span class="required">*</span></label>
+								<div class="col-sm-6">
+									<select class="form-control form-add_reglement_apporteur-select" name="apporteur" id="apporteur" required>
+										<option value="">Choisir</option>
+										{% for apporteur in apporteurs %}
+											<option value="{{ apporteur.id }}" data-href_reglements_reverses="{% url 'ajax_reglements_reverses_retrocession_apporteur' apporteur.id %}">{{ apporteur.nom }} {{ apporteur.prenoms }}</option>
+										{% endfor %}
+									</select>
+								</div>
+							</div>
+
+							<div class="form-group row">
+								<label class="col-sm-6 col-form-label">Banque emettrice</label>
+								<div class="col-sm-6">
+									<input type="text" class="form-control alpha_num_n_space_input" name="banque_emettrice" id="banque_emettrice"/>
+								</div>
+							</div>
+
+						</div>
+						<div class="vl"></div>
+						<div class="col-md-6" style="border-left:0px;margin-left:-10px;padding-left:20px;">
+
+							<div class="form-group row">
+								<label class="col-sm-6 col-form-label">Mode d'encaissement <span class="required">*</span></label>
+								<div class="col-sm-6">
+									<select class="form-control form-add_reglement_apporteur-select" name="mode_reglement" id="mode_reglement" required>
+										<option value="">Choisir</option>
+										{% for mode_reglement in modes_reglements %}
+											<option value="{{ mode_reglement.id }}">{{ mode_reglement.libelle }}</option>
+										{% endfor %}
+									</select>
+								</div>
+							</div>
+
+							<div class="form-group row">
+								<label class="col-sm-6 col-form-label">Date encaissement <span class="required">*</span></label>
+								<div class="col-sm-6">
+									<input type="date" class="form-control" name="date_paiement" value="{{ today|date:'Y-m-d' }}" min="{{ today|date:'Y-m-d' }}"  max="{{ today|date:'Y-m-d' }}" readonly required/>
+								</div>
+							</div>
+
+							<div class="form-group row">
+								<label class="col-sm-6 col-form-label">Reference</label>
+								<div class="col-sm-6">
+									<input type="text" class="form-control" name="numero_piece" />
+								</div>
+							</div>
+						</div>
+					</div>
+					<div class="row table-responsive text-nowrap" style="border-top:1px solid #eee;"><span>Liste des rétrocessions apporteurs à reversés</span>
+						<div id="box_reglements_reverses">
+							<!-- LISTE A CHARGER DYNAMIQUEMENT  -->
+							<table class="table table-bordered table-striped dataTable0 dtr-inline" id="table_reglements_reverses">
+							  <thead>
+								<tr>
+									<th scope="col" width="2%"></th>
+									<th scope="col" width="10%">N° Reg client</th>
+									<th scope="col" width="10%">N° Piece</th>
+									<th scope="col" width="7%">Retro apporteur</th>
+									<th scope="col" width="10%">Retro apporteur enc.</th>
+									<th scope="col" width="9%">Mont Restant</th>
+									<th scope="col" width="10%">N° Quittance</th>
+									<th scope="col" width="11%">Client</th>
+									<th scope="col" width="7%">Com enc.</th>
+								</tr>
+							  </thead>
+							  <tbody>
+							  	<tr>
+								  <td colspan="10" style="text-align:center;">Sélectionner un apporteur pour charger la liste</td>
+								</tr>
+							  </tbody>
+							</table>
+						</div>
+					</div>
+
+				</div>
+
+				<div class="modal-footer justify-content-between">
+					<button type="button" class="btn btn-danger" data-dismiss="modal"><i class="fa fa-remove"></i> Retour</button>
+					<div>Rétrocessions à encaisser : <input type="text" name="montant_total_regle" class="money_field montant_total_com" readonly style="background:none;border:none;font-size:18px;width:150px;font-weight:bold;"/></div>
+					<button disabled type="button" id="btn_save_encaissement" class="btn o-bg-primary"><i class="fa fa-check-circle"></i> Valider</button>
+				</div>
+
+			</div>
+			</form>
+			<div id="datatable_stock_input_com" class="datatable_stock_input_com d-none">
+
+			</div>
+		</div>
+	</div>
+
+</div>
+
+<script>
+
+	function addInputAlphaNumWithSpaceValidation(inputSelector, errorId) {
+		var previousValue = ""; // Déclarer previousValue en dehors de la fonction
+		$(inputSelector).on("input", function () {
+			var inputValue = $(this).val();
+			// Modifier la regex pour inclure les espaces
+			var alphanumericRegex = /^[a-zA-Z0-9\/\-_ ]*$/;
+			var errorMessage = $("#" + errorId);
+
+			if (!alphanumericRegex.test(inputValue)) {
+				errorMessage.css("display", "block");
+				$(this).val(previousValue); // Restaurer la valeur précédente
+				setTimeout(function () {
+					errorMessage.css("display", "none");
+				}, 5000); // Masquer le message d'erreur après 5 secondes
+			} else {
+				previousValue = inputValue; // Mettre à jour la valeur précédente
+				errorMessage.css("display", "none");
+			}
+		});
+	}
+
+	$(document).ready(function () {
+		addInputAlphaNumWithSpaceValidation(".alpha_num_n_space_input", "error-message");
+	});
+
+</script>

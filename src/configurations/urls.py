@@ -4,10 +4,10 @@ from shared.helpers import openai_complete
 from . import views
 from .views import (
     PrestatairesView, DetailsPrestatairesView, GroupePermissionsView,
-    TarifsView, ReseauxSoinsView, DetailsReseauSoinView, WsBobyView, 
+    TarifsView, WsBobyView,
     WsBobyCreateView, WsBobyEditeView, ActesView, ConnectedUsersView, 
-    BusinessUnitView, BrancheView, BanquesView, affectionsView, 
-    ApporteurView, ApporteurinternationalView, CategorieView, ViewCourrier, 
+    BusinessUnitView, BrancheView, BanquesView,
+    ApporteurView, ApporteurinternationalView, ViewCourrier,
     CompagnieView, CarosseriesView, CategorieVehiculeView, CiviliteView, 
     CompteTresorerieView, ConditionsAssuranceView, DeviseView, CarburantView,
     FormuleView, FractionnementView, GarantieView, GarantieFormuleView, 
@@ -47,14 +47,6 @@ urlpatterns = [
     path('tarifs/generate_modele_tarifs_bureau/', views.generate_modele_tarifs_bureau, name='generate_modele_tarifs_bureau'),
     path('tarifs/import_tarifs_bureau/', views.import_tarifs_bureau, name='import_tarifs_bureau'),
 
-    # Réseaux de soins
-    path('reseausoin/', ReseauxSoinsView.as_view(), name='reseauxsoins'),
-    path('reseausoin/<int:reseau_id>/', DetailsReseauSoinView.as_view(), name='details_reseau_soin'),
-    path('reseausoin/<int:reseau_id>/modifier/', views.modifier_reseau_soin, name='modifier_reseau_soin'),
-    path('reseausoin/<int:reseau_id>/supprimer/', views.supprimer_reseau_soin, name='supprimer_reseau_soin'),
-    path('reseausoin/<int:reseau_id>/ajouter_prestataire/', views.ajouter_prestataire_reseau_soin, name='ajouter_prestataire_reseau_soin'),
-    path('reseausoin/<int:reseau_id>/retirer_prestataire/<int:prestataire_id>/', views.retirer_prestataire_reseau_soin, name='retirer_prestataire_reseau_soin'),
-
     # WS Boby
     path('wsboby/', WsBobyView.as_view(), name='wsboby'),
     path('wsboby/create/', WsBobyCreateView.as_view(), name='wsboby_create'),
@@ -87,9 +79,6 @@ urlpatterns = [
     path('banque/<int:banque_id>/modifier/', views.modifier_banque, name='modifier_banque'),
     path('banque/<int:banque_id>/delete/', views.supprimer_banque, name='supprimer_banque'),
 
-    # Affections
-    path('affection/', affectionsView.as_view(), name='affections'),
-
     # Apporteur
     path('apporteur/', ApporteurView.as_view(), name='apporteurs'),
     path('apporteur/ajouter/', views.add_apporteur, name='add_apporteur'),
@@ -98,9 +87,6 @@ urlpatterns = [
 
     # Apporteur International
     path('apporteurinternational/', ApporteurinternationalView.as_view(), name='apporteurinternational'),
-
-    # Catégorie
-    path('categorieaffection/', CategorieView.as_view(), name='categorieaffections'),
 
     # Carrosserie
     path('carosserie/', CarosseriesView.as_view(), name='carosseries'),

@@ -1,0 +1,100 @@
+{% load my_filters %}
+<style>
+    .input-error {
+      border: 2px solid red !important;
+      background-color: #ffe6e6;
+    }
+</style>
+<table class="table table-bordered table-striped dataTable0 dtr-inline" id="table_reglements_reverses">
+  <thead>
+    <tr>
+      <th scope="col" width="2%"></th>
+      <th scope="col" width="10%">N° Reg client</th>
+      <th scope="col" width="12%">N° Piece</th>
+      <th scope="col" width="10%">Retro apporteur</th>
+      <th scope="col" width="14%">Retro apporteur enc.</th>
+      <th scope="col" width="14%">Mont Restant</th>
+      <th scope="col" width="12%">N° Quittance</th>
+      <th scope="col" width="12%">Client</th>
+      <th scope="col" width="12%">Com enc.</th>
+    </tr>
+  </thead>
+  <tbody>
+  {% for reglement in reglements_apporteurs %}
+    <tr>
+      <td><input type="checkbox" class="checkbox_quittance_a_encaisser_retro_apporteur" name="reglement_selectionne" value="{{reglement.id}}" id="checkbox_quittance_a_encaisser_{{reglement.id}}" data-reglement_id="{{reglement.id}}" data-montant_com_courtage="{{reglement.montant_com_courtage}}" data-reglement_montant_retrocession_apporteur="{{reglement.montant_retrocession_apporteur_solde}}"/></td>
+      <td>{{ reglement.numero|default_if_none:"" }}</td>
+      <td>{{ reglement.numero_piece|default_if_none:"" }}</td>
+      <td class="text-right">{{ reglement.montant_retrocession_apporteur_solde|money_field }}</td>
+      <td><input type="text" class="form-control montant_encaisse_retro handle_calculer_montant_total_a_encaisser money_field" name="montant_encaisse_retro{{reglement.id}}" value="0" readonly></td>
+      <td><input type="text" class="form-control restant_total money_field" name="restant_total{{reglement.id}}" id="restant_total" value="{{ reglement.montant_retrocession_apporteur_solde|money_field }}" readonly></td>
+      <td>{{ reglement.quittance.numero|default_if_none:"" }}</td>
+      <td>{{ reglement.quittance.police.client.nom|default_if_none:"" }}</td>
+      <td class="text-right">{{ reglement.montant_com_courtage|money_field }}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+<script>
+function AppliquerMaskSaisie(){
+
+	//appliquer le mask de saisie sur les champs montant
+	Inputmask("currency", {
+		prefix: "",
+		groupSeparator: " ",//désactiver pour
+		alias: "numeric",
+		digits: 0,// nombre de caractère après la virgule
+        onKeyDown: function(event) {
+        var key = event.keyCode || event.charCode;
+        // console.log(key);
+        // Empêcher la saisie du signe négatif
+        /*
+          if (key === 189 || key === 109 || key === 45) { // Les codes 189 et 109 correspondent au signe moins (-)
+              event.preventDefault();
+              return false;
+          }
+        */
+    }
+	}).mask('.money_field');
+
+    Inputmask("currency", {
+		prefix: "",
+		groupSeparator: " ",//désactiver pour
+		alias: "numeric",
+		digits: 0,// nombre de caractère après la virgule
+        onKeyDown: function(event) {
+        var key = event.keyCode || event.charCode;
+
+        // Empêcher la saisie du signe négatif
+        if (key === 189 || key === 109) { // Les codes 189 et 109 correspondent au signe moins (-)
+            event.preventDefault();
+            return false;
+        }
+    }
+    }).mask('.total_autres_taxes');
+
+
+    /*
+    new Cleave('.money_field', {
+        numeral: true,
+        numeralThousandsGroupStyle: 'thousand'
+        //delimiter: ' ',
+    });
+    alert("cleve init");
+
+
+    if ($('.money_field').length > 0) {
+
+       AutoNumeric.multiple('.money_field', {
+          currencySymbol: '',
+          digitGroupSeparator: ' ',
+          decimalCharacter: '.',
+          decimalPlaces: 0
+        });
+
+    }
+    */
+
+}
+AppliquerMaskSaisie();
+</script>

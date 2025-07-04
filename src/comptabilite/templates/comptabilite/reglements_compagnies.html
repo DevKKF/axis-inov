@@ -23,8 +23,8 @@
                         <th scope="col">{{_("Commissions") }}</th>
                         <th scope="col">{{_("Nbre lignes") }}</th>
                       </tr>
-                    </thead>
-                    <tbody>
+                  </thead>
+                  <tbody>
                     {% for compagnie in compagnies %}
                       <tr class="btnOpenDialogDetailCompagnieEncaissementReglement" data-compagnie="{{compagnie.id}}">
                         <td><span class="badge badge-info"><i class="fa fa-eye"></i></span></td>
@@ -34,7 +34,7 @@
                         <td>{{ compagnie.nombre_reglements_a_reverser_cie|default_if_none:"" }}</td>
                       </tr>
                     {% endfor %}
-                    </tbody>
+                  </tbody>
               </table>
           </div>
         </div>
@@ -43,9 +43,7 @@
   </div>
 </div>
 
-
 {% endblock %}
-
 
 {% block extrajs %}
 <script>

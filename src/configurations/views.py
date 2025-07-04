@@ -37,13 +37,13 @@ from django.db.models import Sum, Q, ExpressionWrapper, F, DurationField, Max
 from django.utils.timezone import now
 
 from configurations.helper_config import verify_sql_query
-from configurations.models import ActionLog, Specialite, Secteur, \
+from configurations.models import ActionLog, Secteur, \
     Bureau ,BusinessUnit, Branche, Banque, Apporteur, ApporteurInternational,Devise,\
     User, AuthGroup, TypeEtablissement,Tarif, Rubrique, \
     BackgroundQueryTask, ParamProduitCompagnie, Compagnie, \
     TypeApporteur, TypePersonne, Pays, TypeCompagnie, TypeGarant, TauxCommission, Carosserie, \
     CategorieVehicule, Civilite, CompteTresorerie, ConditionsAssurance, Carburant, Formule, Fractionnement, Garantie, GarantieFormule, \
-    Groupe, ModeReglement, Circonstance, Responsabilite, TypeIntervenant, TypeMouvement, TypeSinistre, PosteDommage, GarantieCirconstance, RegroupementActe, Prescripteur, Prestataire, Affection, Acte, TypePrestataire, ReseauSoin, PrestataireReseauSoin, WsBoby, ParamWsBoby, TypeActe, ParamActe, CategorieAffection, AlimentMatricule
+    Groupe, ModeReglement, Circonstance, Responsabilite, TypeIntervenant, TypeMouvement, TypeSinistre, PosteDommage, GarantieCirconstance, RegroupementActe, Prescripteur, Prestataire, Acte, WsBoby, ParamWsBoby, TypeActe, ParamActe
 from inov import settings
 # Create your views here.
 from production.models import Client, Mouvement, \
@@ -277,7 +277,7 @@ def correction_affections(request):
 
 def update_matricule(request):
     #marquer les compagnies qui ont des params taux différents
-    aliments_matricules = AlimentMatricule.objects.all().order_by('id')
+    aliments_matricules = ""
 
     if aliments_matricules:
 
@@ -822,16 +822,12 @@ class PrestatairesView(PermissionRequiredMixin, TemplateView):
 
         secteurs = Secteur.objects.all()
         bureaux = Bureau.objects.filter(id=request.user.bureau.pk)
-        types_prestataires = TypePrestataire.objects.all()
         types_etablissements = TypeEtablissement.objects.all()
-        reseaux_soins = ReseauSoin.objects.filter(bureau=request.user.bureau, status=True)
 
         context_perso = {
             'bureaux': bureaux,
             'secteurs': secteurs,
-            'types_prestataires': types_prestataires,
             'types_etablissements': types_etablissements,
-            'reseaux_soins': reseaux_soins,
         }
 
         context = {**context_original, **context_perso}
@@ -1021,7 +1017,7 @@ def ajouter_prescripteur_prestataire(request):
         secteur_id = request.POST.get('secteur_id')
         type_prestataire_id = request.POST.get('type_prestataire_id')
         reseaux_soins_ids = request.POST.getlist('reseaux_soins_ids')
-        reseaux_soins = ReseauSoin.objects.filter(id__in=reseaux_soins_ids)
+        reseaux_soins = ""
 
         latitude = None
         longitude = None
@@ -1078,9 +1074,7 @@ def ajouter_prescripteur_prestataire(request):
 
             # enregistrer ses réseaux de soins
             for reseau_soin in reseaux_soins:
-                prs = PrestataireReseauSoin(reseau_soin=reseau_soin, prestataire=prestataire, created_by=request.user,
-                                            date_integration=datetime.datetime.now(tz=timezone.utc))
-                prs.save()
+                pass
 
             response = {
                 'statut': 1,
@@ -1112,13 +1106,11 @@ def modifier_prestataire(request, prestataire_id):
     prestataire = Prestataire.objects.get(id=prestataire_id)
 
     secteurs = Secteur.objects.all()
-    types_prestataires = TypePrestataire.objects.all()
     types_etablissements = TypeEtablissement.objects.all()
 
     return render(request, 'prestataires/modal_modifier_prestataire.html', {
         'prestataire': prestataire,
         'secteurs': secteurs,
-        'types_prestataires': types_prestataires,
         'types_etablissements': types_etablissements
     })
 
@@ -1204,13 +1196,11 @@ def supprimer_prestataire(request, prestataire_id):
 def add_reseau_soin_prestataire(request, prestataire_id):
     if request.method == 'POST':
         reseaux_soins_ids = request.POST.getlist('reseaux_soins_ids')
-        reseaux_soins = ReseauSoin.objects.filter(id__in=reseaux_soins_ids)
+        reseaux_soins = ""
 
         # enregistrer ses réseaux de soins
         for reseau_soin in reseaux_soins:
-            prs = PrestataireReseauSoin(reseau_soin=reseau_soin, prestataire_id=prestataire_id, created_by=request.user,
-                                        date_integration=datetime.datetime.now(tz=timezone.utc))
-            prs.save()
+            pass
 
         response = {
             'statut': 1,
@@ -1232,12 +1222,6 @@ def add_reseau_soin_prestataire(request, prestataire_id):
 
 def retirer_reseau_soin_prestataire(request, prs_id):
     if request.method == 'POST':
-        # enregistrer ses réseaux de soins
-        prs = PrestataireReseauSoin.objects.get(id=prs_id)
-        prs.statut_validite = StatutValidite.CLOTURE
-        prs.date_retrait = datetime.datetime.now(tz=timezone.utc)
-        prs.removed_by = request.user
-        prs.save()
 
         response = {
             'statut': 1,
@@ -1269,9 +1253,6 @@ def add_prescripteur(request):
         telephone = request.POST.get('telephone')
         prestataire_id = request.POST.get('prestataire_id')
 
-        specialite_id = request.POST.get('specialite_id')
-        specialite = Specialite.objects.get(id=specialite_id)
-
         prestataire = Prestataire.objects.get(id=prestataire_id)
 
         # dd(prestataire)
@@ -1281,7 +1262,6 @@ def add_prescripteur(request):
             telephone=telephone,
             numero_ordre=numero_ordre,
             email=email,
-            specialite_id=specialite.pk,
         )
 
         PrescripteurPrestataire.objects.create(
@@ -1339,38 +1319,33 @@ def import_prescripteurs(request, prestataire_id):
             nom = row['NOM']
             prenoms = row['PRENOMS']
             telephone = row['TELEPHONE']
-            code_specialite = row['CODE_SPECIALITE']
 
-            specialite = Specialite.objects.filter(code=code_specialite).first()
+            if Prescripteur.objects.filter(numero_ordre=numero_ordre, bureau=request.user.bureau).exists():
+                # Ne retournera pas d'erreur si le prescripteur existe
+                prescripteur = Prescripteur.objects.filter(numero_ordre=numero_ordre,
+                                                           bureau=request.user.bureau).first()
+                # dd(prescripteur)
+            else:
+                # Le prescripteur n'existe pas, on le créé
+                prescripteur = Prescripteur.objects.create(
+                    nom=nom,
+                    prenoms=prenoms,
+                    numero_ordre=numero_ordre,
+                    telephone=telephone,
+                    bureau=request.user.bureau,
+                )
+                # dd(prescripteur)
 
-            if specialite:
-                if Prescripteur.objects.filter(numero_ordre=numero_ordre, bureau=request.user.bureau).exists():
-                    # Ne retournera pas d'erreur si le prescripteur existe
-                    prescripteur = Prescripteur.objects.filter(numero_ordre=numero_ordre,
-                                                               bureau=request.user.bureau).first()
-                    # dd(prescripteur)
-                else:
-                    # Le prescripteur n'existe pas, on le créé
-                    prescripteur = Prescripteur.objects.create(
-                        nom=nom,
-                        prenoms=prenoms,
-                        numero_ordre=numero_ordre,
-                        telephone=telephone,
-                        specialite_id=specialite.pk,
-                        bureau=request.user.bureau,
-                    )
-                    # dd(prescripteur)
+            # On tente de trouver l'enregistrement de du prescripteur sinon on l'enregistre
+            prescripteur_prestataire = PrescripteurPrestataire.objects.filter(prescripteur_id=prescripteur.id,
+                                                                              prestataire_id=prestataire.pk).first()
 
-                # On tente de trouver l'enregistrement de du prescripteur sinon on l'enregistre
-                prescripteur_prestataire = PrescripteurPrestataire.objects.filter(prescripteur_id=prescripteur.id,
-                                                                                  prestataire_id=prestataire.pk).first()
-
-                if not prescripteur_prestataire:
-                    PrescripteurPrestataire.objects.create(
-                        prescripteur_id=prescripteur.pk,
-                        prestataire_id=prestataire.pk,
-                        created_at=datetime.datetime.now(tz=timezone.utc)
-                    )
+            if not prescripteur_prestataire:
+                PrescripteurPrestataire.objects.create(
+                    prescripteur_id=prescripteur.pk,
+                    prestataire_id=prestataire.pk,
+                    created_at=datetime.datetime.now(tz=timezone.utc)
+                )
 
                 cpt_success = cpt_success + 1
 
@@ -1420,7 +1395,6 @@ class DetailsPrestatairesView(TemplateView):
         if prestataire:
 
             clients = Client.objects.all()
-            specialities = Specialite.objects.all()
 
             prescripteurs = PrescripteurPrestataire.objects.filter(prestataire_id=prestataire.pk,
                                                                    statut_validite=StatutValidite.VALIDE)
@@ -1428,15 +1402,9 @@ class DetailsPrestatairesView(TemplateView):
 
             tarifs_prestataire_clients = TarifPrestataireClient.objects.filter(prestataire_id=prestataire.pk)
 
-            # reseaux_soins = ReseauSoin.objects.filter(status=True)
-            reseaux_soins_prestataire = PrestataireReseauSoin.objects.filter(prestataire=prestataire,
-                                                                             statut_validite=StatutValidite.VALIDE)
+            reseaux_soins_prestataire = ""
 
-            prestataire_reseausoin_ids = PrestataireReseauSoin.objects.filter(prestataire=prestataire,
-                                                                              statut_validite=StatutValidite.VALIDE).values_list(
-                'reseau_soin_id', flat=True).order_by('-id')
-            reseaux_soins_restants = ReseauSoin.objects.filter(bureau=request.user.bureau).exclude(
-                id__in=prestataire_reseausoin_ids)
+            prestataire_reseausoin_ids = ""
 
             rubriques = Rubrique.objects.filter(status=True)
             regroupements_actes = RegroupementActe.objects.filter(status=True)
@@ -1446,8 +1414,6 @@ class DetailsPrestatairesView(TemplateView):
                 'prestataire': prestataire,
                 'utilisateurs': utilisateurs,
                 'prescripteurs': prescripteurs,
-                'specialities': specialities,
-                'reseaux_soins_restants': reseaux_soins_restants,
                 'reseaux_soins_prestataire': reseaux_soins_prestataire,
                 'tarifs_prestataire_clients': tarifs_prestataire_clients,
                 'rubriques': rubriques,
@@ -1495,7 +1461,6 @@ def prescripteurs_prestataires_datatable(request, prestataire_id):
     sort_direction = request.GET.get('order[0][dir]')
     #   search_nom = request.GET.get('search_nom', '')
     search_numero_ordre = request.GET.get('search_numero_ordre', '')
-    search_specialite = request.GET.get('search_specialite', '')
     search_value = request.GET.get('search[value]', '')
 
     prestataire_prescripteurs_ids = PrescripteurPrestataire.objects.filter(
@@ -1515,17 +1480,11 @@ def prescripteurs_prestataires_datatable(request, prestataire_id):
             Q(numero_ordre__icontains=search_numero_ordre)
         )
 
-    if search_specialite:
-        queryset = queryset.filter(
-            Q(specialite_id=search_specialite)
-        )
-
     sort_columns = {
         0: 'nom',
         1: 'prenoms',
         2: 'numero_ordre',
         3: 'telephone',
-        4: 'specialite__name'
     }
 
     sort_column = sort_columns.get(sort_column_index, 'id')
@@ -1554,7 +1513,6 @@ def prescripteurs_prestataires_datatable(request, prestataire_id):
             "prenoms": p.prenoms,
             "numero_ordre": p.numero_ordre,
             "telephone": p.telephone,
-            "specialite": p.specialite.name.upper() if p.specialite else "",
             "actions": actions_html,
         })
 
@@ -1569,12 +1527,10 @@ def prescripteurs_prestataires_datatable(request, prestataire_id):
 def popup_modifier_prescripteur(request, prescripteur_id):
     prescripteur = Prescripteur.objects.filter(id=prescripteur_id).first()
 
-    specialites = Specialite.objects.all()
     prestataires = Prestataire.objects.filter(status=True, bureau=request.user.bureau)
 
     return render(request, 'prestataires/modal_modifier_prescripteur.html', {
         'prescripteur': prescripteur,
-        'specialites': specialites,
         'prestataires': prestataires
     })
 
@@ -1584,14 +1540,10 @@ def update_prescripteur(request, prescripteur_id):
 
         prescripteur = Prescripteur.objects.filter(id=prescripteur_id).first()
 
-        #   email = request.POST.get('email')
-        specialite_id = request.POST.get('specialite_id')
-
         prescripteur.nom = request.POST.get('nom')
         prescripteur.prenoms = request.POST.get('prenoms')
         prescripteur.numero_ordre = request.POST.get('numero_ordre')
         prescripteur.telephone = request.POST.get('telephone')
-        prescripteur.specialite_id = specialite_id
 
         prescripteur.save()
 
@@ -1635,323 +1587,12 @@ def retirer_prescripteur_prestataire(request, prestataire_id, prescripteur_id):
 
 # FIN PRESCRIPTEUR
 
-
-# TODO RESEAU DE SOINS
-
-class ReseauxSoinsView(PermissionRequiredMixin, TemplateView):
-    permission_required = "configurations.view_prestataire"
-    template_name = 'reseaux_soins/reseaux_soins.html'
-    model = Prestataire
-
-    def get(self, request, *args, **kwargs):
-        context_original = self.get_context_data(**kwargs)
-
-        secteurs = Secteur.objects.all()
-        bureaux = Bureau.objects.filter(id=request.user.bureau.pk)
-        types_prestataires = TypePrestataire.objects.all()
-        types_etablissements = TypeEtablissement.objects.all()
-
-        context_perso = {
-            'bureaux': bureaux,
-            'secteurs': secteurs,
-            'types_prestataires': types_prestataires,
-            'types_etablissements': types_etablissements,
-        }
-
-        context = {**context_original, **context_perso}
-
-        return self.render_to_response(context)
-
-    def get_context_data(self, **kwargs):
-        return {
-            **super().get_context_data(**kwargs),
-            **admin.site.each_context(self.request),
-            "opts": self.model._meta,
-        }
-
-
-def reseauxsoins_datatable(request):
-    items_per_page = 10
-    page_number = request.GET.get('page')
-    start = int(request.GET.get('start', 0))
-    length = int(request.GET.get('length', items_per_page))
-    sort_column_index = int(request.GET.get('order[0][column]'))
-    sort_direction = request.GET.get('order[0][dir]')
-    search_value = request.GET.get('search[value]', '')
-
-    queryset = ReseauSoin.objects.filter(status=True, bureau=request.user.bureau)
-
-    if search_value:
-        queryset = queryset.filter(
-            Q(nom__icontains=search_value)
-        )
-
-    # Map column index to corresponding model field for sorting
-    sort_columns = {
-        0: 'nom',
-        1: 'code',
-        5: 'status',
-        # Add more columns as needed
-    }
-
-    # Default sorting by 'id' if column index is not found
-    sort_column = sort_columns.get(sort_column_index, 'id')
-
-    if sort_direction == 'desc':
-        sort_column = '-' + sort_column  # For descending order
-
-    # Apply sorting
-    queryset = queryset.order_by(sort_column)
-
-    paginator = Paginator(queryset, length)
-    page_obj = paginator.get_page(page_number)
-
-    # Prepare the data in the expected format
-    data = []
-    for p in page_obj:
-        detail_url = reverse('detail_reseau_soin', args=[p.id])  # URL to the detail view
-        update_url = reverse('popup_modifier_reseau_soin', args=[p.id])  # URL to the detail view
-
-        actions_html = (
-            f'<a href="{detail_url}"><span class="badge btn-sm btn-details rounded-pill"><i class="fa fa-eye"></i> Détails</span></a>&nbsp;'
-            f'<span style="cursor:pointer;" class="btn_modifier_reseau_soin badge btn-sm btn-modifier rounded-pill" data-href="{update_url}"><i class="fa fa-edit"></i> Modifier</span>')
-
-        data.append({
-            "id": p.id,
-            "name": p.nom,
-            "code": p.code,
-            "statut": "ACTIF" if p.status else " INACTIF",
-            "actions": actions_html,
-        })
-
-    return JsonResponse({
-        "data": data,
-        "recordsTotal": queryset.count(),
-        "recordsFiltered": paginator.count,
-        "draw": int(request.GET.get('draw', 1)),
-    })
-
-
-def ajouter_prestataire_reseau_soin(request):
-    if request.method == 'POST':
-        name = request.POST.get('name')
-
-        if request.user.bureau:
-
-            cpt_reseau_soin_bureau = ReseauSoin.objects.filter(bureau=request.user.bureau).count() + 1
-            # Mettre a jour le code
-            code_bureau = request.user.bureau.code
-            code = str(code_bureau) + 'RXS' + '-' + str(cpt_reseau_soin_bureau).zfill(4)
-
-            reseau_soin = ReseauSoin.objects.create(
-                created_by=request.user,
-                bureau=request.user.bureau,
-                nom=name,
-                code=code
-            )
-
-            reseau_soin.save()
-
-            response = {
-                'statut': 1,
-                'message': "Enregistrement effectuée avec succès !",
-                'data': {
-                }
-            }
-
-
-        else:
-            response = {
-                'statut': 0,
-                'message': "Vous n'êtes lié à aucun bureau !",
-                'data': {}
-            }
-
-    else:
-
-        response = {
-            'statut': 0,
-            'message': "Methode non autorisée !",
-            'data': {}
-        }
-
-    return JsonResponse(response)
-
-
-def modifier_reseau_soin(request, reseau_soin_id):
-    reseau_soin = ReseauSoin.objects.get(id=reseau_soin_id)
-
-    prestataires = Prestataire.objects.filter(bureau=request.user.bureau)
-
-    return render(request, 'reseaux_soins/modal_modifier_reseau_soin.html', {
-        'reseau_soin': reseau_soin,
-        'prestataires': prestataires
-    })
-
-
-def retirer_prestataire_reseau_soin(request, reseau_soin_id):
-    reseau_soin = ReseauSoin.objects.get(id=reseau_soin_id)
-
-    prestataires = Prestataire.objects.filter(bureau=request.user.bureau)
-
-    return render(request, 'reseaux_soins/modal_modifier_reseau_soin.html', {
-        'reseau_soin': reseau_soin,
-        'prestataires': prestataires
-    })
-
-
-# TO_DO_ISMAEL
-def supprimer_reseau_soin(request, reseau_soin_id):
-    if request.method == 'POST':
-
-        reseau_soin = ReseauSoin.objects.filter(id=reseau_soin_id).update(nom=request.POST.get('name'))
-
-        response = {
-            'statut': 1,
-            'message': "Modification effectuée ss avec succès !",
-            'data': {
-            }
-        }
-
-    else:
-
-        response = {
-            'statut': 0,
-            'message': "Methode non autorisée !",
-            'data': {}
-        }
-
-    return JsonResponse(response)
-
-
-class DetailsReseauSoinView(PermissionRequiredMixin, TemplateView):
-    permission_required = "configurations.view_prestataire"
-    template_name = 'reseaux_soins/reseau_soin_details.html'
-    model = ReseauSoin
-
-    def get(self, request, reseau_soin_id, *args, **kwargs):
-        context_original = self.get_context_data(**kwargs)
-
-        reseau_soin = ReseauSoin.objects.get(id=reseau_soin_id, status=True)
-        prestataires = PrestataireReseauSoin.objects.filter(reseau_soin_id=reseau_soin_id)
-        types_prestataires = TypePrestataire.objects.all()
-
-        context_perso = {
-            'reseau_soin': reseau_soin,
-            'prestataires': prestataires,
-            'types_prestataires': types_prestataires,
-        }
-
-        context = {**context_original, **context_perso}
-
-        return self.render_to_response(context)
-
-    def post(self):
-        pass
-
-    def get_context_data(self, **kwargs):
-        pprint(kwargs)
-        return {
-            **super().get_context_data(**kwargs),
-            **admin.site.each_context(self.request),
-            "opts": self.model._meta,
-        }
-
-
-def reseau_soin_prestataires_datatable(request, reseau_soin_id):
-    items_per_page = 10
-    page_number = request.GET.get('page')
-    start = int(request.GET.get('start', 0))
-    length = int(request.GET.get('length', items_per_page))
-    sort_column_index = int(request.GET.get('order[0][column]'))
-    sort_direction = request.GET.get('order[0][dir]')
-    search_nom = request.GET.get('search_nom', '')
-    search_code = request.GET.get('search_code', '')
-    search_type = request.GET.get('search_type', '')
-    search_value = request.GET.get('search[value]', '')
-
-    prestataire_reseausoin_ids = PrestataireReseauSoin.objects.filter(reseau_soin_id=reseau_soin_id,
-                                                                      statut_validite=StatutValidite.VALIDE).values_list(
-        'prestataire_id', flat=True).order_by('-id')
-    queryset = Prestataire.objects.filter(status=True, bureau_id=request.user.bureau_id).filter(
-        id__in=prestataire_reseausoin_ids)
-
-    if search_nom:
-        queryset = queryset.filter(
-            Q(name__icontains=search_nom)
-        )
-
-    if search_code:
-        queryset = queryset.filter(
-            Q(code__icontains=search_code)
-        )
-
-    if search_type:
-        queryset = queryset.filter(
-            Q(type_prestataire_id=search_type)
-        )
-
-    # Map column index to corresponding model field for sorting
-    sort_columns = {
-        0: 'name',
-        1: 'code',
-        2: 'type_prestataire__name',
-        3: 'secteur__libelle',
-        4: 'telephone',
-        5: 'status',
-        # Add more columns as needed
-    }
-
-    # Default sorting by 'id' if column index is not found
-    sort_column = sort_columns.get(sort_column_index, 'id')
-
-    if sort_direction == 'desc':
-        sort_column = '-' + sort_column  # For descending order
-
-    # Apply sorting
-    queryset = queryset.order_by(sort_column)
-
-    paginator = Paginator(queryset, length)
-    page_obj = paginator.get_page(page_number)
-
-    # Prepare the data in the expected format
-    data = []
-    for p in page_obj:
-        detail_url = reverse('detail_prestataire', args=[p.id])  # URL to the detail view
-        retirer_prestataire_url = reverse('retirer_prestataire_reseau',
-                                          args=[reseau_soin_id, p.id])  # URL to the detail view
-
-        actions_html = (
-            f'<!--a href="{detail_url}" target="_blank"><span class="badge btn-sm btn-details rounded-pill"><i class="fa fa-eye"></i> Détails</span></a>&nbsp;-->'
-            f'<span style="cursor:pointer;" class="btn_retirer_prestataire badge btn-sm btn-danger rounded-pill" data-href="{retirer_prestataire_url}"><i class="fa fa-minus"></i> Retirer</span>')
-
-        data.append({
-            "id": p.id,
-            "name": p.name,
-            "code": p.code,
-            "type_prestataire": p.type_prestataire.name if p.type_prestataire else "",
-            "secteur": p.secteur.libelle if p.secteur else "",
-            "ville": p.ville,
-            "telephone": p.telephone,
-            "statut": "ACTIF" if p.status else " INACTIF",
-            "actions": actions_html,
-        })
-
-    return JsonResponse({
-        "data": data,
-        "recordsTotal": queryset.count(),
-        "recordsFiltered": paginator.count,
-        "draw": int(request.GET.get('draw', 1)),
-    })
-
-
 # POPUP JOINDRE DES PRESTATAIRES
 def popup_joindre_prestataires(request, reseau_soin_id):
-    reseau_soin = ReseauSoin.objects.filter(id=reseau_soin_id, bureau=request.user.bureau).first()
-    types_prestataires = TypePrestataire.objects.all().order_by('name')
+    reseau_soin = ""
 
     return render(request, 'reseaux_soins/popup_joindre_prestataires.html',
-                  {'reseau_soin': reseau_soin, 'types_prestataires': types_prestataires})
+                  {'reseau_soin': reseau_soin})
 
 
 def reseau_soin_prestataires_restants_datatable(request, reseau_soin_id):
@@ -1966,11 +1607,7 @@ def reseau_soin_prestataires_restants_datatable(request, reseau_soin_id):
     search_type = request.GET.get('search_type', '')
     search_value = request.GET.get('search[value]', '')
 
-    prestataire_reseausoin_ids = PrestataireReseauSoin.objects.filter(reseau_soin_id=reseau_soin_id,
-                                                                      statut_validite=StatutValidite.VALIDE).values_list(
-        'prestataire_id', flat=True).order_by('-id')
-    queryset = Prestataire.objects.filter(status=True, bureau_id=request.user.bureau_id).exclude(
-        id__in=prestataire_reseausoin_ids)
+    prestataire_reseausoin_ids = ""
 
     if search_nom:
         queryset = queryset.filter(
@@ -2047,7 +1684,7 @@ def reseau_soin_prestataires_restants_datatable(request, reseau_soin_id):
 def joindre_prestataires_reseau(request, reseau_soin_id):
     if request.method == 'POST':
 
-        reseau_soin = ReseauSoin.objects.filter(id=reseau_soin_id).first()
+        reseau_soin = ""
 
         prestataires_ids = literal_eval(request.POST.get('selectedItems'))
         print("prestataires_ids")
@@ -2056,12 +1693,7 @@ def joindre_prestataires_reseau(request, reseau_soin_id):
         prestataires = Prestataire.objects.filter(id__in=prestataires_ids)
 
         for prestataire in prestataires:
-            prestataire_reseau = PrestataireReseauSoin.objects.create(reseau_soin=reseau_soin,
-                                                                      prestataire=prestataire,
-                                                                      created_by=request.user,
-                                                                      date_integration=datetime.datetime.now(
-                                                                          tz=timezone.utc))
-            prestataire_reseau.save()
+            pass
 
         response = {
             'statut': 1,
@@ -2084,17 +1716,11 @@ def joindre_prestataires_reseau(request, reseau_soin_id):
 def joindre_prestataire_reseau(request, reseau_soin_id, prestataire_id):
     if request.method == 'POST':
 
-        reseau_soin = ReseauSoin.objects.filter(id=reseau_soin_id).first()
+        reseau_soin = ""
         prestataire = Prestataire.objects.filter(id=prestataire_id).first()
 
         if reseau_soin and prestataire:
-            prestataire_reseau = PrestataireReseauSoin.objects.create(reseau_soin=reseau_soin,
-                                                                      prestataire=prestataire,
-                                                                      created_by=request.user,
-                                                                      date_integration=datetime.datetime.now(
-                                                                          tz=timezone.utc)
-                                                                      )
-            prestataire_reseau.save()
+            pass
 
             response = {
                 'statut': 1,
@@ -2117,14 +1743,6 @@ def joindre_prestataire_reseau(request, reseau_soin_id, prestataire_id):
 
 def retirer_prestataire_reseau(request, reseau_soin_id, prestataire_id):
     if request.method == 'POST':
-        prestataire_reseau = PrestataireReseauSoin.objects.filter(reseau_soin_id=reseau_soin_id,
-                                                                  prestataire_id=prestataire_id,
-                                                                  statut_validite=StatutValidite.VALIDE).update(
-            statut_validite=StatutValidite.CLOTURE,
-            removed_by=request.user,
-            date_retrait=datetime.datetime.now(tz=timezone.utc),
-        )
-
         response = {
             'statut': 1,
             'message': "Prestataire intégré au réseau de soins avec succès !",
@@ -4072,36 +3690,6 @@ def supprimer_banque(request, banque_id):
         return JsonResponse(response)
 
 #------------------------------FIN BANQUE--------------------------------------
-
-
-#-------------------------AFFECTION---------------------------------------
-
-class affectionsView(PermissionRequiredMixin, TemplateView):
-    template_name = 'affection/affection.html'
-    permission_required = "configurations.view_affection"
-    model = Affection
-
-    def get(self, request, *args, **kwargs):
-        context_original = self.get_context_data(**kwargs)
-
-        affection = Affection.objects.all()
-        utilisateurs = User.objects.filter(bureau=request.user.bureau, type_utilisateur__code="INTERNE",
-                                           is_active=True).order_by('last_name')
-
-        context_perso = {'affections': affection, 'utilisateurs': utilisateurs}
-
-        context = {**context_original, **context_perso}
-
-        return self.render_to_response(context)
-
-    def get_context_data(self, **kwargs):
-        pprint(kwargs)
-        return {
-            **super().get_context_data(**kwargs),
-            **admin.site.each_context(self.request),
-            "opts": self.model._meta,
-        }
-
 
 #------------------------APPORTEUR----------------------------------
 
@@ -7462,38 +7050,6 @@ class ApporteurinternationalView(PermissionRequiredMixin, TemplateView):
             **admin.site.each_context(self.request),
             "opts": self.model._meta,
         }
-
-
-
-
-#--------------------------------------CategorieAffection--------------------------------------------------
-
-class CategorieView(PermissionRequiredMixin, TemplateView):
-    template_name = 'categorie_affection/categorie.html'
-    permission_required = "configurations.view_categorie"
-    model = CategorieAffection
-
-    def get(self, request, *args, **kwargs):
-        context_original = self.get_context_data(**kwargs)
-
-        categorie = CategorieAffection.objects.all()
-        utilisateurs = User.objects.filter(bureau=request.user.bureau, type_utilisateur__code="INTERNE",
-                                           is_active=True).order_by('last_name')
-
-        context_perso = {'categories': categorie, 'utilisateurs': utilisateurs}
-
-        context = {**context_original, **context_perso}
-
-        return self.render_to_response(context)
-
-    def get_context_data(self, **kwargs):
-        pprint(kwargs)
-        return {
-            **super().get_context_data(**kwargs),
-            **admin.site.each_context(self.request),
-            "opts": self.model._meta,
-        }
-
 
 #--------------------------------------COURRIER--------------------------------------------------
 

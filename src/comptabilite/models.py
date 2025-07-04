@@ -3,9 +3,10 @@ from django.db import models
 from configurations.models import User, ModeReglement, Banque, TypeRemboursement, Prestataire, Compagnie, Bureau, \
     Devise, CompteTresorerie
 # Create your models here.
-from production.models import Reglement, StatutReversementCompagnie, Aliment, Operation
+from production.models import Reglement, StatutReversementCompagnie, StatutReversementApporteur, Aliment, Operation
 from shared.enum import StatutValidite, StatutQuittance, TypeEncaissementCommission
 from sinistre.models import BordereauOrdonnancement
+
 
 class ReglementReverseCompagnie(Reglement):
     class Meta:
@@ -19,6 +20,20 @@ class ReglementReverseCompagnie(Reglement):
 
     def get_queryset(self):
         return super(ReglementReverseCompagnie, self).get_queryset().filter(statut_reversement_compagnie=StatutReversementCompagnie.REVERSE)
+
+
+class ReglementReverseApporteur(Reglement):
+    class Meta:
+        proxy = True
+        verbose_name = "Reglement apporteur"
+        verbose_name_plural = "Reglements apporteur"
+
+        permissions = [
+            ("can_do_reglement_apporteur", "Peut faire des règlements apporteurs"),
+        ]
+
+    def get_queryset(self):
+        return super(ReglementReverseApporteur, self).get_queryset().filter(statut_reversement_apporteur=StatutReversementApporteur.REVERSE)
 
 
 class ReglementApporteurs(Reglement):
@@ -65,6 +80,9 @@ class EncaissementCommission(models.Model):
         else:
             return (self.montant_com_courtage + self.montant_com_gestion)
 
+    def montant_com_encaisse_apporteur(self):
+        return (self.montant_com_intermediaire)
+
     def montant(self):
         montant = 0
         for journal in self.journals.all():
@@ -76,10 +94,23 @@ class EncaissementCommission(models.Model):
             montant = montant + self.montant_com_courtage
         elif self.type_commission == TypeEncaissementCommission.GESTION:
             montant = montant + self.montant_com_gestion
+        elif self.type_commission == TypeEncaissementCommission.RETROCESSION:
+            montant = montant + self.montant_com_intermediaire
         else:
             montant = montant + self.montant_com_courtage + self.montant_com_gestion
         print(f"{self.reglement.numero} {montant}")
-        return montant    
+        return montant
+
+    def montant_apporteur(self):
+        montant = 0
+        for journal in self.journals.all():
+            if journal.sens == "D":
+                montant = montant + journal.montant
+            if journal.sens == "C":
+                montant = montant - journal.montant
+        montant = montant + self.montant_com_intermediaire
+        print(f"{self.reglement.numero} {montant}")
+        return montant
     
 
 class CompteComptable(models.Model):

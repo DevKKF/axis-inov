@@ -5,7 +5,7 @@
 <div class="col-12 col-md-12 order-2 order-md-1">
   <div class="card">
     <div class="card-header">
-        <h3 class="card-title"><b>{{_("ENCAISSEMENT DE RETROCESSION APPORTEUR") }}</b></h3>
+        <h3 class="card-title"><b>ENCAISSEMENT DE COMMISSIONS DE RETROCESSION APPORTEUR</b></h3>
     </div>
     <div class="card-body">
         <div class="pull-right mb-2">
@@ -19,8 +19,9 @@
                       <tr>
                         <th scope="col" width="4%"></th>
                         <th scope="col">{{_("Apporteur") }}</th>
-                        <th scope="col">{{_("Total com. encaissé") }}</th>
-                        <th scope="col">{{_("Retrocession à encaisser") }}</th>
+                        <th scope="col">{{_("Montant total reglé client") }}</th>
+                        <th scope="col">{{_("Total retro apporteur") }}</th>
+                        <th scope="col">{{_("Restant retro apporteur") }}</th>
                         <th scope="col">{{_("Nbre lignes") }}</th>
                       </tr>
                     </thead>
@@ -29,9 +30,10 @@
                           <tr class="btnOpenDialogDetailApporteurEncaissementRetrocession" data-apporteur="{{apporteur.id}}">
                             <td><span class="badge badge-info"><i class="fa fa-eye"></i></span></td>
                             <td>{{ apporteur.nom|default_if_none:"" }} {{ apporteur.prenoms|default_if_none:"" }}</td>
-                            <td class="text-right">{{ apporteur.sum_reglements_a_reverser_app|money_field }}</td>
-                            <td class="text-right">{{ apporteur.sum_commissions_a_reverser_app|money_field }}</td>
-                            <td>{{ apporteur.nombre_reglements_a_reverser_app|default_if_none:"" }}</td>
+                            <td class="text-right">{{  apporteur.sum_reglements|money_field }}</td>
+                            <td class="text-right">{{ apporteur.total_montant_retrocession_apporteur|money_field }}</td>
+                            <td class="text-right">{{ apporteur.solde_montant_retrocession_apporteur|money_field }}</td>
+                            <td class="text-center">{{ apporteur.nombre_reglements_a_recevoir_retrocession|money_field }}</td>
                           </tr>
                         {% endfor %}
                     </tbody>

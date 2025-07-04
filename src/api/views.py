@@ -30,14 +30,14 @@ from api.api_helper import send_otp_mail, send_demande_rembours_mail
 from api.paginations import SmartResultsSetPagination
 from api.serializers import KeyValueDataSerializer, UserSerializer, AlimentSerializer, CreateUserSerializer, \
     ResetPasswordUserSerializer, UserDataSerializer, BarremeSerializer, SinisteSerializer, \
-    ModeRemboursementSerializer, DemandeRemboursementSerializer, TypePrestataireSerializer, PrestataireSerializer, \
+    ModeRemboursementSerializer, DemandeRemboursementSerializer, PrestataireSerializer, \
     PrestataireDataSerializer, ActeSerializer, BureauSerializer, \
     ProspectSerializer, CarteDigitalDematerialiseeSerializer, TypeActeSerialiser, CiviliteSerializer, \
     QualiteBeneficiaireSerializer, PaysSerializer, ProfessionSerializer
 from configurations.helper_config import verify_sql_query, execute_query
 # from api.serializers import AlimentWaspitoSerialiser, PrestationWaspito
-from configurations.models import Acte, ActeWaspito, Affection, Prescripteur, PrescripteurPrestataire, Prestataire, \
-    Specialite, KeyValueData, TypePrestataire, PrestataireReseauSoin, WsBoby, Bureau, TypeActe, Civilite, \
+from configurations.models import Acte, Prescripteur, PrescripteurPrestataire, Prestataire, \
+    KeyValueData, WsBoby, Bureau, TypeActe, Civilite, \
     QualiteBeneficiaire, Pays, Profession
 from configurations.models import User, ModeReglement
 from grh.helper import generate_uiid
@@ -160,7 +160,7 @@ def info(request):
                 prescripteur_id = 2232
                 aliment_id = aliment.pk
 
-                acte_waspito = ActeWaspito.objects.filter(acte_id=acte_id).first()
+                acte_waspito = ''
 
                 if not acte_waspito or not acte_waspito.prix:
                     if acte_waspito is None or acte_waspito.prix is None:
@@ -262,14 +262,11 @@ def service_save(request):
         prescripteur = Prescripteur.objects.filter(numero_ordre=medecin['numero_ordre']).first();
         # IF PRESCRIPTEUR DON'T EXIST
         if not prescripteur:
-            # GET SPECIALITE
-            specialite = Specialite.objects.filter(code=medecin['code_specialite']).first();
 
             # CREATE PRESCRIPTEUR
             prescripteur = Prescripteur.objects.create(
                 nom=medecin['nom'],
                 prenoms=medecin['prenoms'],
-                specialite_id=specialite.pk,
                 numero_ordre=medecin['numero_ordre'],
                 telephone=medecin['telephone'],
                 email=medecin['email'])
@@ -393,7 +390,7 @@ def service_save(request):
 
                     acte_id = acte.id
 
-                    acte_waspito = ActeWaspito.objects.filter(acte_id=acte_id).first()
+                    acte_waspito = ""
 
                     if not acte_waspito or not acte_waspito.prix:
 
@@ -1052,10 +1049,7 @@ class BeneficiariesByCarteView(views.APIView):
 
                         if formule_garantie.reseau_soin is not None:
                             reseau_soin = formule_garantie.reseau_soin
-                            prestataires = PrestataireReseauSoin.objects.filter(
-                                reseau_soin_id=reseau_soin.id,
-                                prestataire_id=prestataire_id
-                            )
+                            prestataires = ""
                             print(prestataires)
                         else:
                             prestataires = Prestataire.objects.filter(
@@ -1138,50 +1132,6 @@ class SinistreView(views.APIView, SmartResultsSetPagination):
         serializer = SinisteSerializer(serializer, many=True)
 
         return self.get_paginated_response(serializer.data)
-
-
-class ReseauSoinsView(views.APIView):
-    permission_classes = [IsAuthenticated]
-    parser_classes = [JSONParser]
-
-    # serializer_class = PrestataireSerializer
-    # pagination_class = SmartResultsSetPagination
-    # filter_backends = [DjangoFilterBackend]
-    # filterset_fields = ['aliment', 'date_survenance', 'acte']
-    # queryset = Sinistre.objects.filter(statut=StatutSinistre.ACCORDE).order_by('-id')
-    def get(self, request, formul_id):
-        print(request.query_params)
-        type_prestataire = request.query_params.get('type_prestataire', None)
-
-        formule_garantie = FormuleGarantie.objects.get(id=formul_id)
-
-        if formule_garantie.reseau_soin is not None:
-            reseau_soin = formule_garantie.reseau_soin
-            prestataire_reseau_soin = PrestataireReseauSoin.objects.filter(reseau_soin_id=reseau_soin.id, statut_validite="VALIDE")
-            if type_prestataire is not None:
-                prestataire_reseau_soin = prestataire_reseau_soin.filter(
-                    prestataire__type_prestataire_id=type_prestataire)
-
-            serializer = PrestataireSerializer([x.prestataire for x in prestataire_reseau_soin if x.prestataire.status],
-                                               many=True)
-        else:
-            prestataires = Prestataire.objects.filter(bureau=formule_garantie.police.bureau, status=True)
-            if type_prestataire is not None:
-                prestataires = prestataires.filter(type_prestataire_id=type_prestataire)
-
-            serializer = PrestataireSerializer(prestataires, many=True)
-
-        return Response(serializer.data)
-
-
-class TypePrestataireView(views.APIView):
-    permission_classes = [IsAuthenticated]
-    parser_classes = [JSONParser]
-
-    def get(self, request):
-        type_prestataire = TypePrestataire.objects.all()
-        serializer = TypePrestataireSerializer(type_prestataire, many=True)
-        return Response(serializer.data)
 
 
 class PrestataireDataView(views.APIView, SmartResultsSetPagination):
@@ -1750,8 +1700,6 @@ class PriseEnChargeView(views.APIView):
 
                 acte_id = acte.id
 
-                # acte_waspito = ActeWaspito.objects.filter(acte_id=acte_id).first()
-
             cout_acte = None
             nombre_jours = None
 
@@ -1956,8 +1904,6 @@ class PriseEnChargeActeInfoView(views.APIView):
             acte_id = acte.id
             prescripteur_id = 2232
             aliment_id = aliment.pk
-
-            # acte_waspito = ActeWaspito.objects.filter(acte_id=acte_id).first()
 
             cout_acte = None
 

@@ -27,8 +27,7 @@ import secrets
 
 from configurations.models import Acte, Prestataire, Prescripteur, Periodicite, Tarif, \
     SousRubriqueRegroupementActe, TypePrefinancement
-from production.models import Aliment, TarifPrestataireClient, Bareme, AlimentFormule, Carte, FormuleGarantie, \
-    FormuleRubriquePrefinance
+from production.models import Aliment, TarifPrestataireClient, Bareme, AlimentFormule, Carte, FormuleGarantie
 from shared.enum import StatutSinistre, Statut, StatutValidite, StatutRemboursement
 from sinistre.models import Sinistre, SinistreTemporaire
 from django.core.files.base import File
@@ -64,7 +63,7 @@ def get_type_prefinancement_of_acte(acte, formule):
         elif mode_prefinancement.code == 'TPP':
             # vérifier si la rubrique de l'acte est préfinancé
             rubrique_of_acte = acte.rubrique
-            rubriques_prefinancees = FormuleRubriquePrefinance.objects.filter(formulegarantie=formule, rubrique=rubrique_of_acte, statut_validite=StatutValidite.VALIDE)
+            rubriques_prefinancees = ""
             if rubriques_prefinancees:
                 type_prefinancement = TypePrefinancement.objects.filter(code='PREF_TOUT').first()
 
@@ -155,13 +154,10 @@ def recalcule_montant_refacture_compagnie_et_client(sinistre):
 
 def actes_non_autorises_prescripteur(prescripteur, acte):
     if prescripteur:
-        if acte.specialiste_uniquement and not prescripteur.specialite.is_specialite:
+        if acte.specialiste_uniquement:
             return True
 
     return False
-
-    #return not SpecialiteActeAutorise.objects.filter(specialite=prescripteur.specialite, acte=acte).exists()
-
 
 
 def respecte_conditions(date_survenance, bareme_srb, acte, aliment):

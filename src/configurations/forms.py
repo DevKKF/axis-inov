@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.models import Permission
 from .models import ActionLog, RegroupementActe, SousRubrique, StatExcelWsBoby, Tarif, Compagnie, Banque, SousRegroupementActe, \
-    ApporteurInternational, GroupeInter, Branche, Garantie, GarantieBranche, Formule, GarantieFormule
+    ApporteurInternational, Branche, Garantie, GarantieBranche, Formule, GarantieFormule
 
 
 class ActionLogForm(forms.ModelForm):
@@ -9,7 +9,6 @@ class ActionLogForm(forms.ModelForm):
         model = ActionLog
 
         fields = ('data_before',)
-
 
 
 class PermissionForm(forms.ModelForm):
@@ -66,10 +65,6 @@ class ApporteurInternationalForm(forms.ModelForm):
         model = ApporteurInternational
         exclude = ['created_by']  # Exclude the 'code' field from the form
 
-class GroupeInterForm(forms.ModelForm):
-    class Meta:
-        model = GroupeInter
-        exclude = ['updated_at']  # Exclude the 'code' field from the form
 
 class StatExcelWsBobyForm(forms.ModelForm):
     class Meta:

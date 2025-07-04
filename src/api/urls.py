@@ -24,11 +24,9 @@ url_v2 = [
     path('beneficiary/<int:beneficiary_id>', BeneficiariesByIdView.as_view(), name='beneficiaire_by_id'),
     path('beneficiary/carte/<str:carte>', BeneficiariesByCarteView.as_view(), name='beneficiaire_by_carte'),
     path('beneficiary/<int:formul_id>/barreme', BarremeView.as_view(), name='beneficiaire_barreme'),
-    path('beneficiary/<int:formul_id>/reseau', ReseauSoinsView.as_view(), name='reseau_list'),
 
     # Sinistres et prestataires
     path('sinistres', SinistreView.as_view(), name='sinistre_list'),
-    path('typeprestataire', TypePrestataireView.as_view(), name='type_prestataire_list'),
     path('prestataire-list', PrestataireDataView.as_view(), name='prestataire_list'),
     path('acte-list', ActeDataView.as_view(), name='acte_list'),
 

@@ -5,7 +5,7 @@ from . import views
 from .views import BordereauxOrdonnancesView, DetailBordereauOrdonnancementView, DetailFactureGarant, \
     EncaissementCommissionsCourtGestView, FactureCompagnieView, InitialisationFondRoulementView, PaiementsRealises, \
     RefacturationAssureurView, ReversesementCompagniesView, \
-    EncaissementCommissionsView, ReglementApporteursView, BordereauxPayesView, SuiviTresorerie, EditionLettreCheque, create_periode_comptable, \
+    EncaissementCommissionsView, ReversesementApporteursView, BordereauxPayesView, SuiviTresorerie, EditionLettreCheque, create_periode_comptable, \
     export_bordereaux_ordonnances, export_bordereaux_ordonnances_paye
 from .views import DetailTresorerie
 
@@ -81,13 +81,17 @@ urlpatterns = [
     path('encaissement_commissions_court_gest/<str:type>', EncaissementCommissionsCourtGestView.as_view(), name='encaissement_commissions_court_gest'),
     path('encaissement_commissions_court_gest/courtage', EncaissementCommissionsCourtGestView.as_view(), name='encaissement_commissions_court_gest_courtage'),
     path('encaissement_commissions_court_gest/gestion', EncaissementCommissionsCourtGestView.as_view(), name='encaissement_commissions_court_gest_gestion'),
-    path('reglements_apporteurs/', ReglementApporteursView.as_view(), name='reglements_apporteurs'),
     path('ajax_reglements_a_reverser_compagnie/<int:compagnie_id>', views.ajax_reglements_a_reverser_compagnie, name='ajax_reglements_a_reverser_compagnie'),
     path('ajax_reglements_reverses/<int:compagnie_id>', views.ajax_reglements_reverses, name='ajax_reglements_reverses'),
     path('ajax_reglements_reverses_court_gest/<int:compagnie_id>/<str:type>', views.ajax_reglements_reverses_court_gest, name='ajax_reglements_reverses_court_gest'),
     path('add_reglement_compagnie',views.add_reglement_compagnie, name='add_reglement_compagnie'),
     path('add_encaissement_commission',views.add_encaissement_commission, name='add_encaissement_commission'),
     path('add_encaissement_com_court_gest/<str:type>',views.add_encaissement_com_court_gest, name='add_encaissement_com_court_gest'),
+
+    path('reglements_apporteurs/', ReversesementApporteursView.as_view(), name='reglements_apporteurs'),
+    path('add_encaissement_retrocession_apporteur',views.add_encaissement_retrocession_apporteur, name='add_encaissement_retrocession_apporteur'),
+    path('ajax_reglements_reverses_retrocession_apporteur/<int:apporteur_id>', views.ajax_reglements_reverses_retrocession_apporteur, name='ajax_reglements_reverses_retrocession_apporteur'),
+    path('generer_bordereau_encaissement_apporteur_pdf/<int:operation_id>', views.generer_bordereau_encaissement_apporteur_pdf, name='generer_bordereau_encaissement_apporteur_pdf'),
 
     path('generer_bordereau_reglement_compagnie_pdf/<int:operation_id>', views.generer_bordereau_reglement_compagnie_pdf, name='generer_bordereau_reglement_compagnie_pdf'),
     path('generer_bordereau_reglement_compagnie_pdf/<int:operation_id>/<str:type>', views.generer_bordereau_reglement_compagnie_pdf, name='generer_bordereau_reglement_compagnie_pdf'),

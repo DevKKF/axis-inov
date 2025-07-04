@@ -157,10 +157,12 @@ class StatutEncaissementCommission(models.TextChoices):
 class TypeEncaissementCommission(models.TextChoices):
     COURTAGE = 'COURTAGE'
     GESTION = 'GESTION'
+    RETROCESSION = 'RETROCESSION'
+    AUCUN = 'AUCUN'
 
-class StatutReglementApporteurs(models.TextChoices):
-    REGLE = 'REGLE'
-    NON_REGLE = 'NON REGLE'
+class StatutReversementApporteur(models.TextChoices):
+    REVERSE = 'REVERSE'
+    NON_REVERSE = 'NON REVERSE'
 
 class OptionYesNo(models.TextChoices):
     OUI = 'OUI'

@@ -1,7 +1,7 @@
 {% load my_filters %}
 <html>
    <head>
-      <title>{{_("BORDEREAU DES COMMISSIONS DE")}} {% if type == "courtage" %}{{_("COURTAGE")}}{% else %}{{_("GESTION")}}{% endif %} {{_("REGLEES")}}</title>
+      <title>{{_("BORDEREAU DES COMMISSIONS DE RETROCESSION")}}</title>
       <style>
          @page {
          size: a4 landscape;
@@ -78,11 +78,10 @@
                   Mail : {{ bureau.email|default:"" }}
                </td>
                <td class="center" style="padding-bottom:0px; font-size: 14px; vertical-align: middle;" width="60%">
-                  <h3>BORDEREAU COMPAGNIE DES QUITTANCES REGLEES - {{ operation.devise.libelle|default:"" }} ({{ operation.devise.code|default:"" }}) <br> Au {{ operation.date_operation|date:'d/m/Y'|default_if_none:"" }}</h3>
+                  <h3>BORDEREAU APPORTEUR DES RETROCESSIONS REGLEES - {{ operation.devise.libelle|default:"" }} ({{ operation.devise.code|default:"" }}) <br> Au {{ operation.date_operation|date:'d/m/Y'|default_if_none:"" }}</h3>
                </td>
                <td width="20%" style="padding-left:20px;">
-                  {{ compagnie.nom }}<br>
-                  {{ compagnie.adresse|default:"" }}<br>
+                  <span style="background-color:#DFF2FF;">APPORTEUR :</span> {{ apporteur.nom }} {{ compagnie.prenoms|default:"" }}
                </td>
             </tr>
             <tr>
@@ -101,14 +100,10 @@
                <th scope="col">{{_("Numero Police")}}</th>
                <th scope="col">{{_("Numero Quittance")}}</th>
                <th scope="col">{{_("Echeance")}}</th>
-               {% if type == "courtage" %}
                <th scope="col">{{_("Comm Courtage")}}</th>
-               {% else %}
-               <th scope="col">{{_("Comm Gestion")}}</th>
-               {% endif %}
-               <th scope="col">{{_("Prime Due")}}</th>
-               <th scope="col">{{_("Comm Reglee")}}</th>
-               <th scope="col">{{_("Règlement reçu")}}</th>
+               <th scope="col">{{_("Retro Due")}}</th>
+               <th scope="col">{{_("Retro Reglee")}}</th>
+               <th scope="col">{{_("Règlement recu")}}</th>
             </tr>
          </thead>
          <tbody>
@@ -122,12 +117,8 @@
                <td>{{ encaissement_commission.reglement.quittance.police.numero|default_if_none:"" }}</td>
                <td>{{ encaissement_commission.reglement.quittance.numero|default_if_none:"" }}</td>
                <td>{{ encaissement_commission.reglement.quittance.date_fin|date:'d/m/Y'|default_if_none:""  }}</td>
-               {% if type == "courtage" %}
                <td class="text-right">{{ encaissement_commission.reglement.montant_com_courtage|money_field }}</td>
-               {% else %}
-               <td class="text-right">{{ encaissement_commission.reglement.montant_com_gestion|money_field }}</td>
-               {% endif %}
-               <td class="text-right">{{ encaissement_commission.reglement.quittance.prime_ttc|money_field }}</td>
+               <td class="text-right">{{ encaissement_commission.reglement.montant_com_intermediaire|money_field }}</td>
                <td class="text-right">{{ encaissement_commission.montant|money_field }}</td>
                <td class="text-right" style="background-color:grey"></td>
             </tr>
@@ -135,8 +126,8 @@
          </tbody>
          <tfoot>
             <tr>
-               <td scope="row" colspan="6" style="text-align:left; margin-left:3"><b>{{_("Total Compagnie")}}: {{ compagnie.code }}
-               <td><b>{{ total_prime_ttc|money_field }}</b></td>
+               <td scope="row" colspan="6" style="text-align:left; margin-left:3"><b>{{_("Total Apporteur")}}: {{ apporteur.code }}
+               <td><b>{{ total_montant_retrocession|money_field }}</b></td>
                <td><b>{{ total_montant_com_encaisse|money_field }}</b></td>
                <td><b>{{ total_montant_com_encaisse|money_field }}</b></td>
             </tr>
@@ -147,11 +138,11 @@
             </tr>
             <tr>
                <td scope="row" colspan="4"></td>
-               <td scope="row" colspan="4" style="text-align:left; margin-left:3"><b>{{_("Acomptes")}} {{ compagnie.code }} {{ compagnie.nom }} :</b></td>
+               <td scope="row" colspan="4" style="text-align:left; margin-left:3"><b>{{_("Acomptes")}} {{ apporteur.code }} {{ apporteur.nom }} {{ apporteur.prenoms }} :</b></td>
                <td><b>0</b></td>
             <tr>
                <td scope="row" colspan="6" style="text-align:left; margin-left:3"><b>{{_("Total Societe")}}: {{ bureau.code }}</b></td>
-               <td><b>{{ total_prime_ttc|money_field }}</b></td>
+               <td><b>{{ total_montant_retrocession|money_field }}</b></td>
                <td><b>{{ total_montant_com_encaisse|money_field }}</b></td>
                <td><b>{{ total_montant_percu_final|money_field }}</b></td>
             </tr>

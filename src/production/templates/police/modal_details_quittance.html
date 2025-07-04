@@ -93,9 +93,9 @@
 											<span style="border-top-right-radius:0px;border-bottom-right-radius:0px;" type="text" class="form-control money_field_negative calculs_handler_police" name="autres_taxes" id="autres_taxes">{{quittance.autres_taxes}}</span>
 										</div>
 										{% if quittance.autres_taxes > 0 %}
-										<div class="col-sm-2" style="padding-left:0px;">
-											<span class="btn " style="background:gray;color:white;border-top-left-radius:0px;border-bottom-left-radius:0px;" data-toggle="modal" data-target="#modal-autres_taxes_quittance">Détails</span>
-										</div>
+											<div class="col-sm-2" style="padding-left:0px;">
+												<span class="btn " style="background:gray;color:white;border-top-left-radius:0px;border-bottom-left-radius:0px;" data-toggle="modal" data-target="#modal-autres_taxes_quittance">Détails</span>
+											</div>
 										{% endif %}
 									</div>
 									<div class="form-group row">
@@ -228,6 +228,7 @@
 											<thead>
 											  <tr>
 												<th scope="col">N° Bordereau</th>
+												<th scope="col">Type Com</th>
 												<th scope="col">Com Courtage</th>
 												<th scope="col">Prime Due</th>
 												<th scope="col">Com Réglée</th>
@@ -243,6 +244,13 @@
                                                         {% if data.fichier %}
                                                             <tr>
                                                                 <td>{{ data.numero }}</td>
+                                                                <td>
+																	{% if data.type_commission == "RETROCESSION" %}
+																		<span class="badge badge-info">{{ data.type_commission }}</span>
+																	{% else %}
+																		<span class="badge badge-success">{{ data.type_commission }}</span>
+																	{% endif %}
+																</td>
                                                                 <td>{{ data.total_montant_com_courtage|money_field }}</td>
                                                                 <td>{{ data.total_reglement_montant|money_field }}</td>
                                                                 <td>{{ data.total_montant_com_encaisse|money_field }}</td>
@@ -250,7 +258,11 @@
                                                                 <td>{{ data.created_by }}</td>
                                                                 <td>{{ data.date_operation|date:"Y-m-d" }}</td>
                                                                 <td>
-                                                                    <a href="{% url 'generer_bordereau_encaissement_compagnie_pdf' data.id %}" class="badge badge-info" target="_blank"><i class="fa fa-file-word-o"></i> Imprimer le bordereau</a>
+                                                                    {% if data.type_commission == "RETROCESSION" %}
+                                                                    	<a href="{% url 'generer_bordereau_encaissement_apporteur_pdf' data.id %}" class="badge badge-info" target="_blank"><i class="fa fa-file-word-o"></i> Imprimer le bordereau</a>
+                                                                    {% else %}
+																		<a href="{% url 'generer_bordereau_encaissement_compagnie_pdf' data.id %}" class="badge badge-success" target="_blank"><i class="fa fa-file-word-o"></i> Imprimer le bordereau</a>
+                                                                	{% endif %}
                                                                 </td>
                                                             </tr>
                                                         {% else %}
@@ -398,7 +410,7 @@
 					  <select class="form-control champ_obligatoire" name="type_document" id="type_document" required>
 						  <option value="">Choisir</option>
 						  {% for type_document in types_documents %}
-						  <option value="{{ type_document.id }}">{{ type_document.libelle }}</option>
+						  	<option value="{{ type_document.id }}">{{ type_document.libelle }}</option>
 						  {% endfor %}
 					  </select>
 					  </div>

@@ -7338,350 +7338,7 @@ $(document).ready(function () {
 
     //********* FIN FAIRE UN REGLEMENT COMPAGNIE ***********//
 
-     //********* FAIRE UN ENCAISSEMENT DE COMMISSION RETROCESSION APPORTEUR ***********//
-    /*
-    $(".btnOpenDialogDetailApporteurEncaissementRetrocession1").on('dblclick', function () {
-
-        $(".btnOpenDialogDetailApporteurEncaissementRetrocession1").removeClass('tr_selected');
-        $(this).addClass('tr_selected');
-        let apporteur = $(this).data('apporteur');
-        console.log('apporteur ', apporteur);
-        $("#datatable_stock_input_com").html("");
-        $("#btnOpenDialogAddEncaissementRetrocession1").trigger("click");
-
-    });
-
-    $("#btnOpenDialogAddEncaissementRetrocession1").on('click', function () {
-
-        let model_name = $(this).data('model_name');
-        let modal_title = $(this).data('modal_title');
-        let href = $(this).data('href');
-        $("#datatable_stock_input_com").html("");
-
-        console.log('href ', href);
-
-        $('#olea_std_dialog_box').load(href, function () {
-
-            //appliquer le mask de saisie sur les champs montant
-            AppliquerMaskSaisie();
-
-            $('#modal-encaissement-retrocession').attr('data-backdrop', 'static').attr('data-keyboard', false);
-
-            $('#modal-encaissement-retrocession').find('.modal-title').text(modal_title);
-            $('#modal-encaissement-retrocession').find('#btn_valider').attr({ 'data-model_name': model_name, 'data-href': href });
-            $('#modal-encaissement-retrocession').find('.modal-dialog').addClass('modal-xl').removeClass('modal-lg');
-
-            //
-            $('#modal-encaissement-retrocession').modal();
-
-            $('#modal-encaissement-retrocession').on('shown.bs.modal', function () {
-                apporteur = typeof $('.tr_selected') !== 'undefined' ? $('.tr_selected').data('apporteur') : "";
-                if (apporteur && apporteur != "") {
-                    $('#modal-encaissement-retrocession #apporteur option[value=' + apporteur + ']').attr('selected', 'selected');
-                    $("#modal-encaissement-retrocession #apporteur").trigger('change');
-                }
-            })
-
-            //gestion des saisies des montants à regler
-            $(document).on('click', '.checkbox_quittance_a_encaisser_com_gest', function () {
-                let input_montant_encaisse_court = $(this).closest('tr').find('.montant_encaisse_court');
-                let input_montant_encaisse_gest = $(this).closest('tr').find('.montant_encaisse_gest');
-                let solde_quittance = $(this).closest('tr').find('.solde_quittance').val();
-                let input_solde_apres = $(this).closest('tr').find('.solde_apres');
-                let montant_com_solde = parseFloat($(this).data('montant_com_solde'));
-                let montant_com_courtage = 0;
-                let montant_com_gestion = 0;
-
-                input_solde_apres.val(solde_quittance);
-                $(this).closest('tr').find('.restant_total').val(parseFloat($(this).data('reglement_montant_com_courtage')));
-
-                if (this.checked) {
-                    input_montant_encaisse_court.removeAttr('readonly');
-                    input_montant_encaisse_court.attr('required', true);
-                    input_montant_encaisse_court.val(0);
-                    /// parade pour evider les doublons lors d'evenements
-                    already_exist = $("#datatable_stock_input_com").find("#input_stock_" + $(this).val());
-                    if (already_exist.length == 0) {
-                        $("#datatable_stock_input_com").append("<input type='text' class='input_stock' id='input_stock_" + $(this).val() + "' data-reglement_id='" + parseFloat($(this).data('reglement_id')) + "' data-reglement_montant='" + parseFloat($(this).data('reglement_montant')) + "'  data-reglement_montant_com_courtage='" + parseFloat($(this).data('reglement_montant_com_courtage')) + "'  data-reglement_montant_com_gestion='" + parseFloat($(this).data('reglement_montant_com_gestion')) + "' data-reglement_montant_apporteur='" + parseFloat($(this).data('reglement_montant_apporteur')) + "'>");
-                    }
-                } else {
-                    input_montant_encaisse_court.attr('readonly', true);
-                    input_montant_encaisse_court.removeAttr('required');
-                    input_montant_encaisse_court.val(0);
-                    $("#input_stock_" + $(this).val()).remove();
-                }
-
-                calculer_montant_total_a_encaisser_retrocession();
-
-            });
-
-            //montant_a_regler
-            $(document).on('change keyup', '.handle_calculer_montant_total_a_encaisser', function () {
-                $("#input_stock_" + $(this).closest('tr').find('td:first-child input').val()).val($(this).val());
-                calculer_montant_total_a_encaisser_retrocession();
-
-            });
-
-            $(document).on('change keyup', '#debit_difference', function () {
-                $('#credit_difference').val("");
-                //calculer_montant_total_a_encaisser();
-            });
-            $(document).on('change keyup', '#credit_difference', function () {
-                $('#debit_difference').val("");
-                //calculer_montant_total_a_encaisser();
-            });
-
-            $(document).on('change', '#modal-encaissement-retrocession #apporteur', function () {
-                let href_reglements_reverses = $(this).children('option:selected').data('href_reglements_reverses');
-                console.log('href_reglements_reverses ', href_reglements_reverses);
-                //reinitialisons les points important pour la commission
-                $("#datatable_stock_input_com").html("");
-                $('#credit_difference').val("");
-                $('#debit_difference').val("");
-
-                calculer_montant_total_a_encaisser_retrocession();
-
-                $('.montant_total_com').val(0);
-
-                $('#btn_save_encaissement').attr('disabled', 'true');
-
-                $('#box_reglements_reverses').load(href_reglements_reverses, function () {
-                    $('#table_reglements_reverses').DataTable({
-                        "language": {
-                            "url": "../../static/admin_custom/js/French.json"
-                        },
-                        //order: [[0, 'desc']],
-                        lengthMenu: [
-                            [10, 25, 50, 100, -1], [10, 25, 50, 100, "Tout"]
-                        ],
-                        //sDom: "<'row'<'col-sm-6'>>t<'row'<'col-sm-6'><'col-sm-6'>>",
-                        paging: false,
-                        searching: true,
-                        lengthChange: true,
-                        bSort: false,
-                        scrollX: true,
-                    });
-                });
-
-            });
-
-            //champs obligatoires variables selon le mode de règlement
-            $(document).on('change', '#mode_reglement', function () {
-                //si espèce
-                if ($(this).val() == 1) {
-                    $('#numero_piece').removeAttr('required');
-                    $('#banque').removeAttr('required');
-                    $('#libelle_numero_piece_required').html('');
-                    $('#libelle_banque_required').html('');
-                } else {
-                    $('#numero_piece').attr('required', true);
-                    $('#libelle_numero_piece_required').html('*');
-                }
-
-            });
-
-            //enregistrement
-            $('#btn_save_encaissement').on('click', function () {
-
-                let btn_save_encaissement = $(this);
-
-                let formulaire = $('#form_add_encaissement_retrocession');
-                let href = formulaire.attr('action');
-
-                $.validator.setDefaults({ ignore: [] });
-
-                if (formulaire.valid()) {
-
-                    //désactiver le bouton Valider, pour empecher une double soumission du formulaire
-                    btn_save_encaissement.attr('disabled', true);
-
-                    //demander confirmation
-                    let n = noty({
-                        text: 'Voulez-vous vraiment effectuer cet encaissement de retrocession apporteur ?',
-                        type: 'warning',
-                        dismissQueue: true,
-                        layout: 'center',
-                        theme: 'defaultTheme',
-                        buttons: [
-                            {
-                                addClass: 'btn btn-primary', text: 'OUI', onClick: function ($noty) {
-                                    $noty.close();
-
-                                    //confirmation obtenu
-                                    $.ajax({
-                                        type: 'post',
-                                        url: href,
-                                        data: formulaire.serialize(),
-                                        success: function (response) {
-
-                                            if (response.statut == 1) {
-
-                                                notifySuccess(response.message, function () {
-
-                                                    $("#datatable_stock_input_com").html("");
-                                                    window.open('../generer_bordereau_encaissement_apporteur_pdf/' + response.data.operation_id, '_blank');
-
-                                                    location.reload();
-                                                });
-
-
-                                            } else {
-
-                                                let errors = JSON.parse(JSON.stringify(response.errors));
-                                                let errors_list_to_display = '';
-                                                for (field in errors) {
-                                                    errors_list_to_display += '- ' + ucfirst(field) + ' : ' + errors[field] + '<br/>';
-                                                }
-
-                                                $('#modal-encaissement-retrocession .alert .message').html(errors_list_to_display);
-
-                                                $('#modal-encaissement-retrocession .alert ').fadeTo(2000, 500).slideUp(500, function () {
-                                                    $(this).slideUp(500);
-                                                }).removeClass('alert-success').addClass('alert-warning');
-
-                                            }
-
-                                        },
-                                        error: function (request, status, error) {
-
-                                            notifyWarning("Erreur lors de l'enregistrement");
-
-                                            btn_save_encaissement.removeAttr('disabled');
-
-                                        }
-
-                                    });
-
-                                }
-                            },
-                            {
-                                addClass: 'btn btn-danger', text: 'Annuler', onClick: function ($noty) {
-                                    //confirmation refusée
-                                    $noty.close();
-
-                                    btn_save_encaissement.removeAttr('disabled');
-
-                                }
-                            }
-                        ]
-                    });
-
-                } else {
-
-                    $('label.error').css({ display: 'none', height: '0px' }).removeClass('error').text('');
-
-                    let validator = formulaire.validate();
-
-                    $.each(validator.errorMap, function (index, value) {
-
-                        console.log('Id: ' + index + ' Message: ' + value);
-
-                    });
-
-                    notifyWarning('Veuillez renseigner tous les champs obligatoires');
-
-                    btn_save_encaissement.removeAttr('disabled');
-
-                }
-
-            });
-
-        });
-
-    });
-
-    function calculer_montant_total_a_encaisser_retrocession1(){
-
-        let montant_total_reglements_coches = 0;
-        let montant_total_a_regler_apporteur = 0;
-        let montant_total_com_courtage = 0;
-        let montant_total_a_encaisser = 0;
-        let montant_solde = 0;
-        let difference_match = false;
-        let erreur_difference = false;
-
-
-        let credit_difference = $('#credit_difference').val()?.replaceAll(" ", "") || "0";
-        credit_difference = isNaN(credit_difference) ? 0 : parseFloat(credit_difference);
-        credit_difference = credit_difference === "" || isNaN(credit_difference) ? 0 : parseFloat(credit_difference);
-        let debit_difference = $('#debit_difference').val()?.replaceAll(" ", "") || "0";
-        debit_difference = debit_difference === "" || isNaN(debit_difference) ? 0 : parseFloat(debit_difference);
-        let text_compte_difference = $('#compte_difference option:selected').text();
-        let is_perte_compte_difference = (text_compte_difference.indexOf("6511000") >= 0)
-        console.log(is_perte_compte_difference);
-
-        $('.input_stock').each(function (element) {
-
-            let montant_reglement = parseFloat($("#input_stock_" + $(this).data('reglement_id')).data('reglement_montant'));
-            let montant_apporteur = parseFloat($("#input_stock_" + $(this).data('reglement_id')).data('reglement_montant_apporteur'));
-            let montant_com_courtage = parseFloat($("#input_stock_" + $(this).data('reglement_id')).data('reglement_montant_com_courtage'));
-            let montant_a_encaisser_court = parseFloat($("#input_stock_" + $(this).data('reglement_id')).val().replaceAll(" ", ""));
-            montant_a_encaisser_court = montant_a_encaisser_court === "" || isNaN(montant_a_encaisser_court) ? 0 : parseFloat(montant_a_encaisser_court);
-            montant_total_com_courtage = montant_total_com_courtage + montant_a_encaisser_court;
-            montant_total_a_encaisser = montant_total_com_courtage;
-            difference = montant_com_courtage - montant_a_encaisser_court;
-            if (montant_com_courtage < montant_a_encaisser_court) {
-                erreur_difference = false;
-            }
-
-            let montant_a_encaisser = parseFloat($("#checkbox_quittance_a_encaisser_" + $(this).data('reglement_id')).closest('tr').find('.montant_a_encaisser').val());
-
-            montant_total_reglements_coches = montant_total_reglements_coches + montant_reglement;
-            montant_total_a_regler_apporteur = montant_total_a_regler_apporteur + montant_apporteur;
-
-            $("#checkbox_quittance_a_encaisser_" + $(this).data('reglement_id')).closest('tr').find('.restant_total').val(difference);
-
-            if (debit_difference == difference && difference_match == false && difference > 0 && ((difference < 3000 && is_perte_compte_difference==true) || (is_perte_compte_difference==false))) {
-                difference_match = true;
-                if (debit_difference == difference && difference > 0) {
-                    $("#checkbox_quittance_a_encaisser_" + $(this).data('reglement_id')).closest('tr').find('.restant_total').val(difference - debit_difference);
-                    $("#checkbox_quittance_a_encaisser_" + $(this).data('reglement_id')).closest('tr').find('.handle_calculer_montant_total_a_encaisser').removeAttr('required');
-                }
-            }
-
-            if (credit_difference == (-1 * difference) && difference_match == false && credit_difference > 0) {
-                difference_match = true;
-                if (credit_difference == (-1 * difference)) {
-                    $("#checkbox_quittance_a_encaisser_" + $(this).data('reglement_id')).closest('tr').find('.restant_total').val(difference + credit_difference);
-                    $("#checkbox_quittance_a_encaisser_" + $(this).data('reglement_id')).closest('tr').find('.handle_calculer_montant_total_a_encaisser').removeAttr('required');
-                }
-            }
-
-            if (difference < 0) {
-                erreur_difference = false;
-            }
-
-            montant_solde = montant_solde + difference;
-
-        });
-
-        $('.montant_total_reglements_coches').val(montant_total_reglements_coches);
-        $('.montant_total_a_regler_apporteur').val(montant_total_a_regler_apporteur);
-        $('.montant_total_com').val(montant_total_a_encaisser);
-
-        if (montant_total_a_encaisser != 0 || (montant_total_a_encaisser == 0 && debit_difference > 0) || (montant_total_a_encaisser == 0 && credit_difference > 0)) {
-            $('#btn_save_encaissement').removeAttr('disabled');
-            console.log("enabled");
-        } else {
-            $('#btn_save_encaissement').attr('disabled', 'true');
-            console.log("disabled 1");
-        }
-
-        if (((credit_difference > 0 || debit_difference > 0) && $('#compte_difference').val() == "")
-            || (debit_difference > 3000 && is_perte_compte_difference==true)
-            || (debit_difference > 0 && difference_match == false)
-            || (credit_difference > 0 && difference_match == false)
-            || ($('#compte_difference').val() != "" && debit_difference == 0 && credit_difference == 0)
-            //|| (montant_solde > 0 && credit_difference > 0)
-            || erreur_difference == true) {
-            $('#btn_save_encaissement').attr('disabled', 'true');
-            console.log("disabled 2");
-        }
-
-    }
-    */
-
-     // Double clic sur une ligne d'apporteur pour charger la modale
+    //********* FAIRE UN ENCAISSEMENT DE COMMISSION RETROCESSION APPORTEUR ***********//
     $(".btnOpenDialogDetailApporteurEncaissementRetrocession").on('dblclick', function () {
         $(".btnOpenDialogDetailApporteurEncaissementRetrocession").removeClass('tr_selected');
         $(this).addClass('tr_selected');
@@ -8273,12 +7930,12 @@ $(document).ready(function () {
         $('#acte').trigger('reset');
         hideAndEmptyOrShowSibbling('varAlimentSinistreAutre', formulaire, 'hide');
     })
-        .on('hidden.bs.modal', function () {
-            let formulaire = $(this).find('form');
-            formulaire.trigger('reset');
-            $('#acte').trigger('reset');
-            hideAndEmptyOrShowSibbling('varAlimentSinistreAutre', formulaire, 'hide');
-        });
+    .on('hidden.bs.modal', function () {
+        let formulaire = $(this).find('form');
+        formulaire.trigger('reset');
+        $('#acte').trigger('reset');
+        hideAndEmptyOrShowSibbling('varAlimentSinistreAutre', formulaire, 'hide');
+    });
 
     //recherche d'un sinistré
     $(document).on('click', '.btnSearchAlimentSinistreAutre', function () {
@@ -8301,109 +7958,6 @@ $(document).ready(function () {
     }
 
     //soumission du formulaire de sinistre
-    /*
-    $(document).on('click', "#btn_save_sinistre_gestionnaire", function () {
-
-        let formulaire = $('#form_add_sinistre_gestionnaire');
-        let href = formulaire.attr('action');
-
-        $.validator.setDefaults({ ignore: [] });
-
-        let formData = new FormData();
-
-        if (formulaire.valid()) {
-
-            //demander confirmation
-            let n = noty({
-                text: 'Voulez-vous vraiment enregistrer ce sinistre ?',
-                type: 'warning',
-                dismissQueue: true,
-                layout: 'center',
-                theme: 'defaultTheme',
-                buttons: [
-                    {
-                        addClass: 'btn btn-primary', text: 'OUI', onClick: function ($noty) {
-                            $noty.close();
-
-                            let data_serialized = formulaire.serialize();
-                            $.each(data_serialized.split('&'), function (index, elem) {
-                                let vals = elem.split('=');
-
-                                let key = vals[0];
-                                let valeur = decodeURIComponent(vals[1].replace(/\+/g, '  '));
-
-                                formData.append(key, valeur);
-
-                            });
-
-                            $.ajax({
-                                type: 'post',
-                                url: href,
-                                data: formData,
-                                processData: false,
-                                contentType: false,
-                                success: function (response) {
-
-                                    if (response.statut == 1) {
-                                        //Vider le formulaire
-                                        resetFields('#' + formulaire.attr('id'));
-
-                                        notifySuccess(response.message, function () {
-                                            location.reload();
-                                        });
-
-                                    } else {
-
-                                        let errors = JSON.parse(JSON.stringify(response.errors));
-                                        let errors_list_to_display = '';
-                                        for (field in errors) {
-                                            errors_list_to_display += '- ' + ucfirst(field) + ' : ' + errors[field] + '<br/>';
-                                        }
-
-                                        $('#formulaire_page .alert .message').html(errors_list_to_display);
-
-                                        $('#formulaire_page .alert ').fadeTo(2000, 500).slideUp(500, function () {
-                                            $(this).slideUp(500);
-                                        }).removeClass('alert-success').addClass('alert-warning');
-
-                                    }
-
-                                },
-                                error: function (request, status, error) {
-
-                                    notifyWarning("Erreur lors de l'enregistrement");
-                                }
-
-                            });
-                        }
-                    },
-                    {
-                        addClass: 'btn btn-danger', text: 'Annuler', onClick: function ($noty) {
-                            //confirmation refusée
-                            $noty.close();
-
-                        }
-                    }
-                ]
-            });
-
-        } else {
-
-            $('label.error').css({ display: 'none', height: '0px' }).removeClass('error').text('');
-
-            let validator = formulaire.validate();
-
-            $.each(validator.errorMap, function (index, value) {
-
-                console.log('Id: ' + index + ' Message: ' + value);
-
-            });
-
-            notifyWarning('Veuillez renseigner correctement le forumulaire');
-        }
-
-    });*/
-
     $(document).on('click', "#btn_save_sinistre_gestionnaire", function () {
         let formulaire = $('#form_add_sinistre_gestionnaire');
         let href = formulaire.attr('action');
@@ -8707,7 +8261,6 @@ $(document).ready(function () {
                 ]
             });
             //fin demande confirmation
-
 
         } else {
 
@@ -9013,7 +8566,6 @@ $(document).ready(function () {
     });
 
 
-
     //Enregistrer une demande de prorogation
     $(document).on("click", "#btn_save_demande_remboursement", function (e) {
         e.preventDefault();
@@ -9067,7 +8619,6 @@ $(document).ready(function () {
             //            $('#btn_accepter_remboursement').prop("disabled",true);
         } else {
             $('#montant_accepte').val(montantAccepte);
-            //            $('#btn_accepter_remboursement').prop("disabled",false);
         }
     });
 
@@ -9080,11 +8631,6 @@ $(document).ready(function () {
         if (formulaire.valid()) {
 
             if ($('#montant_refuse').val() != '0' && $('#motif').val() == '') {
-                // alert($('#montant_refuse').val());
-                // alert($('#motif').val());
-                // alert($('#montant_refuse').val() != '0');
-                // alert($('#motif').val() == '');
-                // alert($('#montant_refuse').val() != '0' && $('#motif').val() == '');
                 notifyWarning("Veuillez renseigner correctement le formulaire");
                 formulaire.submit(function (e) {
                     return false;
@@ -9167,10 +8713,7 @@ $(document).ready(function () {
         } else {
             notifyWarning("Veuillez renseigner correctement le formulaire");
         }
-
-
-    }
-    );
+    });
 
     //Annuler une demande de remboursement
     $(document).on("click", "#btn_annuler_remboursement", function (e) {
@@ -9214,10 +8757,7 @@ $(document).ready(function () {
         } else {
             notifyWarning("Veuillez renseigner correctement le formulaire");
         }
-
-
-    }
-    );
+    });
 
 
     //afficher le modal de rejet d'ordonnancement d'un sinistre
@@ -9234,8 +8774,6 @@ $(document).ready(function () {
 
             AppliquerMaskSaisie();
 
-
-
             //
             $('#modal-rejeter_remboursement_ordonnancement').modal();
 
@@ -9247,8 +8785,6 @@ $(document).ready(function () {
     });
 
     //FIN DEMANDE DE REMBOURSEMENT
-
-
 
 
     //afficher le détail d'un sinistre
@@ -9283,7 +8819,6 @@ $(document).ready(function () {
 
         });
 
-
     });
 
     $('#modal-details_sinistre').on('shown.bs.modal', function () {
@@ -9312,10 +8847,6 @@ $(document).ready(function () {
 
     // Btn submit marquer la seance comme terminée
     $(document).on("click", "#btn_seance_done", function (e) {
-
-
-        // var sinistre_id = $(this).data("acte_id");
-
 
         var formulaire = $('#form_mark_seance_done');
 
@@ -9359,8 +8890,6 @@ $(document).ready(function () {
     // Fin Btn submit marquer la seance comme terminée
 
 
-
-
     //afficher le modal de modification dun sinistre medicament
     $(document).on("click", ".btn_popup_modifier_medicament", function (e) {
         e.preventDefault();
@@ -9378,9 +8907,7 @@ $(document).ready(function () {
 
         });
 
-
     });
-
 
 
     //POUR ACTE
@@ -9470,8 +8997,6 @@ $(document).ready(function () {
         }
     });
 
-
-
     // Sélectionner/désélectionner | APPROUVER OU REJETER DES ACTES
 
     // button editer date de sortie dans details bulletin de sinistre
@@ -9490,8 +9015,6 @@ $(document).ready(function () {
             <button id="btnSaveEditDateSortie" class="btn btn-sm m-0 p-1 pl-2 bg-success" type="button"><i class="fa fa-check text-white"></i></button>
         `);
     });
-
-
 
     // Mettre a jour la date de sortie
     $(document).on("click", "#btnSaveEditDateSortie", function (e) {
@@ -9660,12 +9183,10 @@ $(document).ready(function () {
 
         $("#pre_empty_nombre_accorde").hide();
         $(this).replaceWith(`
-    <input type="number" id="nombre_accorde" value="` + nombre_accorde + `" class="" required>
-    <button id="btnSaveNombreAccorde" class="btn btn-sm m-0 p-1 pl-2 bg-success" type="button"><i class="fa fa-check text-white"></i></button>
-    `);
+        <input type="number" id="nombre_accorde" value="` + nombre_accorde + `" class="" required>
+        <button id="btnSaveNombreAccorde" class="btn btn-sm m-0 p-1 pl-2 bg-success" type="button"><i class="fa fa-check text-white"></i></button>
+        `);
     });
-
-
 
     // Mettre a jour la date de sortie
     $(document).on("click", "#btnSaveNombreAccorde", function (e) {
@@ -9827,8 +9348,7 @@ $(document).ready(function () {
             );
 
         }
-    }
-    );
+    });
     // FIN APPROUVER LA SELECTION D'UN ACTE
 
 
@@ -9881,13 +9401,8 @@ $(document).ready(function () {
             }
         });
 
-
     });
     // FIN REJETER LA SELECTION D'UN ACTE
-
-
-
-
 
 
     // APPROUVER LISTE DES ACTES SELECTIONNES
@@ -10137,7 +9652,6 @@ $(document).ready(function () {
     });
     // FIN REJJETER LISTE DES MEDICAMENTS SELECTIONNES
 
-
     //FIN GESTION SINISTRE
 
     //GESTION PRESTATAIRE
@@ -10152,7 +9666,6 @@ $(document).ready(function () {
         } else {
             $("#box_type_etablissement").show();
         }
-
     });
 
     $(document).on("click", ".btn_supprimer_tarif_specifique", function (e) {
@@ -10255,7 +9768,6 @@ $(document).ready(function () {
 
     });
 
-
     //afficher le modal de modification
     $(document).on("click", ".btn_modifier_reseau_soin", function (e) {
         e.preventDefault();
@@ -10273,48 +9785,6 @@ $(document).ready(function () {
         });
 
     });
-
-
-    $(document).on("click", "#btn_update_reseau_soin", function (e) {
-        e.preventDefault();
-
-        let formulaire = $('#form_update_reseau_soin');
-
-        if (formulaire.valid()) {
-
-            //confirmation obtenu
-            $.ajax({
-                type: 'post',
-                url: formulaire.attr('action'),
-                data: formulaire.serialize(),
-                success: function (response) {
-
-                    if (response.statut == 1) {
-
-                        resetFields('#form_update_reseau_soin');
-
-                        notifySuccess(response.message, function () {
-                            location.reload();
-                        });
-
-                    } else {
-                        notifyWarning(response.message);
-                    }
-
-                },
-                error: function (request, status, error) {
-
-                    notifyWarning("Erreur lors de l'enregistrement");
-                }
-
-            });
-
-        } else {
-            notifyWarning("Veuillez renseigner correctement le formulaire");
-        }
-
-    });
-
 
     //GESTION TARIFS
 
@@ -22440,7 +21910,9 @@ $(document).ready(function () {
     manage_circonstance_change();
 
     $(document).on('change', "#form_add_sinistre_gestionnaire #circonstance_id", function () {
-        manage_circonstance_change();
+
+         manage_circonstance_change();
+
     });
 
 });

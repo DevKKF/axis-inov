@@ -2,83 +2,79 @@
 {% load my_filters %}
 {% load i18n static jazzmin admin_urls %}
 <style type="text/css">
-    tr.tr_totaux td
-    {
-        border:1px solid #dee2e6;
-    }
+   tr.tr_totaux td {
+        border: 1px solid #dee2e6;
+   }
 
-    tr.tr_totaux td .money_field
-    {
-        border:none;
-        background:none;
-        font-weight:bold;
-        font-size:22px;
-    }
-
-    tr.tr_invisible td
-    {
-        border:0px solid red;
-        padding:0px;
-    }
-    .varAlimentSinistreAutre{
-        display:none;
-    }
-    div.dataTables_processing>div:last-child>div {
-        background: rgb(187 65 38) !important;
-    }
-    /**/
-    .search_by_benef_name {
-        padding: 10px;
-        background: linear-gradient(45deg, #F8AF3C, #F8AF3C);
-        border-radius: 3px;
+   tr.tr_totaux td .money_field {
+        border: none;
+        background: none;
         font-weight: bold;
-    }
-    /**/
+        font-size: 22px;
+   }
+
+   tr.tr_invisible td {
+        border: 0px solid red;
+        padding: 0px;
+   }
+
+   .varAlimentSinistreAutre {
+        display: none;
+   }
+
+   div.dataTables_processing>div:last-child>div {
+        background: rgb(187 65 38) !important;
+   }
 </style>
 {% block content_title %}
-    <div class="row mb-2">
-          <div class="col-sm-6">
-                <h1 class="m-0">{% trans 'Créer un dossier sinistre' %}</h1>
-          </div>
-          <div class="col-sm-6">
-                <ol class="breadcrumb float-sm-right">
-                      <li class="breadcrumb-item"><a href="{% url 'admin:index' %}">{% trans 'Home' %}</a></li>
-                      <li class="breadcrumb-item">{% trans 'Sinistre' %}</li>
-                      <li class="breadcrumb-item active">{% trans 'Saisir un dossier sinistre' %}</li>
-                </ol>
-          </div>
-    </div>
-{% endblock %}
-
-{% block content %}
-
-<div class="col-12 col-md-12 order-2 order-md-1">
-    <div id="default_page">
-        <div class="card">
-          <div class="card-header" style="background-color:var(--colorJauneOlea) important!">
-              <h3 class="card-title"><b>{{_("ENREGISTRER UN SINISTRE")}}</b></h3>
-              <div class="card-tools"><a style="cursor: pointer;color:white;" data-toggle="modal" data-target="#modal_choose_client"><i class="fa fa-refresh"></i> {{_("Cliquez pour changer de client")}}</a></b></div>
-          </div>
-
-          <div class="card-body">
-
-            <div class="col-md-12">
-                <div class="row">
-                    <div class="col-md-12"><h4 class="text-center text-italic">Veuillez sélectionner une police...</h4></div>
-                </div>
-            </div>
-          </div>
-        </div>
-    </div>
-    <div id="formulaire_page"></div>
+<div class="row mb-2">
+   <div class="col-sm-6">
+      <h1 class="m-0">{% trans 'Créer un dossier sinistre' %}</h1>
+   </div>
+   <div class="col-sm-6">
+      <ol class="breadcrumb float-sm-right">
+         <li class="breadcrumb-item"><a href="{% url 'admin:index' %}">{% trans 'Home' %}</a></li>
+         <li class="breadcrumb-item">{% trans 'Sinistre' %}</li>
+         <li class="breadcrumb-item active">{% trans 'Saisir un dossier sinistre' %}</li>
+      </ol>
+   </div>
 </div>
-
 {% endblock %}
-
+{% block content %}
+<div class="col-12 col-md-12 order-2 order-md-1">
+   <div id="default_page">
+      <div class="card">
+         <div class="card-header" style="background-color:var(--colorJauneOlea) important!">
+            <h3 class="card-title"><b>{{_("DECLARER UN SINISTRE")}}</b></h3>
+            <div class="card-tools"><a style="cursor: pointer;color:white;" data-toggle="modal" data-target="#modal_choose_client"><i class="fa fa-refresh"></i> {{_("Cliquez pour changer de client")}}</a></b></div>
+         </div>
+         <div class="card-body">
+            <div class="col-md-12">
+               <div class="row">
+                  <div class="col-md-12">
+                     <h4 class="text-center text-italic">Veuillez sélectionner une police...</h4>
+                  </div>
+               </div>
+            </div>
+         </div>
+      </div>
+   </div>
+   <div id="formulaire_page"></div>
+</div>
+{% endblock %}
 {% block extrajs %}
-
 {% include 'modal_choose_client.html' %}
 {% include 'modal_sinistre_garantie.html' %}
 {% include 'modal_sinistre_intervenant.html' %}
-
+<script>
+    // Utilisation de la version jQuery courte pour document ready
+    $(function() {
+        var $modal = $('#modal_choose_client');
+        if ($modal.length) {
+            $modal.modal('show');
+        } else {
+            console.warn("Modal #modal_choose_client not found. Cannot open it.");
+        }
+    });
+</script>
 {% endblock %}

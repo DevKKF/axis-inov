@@ -20,7 +20,7 @@ from django.core import serializers
 # Create your views here.
 from django.core.files.base import File
 from django.core.files.storage import FileSystemStorage
-from django.core.paginator import Paginator
+from django.core.paginator import Paginator, EmptyPage
 from django.db import transaction
 from django.db.models import Count
 from django.db.models import Q, Subquery, OuterRef
@@ -82,13 +82,10 @@ class DossierSinistresTraitesView(TemplateView):
     def get(self, request, *args, **kwargs):
         context = self.get_context_data(**kwargs)
 
-        sinistres = ""
-
         clients = Client.objects.order_by('-nom')
 
         today = timezone.now().date()
         context['today'] = today
-        context['sinistres'] = sinistres
         context['clients'] = clients
 
         return self.render_to_response(context)
@@ -225,11 +222,10 @@ def dossiersinistre_traites_datatable(request):
 
     return JsonResponse({
         "data": data,
-        "recordsTotal": queryset.count() if not request.user.is_med else len(queryset),
+        "recordsTotal": queryset.count(),
         "recordsFiltered": paginator.count,
         "draw": int(request.GET.get('draw', 1)),
     })
-
 
 
 @method_decorator(login_required, name='dispatch')
@@ -897,12 +893,116 @@ def add_sinistre_gestionnaire(request):
         return JsonResponse(response)
 
 
+@method_decorator(login_required, name='dispatch')
+class DossierSinistresView(TemplateView):
+    template_name = 'liste_dossiers_sinistres.html'
+    model = Sinistre
+
+    def get(self, request, *args, **kwargs):
+        context = self.get_context_data(**kwargs)
+
+        typesinistres = TypeSinistre.objects.filter(statut=1).order_by('libelle')
+        clients = Client.objects.order_by('-nom')
+
+        context['typesinistres'] = typesinistres
+        context['clients'] = clients
+
+        return self.render_to_response(context)
+
+    def post(self):
+        pass
+
+    def get_context_data(self, **kwargs):
+        return {
+            **super().get_context_data(**kwargs),
+            **admin.site.each_context(self.request),
+            "opts": self.model._meta,
+        }
 
 
+def dossier_sinistre_datatable(request):
+    start = int(request.GET.get('start', 0))
+    length = int(request.GET.get('length', 10))
+    draw = int(request.GET.get('draw', 1))
 
+    sort_column_index = int(request.GET.get('order[0][column]', 0))
+    sort_direction = request.GET.get('order[0][dir]', 'asc')
 
+    search_num_sinistre = request.GET.get('num_sinistre', '')
+    search_date_declaration = request.GET.get('date_declaration', '')
+    search_type_sinistre = request.GET.get('type_sinistre', '')
+    search_client = request.GET.get('client', '')
 
+    queryset = Sinistre.objects.all()
 
+    # Filtres
+    if search_num_sinistre:
+        queryset = queryset.filter(numero__icontains=search_num_sinistre)
+
+    if search_date_declaration:
+        queryset = queryset.filter(date_declaration=search_date_declaration)
+
+    if search_type_sinistre:
+        queryset = queryset.filter(type_sinistre_id=search_type_sinistre)
+
+    if search_client:
+        queryset = queryset.filter(police__client_id=search_client)
+
+    # Tri
+    sort_columns = {
+        0: 'numero',
+        1: 'police__client__nom',
+        2: 'type_sinistre__libelle',
+        3: 'circonstance__libelle',
+        4: 'date_declaration',
+        5: 'date_survenance',
+        6: 'statut',
+    }
+    sort_column = sort_columns.get(sort_column_index, 'id')
+    if sort_direction == 'desc':
+        sort_column = '-' + sort_column
+
+    queryset = queryset.order_by(sort_column)
+
+    # Pagination
+    total_records = queryset.count()
+
+    if length == -1:
+        page_queryset = queryset  # pas de pagination
+    else:
+        page_number = start // length + 1
+        paginator = Paginator(queryset, length)
+        try:
+            page_queryset = paginator.page(page_number)
+        except EmptyPage:
+            page_queryset = paginator.page(paginator.num_pages)
+
+    # Formatage des données
+    data = []
+    for sin in page_queryset:
+        detail_url = reverse('details_dossier_sinistre', args=[sin.id])
+        actions_html = f'<a href="{detail_url}" target="_blank"><span class="badge btn-sm btn-details rounded-pill"><i class="fa fa-eye"></i> Détails</span></a>'
+        numero_html = f'<a href="{detail_url}" class="text-center bouton_action" style="color:#F16623;" target="_blank">{sin.numero}</a>'
+        statut_html = f'<span class="badge badge-{sin.statut.lower().replace(" ", "-")}">{sin.statut}</span>'
+
+        data.append({
+            "id": sin.id,
+            "numero": numero_html,
+            "client": f"{sin.police.client.nom or ''} {sin.police.client.prenoms or ''}",
+            "type_sinistre": sin.type_sinistre.libelle if sin.type_sinistre else "",
+            "circonstance": sin.circonstance.libelle if sin.circonstance else "",
+            "date_declaration": sin.date_declaration.strftime("%d/%m/%Y") if sin.date_declaration else "",
+            "date_survenance": sin.date_survenance.strftime("%d/%m/%Y") if sin.date_survenance else "",
+            "statut": statut_html,
+            "actions": actions_html,
+        })
+
+    return JsonResponse({
+        "data": data,
+        "recordsTotal": total_records,
+        "recordsFiltered": total_records,
+        "draw": draw,
+    })
 
 
 #Liste des sinistres annulés
@@ -1182,19 +1282,19 @@ def dossiersinistre_physique_gestionnaire_datatable(request):
 
 
 @method_decorator(login_required, name='dispatch')
-class DetailsDossierSinistreView(TemplateView):
-    # permission_required = "sinistre.view_sinistre"
+class DetailsDossierSinistreView_v1(TemplateView):
+    permission_required = "sinistre.view_sinistre"
     template_name = 'details_dossier_sinistre.html'
     model = Sinistre
 
     def get(self, request, sinistre_id, *args, **kwargs):
 
-        dossier_sinistre = Sinistre.objects.filter(id=sinistre_id)
+        sinistre = Sinistre.objects.filter(id=sinistre_id)
 
-        if dossier_sinistre:
-
+        if sinistre:
+            print(f"Sinistre ID: {sinistre_id}")
             context = self.get_context_data(**kwargs)
-            context['dossier_sinistre'] = dossier_sinistre
+            context['sinistre'] = sinistre
 
             return self.render_to_response(context)
 
@@ -1209,5 +1309,47 @@ class DetailsDossierSinistreView(TemplateView):
         }
 
 
+@method_decorator(login_required, name='dispatch')
+class DetailsDossierSinistreView(TemplateView):
+    template_name = 'details_dossier_sinistre.html'
+    model = Sinistre
+
+    def get(self, request, sinistre_id, *args, **kwargs):
+        try:
+            sinistre = Sinistre.objects.get(id=sinistre_id)
+        except Sinistre.DoesNotExist:
+            return redirect('/')
+
+        context = self.get_context_data(**kwargs)
+        context['sinistre'] = sinistre
+        return self.render_to_response(context)
+
+    def get_context_data(self, **kwargs):
+        return {
+            **super().get_context_data(**kwargs),
+            **admin.site.each_context(self.request),
+            "opts": self.model._meta,
+        }
 
 
+@method_decorator(login_required, name='dispatch')
+class GEDDossierSinistreView(TemplateView):
+    template_name = 'ged_dossier_sinistre.html'
+    model = Sinistre
+
+    def get(self, request, sinistre_id, *args, **kwargs):
+        try:
+            sinistre = Sinistre.objects.get(id=sinistre_id)
+        except Sinistre.DoesNotExist:
+            return redirect('/')
+
+        context = self.get_context_data(**kwargs)
+        context['sinistre'] = sinistre
+        return self.render_to_response(context)
+
+    def get_context_data(self, **kwargs):
+        return {
+            **super().get_context_data(**kwargs),
+            **admin.site.each_context(self.request),
+            "opts": self.model._meta,
+        }

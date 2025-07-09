@@ -1455,7 +1455,6 @@ $(document).ready(function () {
 
     });
 
-
     $(document).on("click", ".btn_delete_document_dossier_sinistre", function (e) {
         let document_id = $(this).data('document_id');
         let href = '/sinistre/dossier_sinistre_document/delete';
@@ -1514,6 +1513,152 @@ $(document).ready(function () {
 
 
     //----------------- FIN AJOUT DE DOCUMENT ------------------//
+
+    //----------------- DEBUT AJOUT INTERVENANT SINISTRE ------------------//
+
+    //Modification d'un intervenant
+    $(document).on('click', '.btn_modifier_intervenant', function () {
+        let model_name = $(this).attr('data-model_name');
+        let modal_title = $(this).attr('data-modal_title');
+        let href = $(this).attr('data-href');
+
+        $('#olea_std_dialog_box').load(href, function () {
+
+            $('#modal-modification_intervenant').attr('data-backdrop', 'static').attr('data-keyboard', false);
+
+            $('#modal-modification_intervenant').find('.modal-title').text(modal_title);
+            $('#modal-modification_intervenant').find('#btn_valider').attr({ 'data-model_name': model_name, 'data-href': href });
+            $('#modal-modification_intervenant').find('.modal-dialog').addClass('modal-lg').removeClass('modal-lg');
+
+            //
+            $('#modal-modification_intervenant').modal();
+
+            //gestion du clique sur valider les modifications
+            $("#btn_save_modification_intervenant_sinistre").on('click', function () {
+
+                let formulaire = $('#form_modification_intervenant_sinistre');
+                let href = formulaire.attr('action');
+
+                $.validator.setDefaults({ ignore: [] });
+
+                let formData = new FormData();
+
+                if (formulaire.valid()) {
+
+                    //demander confirmation
+                    let n = noty({
+                        text: 'Voulez-vous vraiment modifier cet intervenant ?',
+                        type: 'warning',
+                        dismissQueue: true,
+                        layout: 'center',
+                        theme: 'defaultTheme',
+                        buttons: [
+                            {
+                                addClass: 'btn btn-primary', text: 'OUI', onClick: function ($noty) {
+                                    $noty.close();
+
+                                    let data_serialized = formulaire.serialize();
+                                    $.each(data_serialized.split('&'), function (index, elem) {
+                                        let vals = elem.split('=');
+
+                                        let key = vals[0];
+                                        let valeur = decodeURIComponent(vals[1].replace(/\+/g, '  '));
+
+                                        formData.append(key, valeur);
+
+                                    });
+
+                                    $.ajax({
+                                        type: 'post',
+                                        url: href,
+                                        data: formData,
+                                        processData: false,
+                                        contentType: false,
+                                        success: function (response) {
+
+                                            if (response.statut == 1) {
+
+                                                notifySuccess(response.message, function () {
+                                                    location.reload();
+                                                });
+
+                                            } else {
+
+                                                let errors = JSON.parse(JSON.stringify(response.errors));
+                                                let errors_list_to_display = '';
+                                                for (field in errors) {
+                                                    errors_list_to_display += '- ' + ucfirst(field) + ' : ' + errors[field] + '<br/>';
+                                                }
+
+                                                $('#modal-modification_intervenant .alert .message').html(errors_list_to_display);
+
+                                                $('#modal-modification_intervenant .alert ').fadeTo(2000, 500).slideUp(500, function () {
+                                                    $(this).slideUp(500);
+                                                }).removeClass('alert-success').addClass('alert-warning');
+
+                                            }
+
+                                        },
+                                        error: function (request, status, error) {
+
+                                            notifyWarning("Erreur lors de l'enregistrement");
+                                        }
+
+                                    });
+
+                                    //fin confirmation obtenue
+
+                                }
+                            },
+                            {
+                                addClass: 'btn btn-danger', text: 'Annuler', onClick: function ($noty) {
+                                    //confirmation refusée
+                                    $noty.close();
+
+                                }
+                            }
+                        ]
+                    });
+
+                } else {
+
+                    $('label.error').css({ display: 'none', height: '0px' }).removeClass('error').text('');
+
+                    let validator = formulaire.validate();
+
+                    $.each(validator.errorMap, function (index, value) {
+
+                        console.log('Id: ' + index + ' Message: ' + value);
+
+                    });
+
+                    notifyWarning('Veuillez renseigner tous les champs obligatoires');
+                }
+
+            });
+
+        });
+
+    });
+
+    //Détails d'un intervenant
+    $(document).on('click', '.btn_details_intervenant', function () {
+        let model_name = $(this).attr('data-model_name');
+        let href = $(this).attr('data-href');
+
+        $('#olea_std_dialog_box').load(href, function () {
+
+            $('#modal-details_intervenant').attr('data-backdrop', 'static').attr('data-keyboard', false);
+
+            $('#modal-details_intervenant').find('#btn_valider').attr({ 'data-model_name': model_name, 'data-href': href });
+            $('#modal-details_intervenant').find('.modal-dialog').addClass('modal-lg').removeClass('modal-lg');
+
+            //
+            $('#modal-details_intervenant').modal();
+
+        });
+    });
+    //----------------- FIN AJOUT INTERVENANT SINISTRE ------------------//
 
 
     //----------------- BORDEREAU -----------------------------//

@@ -1,0 +1,44 @@
+<div  class="modal fade"  id="modal-avenant"  aria-hidden="true" data-backdrop="static" data-keyboard="false" style="display: none">
+	<div class="modal-dialog modal-lg">
+		<div class="modal-content">
+			<form id="form_add_avenant" action="" method="post">
+				{% csrf_token %}
+                <input type="hidden" name="sinistre_id" data-sinistre-id="{{ sinistre.id }}" id="sinistre_id" value="{{ sinistre.id }}">
+				<div class="modal-header">
+					<h4 class="modal-title">MOUVEMENT</h4>
+					<button type="button"class="close"data-dismiss="modal"aria-label="Close">
+						<span aria-hidden="true">×</span>
+					</button>
+				</div>
+				<div class="modal-body">
+					<div class="alert  alert-dismissible fade show hidden" role="alert">
+						<span class="message"> {{_("TRAITEMENT EN COURS")}}</span>
+					</div>
+					<div class="col-md-12 offset-0">
+                      <div class="row">
+                        <div class="col-md-6">
+                            <label>Mouvement <span class="required">*</span></label>
+                            <select class="form-control mouvement" name="mouvement" id="mouvement" autocomplete="off" required>
+                                <option value="">Choisir</option>
+                                {% for mouvement in mouvements %}
+                                    <option value="{{ mouvement.id }}" data-code="{{ mouvement.code }}">{{ mouvement.libelle }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label>Motif du mouvement<span class="required">*</span></label>
+                            <select class="form-control" name="motif" id="motif" autocomplete="off" required>
+                                <option value="">Choisir</option>
+                            </select>
+                        </div>
+                      </div>
+					</div>
+				</div>
+				<div class="modal-footer justify-content-between">
+					<button type="button" class="btn btn-danger" data-dismiss="modal"><i class="fa fa-remove"></i> Retour</button>
+					<button type="button" id="btn_save_avenant" data-href_sinistre="" class="btn btn-info"><i class="fa fa-check-circle"></i> Enregistrer</button>
+				</div>
+			</form>
+		</div>
+	</div>
+</div>

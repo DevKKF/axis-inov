@@ -362,7 +362,7 @@
             </li>
 
             <li class="nav-item">
-                <a href="" class="nav-link">
+                <a href="{% url 'mouvement_dossier_sinistre' sinistre.id %}" class="nav-link">
                   <i class="nav-icon fas fa-history"></i>
                   <p>Mouvements</p>
                 </a>
@@ -376,7 +376,7 @@
             </li>
 
             <li class="nav-item">
-                <a href="" class="nav-link">
+                <a href="{% url 'intervenant_dossier_sinistre' sinistre.id %}" class="nav-link">
                   <i class="nav-icon fas fa-users"></i>
                   <p>Intervenants</p>
                 </a>
@@ -480,6 +480,7 @@
 
 <!-- //DEBUT DES MODALS -->
 {% include 'modal_document.html' %}
+{% include 'modal_avenant.html' %}
 <!-- //FIN DES MODALS -->
 
 <!-- jQuery -->

@@ -1589,3 +1589,93 @@ class IntervenantDossierSinistreView(TemplateView):
             **admin.site.each_context(self.request),
             "opts": self.model._meta,
         }
+
+
+@login_required
+def modifier_intervenant(request, intervenant_id):
+    intervenant = SinistreIntervenant.objects.get(id=intervenant_id)
+    today = timezone.now().date()
+
+    if request.method == 'POST':
+        SinistreIntervenant.objects.filter(id=intervenant_id).update(
+            nom=request.POST.get('nom'),
+            type_intervenant_id=request.POST.get('type_intervenant_id'),
+            pays_id=request.POST.get('pays_id'),
+            prenoms=request.POST.get('prenoms'),
+            portable=request.POST.get('portable'),
+            telephone=request.POST.get('telephone'),
+            fax=request.POST.get('fax'),
+            email=request.POST.get('email'),
+            code_postal=request.POST.get('code_postal'),
+            boite_postale=request.POST.get('boite_postale'),
+            ville=request.POST.get('ville'),
+            updated_at=today,
+        )
+
+        response = {
+            'statut': 1,
+            'message': "Modification effectuée avec succès !",
+            'data': {
+                'id': intervenant.pk
+            }
+        }
+
+        return JsonResponse(response)
+
+    else:
+
+        intervenant = SinistreIntervenant.objects.get(id=intervenant_id)
+
+        pays = Pays.objects.all().order_by('nom')
+        typeintervenants = TypeIntervenant.objects.filter(statut=1).order_by('libelle')
+
+        return render(request, 'modification_intervenant.html',
+                      {'intervenant': intervenant, 'typeintervenants': typeintervenants, 'pays': pays})
+
+
+@login_required
+def details_intervenant(request, intervenant_id):
+    intervenant = SinistreIntervenant.objects.get(id=intervenant_id)
+
+    context = {
+        'intervenant': intervenant,
+    }
+    return render(request, 'details_intervenant.html', context)
+
+
+@method_decorator(login_required, name='dispatch')
+class MouvementDossierSinistreView(TemplateView):
+    template_name = 'mouvement_dossier_sinistre.html'
+    model = Sinistre
+
+    def get(self, request, sinistre_id, *args, **kwargs):
+        try:
+            sinistre = Sinistre.objects.get(id=sinistre_id)
+        except Sinistre.DoesNotExist:
+            return redirect('/')
+
+        mouvements_sinistre = MouvementSinistre.objects.filter(sinistre_id=sinistre.id)
+
+        mouvements = Mouvement.objects.filter(type_mouvement_id=2)
+
+        context = self.get_context_data(**kwargs)
+        context['sinistre'] = sinistre
+        context['mouvements_sinistre'] = mouvements_sinistre
+        context['mouvements'] = mouvements
+        return self.render_to_response(context)
+
+    def get_context_data(self, **kwargs):
+        return {
+            **super().get_context_data(**kwargs),
+            **admin.site.each_context(self.request),
+            "opts": self.model._meta,
+        }
+
+
+def motifs_by_mouvement(request, mouvement_id):
+    motifs = Motif.objects.filter(mouvement_id=mouvement_id) #.exclude(code__in=["INCOR", "RETRAIT"])
+
+    motifs_serialize = serializers.serialize('json', motifs)
+    return HttpResponse(motifs_serialize, content_type='application/json')
+
+

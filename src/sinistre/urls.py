@@ -3,7 +3,7 @@ from django.urls import path
 
 from . import views
 from .views import SaisieSinistreView, DossierSinistresView, DossierSinistresTraitesView, DossiersSinistresPhysiquesGestionnairesView, \
-    DetailsDossierSinistreView, AnnulerSinistreGestionnairesView, GEDDossierSinistreView, IntervenantDossierSinistreView
+    DetailsDossierSinistreView, AnnulerSinistreGestionnairesView, GEDDossierSinistreView, IntervenantDossierSinistreView, MouvementDossierSinistreView
 
 
 urlpatterns = [
@@ -17,6 +17,10 @@ urlpatterns = [
     path('dossier_sinistre/<int:sinistre_id>/ged', GEDDossierSinistreView.as_view(), name='ged_dossier_sinistre'),
     path('add_document_sinistre/<int:sinistre_id>', views.add_document_sinistre, name='add_document_sinistre'),
     path('dossier_sinistre/<int:sinistre_id>/intervenants', IntervenantDossierSinistreView.as_view(), name='intervenant_dossier_sinistre'),
+    path('modifier_intervenant/<int:intervenant_id>', views.modifier_intervenant, name='modifier_intervenant'),
+    path('details_intervenant/<int:intervenant_id>', views.details_intervenant, name='details_intervenant'),
+    path('dossier_sinistre/<int:sinistre_id>/mouvements', MouvementDossierSinistreView.as_view(), name='mouvement_dossier_sinistre'),
+    path('mouvement/<int:mouvement_id>/motifs',views.motifs_by_mouvement, name='mouvement_motifs'),
 
     path('saisie_sinistre/', SaisieSinistreView.as_view(), name='saisie_sinistre'),
     path('recherche_client_police/', views.recherche_client_police, name='recherche_client_police'),

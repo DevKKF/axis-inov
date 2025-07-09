@@ -1,0 +1,77 @@
+{% extends 'menu.html' %}
+{% load i18n %}
+{% block extrastyle %} {% endblock %}
+{% block content_title %}
+    <div class="row mb-2">
+          <div class="col-sm-6">
+                <h1 class="m-0">Liste des intervenants sur le sinistre</h1>
+          </div>
+          <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                      <li class="breadcrumb-item"><a href="{% url 'admin:index' %}">{% trans 'Home' %}</a></li>
+                      <li class="breadcrumb-item"><a href="{% url 'dossiersinistre' %}">Sinistres</a></li>
+                      <li class="breadcrumb-item active">Intervenants</li>
+                </ol>
+          </div>
+    </div>
+{% endblock %}
+{% block content %}
+<div class="col-12 col-md-12 order-2 order-md-1">
+    <div class="row ">
+        <div class="col-12 col-sm-6 col-md-12">
+          <h4></h4>
+          <div class="card shadow_OLD">
+            <div class="card-header">
+                <h3 class="card-title text-white">LISTE DES INTERVANTS SUR LE SINISTRE</h3>
+            </div>
+
+            <div class="card-tools">
+                <div class="card-body">
+                    <div class="row table-responsive">
+                         <table id="table_intervenants" class="table table-bordered table-striped dataTable dtr-inline" role="grid" aria-describedby="example1_info" style="width:100%;">
+                            <thead>
+                                <tr role="row">
+                                    <th class="sorting" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-label="Platform(s): activate to sort column ascending">
+                                        Nom & Prénoms
+                                    </th>
+                                    <th class="sorting" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-label="Platform(s): activate to sort column ascending">
+                                        Type intervenant
+                                    </th>
+                                    <th class="sorting" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-label="Platform(s): activate to sort column ascending">
+                                        Portable
+                                    </th>
+                                    <th class="sorting" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-label="Platform(s): activate to sort column ascending">
+                                        Téléphone
+                                    </th>
+                                    <th class="sorting" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-label="Platform(s): activate to sort column ascending">
+                                        Action
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for intervenant in intervenants %}
+                                    <tr class="odd">
+                                        <td class="dtr-control" tabindex="0">{{ intervenant.nom }} {{ intervenant.prenoms }}</td>
+                                        <td class="dtr-control" tabindex="0">{{ intervenant.type_intervenant.libelle }}</td>
+                                        <td class="dtr-control" tabindex="0">{{ intervenant.portable }}</td>
+                                        <td class="dtr-control" tabindex="0">{{ intervenant.telephone }}</td>
+                                        <td class="text-center">
+                                            <span style="cursor:pointer;" class="btn_details_intervenant badge badge-info text-white rounded-pill text-center" data-intervenant_id="{intervenant.id}" data-model_name="details-intervenant" data-modal_title="INFORMATIONS" data-href="{% url 'details_intervenant' intervenant.id %}"><i class="fas fa-eye"></i> Détails</span>
+                                            <span style="cursor:pointer;" class="btn_modifier_intervenant badge badge-warning text-white rounded-pill text-center" data-intervenant_id="{intervenant.id}" data-model_name="intervenant" data-modal_title="MODIFICATION D'UN INTERVENANT" data-href="{% url 'modifier_intervenant' intervenant.id %}"><i class="fas fa-edit"></i> Modifier</span>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                         </table>
+                    </div>
+                </div>
+            </div>
+          </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extrajs %}
+
+{% endblock %}

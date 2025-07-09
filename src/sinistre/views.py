@@ -45,13 +45,14 @@ import re
 from uuid import uuid4
 
 from configurations.helper_config import execute_query, create_query_background_task
-from configurations.models import Compagnie, User, Rubrique, EtapeSinistre, \
+from configurations.models import Compagnie, User, Rubrique, \
     TypePriseencharge, Pays, TypeIntervenant, Responsabilite, TypeSinistre, Circonstance, Garantie, GarantieCirconstance, PosteDommage, \
     ActionLog, PeriodeComptable, TypeRemboursement, ModeCreation, \
     BackgroundQueryTask, TypePrefinancement
 from production.models import Statut, TypeDocument, Client
 #
-from production.models import Police, HistoriquePolice, PoliceAssureur, Mouvement, Motif, AlimentPolice
+from production.models import Police, HistoriquePolice, PoliceAssureur, Mouvement, Motif, AlimentPolice, Document
+from production.forms import DocumentForm
 from production.templatetags.my_filters import money_field, supprimer_espaces
 from shared.enum import StatutPolice
 from shared.enum import StatutSinistre, StatutSinistreBordereau, StatutSinistrePrestation, StatutValidite, \
@@ -67,7 +68,7 @@ from sinistre.helper_sinistre import exportation_en_excel_avec_style, \
     requete_liste_sinistre_saisies_entre_2date, requete_sinistres_traites_et_valides_par_les_gestionnaires, \
     requete_analyse_prime_compta_apporteur, get_retenue_selon_contexte
 # Create your views here.
-from sinistre.models import PaiementComptable, Sinistre, Intervenant, SinistreIntervenant, GarantieSinistre, Provision, DossierSinistre, AlimentPoliceSinistre, MouvementSinistre, SinistreEtape, \
+from sinistre.models import PaiementComptable, Sinistre, SinistreIntervenant, GarantieSinistre, Provision, DossierSinistre, AlimentPoliceSinistre, MouvementSinistre, \
     RemboursementSinistre, BordereauOrdonnancement, HistoriqueOrdonnancementSinistre
 
 from sinistre.forms import SinistreForm
@@ -749,14 +750,182 @@ def add_sinistre_gestionnaire(request):
             ms.created_by = request.user
             ms.save()
 
-            # Créer une ligne de sinistre_etape avec le mouvement ouverture sinistre et le motif ouverture sinistre
-            sinetap = SinistreEtape()
-            sinetap.sinistre = sinistre
-            sinetap.etape_sinistre = EtapeSinistre.objects.get(code='OUVSIN')
-            sinetap.numero_ordre = 1
-            sinetap.date_effet = sinistre.date_ouverture
-            sinetap.created_by = request.user
-            sinetap.save()
+            # Créer la ligne de l'aliment lié au sinistre
+            aliment_police = None
+
+            if vehicule_id:
+                try:
+                    aliment_police = AlimentPolice.objects.get(vehicule_id=vehicule_id)
+                except AlimentPolice.DoesNotExist:
+                    pass  # Gérer l'absence de l'objet si nécessaire
+
+            if marchandise_id:
+                try:
+                    aliment_police = AlimentPolice.objects.get(marchandise_id=marchandise_id)
+                except AlimentPolice.DoesNotExist:
+                    pass  # Gérer l'absence de l'objet si nécessaire
+
+            if autre_risque_id:
+                try:
+                    aliment_police = AlimentPolice.objects.get(autre_risque_id=autre_risque_id)
+
+                    aliment_police.risque = autre_risque
+                    aliment_police.save()
+
+                except AlimentPolice.DoesNotExist:
+                    pass  # Gérer l'absence de l'objet si nécessaire
+
+            if aliment_police:
+                aliment_sinitre_created = AlimentPoliceSinistre(
+                    police=police,
+                    sinistre=sinistre,
+                    aliment_police=aliment_police,
+                    risque=risque,
+                )
+                aliment_sinitre_created.save()
+            else:
+                pass
+
+
+            # Récupérer les intervenants de la session
+            intervenants = request.session.get('intervenants', [])
+            for intervenant in intervenants:
+                intervenant_created = SinistreIntervenant(
+                    sinistre=sinistre,
+                    type_intervenant_id=intervenant.get('type_intervenant_id'),
+                    pays_id=intervenant.get('pays_id'),
+                    nom=intervenant.get('nom'),
+                    prenoms=intervenant.get('prenoms'),
+                    portable=intervenant.get('portable'),
+                    telephone=intervenant.get('telephone'),
+                    fax=intervenant.get('fax'),
+                    email=intervenant.get('email'),
+                    code_postal=intervenant.get('code_postal'),
+                    boite_postale=intervenant.get('boite_postale'),
+                    ville=intervenant.get('ville'),
+                )
+                intervenant_created.save()
+
+
+            # Récupérer les garanties de la session
+            garanties_sinistre = request.session.get("garanties", [])
+            for garantie_sinistre in garanties_sinistre:
+                garantie_sinistre_created = GarantieSinistre(
+                    sinistre=sinistre,
+                    circonstance_id=circonstance_id,
+                    garantie_id=garantie_sinistre.get('garantie_id'),
+                    franchise=supprimer_espaces(garantie_sinistre.get('franchise', 0)) if garantie_sinistre.get('franchise', 0) else None,
+                    capital=supprimer_espaces(garantie_sinistre.get('capital', 0)) if garantie_sinistre.get('capital', 0) else None,
+                    prime_nette=supprimer_espaces(garantie_sinistre.get('prime_net', 0)) if garantie_sinistre.get('prime_net', 0) else None,
+                    prime_ttc=supprimer_espaces(garantie_sinistre.get('prime_ttc', 0)) if garantie_sinistre.get('prime_ttc', 0) else None,
+                )
+                garantie_sinistre_created.save()
+
+            response = {
+                'statut': 1,
+                'message': "Sinistre enregistré avec succès !",
+                'data': {
+                    'id': sinistre.pk,
+                    'numero': sinistre.numero,
+                }
+            }
+
+            return JsonResponse(response)
+
+        else:
+            response = {
+                'statut': 0,
+                'message': "Veuillez renseigner correctement le formulaire",
+                'errors': form.errors,
+            }
+
+            return JsonResponse(response)
+    else:
+        response = {
+            'statut': 0,
+            'message': "Cette méthode n'est pas reconnue !",
+        }
+
+        return JsonResponse(response)
+
+
+def add_sinistre_gestionnaire_v1(request):
+
+    if request.method == 'POST':
+
+        form = SinistreForm(request.POST)
+
+        if form.is_valid():
+            police = Police.objects.get(id=request.POST.get('police_id'))
+            client = Client.objects.get(id=police.client_id)
+            vehicule_id = request.POST.get('vehicule_id')
+            marchandise_id = request.POST.get('marchandise_id')
+            autre_risque_id = request.POST.get('autre_risque_id')
+            autre_risque = request.POST.get('autre_risque')
+            compagnie_id = request.POST.get('compagnie_id')
+            mouvement_id = request.POST.get('mouvement_id')
+            motif_mouvement_id = request.POST.get('motif_mouvement_id')
+            date_survenance = request.POST.get('date_survenance')
+            date_ouverture = request.POST.get('date_ouverture')
+            date_cloture = request.POST.get('date_cloture')
+            risque = request.POST.get('risque')
+            date_declaration = request.POST.get('date_declaration')
+            date_reouverture = request.POST.get('date_reouverture')
+            circonstance_id = request.POST.get('circonstance_id')
+            lieu_survenance = request.POST.get('lieu_survenance')
+            tva_recuperee = request.POST.get('tva_recuperee')
+            type_sinistre_id = request.POST.get('type_sinistre_id')
+            franchise = request.POST.get('franchise').replace(' ', '')
+            responsabilite_id = request.POST.get('responsabilite_id')
+            fait_generateur = request.POST.get('fait_generateur')
+            point_de_choc = request.POST.get('point_de_choc')
+            commentaire = request.POST.get('commentaire')
+            saisie_circonstance = request.POST.get('saisie_circonstance')
+            numero = request.POST.get('numero')
+
+            sinistre_created = Sinistre(
+                client_id=client.id,
+                police_id=police.id,
+                compagnie_id=compagnie_id,
+                type_sinistre_id=type_sinistre_id,
+                responsabilite_id=responsabilite_id,
+                circonstance_id=circonstance_id,
+                created_by=request.user,
+                numero=numero,
+                date_survenance=date_survenance if date_survenance else None,
+                date_declaration=date_declaration if date_declaration else None,
+                date_ouverture=date_ouverture if date_ouverture else None,
+                date_cloture=date_cloture if date_cloture else None,
+                date_reouverture=date_reouverture if date_reouverture else None,
+                lieu_survenance=lieu_survenance,
+                tva_recuperee=tva_recuperee,
+                fait_generateur=fait_generateur,
+                point_de_choc=point_de_choc,
+                commentaire=commentaire,
+                autre_circonstance=saisie_circonstance,
+                franchise=supprimer_espaces(franchise) if franchise else 0,
+            )
+            sinistre_created.save()
+
+            code_bureau = request.user.bureau.code
+            sinistre_created.numero_provisoire = str(code_bureau) + 'S' + str(Date.today().year)[-2:] + str(
+                sinistre_created.pk).zfill(6)
+            if sinistre_created.numero == "":
+                sinistre_created.numero = sinistre_created.numero_provisoire
+
+            sinistre_created.save()
+
+            sinistre = Sinistre.objects.get(id=sinistre_created.pk)
+
+            # Créer une ligne de mouvement_sinistre avec le mouvement ouverture sinistre et le motif ouverture sinistre
+            ms = MouvementSinistre()
+            ms.sinistre = sinistre
+            ms.police = police
+            ms.mouvement = Mouvement.objects.get(code=mouvement_id)
+            ms.motif = Motif.objects.get(code=motif_mouvement_id)
+            ms.date_effet = sinistre.date_ouverture
+            ms.created_by = request.user
+            ms.save()
 
             # Créer la ligne de l'aliment lié au sinistre
             aliment_police = None
@@ -798,7 +967,8 @@ def add_sinistre_gestionnaire(request):
             # Récupérer les intervenants de la session
             intervenants = request.session.get('intervenants', [])
             for intervenant in intervenants:
-                intervenant_created = Intervenant(
+                intervenant_created = SinistreIntervenant(
+                    sinistre=sinistre,
                     type_intervenant_id=intervenant.get('type_intervenant_id'),
                     pays_id=intervenant.get('pays_id'),
                     nom=intervenant.get('nom'),
@@ -812,14 +982,6 @@ def add_sinistre_gestionnaire(request):
                     ville=intervenant.get('ville'),
                 )
                 intervenant_created.save()
-                intervenant = Intervenant.objects.get(id=intervenant_created.pk)
-
-                # Créer la ligne intervenant du sinistre
-                aliment_sinitre_created = SinistreIntervenant(
-                    intervenant_id=intervenant.id,
-                    sinistre=sinistre
-                )
-                aliment_sinitre_created.save()
 
 
             # Récupérer les garanties de la session
@@ -841,16 +1003,16 @@ def add_sinistre_gestionnaire(request):
             print(f'Provisions data: {provisions_data}')
             if provisions_data:
                 provisions_list = json.loads(provisions_data)
-                
+
                 # Supprimer les anciennes provisions pour ce sinistre
                 Provision.objects.filter(sinistre=sinistre).delete()
-                
+
                 # Créer les nouvelles provisions
                 for provision_data in provisions_list:
                     try:
                         garantie = Garantie.objects.get(id=provision_data['garantie_id'])
                         poste_dommage = PosteDommage.objects.get(libelle=provision_data['poste_dommage_id'])
-                        
+
                         Provision.objects.create(
                             sinistre=sinistre,
                             garantie=garantie,
@@ -864,7 +1026,7 @@ def add_sinistre_gestionnaire(request):
                             'statut': 0,
                             'errors': {'provisions': f'Garantie ou poste dommage non trouvé: {str(e)}'}
                         })
-  
+
             response = {
                 'statut': 1,
                 'message': "Sinistre enregistré avec succès !",
@@ -1320,8 +1482,11 @@ class DetailsDossierSinistreView(TemplateView):
         except Sinistre.DoesNotExist:
             return redirect('/')
 
+        mouvement_sinistre = MouvementSinistre.objects.filter(sinistre_id=sinistre.id, statut_validite=StatutValidite.VALIDE).order_by('-id').first()
+
         context = self.get_context_data(**kwargs)
         context['sinistre'] = sinistre
+        context['mouvement_sinistre'] = mouvement_sinistre
         return self.render_to_response(context)
 
     def get_context_data(self, **kwargs):
@@ -1343,8 +1508,79 @@ class GEDDossierSinistreView(TemplateView):
         except Sinistre.DoesNotExist:
             return redirect('/')
 
+        documents = Document.objects.filter(sinistre_id=sinistre.id)
+        typedocuments = TypeDocument.objects.filter(is_sinistre=1, is_production=0)
+
         context = self.get_context_data(**kwargs)
         context['sinistre'] = sinistre
+        context['documents'] = documents
+        context['typedocuments'] = typedocuments
+        return self.render_to_response(context)
+
+    def get_context_data(self, **kwargs):
+        return {
+            **super().get_context_data(**kwargs),
+            **admin.site.each_context(self.request),
+            "opts": self.model._meta,
+        }
+
+
+def add_document_sinistre(request, sinistre_id):
+    if request.method == "POST":
+
+        form = DocumentForm(request.POST, request.FILES)
+
+        if form.is_valid():
+
+            sinistre = Sinistre.objects.get(id=sinistre_id)
+            type_document_id = request.POST.get('type_document')
+
+            document = form.save(commit=False)
+            document.sinistre = sinistre
+            document.type_document = TypeDocument.objects.get(id=type_document_id)
+            document.save()
+
+            response = {
+                'statut': 1,
+                'message': "Enregistrement effectue avec succes !",
+                'data': {
+                    'id': document.pk,
+                    'nom': document.nom,
+                    'fichier': '<a href="' + document.fichier.url + '"><i class="fa fa-file" title="Aperçu"></i> Afficher</a>',
+                    'type_document': document.type_document.libelle,
+                    'confidentialite': document.confidentialite,
+                }
+            }
+
+            return JsonResponse(response)
+
+        else:
+
+            response = {
+                'statut': 0,
+                'message': "Veuillez renseigner correctement le formulaire !",
+                'errors': form.errors,
+            }
+
+            return JsonResponse(response)
+
+
+@method_decorator(login_required, name='dispatch')
+class IntervenantDossierSinistreView(TemplateView):
+    template_name = 'intervenant_dossier_sinistre.html'
+    model = Sinistre
+
+    def get(self, request, sinistre_id, *args, **kwargs):
+        try:
+            sinistre = Sinistre.objects.get(id=sinistre_id)
+        except Sinistre.DoesNotExist:
+            return redirect('/')
+
+        intervenants = SinistreIntervenant.objects.filter(sinistre_id=sinistre.id)
+
+        context = self.get_context_data(**kwargs)
+        context['sinistre'] = sinistre
+        context['intervenants'] = intervenants
         return self.render_to_response(context)
 
     def get_context_data(self, **kwargs):

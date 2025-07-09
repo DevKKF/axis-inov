@@ -8,7 +8,7 @@ from django.utils import timezone
 
 from configurations.models import CompteTresorerie, Devise, Medicament, Compagnie, User, TypePriseencharge, Prestataire, Prescripteur, Acte, \
     Rubrique, SousRubrique, RegroupementActe, TypePrefinancement, PeriodeComptable, ModeCreation, Bureau, Circonstance, TypeSinistre, Responsabilite, TypeIntervenant, PosteDommage, Pays, \
-    TypeRemboursement, ModeReglement, Banque, BordereauLettreCheque, Garantie, TypeRecours, EtapeSinistre
+    TypeRemboursement, ModeReglement, Banque, BordereauLettreCheque, Garantie
 from production.models import TypeDocument, Aliment, Police, PeriodeCouverture, FormuleGarantie, Bareme, Client, AlimentPolice, Mouvement, Motif
 from shared.enum import StatutFacture, StatutSinistre, SatutBordereauDossierSinistres, StatutSinistreBordereau, \
     StatutSinistrePrestation, StatutValidite, StatutRemboursement, StatutRemboursementSinistre, Statut, \
@@ -81,7 +81,7 @@ class Sinistre(models.Model):
 
     @property
     def total_capitaux(self):
-        """Calcule la somme des capital pour ce sinistre."""
+        """Calcule la somme des capitales pour ce sinistre."""
         return self.garanties.aggregate(models.Sum('capital'))['capital__sum'] or 0
 
     @property
@@ -96,8 +96,6 @@ class Sinistre(models.Model):
 
     @property
     def etat_sinistre(self):
-        # tenir compte de la date du jour pour déterminer l'état du sinistre
-        # today = datetime.datetime.now(tz=timezone.utc).date()
         today = timezone.now().date()
 
         mouvement = MouvementSinistre.objects.filter(sinistre_id=self.id, date_effet__lte=today, statut_validite=StatutValidite.VALIDE).order_by('-id').first()
@@ -106,13 +104,6 @@ class Sinistre(models.Model):
             return mouvement.motif.etat_police
         else:
             return "En attente"
-
-    @property
-    def get_derniere_etape(self):
-        """
-        Retourne l'objet de la dernière étape du sinistre.
-        """
-        return self.sinistreetape_set.order_by('-numero_ordre').first()
 
 
 #
@@ -210,7 +201,8 @@ class HistoriqueAlimentPoliceSinistre(models.Model):
 
 
 #
-class Intervenant(models.Model):
+class SinistreIntervenant(models.Model):
+    sinistre = models.ForeignKey(Sinistre, null=True, on_delete=models.RESTRICT)
     type_intervenant = models.ForeignKey(TypeIntervenant, null=True, on_delete=models.RESTRICT)
     pays = models.ForeignKey(Pays, null=True, on_delete=models.RESTRICT)
     nom = models.TextField(blank=True, null=True)
@@ -227,36 +219,9 @@ class Intervenant(models.Model):
 
 
     class Meta:
-        db_table = 'intervenant'
-        verbose_name = 'Intervenants'
-        verbose_name_plural = 'Intervenants'
-
-
-#
-class SinistreIntervenant(models.Model):
-    sinistre = models.ForeignKey(Sinistre, null=True, on_delete=models.RESTRICT)
-    intervenant = models.ForeignKey(Intervenant, null=True, on_delete=models.RESTRICT)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-
-    class Meta:
         db_table = 'sinistre_intervenant'
         verbose_name = 'Sinistre intervenant'
         verbose_name_plural = 'Sinistre intervenant'
-
-
-class HistoriqueSinistreIntervenant(models.Model):
-    historique_sinistre = models.ForeignKey(HistoriqueSinistre, null=True, on_delete=models.RESTRICT)
-    intervenant = models.ForeignKey(Intervenant, null=True, on_delete=models.RESTRICT)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-
-    class Meta:
-        db_table = 'historique_sinistre_intervenant'
-        verbose_name = 'Historique sinistre intervenant'
-        verbose_name_plural = 'Historique sinistre intervenant'
 
 
 #
@@ -321,28 +286,6 @@ class Provision(models.Model):
         verbose_name_plural = 'Provisions'
 
 
-#
-class HistoriqueProvision(models.Model):
-    historique_sinistre = models.ForeignKey(HistoriqueSinistre, related_name='provisions', null=True, on_delete=models.RESTRICT)
-    provision = models.ForeignKey(Provision, null=True, on_delete=models.RESTRICT)
-    sinistre = models.ForeignKey(Sinistre, null=True, on_delete=models.RESTRICT)
-    garantie = models.ForeignKey(Garantie, null=True, on_delete=models.RESTRICT)
-    poste_dommage = models.ForeignKey(PosteDommage, null=True, on_delete=models.RESTRICT)
-
-    estimation = models.BigIntegerField(null=True)
-    deja_regle = models.BigIntegerField(null=True)
-    provision = models.BigIntegerField(null=True)
-
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-
-    class Meta:
-        db_table = 'historique_provisions'
-        verbose_name = 'Historique provisions'
-        verbose_name_plural = 'Historique provisions'
-
-
 class ReglementSinistre(models.Model):
     sinistre = models.ForeignKey(Sinistre, null=True, on_delete=models.RESTRICT)
     provision = models.ForeignKey(Provision, null=True, on_delete=models.RESTRICT)
@@ -388,24 +331,6 @@ class MouvementSinistre(models.Model):
         db_table = 'mouvements_sinistres'
         verbose_name = 'Mouvement du sinistre'
         verbose_name_plural = 'Mouvements du sinistre'
-
-
-class SinistreEtape(models.Model):
-    sinistre = models.ForeignKey(Sinistre, null=True, on_delete=models.RESTRICT)
-    etape_sinistre = models.ForeignKey(EtapeSinistre, null=True, on_delete=models.RESTRICT)
-    numero_ordre = models.PositiveIntegerField(null=True)
-
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    created_by = models.ForeignKey(User, null=True, on_delete=models.RESTRICT)
-
-    class Meta:
-        db_table = 'sinistre_etape'
-        verbose_name = 'Sinistre étape'
-        verbose_name_plural = 'Sinistre étape'
-
-
 
 
 

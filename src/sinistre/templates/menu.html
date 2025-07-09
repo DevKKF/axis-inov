@@ -353,12 +353,14 @@
                     <p>{% trans 'Home' %}</p>
                 </a>
             </li>
+
             <li class="nav-item">
                 <a href="{% url 'details_dossier_sinistre' sinistre.id %}" class="nav-link">
                   <i class="nav-icon fas fa-umbrella"></i>
                   <p>Fiche sinistre</p>
                 </a>
             </li>
+
             <li class="nav-item">
                 <a href="" class="nav-link">
                   <i class="nav-icon fas fa-history"></i>
@@ -372,6 +374,14 @@
                   <p>GED</p>
                 </a>
             </li>
+
+            <li class="nav-item">
+                <a href="" class="nav-link">
+                  <i class="nav-icon fas fa-users"></i>
+                  <p>Intervenants</p>
+                </a>
+            </li>
+
             <li class="nav-item">
                 <a href="" class="nav-link">
                   <i class="nav-icon fas fa-file-invoice-dollar"></i>
@@ -466,12 +476,10 @@
 </div>
 
 
-
-
-
-
 <div id="olea_std_dialog_box"></div>
 
+<!-- //DEBUT DES MODALS -->
+{% include 'modal_document.html' %}
 <!-- //FIN DES MODALS -->
 
 <!-- jQuery -->

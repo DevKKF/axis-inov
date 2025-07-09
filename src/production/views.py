@@ -49,7 +49,7 @@ from configurations.models import Compagnie, MarqueVehicule, Pays, Civilite, Pro
     Devise, Taxe, BureauTaxe, Apporteur, BaseCalcul, TypeQuittance, NatureQuittance, TypeClient, TypePersonne, Langue, \
     Branche, ParamProduitCompagnie, CategorieVehicule, Banque, Carburant, Usage, Carosserie, GarantieCirconstance, \
     NatureOperation, TypeTarif, Rubrique, Periodicite, AuthGroup, ActionLog, SousRubrique, TypePrefinancement, CompteTresorerie, \
-    TypeFichier, EtapeSinistre
+    TypeFichier
 
 from inov import settings
 from production.forms import ContactForm, FilialeForm, AcompteForm, DocumentForm, PoliceForm, PhotoUploadForm
@@ -66,8 +66,8 @@ from production.templatetags.my_filters import money_field, convertir_date_multi
     arrondis_nombre, transformer_statut
 from shared.enum import StatutIncorporation, StatutValidite, StatutSinistre, StatutEnrolement, StatutTraitement, \
     StatutReversementCompagnie, StatutValiditeQuittance, Confidentialite, StatutBordereau
-from sinistre.models import Sinistre, DossierSinistre, MouvementSinistre, AlimentPoliceSinistre, Intervenant, SinistreIntervenant, GarantieSinistre, Provision, ReglementSinistre, \
-    HistoriqueSinistre, HistoriqueSinistreIntervenant, HistoriqueGarantieSinistre, HistoriqueProvision, HistoriqueAlimentPoliceSinistre, SinistreEtape
+from sinistre.models import Sinistre, DossierSinistre, MouvementSinistre, AlimentPoliceSinistre, SinistreIntervenant, GarantieSinistre, Provision, ReglementSinistre, \
+    HistoriqueSinistre, HistoriqueGarantieSinistre, HistoriqueAlimentPoliceSinistre
 from sinistre.forms import SinistreForm
 from comptabilite.models import EncaissementCommission
 
@@ -230,7 +230,7 @@ def add_contact(request, client_id):
             return JsonResponse(response)
 
 
-# modification d'un contact
+# Modification d'un contact
 @login_required
 def modifier_contact(request, contact_id):
 
@@ -508,7 +508,11 @@ def modifier_document(request, document_id):
     else:
 
         document = Document.objects.get(id=document_id)
-        typedocuments = TypeDocument.objects.filter(is_production=1).order_by('libelle')
+
+        if document.sinistre_id:
+            typedocuments = TypeDocument.objects.filter(is_sinistre=1).order_by('libelle')
+        if document.police_id or document.quittance_id or document.client_id:
+            typedocuments = TypeDocument.objects.filter(is_production=1).order_by('libelle')
         confidentialite = Confidentialite
 
         form = DocumentForm()
@@ -632,8 +636,8 @@ def supprimer_acompte(request, acompte_id):
         return JsonResponse(response)
 
 
-# ajout de police
-@transaction.atomic  # open a transaction
+# Ajout de police
+@transaction.atomic
 @login_required
 def add_police(request, client_id):
     taxes = request.COOKIES.get('taxes')
@@ -1248,8 +1252,8 @@ def add_police(request, client_id):
         return JsonResponse(response)
 
 
-# modification de police
-@transaction.atomic  # open a transaction
+# Modification de police
+@transaction.atomic
 @login_required
 def modifier_police(request, police_id):
 
@@ -2410,7 +2414,7 @@ def get_garanties_by_formule_modification(request):
     return JsonResponse({'garanties': garanties})
 
 
-#Vérification des immats
+# Vérification des immats
 def is_immatriculation_exists(request, immat):
 
     aliments_existant = request.session.get('aliments', [])
@@ -2656,7 +2660,7 @@ def clear_session(request):
     return JsonResponse({'success': False, 'error': 'Méthode non autorisée.'}, status=405)
 
 
-#Chargement des garanties de la branche liée au produit
+# Chargement des garanties de la branche liée au produit
 def get_garanties_by_produit(request):
     branche_id = request.GET.get('produit_id')
     garanties = GarantieBranche.objects.filter(branche_id=branche_id).values('garantie__id', 'garantie__nom')
@@ -2664,7 +2668,7 @@ def get_garanties_by_produit(request):
     return JsonResponse({'garanties': list(garanties)})
 
 
-#Chargement des garanties de la formule
+# Chargement des garanties de la formule
 def get_garanties_by_formule(request):
     formule_id = request.GET.get('formule_id')
     garanties = GarantieFormule.objects.filter(formule_id=formule_id).values('garantie__id', 'garantie__nom')
@@ -2731,7 +2735,7 @@ def polices_restantes(request, police_id):
 
 
 @login_required
-# récupère le taux paramétré sur le produit en fonction de la compagnie
+# Récupère le taux paramétré sur le produit en fonction de la compagnie
 def ajax_infos_compagnie(request, compagnie_id, produit_id):
     param_produit_compagnie = ParamProduitCompagnie.objects.filter(compagnie_id=compagnie_id, produit_id=produit_id).first()
 
@@ -2755,7 +2759,7 @@ def ajax_infos_compagnie(request, compagnie_id, produit_id):
 
 
 @login_required
-# récupère le taux paramétré sur le produit en fonction de la compagnie
+# Récupère le taux paramétré sur le produit en fonction de la compagnie
 def ajax_infos_compagnie_modification(request, compagnie_id, produit_id):
     param_produit_compagnie = ParamProduitCompagnie.objects.filter(compagnie_id=compagnie_id, produit_id=produit_id).first()
 
@@ -4227,16 +4231,6 @@ def add_sinistre_avenant(request, sinistre_id):
                 date_cloture=date_cloture_sinistre if date_cloture_sinistre else None,
             )
 
-            sinistre_etape = SinistreEtape.objects.create(
-                sinistre=sinistre,
-                police = sinistre.police_id,
-                mouvement_id=request.POST.get('mouvement'),
-                #motif_id=request.POST.get('motif'),
-                date_effet=request.POST.get('date_effet'),
-                created_by = request.user
-            )
-            sinistre_etape.save()
-
             response = {
                 'statut': 1,
                 'message': "Enregistrement effectuée avec succès !",
@@ -4370,15 +4364,6 @@ def police_save_sinistre(request, police_id):
             ms.date_effet = sinistre.date_ouverture
             ms.created_by = request.user
             ms.save()
-
-            # Créer une ligne de sinistre_etape avec le mouvement ouverture sinistre et le motif ouverture sinistre
-            sinetap = SinistreEtape()
-            sinetap.sinistre = sinistre
-            sinetap.etape_sinistre = EtapeSinistre.objects.get(code='OUVSIN')
-            sinetap.numero_ordre = 1
-            sinetap.date_effet = sinistre.date_ouverture
-            sinetap.created_by = request.user
-            sinetap.save()
 
             # Créer la ligne de l'aliment lié au sinistre
             aliment_police = None
@@ -4649,17 +4634,6 @@ def modifiersinistre(request, sinistre_id):
                     if key in provisions_existantes:
                         provision_obj = provisions_existantes[key]
 
-                        # Enregistrer l'historique avant la mise à jour
-                        historiques.append(HistoriqueProvision(
-                            sinistre=provision_obj.sinistre,
-                            historique_sinistre_id=historiq_sinistre.id,
-                            garantie=provision_obj.garantie,
-                            poste_dommage=provision_obj.poste_dommage,
-                            estimation=provision_obj.estimation,
-                            deja_regle=provision_obj.deja_regle,
-                            provision=provision_obj.provision,
-                        ))
-
                         # Mettre à jour la provision existante
                         provision_obj.estimation = estimation
                         provision_obj.deja_regle = deja_regle
@@ -4677,23 +4651,6 @@ def modifiersinistre(request, sinistre_id):
                             deja_regle=deja_regle,
                             provision=provision_val,
                         ))
-
-            # Supprimer les provisions restantes (celles qui n'étaient pas dans les données reçues)
-            for provision_obj in provisions_existantes.values():
-                historiques.append(HistoriqueProvision(
-                    sinistre=provision_obj.sinistre,
-                    historique_sinistre_id=historiq_sinistre.id,
-                    garantie=provision_obj.garantie,
-                    poste_dommage=provision_obj.poste_dommage,
-                    estimation=provision_obj.estimation,
-                    deja_regle=provision_obj.deja_regle,
-                    provision=provision_obj.provision,
-                ))
-                provisions_a_supprimer.append(provision_obj)
-
-            HistoriqueProvision.objects.bulk_create(historiques)
-            Provision.objects.bulk_create(provisions_a_creer)
-            Provision.objects.filter(id__in=[p.id for p in provisions_a_supprimer]).delete()
 
         #Garanties sinistre
         with transaction.atomic():
@@ -4739,20 +4696,6 @@ def modifiersinistre(request, sinistre_id):
 
         #Intervenants sinistre
         with transaction.atomic():
-            # 1️⃣ Récupérer les anciens intervenants liés au sinistre
-            anciens_intervenants = SinistreIntervenant.objects.filter(sinistre=sinistre)
-
-            # 2️⃣ Enregistrer dans HistoriqueSinistreIntervenant
-            historiques = []
-            for si in anciens_intervenants:
-                historique = HistoriqueSinistreIntervenant(
-                    historique_sinistre_id=historiq_sinistre.id,
-                    intervenant=si.intervenant
-                )
-                historiques.append(historique)
-            HistoriqueSinistreIntervenant.objects.bulk_create(historiques)
-
-            # 3️⃣ Parcourir les intervenants récupérés depuis la session
             intervenants = request.session.get('intervenants', [])
 
             for intervenant_data in intervenants:
@@ -4760,12 +4703,12 @@ def modifiersinistre(request, sinistre_id):
                 email = intervenant_data.get('email')
 
                 # Chercher si intervenant existe déjà (portable + email pour garantir unicité)
-                intervenant_qs = Intervenant.objects.filter(portable=portable, email=email)
+                intervenant_qs = SinistreIntervenant.objects.filter(portable=portable, email=email)
 
                 if intervenant_qs.exists():
                     intervenant_obj = intervenant_qs.first()
                     # Mise à jour des informations
-                    Intervenant.objects.filter(id=intervenant_obj.id).update(
+                    SinistreIntervenant.objects.filter(id=intervenant_obj.id).update(
                         type_intervenant_id=intervenant_data.get('type_intervenant_id'),
                         pays_id=intervenant_data.get('pays_id'),
                         nom=intervenant_data.get('nom'),
@@ -4778,7 +4721,7 @@ def modifiersinistre(request, sinistre_id):
                     )
                 else:
                     # Créer un nouvel intervenant
-                    intervenant_obj = Intervenant.objects.create(
+                    intervenant_obj = SinistreIntervenant.objects.create(
                         type_intervenant_id=intervenant_data.get('type_intervenant_id'),
                         pays_id=intervenant_data.get('pays_id'),
                         nom=intervenant_data.get('nom'),
@@ -4791,12 +4734,6 @@ def modifiersinistre(request, sinistre_id):
                         boite_postale=intervenant_data.get('boite_postale'),
                         ville=intervenant_data.get('ville'),
                     )
-
-                # Liaison SinistreIntervenant
-                SinistreIntervenant.objects.update_or_create(
-                    sinistre=sinistre,
-                    intervenant=intervenant_obj
-                )
 
         # Gérer la ligne de l'aliment lié au sinistre
         aliment_police = None
@@ -5912,7 +5849,7 @@ def add_vehicule(request, police_id):
         return JsonResponse(response)
 
 
-#Modifier le véhicule
+# Modifier le véhicule
 def update_vehicule(request, police_id, aliment_police_id):
     police = Police.objects.get(id=police_id)
     alimentpolice = AlimentPolice.objects.get(id=aliment_police_id)
@@ -6308,7 +6245,7 @@ def import_vehicules(request, police_id):
     return JsonResponse(response)
 
 
-#Liste des marchandises de la police
+# Liste des marchandises de la police
 @never_cache
 def police_marchandises(request, police_id):
     police = Police.objects.get(id=police_id)
@@ -6325,7 +6262,7 @@ def police_marchandises(request, police_id):
                    'moyens_transports': moyens_transports, 'today': today})
 
 
-# ajout une marchandise
+# Ajout une marchandise
 def add_marchandise(request, police_id):
     police = Police.objects.get(id=police_id)
 
@@ -6483,7 +6420,7 @@ def details_marchandise(request, police_id, marchandise_id):
     )
 
 
-#Modifier le marchandise
+# Modifier le marchandise
 def update_marchandise(request, police_id, marchandise_id):
     police = Police.objects.get(id=police_id)
     marchandise = Marchandise.objects.get(id=marchandise_id)
@@ -6705,7 +6642,7 @@ def police_autres_risques(request, police_id):
                   {'police': police, 'autresrisques': autresrisques, 'today': today})
 
 
-# ajout un autre risque
+# Ajout un autre risque
 def add_autrerisque(request, police_id):
     police = Police.objects.get(id=police_id)
 
@@ -6780,7 +6717,7 @@ def details_autrerisque(request, police_id, autre_risque_id):
     )
 
 
-#Modifier l'autre risque
+# Modifier l'autre risque
 def update_autrerisque(request, police_id, autre_risque_id):
     police = Police.objects.get(id=police_id)
     autrerisque = AutreRisque.objects.get(id=autre_risque_id)
@@ -6875,7 +6812,7 @@ def supprimer_autresrisque(request, police_id, autresrisque_id):
         return JsonResponse(response)
 
 
-# ajout d'avenant
+# Ajout d'avenant
 def add_avenant(request, police_id):
     police = Police.objects.get(id=police_id)
 
@@ -6957,84 +6894,11 @@ def add_avenant(request, police_id):
         return JsonResponse(response)
 
 
-def etapes_bymouvement(request, sinistre_id, mouvement_id):
-    mouvement_selectionne = Mouvement.objects.filter(id=mouvement_id).first()
-    etape_actuelle_sinistre = SinistreEtape.objects.filter(sinistre_id=sinistre_id).first()
-
-    etape_sinistre = EtapeSinistre.objects.filter(code=mouvement_selectionne.code).first()
-
-    if etape_sinistre.type_etape == "OBLIGATOIRE":
-        if etape_actuelle_sinistre.numero_ordre > etape_sinistre.numero_ordre:
-            print("Le niveau du sinistre est supérieur à l'étape sélectionnée")
-        else:
-            response = {
-                'statut': 1,
-                'message': f"Accès autorisé à l'opération"
-            }
-    else:
-        response = {
-            'statut': 1,
-            'message': f"Accès autorisé à l'opération"
-        }
-
-    return JsonResponse(response)
-
-
 def etapes_by_mouvement(request, sinistre_id, mouvement_id):
-    """try:
-        mouvement_selectionne = Mouvement.objects.get(id=mouvement_id)
-    except Mouvement.DoesNotExist:
-        return JsonResponse({'statut': 0, 'message': f"Le mouvement avec l'ID {mouvement_id} n'existe pas."}, status=404)
-
-    try:
-        etape_actuelle_sinistre = SinistreEtape.objects.get(sinistre_id=sinistre_id)
-    except SinistreEtape.DoesNotExist:
-        return JsonResponse({'statut': 0, 'message': f"Aucune étape actuelle n'est définie pour le sinistre avec l'ID {sinistre_id}."}, status=404)
-
-    try:
-        etape_sinistre_cible = EtapeSinistre.objects.get(code=mouvement_selectionne.code)
-    except EtapeSinistre.DoesNotExist:
-        return JsonResponse({'statut': 0, 'message': f"L'étape de sinistre avec le code '{mouvement_selectionne.code}' n'existe pas."}, status=404)
-
-    if etape_sinistre_cible.type_etape == "OBLIGATOIRE":
-        if etape_actuelle_sinistre.numero_ordre > etape_sinistre_cible.numero_ordre:
-            response = {
-                'statut': 0,
-                'message': "Le niveau actuel du sinistre est supérieur à l'étape sélectionnée."
-            }
-        elif etape_actuelle_sinistre.numero_ordre < etape_sinistre_cible.numero_ordre:
-            # Récupérer l'étape obligatoire précédente
-            etape_obligatoire_precedente = EtapeSinistre.objects.filter(
-                type_etape="OBLIGATOIRE",
-                numero_ordre__lt=etape_sinistre_cible.numero_ordre
-            ).order_by('-numero_ordre').first()
-
-            if etape_obligatoire_precedente and etape_actuelle_sinistre.numero_ordre < etape_obligatoire_precedente.numero_ordre:
-                response = {
-                    'statut': 0,
-                    'message': f"Pour passer à l'étape '{etape_sinistre_cible.libelle}', vous devez d'abord valider l'étape obligatoire '{etape_obligatoire_precedente.libelle}'."
-                }
-            else:
-                response = {
-                    'statut': 1,
-                    'message': f"Accès autorisé à l'opération."
-                }
-        else:
-            response = {
-                'statut': 1,
-                'message': f"Accès autorisé à l'opération."
-            }
-    else:
-        response = {
-            'statut': 1,
-            'message': f"Accès autorisé à l'opération (étape facultative)."
-        }
-
-    return JsonResponse(response)"""
     pass
 
 
-# upload du fichier
+# Upload du fichier
 def handle_uploaded_photo(f, filename, police_id):
     path_ot_db = '/aliments/police_' + str(police_id)
     dirname = settings.MEDIA_URL.replace('/', '') + path_ot_db
@@ -7050,7 +6914,7 @@ def handle_uploaded_photo(f, filename, police_id):
     return path_ot_db + '/' + filename
 
 
-# upload fichier tarification
+# Upload fichier tarification
 def handle_uploaded_fichier(f, filename):
     path_ot_db = '/tarifs/'
     dirname = settings.MEDIA_URL.replace('/', '') + path_ot_db
@@ -7232,7 +7096,7 @@ def clients_datatable(request):
     })
 
 
-# ajout d'un client
+# Ajout d'un client
 @login_required
 def add_client(request):
 
@@ -7312,7 +7176,7 @@ def add_client(request):
         return JsonResponse(response)
 
 
-# modification d'un bénéficiaire
+# Modification d'un bénéficiaire
 @login_required
 def modifier_client(request, client_id):
 
@@ -7437,7 +7301,7 @@ def supprimer_client(request):
         return JsonResponse(response)
 
 
-#Liste des polices du client
+# Liste des polices du client
 @method_decorator(login_required, name='dispatch')
 class PoliceClientView(TemplateView):
     permission_required = "production.view_clients"
@@ -7646,7 +7510,7 @@ def produit_sous_menu(request, produit_id):
     return HttpResponse(produit_serialize, content_type='application/json')
 
 
-#Liste des contacts du client
+# Liste des contacts du client
 @method_decorator(login_required, name='dispatch')
 class ContactClientView(TemplateView):
     permission_required = "production.view_clients"
@@ -7688,7 +7552,7 @@ class ContactClientView(TemplateView):
         }
 
 
-#Liste des filiales du client
+# Liste des filiales du client
 @method_decorator(login_required, name='dispatch')
 class FilialeClientView(TemplateView):
     permission_required = "production.view_clients"
@@ -7734,7 +7598,7 @@ class FilialeClientView(TemplateView):
         }
 
 
-#Liste des acomptes du client
+# Liste des acomptes du client
 @method_decorator(login_required, name='dispatch')
 class AcompteClientView(TemplateView):
     permission_required = "production.view_clients"
@@ -7793,7 +7657,7 @@ class AcompteClientView(TemplateView):
         }
 
 
-#Liste des quittance du client
+# Liste des quittance du client
 @method_decorator(login_required, name='dispatch')
 class QuittancesClientView(TemplateView):
     permission_required = "production.view_clients"
@@ -7896,7 +7760,7 @@ def exporter_quittance(request, client_id, police_id):
                       {'client': client, 'police':police, 'typefichiers': typefichiers, 'today':today})
 
 
-#Générer le fichier d'exportation
+# Générer le fichier d'exportation
 def generer_exportation_quittance(request, typefichier_id):
     typefichier = TypeFichier.objects.filter(id=typefichier_id).first()
 
@@ -8126,7 +7990,7 @@ def generer_exportation_quittance(request, typefichier_id):
             pass
 
 
-#Liste des documents électronique du client
+# Liste des documents électronique du client
 @method_decorator(login_required, name='dispatch')
 class GEDClientView(TemplateView):
     permission_required = "production.view_clients"

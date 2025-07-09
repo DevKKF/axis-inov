@@ -8,11 +8,9 @@ class Command(BaseCommand):
         self.stdout.write(self.style.MIGRATE_HEADING("⚙️  Démarrage des seeders..."))
 
         seeders = [
-            'seed_typerecours',
-            'seed_etapesinistre',
-            #'seed_responsabilite',
-            #'seed_mouvement',
-            #'seed_motif',
+            'seed_responsabilite',
+            'seed_mouvement',
+            'seed_motif',
             #'',
             #'',
         ]

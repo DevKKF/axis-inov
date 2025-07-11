@@ -18892,6 +18892,108 @@ $(document).ready(function () {
 
     });
 
+    //Import des datas
+    $(document).on('click', "#btn_save_import_motif", function () {
+
+        let formulaire = $('#form_add_motif_import');
+        let href = formulaire.attr('action');
+
+        $.validator.setDefaults({ ignore: [] });
+
+        let formData = new FormData();
+        let files = $('#form_add_motif_import #fichier')[0].files;
+
+        if (formulaire.valid()) {
+
+            //demander confirmation
+            let n = noty({
+                text: 'Voulez-vous vraiment enregistrer les datas importées ?',
+                type: 'warning',
+                dismissQueue: true,
+                layout: 'center',
+                theme: 'defaultTheme',
+                buttons: [
+                    {
+                        addClass: 'btn btn-primary', text: 'OUI', onClick: function ($noty) {
+                            $noty.close();
+
+                            //confirmation obtenu
+                            if (files.length > 0) {
+                                formData.append('fichier', files[0]);
+                            }
+
+                            let data_serialized = formulaire.serialize();
+                            $.each(data_serialized.split('&'), function (index, elem) {
+                                let vals = elem.split('=');
+
+                                let key = vals[0];
+                                let valeur = decodeURIComponent(vals[1].replace(/\+/g, '  '));
+
+                                formData.append(key, valeur);
+
+                            });
+
+                            $.ajax({
+                                type: 'post',
+                                url: href,
+                                data: formData,
+                                processData: false,
+                                contentType: false,
+                                success: function (response) {
+
+                                    if (response.statut == 1) {
+
+                                        notifySuccess(response.message, function () {
+                                            formulaire[0].reset();
+                                            location.reload();
+                                        });
+
+                                    } else {
+
+                                        $('#modal-import_motif .alert .message').html(response.message);
+
+                                        $('#modal-import_motif .alert').fadeTo(2000, 500).slideUp(500, function () {
+                                            $(this).slideUp(5000);
+                                        }).removeClass('alert-success').addClass('alert-warning');
+                                    }
+
+                                },
+                                error: function (request, status, error) {
+
+                                    notifyWarning("Erreur lors de l'enregistrement");
+                                }
+
+                            });
+                        }
+                    },
+                    {
+                        addClass: 'btn btn-danger', text: 'Annuler', onClick: function ($noty) {
+                            //confirmation refusée
+                            $noty.close();
+
+                        }
+                    }
+                ]
+            });
+        }
+
+        else {
+
+            $('label.error').css({ display: 'none', height: '0px' }).removeClass('error').text('');
+
+            let validator = formulaire.validate();
+
+            $.each(validator.errorMap, function (index, value) {
+
+                console.log('Id: ' + index + ' Message: ' + value);
+
+            });
+
+            notifyWarning('Veuillez renseigner correctement le forumulaire');
+        }
+
+    });
+
     //Modification d'un motif
     $(document).on('click', '.btn_modifier_motif', function () {
 

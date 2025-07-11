@@ -751,7 +751,7 @@ def generate_modele_tarifs_excel(request, prestataire_id):
     return response
 
 
-# une que le gestionnaire à renseigné les coûts des actes, on l'importe
+# une que le gestionnaire à renseigner les coûts des actes, on l'importe
 def import_tarif_pestataire(request, prestataire_id):
     # try:
 
@@ -6807,7 +6807,7 @@ def add_motif(request):
 
     if request.method == 'POST':
 
-        # Créer une nouveau motif
+        # Créer un nouveau motif
         motif_created = Motif.objects.create(
             mouvement_id=request.POST.get('mouvement_id'),
             libelle=request.POST.get('libelle'),
@@ -6827,6 +6827,56 @@ def add_motif(request):
         }
 
         return JsonResponse(response)
+
+
+@login_required
+def import_motif(request):
+    if request.method == 'POST':
+        fichier = request.FILES.get('fichier')
+
+        if not fichier:
+            return JsonResponse({
+                'statut': 0,
+                'message': "Aucun fichier n'a été fourni."
+            })
+
+        try:
+            # Lecture du fichier Excel
+            df = pd.read_excel(fichier)
+
+            # Compteur de lignes ignorées
+            lignes_ignores = 0
+            lignes_importees = 0
+
+            for _, row in df.iterrows():
+                code_mouvement = str(row['code_mouvement']).strip()
+
+                try:
+                    mouvement = Mouvement.objects.get(code=code_mouvement)
+                except Mouvement.DoesNotExist:
+                    lignes_ignores += 1
+                    continue  # saut de la ligne
+
+                # Création du motif
+                Motif.objects.create(
+                    code=row['code'],
+                    libelle=row['libelle'],
+                    #etat_sinistre=row['libelle'],
+                    mouvement=mouvement,
+                    created_at=datetime.now(),
+                )
+                lignes_importees += 1
+
+            return JsonResponse({
+                'statut': 1,
+                'message': f"Importation terminée. {lignes_importees} lignes importées, {lignes_ignores} ignorées."
+            })
+
+        except Exception as e:
+            return JsonResponse({
+                'statut': 0,
+                'message': f"Erreur lors de la lecture du fichier : {str(e)}"
+            })
 
 
 @login_required

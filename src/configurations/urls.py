@@ -243,6 +243,7 @@ urlpatterns = [
     # Motifs
     path('motifs/', MotifView.as_view(), name='motifs'),
     path('motifs/ajouter/', views.add_motif, name='add_motif'),
+    path('motifs/importer/', views.import_motif, name='import_motif'),
     path('motifs/<int:motif_id>/modifier/', views.modifier_motif, name='modifier_motif'),
     path('motifs/<int:motif_id>/delete/', views.supprimer_motif, name='supprimer_motif'),
 

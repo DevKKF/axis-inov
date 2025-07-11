@@ -3,16 +3,16 @@
 {% block extrastyle %} {% endblock %}
 {% block content_title %}
     <div class="row mb-2">
-          <div class="col-sm-6">
-                <h1 class="m-0">Liste des motifs</h1>
-          </div>
-          <div class="col-sm-6">
-                <ol class="breadcrumb float-sm-right">
-                      <li class="breadcrumb-item"><a href="{% url 'admin:index' %}">{% trans 'Home' %}</a></li>
-                      <li class="breadcrumb-item">Paramétrage</li>
-                      <li class="breadcrumb-item"><a href="{% url 'motifs' %}">Motifs</a></li>
-                </ol>
-          </div>
+      <div class="col-sm-6">
+            <h1 class="m-0">Liste des motifs</h1>
+      </div>
+      <div class="col-sm-6">
+        <ol class="breadcrumb float-sm-right">
+          <li class="breadcrumb-item"><a href="{% url 'admin:index' %}">{% trans 'Home' %}</a></li>
+          <li class="breadcrumb-item">Paramétrage</li>
+          <li class="breadcrumb-item"><a href="{% url 'motifs' %}">Motifs</a></li>
+        </ol>
+      </div>
     </div>
 {% endblock %}
 {% block content %}
@@ -23,7 +23,8 @@
     </div>
     <div class="card-body">
         <div class="button-link pull-right mb-2">
-          <a class="btn btn-sm btn-primary mb-1" data-toggle="modal"  data-target="#modal-motif"><i class="fas fa-plus-circle"></i> {{_("Ajouter un motif")}}</a>
+          <a class="btn btn-sm btn-primary mb-1" data-toggle="modal"  data-target="#modal-motif"><i class="fas fa-plus-circle"></i> Ajouter un motif</a>
+          <a class="btn btn-sm btn-info mb-1" data-toggle="modal"  data-target="#modal-import_motif"><i class="fas fa-plus-circle"></i> Importer des motifs</a>
         </div>
 
       <div id="example1_wrapper" class="dataTables_wrapper dt-bootstrap4">
@@ -34,12 +35,12 @@
                   <thead>
                     <tr>
                       <th class="d-none"></th>
-                      <th scope="col">{{_("Mouvement")}}</th>
+                      <th scope="col">Mouvement</th>
                       <th scope="col">{{_('Code')}}</th>
                       <th scope="col">{{_('Libelle')}}</th>
                       <th scope="col">{{_('Etat Police')}}</th>
                       <th scope="col">{{_('Etat Sinistre')}}</th>
-                      <th scope="col">{{_("Date de création")}}</th>
+                      <th scope="col">Date de création</th>
                       <th scope="col" class="text-center">{{_('Actions')}}</th>
                     </tr>
                   </thead>
@@ -79,4 +80,5 @@
 </script>
 
 {% include 'motifs/modal_motif.html' %}
+{% include 'motifs/modal_import_motif.html' %}
 {% endblock %}

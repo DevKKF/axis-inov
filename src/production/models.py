@@ -1350,8 +1350,9 @@ class Mouvement(models.Model):
 
 class Motif(models.Model):
     mouvement = models.ForeignKey(Mouvement, on_delete=models.RESTRICT)
-    libelle = models.CharField(max_length=50, blank=True, null=True)
+    libelle = models.CharField(max_length=255, blank=True, null=True)
     etat_police = models.CharField(max_length=50, blank=True, null=True)
+    etat_sinistre = models.CharField(max_length=50, blank=True, null=True)
     code = models.CharField(max_length=50, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

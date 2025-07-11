@@ -48,7 +48,7 @@ from shared.enum import EtatPolice, Statut, StatutSinistre, StatutEnrolement
 from shared.enum import StatutRemboursement
 from shared.helpers import get_tarif_acte_from_bareme, generate_numero_carte
 from sinistre.helper_sinistre import get_retenue_selon_contexte
-from sinistre.models import DossierSinistre, Sinistre, DocumentDossierSinistre
+from sinistre.models import DossierSinistre, Sinistre
 
 
 def get_user_id_from_token(token):
@@ -1671,14 +1671,6 @@ class PriseEnChargeView(views.APIView):
                 fs.save(file_upload_path2, document2)
 
                 type_document = TypeDocument.objects.get(id=type_document_id)
-                document1_save = DocumentDossierSinistre.objects.create(dossier_sinistre=dossier_sinistre,
-                                                                  type_document=type_document,
-                                                                  fichier=file_upload_path1)
-                document2_save = DocumentDossierSinistre.objects.create(dossier_sinistre=dossier_sinistre,
-                                                                  type_document=type_document,
-                                                                  fichier=file_upload_path2)
-
-
 
                 # print(vars(document1_save))
                 # print(vars(document2_save))

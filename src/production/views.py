@@ -67,7 +67,7 @@ from production.templatetags.my_filters import money_field, convertir_date_multi
 from shared.enum import StatutIncorporation, StatutValidite, StatutSinistre, StatutEnrolement, StatutTraitement, \
     StatutReversementCompagnie, StatutValiditeQuittance, Confidentialite, StatutBordereau
 from sinistre.models import Sinistre, DossierSinistre, MouvementSinistre, AlimentPoliceSinistre, SinistreIntervenant, GarantieSinistre, Provision, ReglementSinistre, \
-    HistoriqueSinistre, HistoriqueGarantieSinistre, HistoriqueAlimentPoliceSinistre
+    HistoriqueSinistre, HistoriqueAlimentPoliceSinistre
 from sinistre.forms import SinistreForm
 from comptabilite.models import EncaissementCommission
 
@@ -4656,20 +4656,6 @@ def modifiersinistre(request, sinistre_id):
         with transaction.atomic():
             # 1️⃣ Récupérer les anciennes garanties du sinistre
             garanties_existantes = GarantieSinistre.objects.filter(sinistre=sinistre)
-
-            # 2️⃣ Enregistrer dans HistoriqueGarantieSinistre avant modification
-            historiques = []
-            for garantie in garanties_existantes:
-                historiques.append(HistoriqueGarantieSinistre(
-                    historique_sinistre_id=historiq_sinistre.id,
-                    circonstance=garantie.circonstance,
-                    garantie=garantie.garantie,
-                    franchise=garantie.franchise,
-                    capital=garantie.capital,
-                    prime_nette=garantie.prime_nette,
-                    prime_ttc=garantie.prime_ttc,
-                ))
-            HistoriqueGarantieSinistre.objects.bulk_create(historiques)
 
             # 3️⃣ Parcourir les garanties récupérées depuis la session
             garanties_sinistre = request.session.get("garanties_sinistre", [])

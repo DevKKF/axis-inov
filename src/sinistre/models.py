@@ -203,6 +203,7 @@ class HistoriqueAlimentPoliceSinistre(models.Model):
 #
 class SinistreIntervenant(models.Model):
     sinistre = models.ForeignKey(Sinistre, null=True, on_delete=models.RESTRICT)
+    historique_sinistre = models.ForeignKey(HistoriqueSinistre, null=True, on_delete=models.RESTRICT)
     type_intervenant = models.ForeignKey(TypeIntervenant, null=True, on_delete=models.RESTRICT)
     pays = models.ForeignKey(Pays, null=True, on_delete=models.RESTRICT)
     nom = models.TextField(blank=True, null=True)
@@ -227,6 +228,7 @@ class SinistreIntervenant(models.Model):
 #
 class GarantieSinistre(models.Model):
     sinistre = models.ForeignKey(Sinistre, related_name='garanties', null=True, on_delete=models.RESTRICT)
+    historique_sinistre = models.ForeignKey(HistoriqueSinistre, related_name='historique_garanties', null=True, on_delete=models.RESTRICT)
     garantie = models.ForeignKey(Garantie, null=True, on_delete=models.RESTRICT)
     circonstance = models.ForeignKey(Circonstance, null=True, on_delete=models.RESTRICT)
 
@@ -243,27 +245,6 @@ class GarantieSinistre(models.Model):
         db_table = 'garantie_sinistre'
         verbose_name = 'Garantie Sinistre'
         verbose_name_plural = 'Garantie Sinistre'
-
-
-#
-class HistoriqueGarantieSinistre(models.Model):
-    historique_sinistre = models.ForeignKey(HistoriqueSinistre, related_name='garanties', null=True, on_delete=models.RESTRICT)
-    garantie = models.ForeignKey(Garantie, null=True, on_delete=models.RESTRICT)
-    circonstance = models.ForeignKey(Circonstance, null=True, on_delete=models.RESTRICT)
-
-    franchise = models.BigIntegerField(null=True)
-    capital = models.BigIntegerField(null=True)
-    prime_nette = models.BigIntegerField(null=True)
-    prime_ttc = models.BigIntegerField(null=True)
-
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-
-    class Meta:
-        db_table = 'historique_garantie_sinistre'
-        verbose_name = 'Historique garantie sinistre'
-        verbose_name_plural = 'Historique garantie sinistre'
 
 
 #
@@ -1035,7 +1016,7 @@ class ProrogationSinistre(models.Model):
         verbose_name_plural = 'Prorogations'
 
 
-#historique des sinistre sur un bordereau d'ordonnancment au cas ou on doit annuler un bordereau d'ordonnancement on concerve l'historique
+#historique des sinistres sur un bordereau d'ordonnancment au cas ou on doit annuler un bordereau d'ordonnancement on concerve l'historique
 class HistoriqueOrdonnancementSinistre(models.Model):
     created_by = models.ForeignKey(User, null=True, on_delete=models.RESTRICT)
     bordereau_ordonnancement = models.ForeignKey(BordereauOrdonnancement, on_delete=models.RESTRICT)
@@ -1049,31 +1030,6 @@ class HistoriqueOrdonnancementSinistre(models.Model):
         db_table = 'historique_ordonnancement_sinistre'
         verbose_name = 'Historique ordonnancement sinistre'
         verbose_name_plural = 'Historique ordonnancement sinistre'
-
-
-def upload_location_documentdossiersinistre(instance, filename):
-    filebase, extension = filename.rsplit('.', 1)
-    file_name = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
-    return 'dossiers_sinistres/documents/%s.%s' % (file_name, extension)
-
-
-class DocumentDossierSinistre(models.Model):
-    dossier_sinistre = models.ForeignKey(DossierSinistre, related_name="documents", on_delete=models.RESTRICT)
-    type_document = models.ForeignKey(TypeDocument, on_delete=models.RESTRICT)
-    nom = models.CharField(max_length=255, blank=True, null=True)
-    fichier = models.FileField(upload_to=upload_location_documentdossiersinistre, blank=True, default=None, null=True)
-    commentaire = models.CharField(max_length=255, blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    statut = models.fields.CharField(choices=Statut.choices, default=Statut.ACTIF, max_length=15, null=True)
-
-    def __str__(self):
-        return self.nom
-
-    class Meta:
-        db_table = 'documents_dossiers_sinistres'
-        verbose_name = 'Document prise en charge'
-        verbose_name_plural = 'Documents prises en charge'
 
 
 class ControlePlafond(models.Model):

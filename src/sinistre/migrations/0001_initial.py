@@ -749,7 +749,7 @@ class Migration(migrations.Migration):
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
                 ('nom', models.CharField(blank=True, max_length=255, null=True)),
-                ('fichier', models.FileField(blank=True, default=None, null=True, upload_to=sinistre.models.upload_location_documentdossiersinistre)),
+                #('fichier', models.FileField(blank=True, default=None, null=True, upload_to=sinistre.models.upload_location_documentdossiersinistre)),
                 ('commentaire', models.CharField(blank=True, max_length=255, null=True)),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('updated_at', models.DateTimeField(auto_now=True)),

@@ -6853,11 +6853,6 @@ def add_avenant(request, police_id):
                     date_fin_effet=mouvement_police.date_fin_periode_garantie,
                 ).save()
 
-                #Mettre à jour la date début_effet et fin_effet de la police
-                # police.date_debut_effet = mouvement_police.date_effet
-                # police.date_fin_effet = mouvement_police.date_fin_periode_garantie
-                # police.save()
-
                 #Pour une avenant de renouvelement changer le statut de la police
                 if motif.code == "RENOUV":
                     Police.objects.filter(id=police.id).update(

@@ -24,13 +24,13 @@
     <div class="card-body">
       {% if request.user.is_sinistre %}
         <div class="button-link pull-right mb-2">
-            <a class="btn btn-sm btn-primary mb-1" data-toggle="modal"  data-target="#modal-avenant"><i class="fas fa-plus-circle"></i> Faire un mouvement</a>
+            <a class="btn btn-sm btn-primary mb-1" data-toggle="modal"  data-target="#modal-mouvement"><i class="fas fa-plus-circle"></i> Faire un mouvement</a>
         </div>
       {% endif %}
       <div id="example1_wrapper" class="dataTables_wrapper dt-bootstrap4 ">
         <div class="row">
           <div class="col-12 col-md-12 col-sm-12">
-            <table class="table table-bordered table-striped dataTable dtr-inline" id="table_avenants">
+            <table class="table table-bordered table-striped dataTable dtr-inline" id="table_mouvements">
               <thead>
                 <tr>
                   <th class="d-none"></th>

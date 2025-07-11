@@ -1679,3 +1679,62 @@ def motifs_by_mouvement(request, mouvement_id):
     return HttpResponse(motifs_serialize, content_type='application/json')
 
 
+@login_required
+def mouvement_sinistre(request, sinistre_id, motif_id):
+    sinistre = Sinistre.objects.get(id=sinistre_id)
+    motif = Motif.objects.filter(id=motif_id).first()
+    if not motif:
+        print(f"Motif with ID {motif_id} not found.")
+        return redirect(f'/sinistre/dossier_sinistre/{sinistre_id}/mouvements')
+
+    if request.method == 'POST':
+        pass
+    else:
+        police = Police.objects.get(id=sinistre.police_id, bureau=request.user.bureau, statut_validite='VALIDE')
+
+        # Récupération de client
+        client = Client.objects.get(id=police.client_id)
+
+        # Récupérer le dernier historique
+        dernier_historique = HistoriquePolice.objects.filter(police_id=police.id).order_by('-date_du_jour').first()
+
+        # Récupérer les assureurs associés à l'historique
+        assureur_police = PoliceAssureur.objects.filter(historique_police_id=dernier_historique.id, type_compagnie_id=1).first() if dernier_historique else None
+        today = timezone.now().date()
+
+        typesinistres = TypeSinistre.objects.filter(statut=1).order_by('libelle')
+        typeintervenants = TypeIntervenant.objects.filter(statut=1).order_by('libelle')
+        typedocuments = TypeDocument.objects.filter(is_sinistre=1).order_by('libelle')
+        responsabilites = Responsabilite.objects.filter(statut=1)
+        circonstances = Circonstance.objects.filter(statut=1, branche_id=police.produit.branche_id).order_by('libelle')
+
+        pays = Pays.objects.all().order_by('nom')
+
+        mouvements = Mouvement.objects.filter(id=motif.mouvement_id, type_mouvement_id=2)
+
+        liste_motifs = Motif.objects.filter(mouvement_id=motif.mouvement_id)
+
+        context = {
+            'sinistre': sinistre,
+            'check_motif': motif,
+            'police': police,
+            'client': client,
+            'dossiers_sinistres': None,
+            'sinistres': None,
+            'dernier_historique': dernier_historique,
+            'assureur_police': assureur_police,
+            'today': today,
+            'typesinistres': typesinistres,
+            'typeintervenants': typeintervenants,
+            'typedocuments': typedocuments,
+            'responsabilites': responsabilites,
+            'circonstances': circonstances,
+            'pays': pays,
+            'mouvements': mouvements,
+            'liste_motifs': liste_motifs,
+        }
+
+        return render(request, 'mouvement_sinistre.html', context)
+
+
+

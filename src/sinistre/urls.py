@@ -21,6 +21,7 @@ urlpatterns = [
     path('details_intervenant/<int:intervenant_id>', views.details_intervenant, name='details_intervenant'),
     path('dossier_sinistre/<int:sinistre_id>/mouvements', MouvementDossierSinistreView.as_view(), name='mouvement_dossier_sinistre'),
     path('mouvement/<int:mouvement_id>/motifs',views.motifs_by_mouvement, name='mouvement_motifs'),
+    path('mouvement_sinistre/<int:sinistre_id>/<int:motif_id>', views.mouvement_sinistre, name='mouvement_sinistre'),
 
     path('saisie_sinistre/', SaisieSinistreView.as_view(), name='saisie_sinistre'),
     path('recherche_client_police/', views.recherche_client_police, name='recherche_client_police'),

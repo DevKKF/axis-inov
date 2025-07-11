@@ -506,7 +506,6 @@ $(document).ready(function () {
     //----------- FIN AJOUT, MODIFICATION DU CLIENT ------------//
 
 
-
     //----------------- AJOUT DE CONTACT ------------------//
     // TODO AJOUT DE CONTACT DU CLIENT
     //Création d'une contact
@@ -21290,6 +21289,72 @@ $(document).ready(function () {
       }());
     }
 
+    var my_noty;//variale global pour pouvoir le fermer de popup de l'extérieur
+    function notifySuccess(message, fnCallback) {
+        my_noty = noty({
+            text: message,
+            type: 'success',
+            dismissQueue: true,
+            layout: 'center',
+            theme: 'defaultTheme',
+            buttons: [
+                {
+                    addClass: 'btn btn-primary', text: 'OK', onClick: function ($noty) {
+
+                        if (typeof fnCallback === 'function') fnCallback();
+
+                        $noty.close();
+                    }
+                }
+            ]
+        });
+    }
+
+    function notifyWarning(message, fnCallback) {
+        if (my_noty) {
+            my_noty.close();
+        }
+
+        my_noty = noty({
+            text: message,
+            type: 'warning',
+            dismissQueue: true,
+            layout: 'center',
+            theme: 'defaultTheme',
+            buttons: [
+                {
+                    addClass: 'btn btn-primary', text: 'OK', onClick: function ($noty) {
+
+                        if (typeof fnCallback === 'function') fnCallback();
+
+                        $noty.close();
+                    }
+                }
+            ]
+        });
+
+    }
+
+    function notifyError(message, fnCallback) {
+        my_noty = noty({
+            text: message,
+            type: 'error',
+            dismissQueue: true,
+            layout: 'center',
+            theme: 'defaultTheme',
+            buttons: [
+                {
+                    addClass: 'btn btn-primary', text: 'OK', onClick: function ($noty) {
+
+                        if (typeof fnCallback === 'function') fnCallback();
+
+                        $noty.close();
+                    }
+                }
+            ]
+        });
+    }
+
     // Fonction utilitaire : Affiche un tab et rend les champs obligatoires
     function afficherOngletAvecChamps(tabSelector, champSelector) {
         $(tabSelector).removeClass('d-none');
@@ -21818,7 +21883,6 @@ $(document).ready(function () {
         }
     });
 
-
     $('#btn_save_sinistre_intervenant').on('click', function () {
         // Supprimer les erreurs précédentes
         $('.intervenant_champ_obligatoire').removeClass('is-invalid').removeClass('is-valid');
@@ -22160,6 +22224,39 @@ $(document).ready(function () {
 
          manage_circonstance_change();
 
+    });
+
+    $(document).on('click', '#btn_save_mouvement_sinistre', function () {
+        let mouvement = $('#mouvement');
+        let motif = $('#motif');
+        let sinistre_id = $('#sinistre_id').val();
+
+        let champsValides = true;
+
+        // Réinitialiser les bordures
+        mouvement.removeClass('is-invalid');
+        motif.removeClass('is-invalid');
+
+        // Vérifier mouvement
+        if (!mouvement.val()) {
+            mouvement.addClass('is-invalid');
+            champsValides = false;
+        }
+
+        // Vérifier motif
+        if (!motif.val()) {
+            motif.addClass('is-invalid');
+            champsValides = false;
+        }
+
+        if (!champsValides) {
+            notifyWarning("Veuillez remplir tous les champs obligatoires.");
+            return;
+        }
+
+        // Redirection vers l'URL Django
+        let url = `/sinistre/mouvement_sinistre/${sinistre_id}/${motif.val()}`;
+        window.location.href = url;
     });
 
 });

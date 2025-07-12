@@ -3807,7 +3807,6 @@ $(document).ready(function () {
         var type = "desactivate";
         var libelle = $(this).data('libelle');
         var taux_couverture = $(this).data('tauxcouverture');
-        var territorialite = $(this).data('territorialite');
         var date_debut = $(this).data('datedebut');
         var date_fin = $(this).data('datefin');
         var statut = $(this).data('statut');

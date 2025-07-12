@@ -11,7 +11,7 @@ from django.db.models import F, ExpressionWrapper, DurationField
 
 from configurations.helper_config import execute_query
 from configurations.models import Banque, Bureau, Civilite, Compagnie, Fractionnement, ModeReglement, \
-    Regularisation, Territorialite, User, Langue, Pays, Produit, TypeClient, TypePersonne, TypeCompagnie, \
+    Regularisation, User, Langue, Pays, Produit, TypeClient, TypePersonne, TypeCompagnie, \
     QualiteBeneficiaire, TypeAssurance, Devise, Profession, ModeCalcul, Taxe, Apporteur, BaseCalcul, TypeQuittance, \
     NatureQuittance, TypeCarosserie, CategorieVehicule, MarqueVehicule, NatureOperation, Prestataire, TypeTarif, Acte, \
     Rubrique, Periodicite, RegroupementActe, SousRubrique, TypePrefinancement, CompteTresorerie, TypeMouvement, \
@@ -616,7 +616,6 @@ class FormuleGarantie(models.Model):
     deleted_by = models.ForeignKey(User, related_name="fg_deleted_by", null=True, on_delete=models.RESTRICT)
     police = models.ForeignKey(Police, on_delete=models.RESTRICT, null=True)
     bureau = models.ForeignKey(Bureau, on_delete=models.RESTRICT, null=True)
-    territorialite = models.ForeignKey(Territorialite, on_delete=models.RESTRICT, null=True)
     type_tarif = models.ForeignKey(TypeTarif, on_delete=models.RESTRICT, null=True)
     libelle = models.CharField(max_length=100, blank=True, null=True)
     exclusion = models.TextField(max_length=250, blank=True, null=True)  # New text field

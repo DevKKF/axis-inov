@@ -586,21 +586,6 @@ class SousRubrique(models.Model):
         verbose_name_plural = 'Sous-rubriques'
 
 
-class TypeActe(models.Model):
-    libelle = models.CharField(max_length=50, blank=True, null=True)
-    code = models.CharField(max_length=50, blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return self.libelle
-
-    class Meta:
-        db_table = 'type_actes'
-        verbose_name = "Type d'acte"
-        verbose_name_plural = "Types d'acte"
-
-
 class RegroupementActe(models.Model):
     rubrique = models.ForeignKey(Rubrique, null=True, on_delete=models.RESTRICT)
     libelle = models.CharField(max_length=255)
@@ -669,7 +654,6 @@ class SousRubriqueRegroupementActe(models.Model):
 class Acte(models.Model):
     rubrique = models.ForeignKey(Rubrique, null=True, on_delete=models.RESTRICT)
     regroupement_acte = models.ForeignKey(RegroupementActe, null=True, on_delete=models.RESTRICT)
-    type_acte = models.ForeignKey(TypeActe, null=True, on_delete=models.RESTRICT)
     libelle = models.CharField(max_length=255)
     code = models.CharField(max_length=255, unique=True, blank=True, default=None, null=True)
     lettre_cle = models.CharField(max_length=5, blank=True, null=True)
@@ -806,21 +790,6 @@ class TypeClient(models.Model):
         db_table = 'type_clients'
         verbose_name = 'Type de client'
         verbose_name_plural = 'Types de client'
-
-
-class Territorialite(models.Model):
-    libelle = models.CharField(max_length=100, blank=True, null=True)
-    code = models.CharField(max_length=100, blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return self.libelle
-
-    class Meta:
-        db_table = 'territorialites'
-        verbose_name = 'Territorialites'
-        verbose_name_plural = 'Territorialites'
 
 
 class TypeProduit(models.Model):

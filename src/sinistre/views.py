@@ -68,7 +68,7 @@ from sinistre.helper_sinistre import exportation_en_excel_avec_style, \
     requete_liste_sinistre_saisies_entre_2date, requete_sinistres_traites_et_valides_par_les_gestionnaires, \
     requete_analyse_prime_compta_apporteur, get_retenue_selon_contexte
 # Create your views here.
-from sinistre.models import PaiementComptable, Sinistre, SinistreIntervenant, GarantieSinistre, Provision, DossierSinistre, AlimentPoliceSinistre, MouvementSinistre, \
+from sinistre.models import PaiementComptable, Sinistre, SinistreIntervenant, SinistreGarantie, DossierSinistre, MouvementSinistre, \
     RemboursementSinistre, BordereauOrdonnancement, HistoriqueOrdonnancementSinistre
 
 from sinistre.forms import SinistreForm
@@ -774,15 +774,6 @@ def add_sinistre_gestionnaire(request):
 
                 except AlimentPolice.DoesNotExist:
                     pass  # Gérer l'absence de l'objet si nécessaire
-
-            if aliment_police:
-                aliment_sinitre_created = AlimentPoliceSinistre(
-                    police=police,
-                    sinistre=sinistre,
-                    aliment_police=aliment_police,
-                    risque=risque,
-                )
-                aliment_sinitre_created.save()
             else:
                 pass
 
@@ -810,7 +801,7 @@ def add_sinistre_gestionnaire(request):
             # Récupérer les garanties de la session
             garanties_sinistre = request.session.get("garanties", [])
             for garantie_sinistre in garanties_sinistre:
-                garantie_sinistre_created = GarantieSinistre(
+                garantie_sinistre_created = SinistreGarantie(
                     sinistre=sinistre,
                     circonstance_id=circonstance_id,
                     garantie_id=garantie_sinistre.get('garantie_id'),
@@ -951,15 +942,6 @@ def add_sinistre_gestionnaire_v1(request):
 
                 except AlimentPolice.DoesNotExist:
                     pass  # Gérer l'absence de l'objet si nécessaire
-
-            if aliment_police:
-                aliment_sinitre_created = AlimentPoliceSinistre(
-                    police=police,
-                    sinistre=sinistre,
-                    aliment_police=aliment_police,
-                    risque=risque,
-                )
-                aliment_sinitre_created.save()
             else:
                 pass
 
@@ -987,7 +969,7 @@ def add_sinistre_gestionnaire_v1(request):
             # Récupérer les garanties de la session
             garanties_sinistre = request.session.get("garanties", [])
             for garantie_sinistre in garanties_sinistre:
-                garantie_sinistre_created = GarantieSinistre(
+                garantie_sinistre_created = SinistreGarantie(
                     sinistre=sinistre,
                     circonstance_id=circonstance_id,
                     garantie_id=garantie_sinistre.get('garantie_id'),

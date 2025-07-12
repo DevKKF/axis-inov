@@ -4,7 +4,7 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 from api.models import InfoActe
 from configurations.models import KeyValueData, User, Prestataire, Acte, Bureau, ModeReglement, \
-    TypeActe, Civilite, QualiteBeneficiaire, Pays, Profession
+    Civilite, QualiteBeneficiaire, Pays, Profession
 from production.models import Aliment, Carte, Client, FormuleGarantie, Bareme, CarteDigitalDematerialisee
 from sinistre.models import Sinistre
 
@@ -18,11 +18,6 @@ class InfoActeSerialiser(ModelSerializer):
         fields = ['numero_assure', 'medecin', 'acte', 'affection', 'rc']
         managed = False
 
-class TypeActeSerialiser(ModelSerializer):
-    class Meta:
-        model = TypeActe
-        fields = ['id', 'code', 'libelle']
-        managed = False
 
 class CiviliteSerializer(ModelSerializer):
     class Meta:

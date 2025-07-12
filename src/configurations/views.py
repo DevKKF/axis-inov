@@ -43,7 +43,7 @@ from configurations.models import ActionLog, Secteur, \
     BackgroundQueryTask, ParamProduitCompagnie, Compagnie, \
     TypeApporteur, TypePersonne, Pays, TypeCompagnie, TypeGarant, TauxCommission, Carosserie, \
     CategorieVehicule, Civilite, CompteTresorerie, ConditionsAssurance, Carburant, Formule, Fractionnement, Garantie, GarantieFormule, \
-    Groupe, ModeReglement, Circonstance, Responsabilite, TypeIntervenant, TypeMouvement, TypeSinistre, PosteDommage, GarantieCirconstance, RegroupementActe, Prescripteur, Prestataire, Acte, WsBoby, ParamWsBoby, TypeActe, ParamActe
+    Groupe, ModeReglement, Circonstance, Responsabilite, TypeIntervenant, TypeMouvement, TypeSinistre, PosteDommage, GarantieCirconstance, RegroupementActe, Prescripteur, Prestataire, Acte, WsBoby, ParamWsBoby, ParamActe
 from inov import settings
 # Create your views here.
 from production.models import Client, Mouvement, \
@@ -2049,26 +2049,12 @@ class ActesView(PermissionRequiredMixin, TemplateView):
     def get(self, request, *args, **kwargs):
         context_original = self.get_context_data(**kwargs)
 
-        # rubriques = Rubrique.objects.filter(status=True)
-        # liste_regroupements_actes = RegroupementActe.objects.filter(status=True)
-        # regroupements_actes = {
-        #     rubrique.pk: [
-        #         {'name': regroupements_acte.pk, 'value': regroupements_acte.libelle}
-        #         for regroupements_acte in RegroupementActe.objects.filter(rubrique_id=rubrique.pk, status=True)
-        #     ]
-        #     for rubrique in rubriques
-        # }
-
-        all_type_actes = TypeActe.objects.all()
-        type_actes = json.dumps(list(all_type_actes.values('id', 'libelle')))
-
         acte = Acte.objects.all()
 
         base_calcul_tm_choices = BaseCalculTM.choices
 
         context_perso = {
             'actes': acte,
-            'type_actes': type_actes,
             'base_calcul_tm_choices': base_calcul_tm_choices,
         }
 
@@ -2201,7 +2187,6 @@ def add_acte(request):
             regroupement_acte_id = request.POST.get('regroupement_acte_id')
             regroupement_acte = RegroupementActe.objects.get(id=regroupement_acte_id)
             type_acte_id = request.POST.get('type_acte')
-            type_acte = TypeActe.objects.get(id=type_acte_id)
             libelle = request.POST.get('libelle', None)
 
             code = request.POST.get('code', None)
@@ -2230,7 +2215,6 @@ def add_acte(request):
             nouveau_acte = Acte.objects.create(
                 rubrique=rubrique,
                 regroupement_acte=regroupement_acte,
-                type_acte=type_acte,
                 libelle=libelle,
                 code=code,
                 lettre_cle=lettre_cle,
@@ -2360,9 +2344,6 @@ def modifier_acte(request, acte_id):
         rubrique_regroupement_actes = RegroupementActe.objects.filter(rubrique=selected_rubrique)
         selected_regroupement_acte_id = acte.regroupement_acte.id if acte.regroupement_acte else None
 
-    all_type_actes = TypeActe.objects.all()
-    type_actes = json.dumps(list(all_type_actes.values('id', 'libelle')))
-
     base_calcul_tm_choices = BaseCalculTM.choices
     selected_base_calcul_tm = acte.base_calcul_tm
 
@@ -2377,7 +2358,6 @@ def modifier_acte(request, acte_id):
         'selected_rubrique_id': selected_rubrique_id,
         'rubrique_regroupement_actes': rubrique_regroupement_actes,
         'selected_regroupement_acte_id': selected_regroupement_acte_id,
-        'type_actes': type_actes,
         'base_calcul_tm_choices': base_calcul_tm_choices,
         'selected_base_calcul_tm': selected_base_calcul_tm,
         'related_tarifs': related_tarifs,
@@ -2399,9 +2379,6 @@ def supprimer_acte(request, acte_id):
 
             regroupement_acte_id = request.POST.get('regroupement_acte_id')
             acte.regroupement_acte = RegroupementActe.objects.get(id=regroupement_acte_id)
-
-            type_acte_id = request.POST.get('type_acte')
-            acte.type_acte = TypeActe.objects.get(id=type_acte_id)
 
             acte.libelle = request.POST.get('libelle', None)
 

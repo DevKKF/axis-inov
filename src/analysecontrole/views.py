@@ -25,7 +25,7 @@ from django.db.models import Subquery, OuterRef
 
 from configurations.helper_config import verify_sql_query
 from configurations.models import ActionLog, Prescripteur, PrescripteurPrestataire, Prestataire, Secteur, \
-    Bureau,TypeActe,BusinessUnit,Branche,Banque,Apporteur,ApporteurInternational,Devise,\
+    Bureau,BusinessUnit,Branche,Banque,Apporteur,ApporteurInternational,Devise,\
     User, AuthGroup, TypeEtablissement,Tarif, Rubrique, RegroupementActe, Acte, \
     WsBoby, ParamWsBoby, BackgroundQueryTask, ParamProduitCompagnie, Compagnie, \
     ParamActe, TypeApporteur, TypePersonne, Pays, TypeCompagnie, TypeGarant, TauxCommission, Carosserie, \

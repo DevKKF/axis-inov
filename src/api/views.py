@@ -32,12 +32,12 @@ from api.serializers import KeyValueDataSerializer, UserSerializer, AlimentSeria
     ResetPasswordUserSerializer, UserDataSerializer, BarremeSerializer, SinisteSerializer, \
     ModeRemboursementSerializer, DemandeRemboursementSerializer, PrestataireSerializer, \
     PrestataireDataSerializer, ActeSerializer, BureauSerializer, \
-    ProspectSerializer, CarteDigitalDematerialiseeSerializer, TypeActeSerialiser, CiviliteSerializer, \
+    ProspectSerializer, CarteDigitalDematerialiseeSerializer, CiviliteSerializer, \
     QualiteBeneficiaireSerializer, PaysSerializer, ProfessionSerializer
 from configurations.helper_config import verify_sql_query, execute_query
 # from api.serializers import AlimentWaspitoSerialiser, PrestationWaspito
 from configurations.models import Acte, Prescripteur, PrescripteurPrestataire, Prestataire, \
-    KeyValueData, WsBoby, Bureau, TypeActe, Civilite, \
+    KeyValueData, WsBoby, Bureau, Civilite, \
     QualiteBeneficiaire, Pays, Profession
 from configurations.models import User, ModeReglement
 from grh.helper import generate_uiid
@@ -1975,20 +1975,17 @@ class ConstantesView(views.APIView):
     parser_classes = [JSONParser]
 
     def get(self, request):
-        type_acte = TypeActe.objects.all()
         civilite = Civilite.objects.all()
         qualite_beneficiaire = QualiteBeneficiaire.objects.all()
         pays = Pays.objects.all()
         profession = Profession.objects.all()
 
-        typeacte_serializer = TypeActeSerialiser(type_acte, many=True)
         civilite_serializer = CiviliteSerializer(civilite, many=True)
         qualite_beneficiaire_serializer = QualiteBeneficiaireSerializer(qualite_beneficiaire, many=True)
         pays_serializer = PaysSerializer(pays, many=True)
         profession_serializer = ProfessionSerializer(profession, many=True)
 
         data = {
-            "type_actes": typeacte_serializer.data,
             "civilites": civilite_serializer.data,
             "qualite_beneficiaires": qualite_beneficiaire_serializer.data,
             "professions": profession_serializer.data,

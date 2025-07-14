@@ -35,8 +35,7 @@ from api.serializers import KeyValueDataSerializer, UserSerializer, AlimentSeria
     ProspectSerializer, CarteDigitalDematerialiseeSerializer, CiviliteSerializer, \
     QualiteBeneficiaireSerializer, PaysSerializer, ProfessionSerializer
 from configurations.helper_config import verify_sql_query, execute_query
-# from api.serializers import AlimentWaspitoSerialiser, PrestationWaspito
-from configurations.models import Acte, Prescripteur, PrescripteurPrestataire, Prestataire, \
+from configurations.models import Acte, Prescripteur, Prestataire, \
     KeyValueData, WsBoby, Bureau, Civilite, \
     QualiteBeneficiaire, Pays, Profession
 from configurations.models import User, ModeReglement
@@ -270,12 +269,6 @@ def service_save(request):
                 numero_ordre=medecin['numero_ordre'],
                 telephone=medecin['telephone'],
                 email=medecin['email'])
-
-            # LINK CREATED PRESCRIPTEUR TO PRESTATAIRE (INSERT LINE )
-            PrescripteurPrestataire.objects.create(
-                prestataire=prestataire,
-                prescripteur=prescripteur
-            )
 
         # GET AFFECTION BY CODE
         affection = Affection.objects.filter(code_cim_10=affectionJson['code_cim_10']).first()

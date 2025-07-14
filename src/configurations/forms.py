@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.models import Permission
 from .models import ActionLog, RegroupementActe, SousRubrique, StatExcelWsBoby, Tarif, Compagnie, Banque, SousRegroupementActe, \
-    ApporteurInternational, Branche, Garantie, GarantieBranche, Formule, GarantieFormule
+    Branche, Garantie, GarantieBranche, Formule, GarantieFormule
 
 
 class ActionLogForm(forms.ModelForm):
@@ -58,12 +58,6 @@ class BanqueAdminForm(forms.ModelForm):
     class Meta:
         model = Banque
         exclude = ['bureau', 'created_by']  # Excluez le champ bureau du formulaire
-
-
-class ApporteurInternationalForm(forms.ModelForm):
-    class Meta:
-        model = ApporteurInternational
-        exclude = ['created_by']  # Exclude the 'code' field from the form
 
 
 class StatExcelWsBobyForm(forms.ModelForm):

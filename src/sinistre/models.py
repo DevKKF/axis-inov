@@ -203,7 +203,7 @@ class SinistreGarantie(models.Model):
 
     sinistre = models.ForeignKey(Sinistre, on_delete=models.CASCADE, related_name='sinistre_garanties')
     garantie = models.ForeignKey(Garantie, on_delete=models.RESTRICT, related_name='garantie_sinistres')
-    #historique_sinistre_garantie = models.ForeignKey('HistoriqueSinistreGarantie', null=True, blank=True, on_delete=models.RESTRICT, related_name='sinistres_garanties')
+    historique_sinistre_garantie = models.ForeignKey('HistoriqueSinistreGarantie', null=True, blank=True, on_delete=models.RESTRICT, related_name='historique_sinistres_garanties')
 
     created_by = models.ForeignKey(User, related_name="sinistre_garantie_created_by", null=True, on_delete=models.RESTRICT)
     updated_by = models.ForeignKey(User, related_name="sinistre_garantie_updated_by", null=True, on_delete=models.RESTRICT)
@@ -215,6 +215,30 @@ class SinistreGarantie(models.Model):
 
     class Meta:
         db_table = 'sinistre_garanties'
+        verbose_name = 'Garantie liée à un sinistre'
+        verbose_name_plural = 'Garanties liées à un sinistre'
+
+    def __str__(self):
+        return f"{self.garantie} (Sinistre: {self.sinistre_id})"
+
+
+class HistoriqueSinistreGarantie(models.Model):
+    sinistre_garantie = models.ForeignKey(SinistreGarantie, on_delete=models.CASCADE, null=True)
+    historique_sinistre = models.ForeignKey(HistoriqueSinistre, on_delete=models.CASCADE, null=True)
+    mouvement = models.ForeignKey(Mouvement, on_delete=models.RESTRICT, null=True)
+
+    date_mouvement = models.DateField(null=True, blank=True)
+
+    created_by = models.ForeignKey(User, related_name="historique_sinistre_garantie_created_by", null=True, on_delete=models.RESTRICT)
+    updated_by = models.ForeignKey(User, related_name="historique_sinistre_garantie_updated_by", null=True, on_delete=models.RESTRICT)
+    deleted_by = models.ForeignKey(User, related_name="historique_sinistre_garantie_deleted_by", null=True, on_delete=models.RESTRICT)
+
+    created_at = models.DateTimeField(auto_now_add=True, null=True)
+    updated_at = models.DateTimeField(auto_now=True, null=True)
+    deleted_at = models.DateTimeField(auto_now=True, null=True)
+
+    class Meta:
+        db_table = 'historique_sinistre_garanties'
         verbose_name = 'Garantie liée à un sinistre'
         verbose_name_plural = 'Garanties liées à un sinistre'
 

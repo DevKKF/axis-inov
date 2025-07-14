@@ -7,7 +7,7 @@ from .views import (
     TarifsView, WsBobyView,
     WsBobyCreateView, WsBobyEditeView, ActesView, ConnectedUsersView, 
     BusinessUnitView, BrancheView, BanquesView,
-    ApporteurView, ApporteurinternationalView, ViewCourrier,
+    ApporteurView, ViewCourrier,
     CompagnieView, CarosseriesView, CategorieVehiculeView, CiviliteView, 
     CompteTresorerieView, ConditionsAssuranceView, DeviseView, CarburantView,
     FormuleView, FractionnementView, GarantieView, GarantieFormuleView, 
@@ -33,11 +33,8 @@ urlpatterns = [
     path('prestataires/<int:prestataire_id>/', DetailsPrestatairesView.as_view(), name='details_prestataire'),
     path('prestataires/<int:prestataire_id>/modifier/', views.modifier_prestataire, name='modifier_prestataire'),
     path('prestataires/<int:prestataire_id>/supprimer/', views.supprimer_prestataire, name='supprimer_prestataire'),
-    path('prestataires/<int:prestataire_id>/ajouter_prescripteur/', views.ajouter_prescripteur_prestataire, name='ajouter_prescripteur_prestataire'),
-    path('prestataires/<int:prestataire_id>/retirer_prescripteur/<int:prescripteur_id>/', views.retirer_prescripteur_prestataire, name='retirer_prescripteur_prestataire'),
     path('prestataires/<int:prestataire_id>/ajouter_reseau_soin/', views.add_reseau_soin_prestataire, name='add_reseau_soin_prestataire'),
     path('prestataires/<int:prs_id>/retirer_reseau_soin/', views.retirer_reseau_soin_prestataire, name='retirer_reseau_soin_prestataire'),
-    path('prestataires/<int:prestataire_id>/prescripteurs/', views.prescripteurs_by_prestataire, name='prescripteurs_by_prestataire'),
     path('prestataires/<int:prestataire_id>/import_prescripteurs/', views.import_prescripteurs, name='import_prescripteurs'),
     path('prestataires/ajouter_prescripteur/', views.add_prescripteur, name='add_prescripteur'),
     path('prestataires/popup_modifier_prescripteur/<int:prescripteur_id>/', views.popup_modifier_prescripteur, name='popup_modifier_prescripteur'),
@@ -84,9 +81,6 @@ urlpatterns = [
     path('apporteur/ajouter/', views.add_apporteur, name='add_apporteur'),
     path('apporteur/<int:apporteur_id>/modifier/', views.modifier_apporteur, name='modifier_apporteur'),
     path('apporteur/<int:apporteur_id>/delete/', views.supprimer_apporteur, name='supprimer_apporteur'),
-
-    # Apporteur International
-    path('apporteurinternational/', ApporteurinternationalView.as_view(), name='apporteurinternational'),
 
     # Carrosserie
     path('carosserie/', CarosseriesView.as_view(), name='carosseries'),

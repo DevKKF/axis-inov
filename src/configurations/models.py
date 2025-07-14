@@ -1070,44 +1070,6 @@ class ParamActe(models.Model):
         verbose_name_plural = "Paramétrages de l'acte"
 
 
-class PrescripteurPrestataire(models.Model):
-    created_by = models.ForeignKey(User, related_name="pp_created_by", null=True, on_delete=models.RESTRICT)
-    deleted_by = models.ForeignKey(User, related_name="pp_deleted_by", null=True, on_delete=models.RESTRICT)
-    prestataire = models.ForeignKey(Prestataire, null=True, on_delete=models.RESTRICT)
-    prescripteur = models.ForeignKey(Prescripteur, null=True, on_delete=models.RESTRICT)
-    statut_validite = models.fields.CharField(choices=StatutValidite.choices, default=StatutValidite.VALIDE, max_length=15, null=True)
-    observation = models.CharField(max_length=255, blank=True, null=True)
-    deleted_at = models.DateTimeField(blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return self.prestataire.name + ' de ' + self.prescripteur.name
-
-    class Meta:
-        db_table = 'prescripteur_prestataire'
-        verbose_name = 'Prescripteur du prestataire'
-        verbose_name_plural = 'Prescripteurs du prestataire'
-
-
-class ApporteurInternational(models.Model):
-    created_by = models.ForeignKey(User, null=True, on_delete=models.RESTRICT)
-    pays = models.ForeignKey(Pays, null=True, on_delete=models.RESTRICT)
-    nom = models.CharField(max_length=100, blank=True, default=None, null=True)
-    code = models.CharField(max_length=25, blank=True, default=None, null=True, unique=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    status = models.BooleanField(default=True)
-
-    def __str__(self):
-        return f"{self.nom} - {self.code} - {self.status} - {self.pays}"
-
-
-    class Meta:
-        db_table = 'apporteur_international'
-        verbose_name = 'Apporteur international'
-        verbose_name_plural = 'Apporteurs internationaux'
-
-
 class Apporteur(models.Model):
     created_by = models.ForeignKey(User, null=True, on_delete=models.RESTRICT)
     id_per = models.CharField(max_length=25, blank=True, null=True)

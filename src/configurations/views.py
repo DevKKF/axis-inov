@@ -36,7 +36,7 @@ from datetime import datetime, timezone
 from django.db.models import Sum, Q, ExpressionWrapper, F, DurationField, Max
 from configurations.helper_config import verify_sql_query
 from configurations.models import ActionLog, Secteur, \
-    Bureau ,BusinessUnit, Branche, Banque, Apporteur, ApporteurInternational,Devise,\
+    Bureau ,BusinessUnit, Branche, Banque, Apporteur, Devise,\
     User, AuthGroup, TypeEtablissement,Tarif, Rubrique, \
     BackgroundQueryTask, ParamProduitCompagnie, Compagnie, \
     TypeApporteur, TypePersonne, Pays, TypeCompagnie, TypeGarant, TauxCommission, Carosserie, \
@@ -57,7 +57,6 @@ from sinistre.models import Sinistre, PaiementComptable, HistoriqueOrdonnancemen
 import json
 import io
 
-from .models import PrescripteurPrestataire
 from production.models import Aliment, TarifPrestataireClient, Carte
 
 from shared.helpers import generate_numero_famille_for_existing_aliment, generer_nombre_famille_du_mois_for_existing_aliment
@@ -1001,105 +1000,6 @@ def export_prestaitaires(request):
         return HttpResponse(status=405)
 
 
-def ajouter_prescripteur_prestataire(request):
-    if request.method == 'POST':
-        name = request.POST.get('name')
-        rb_ordre = request.POST.get('rb_ordre')
-        code = request.POST.get('code')
-        telephone = request.POST.get('telephone')
-        fax = request.POST.get('fax')
-        email = request.POST.get('email')
-        fax = request.POST.get('fax')
-        ville = request.POST.get('ville')
-        addresse = request.POST.get('addresse')
-        secteur_id = request.POST.get('secteur_id')
-        type_prestataire_id = request.POST.get('type_prestataire_id')
-        reseaux_soins_ids = request.POST.getlist('reseaux_soins_ids')
-        reseaux_soins = ""
-
-        latitude = None
-        longitude = None
-        try:
-            latitude = float(request.POST.get('latitude').replace(",", ".").replace(" ", ""))
-            longitude = float(request.POST.get('longitude').replace(",", ".").replace(" ", ""))
-        except Exception as e:
-            print(e)
-
-        pprint(reseaux_soins)
-
-        prestataire = Prestataire.objects.filter(bureau=request.user.bureau).latest('id')
-
-        code = "P" + str(prestataire.pk + 1)
-
-        if request.user.bureau:
-            bureau = request.user.bureau
-
-            fs = FileSystemStorage()
-
-            '''
-            logo = request.FILES['logo']
-            if logo:
-                fichier = request.FILES['logo']
-                file_name_renamed = fichier.name.replace(" ", "_")
-                logo_filename = fs.save(file_name_renamed, fichier)
-
-            '''
-
-            prestataire = Prestataire.objects.create(
-                name=name,
-                rb_ordre=rb_ordre,
-                code=code,
-                telephone=telephone,
-                fax=fax,
-                email=email,
-                ville=ville,
-                addresse=addresse,
-                # logo=logo_filename,
-                status=True,
-                bureau_id=bureau.pk,
-                type_prestataire_id=type_prestataire_id,
-                secteur_id=secteur_id,
-                latitude=latitude,
-                longitude=longitude,
-            )
-
-            # Mettre a jour le code
-            code_bureau = request.user.bureau.code
-            prestataire.code = str(code_bureau) + str(Date.today().year)[-2:] + '-' + str(prestataire.pk).zfill(
-                7) + '-P'
-            # prestataire.code = 'P' + str(prestataire.pk).zfill(6)
-            prestataire.save()
-
-            # enregistrer ses réseaux de soins
-            for reseau_soin in reseaux_soins:
-                pass
-
-            response = {
-                'statut': 1,
-                'message': "Enregistrement effectuée avec succès !",
-                'data': {
-                }
-            }
-
-
-        else:
-            response = {
-                'statut': 0,
-                'message': "Vous n'êtes lié à aucun bureau !",
-                'data': {}
-            }
-
-    else:
-
-        response = {
-            'statut': 0,
-            'message': "Methode non autorisée !",
-            'data': {}
-        }
-
-    return JsonResponse(response)
-
-
 def modifier_prestataire(request, prestataire_id):
     prestataire = Prestataire.objects.get(id=prestataire_id)
 
@@ -1262,11 +1162,6 @@ def add_prescripteur(request):
             email=email,
         )
 
-        PrescripteurPrestataire.objects.create(
-            prescripteur_id=prescripteur.pk,
-            prestataire_id=prestataire.pk
-        )
-
         response = {
             'statut': 1,
             'message': "Enregistrement effectuée avec succès !",
@@ -1332,36 +1227,7 @@ def import_prescripteurs(request, prestataire_id):
                     telephone=telephone,
                     bureau=request.user.bureau,
                 )
-                # dd(prescripteur)
 
-            # On tente de trouver l'enregistrement de du prescripteur sinon on l'enregistre
-            prescripteur_prestataire = PrescripteurPrestataire.objects.filter(prescripteur_id=prescripteur.id,
-                                                                              prestataire_id=prestataire.pk).first()
-
-            if not prescripteur_prestataire:
-                PrescripteurPrestataire.objects.create(
-                    prescripteur_id=prescripteur.pk,
-                    prestataire_id=prestataire.pk,
-                    created_at=datetime.datetime.now(tz=timezone.utc)
-                )
-
-                cpt_success = cpt_success + 1
-
-            else:
-                response = {
-                    'statut': 0,
-                    'message': "Veilleez entrez une specialité existant dans la base de données !",
-                    'data': {
-                    }
-                }
-
-            # except KeyError:
-            #    response = {
-            #        'statut': 0,
-            #        'message': "Erreur sur le mot clé " + KeyError.args.index,
-            #        'data': {
-            #        }
-            #    }
         if cpt_success == cpt_all:
             response = {
                 'statut': 1,
@@ -1394,8 +1260,7 @@ class DetailsPrestatairesView(TemplateView):
 
             clients = Client.objects.all()
 
-            prescripteurs = PrescripteurPrestataire.objects.filter(prestataire_id=prestataire.pk,
-                                                                   statut_validite=StatutValidite.VALIDE)
+            prescripteurs = ""
             utilisateurs = User.objects.filter(prestataire_id=prestataire.pk)
 
             tarifs_prestataire_clients = TarifPrestataireClient.objects.filter(prestataire_id=prestataire.pk)
@@ -1438,90 +1303,6 @@ class DetailsPrestatairesView(TemplateView):
         }
 
 
-@login_required
-def prescripteurs_by_prestataire(request, prestataire_id):
-    prestataire_prescripteur = PrescripteurPrestataire.objects.filter(prestataire_id=prestataire_id)
-    prescripteurs = []
-    for pp in prestataire_prescripteur:
-        if pp.prescripteur not in prescripteurs:
-            prescripteurs.append(pp.prescripteur)
-    prescripteurs_serialize = serializers.serialize('json', prescripteurs)
-    return HttpResponse(prescripteurs_serialize, content_type='application/json')
-
-
-# PRESCRIPTEUR
-def prescripteurs_prestataires_datatable(request, prestataire_id):
-    items_per_page = 10
-    page_number = request.GET.get('page')
-    start = int(request.GET.get('start', 0))
-    length = int(request.GET.get('length', items_per_page))
-    sort_column_index = int(request.GET.get('order[0][column]'))
-    sort_direction = request.GET.get('order[0][dir]')
-    #   search_nom = request.GET.get('search_nom', '')
-    search_numero_ordre = request.GET.get('search_numero_ordre', '')
-    search_value = request.GET.get('search[value]', '')
-
-    prestataire_prescripteurs_ids = PrescripteurPrestataire.objects.filter(
-        prestataire=prestataire_id,
-        statut_validite=StatutValidite.VALIDE
-    ).values_list('prescripteur_id', flat=True).order_by('id')
-
-    queryset = Prescripteur.objects.filter(id__in=prestataire_prescripteurs_ids)
-
-    # if search_nom:
-    #     queryset = queryset.filter(
-    #         Q(nom__icontains=search_nom)
-    #     )
-
-    if search_numero_ordre:
-        queryset = queryset.filter(
-            Q(numero_ordre__icontains=search_numero_ordre)
-        )
-
-    sort_columns = {
-        0: 'nom',
-        1: 'prenoms',
-        2: 'numero_ordre',
-        3: 'telephone',
-    }
-
-    sort_column = sort_columns.get(sort_column_index, 'id')
-
-    if sort_direction == 'desc':
-        sort_column = '-' + sort_column
-
-    queryset = queryset.order_by(sort_column)
-
-    paginator = Paginator(queryset, length)
-    page_obj = paginator.get_page(page_number)
-
-    data = []
-    for p in page_obj:
-        modifier_prescripteur_url = reverse('popup_modifier_prescripteur', args=[p.id])  # url modifier prescripteur
-        retirer_prescripteur_url = reverse('retirer_prescripteur_prestataire',
-                                           args=[prestataire_id, p.id])  # url retirer prescripteur
-
-        actions_html = (
-            f'<span style="cursor:pointer;" class="btn_modifier_prescripteur badge btn-sm btn-modifier rounded-pill" data-href="{modifier_prescripteur_url}"><i class="fa fa-edit"></i> Modifier</span>&nbsp;'
-            f'<span style="cursor:pointer;" class="btn_retirer_prescripteur badge btn-sm btn-danger rounded-pill" data-href="{retirer_prescripteur_url}"><i class="fa fa-minus"></i> Retirer</span>')
-
-        data.append({
-            "id": p.id,
-            "nom": p.nom,
-            "prenoms": p.prenoms,
-            "numero_ordre": p.numero_ordre,
-            "telephone": p.telephone,
-            "actions": actions_html,
-        })
-
-    return JsonResponse({
-        "data": data,
-        "recordsTotal": queryset.count(),
-        "recordsFiltered": paginator.count,
-        "draw": int(request.GET.get('draw', 1)),
-    })
-
-
 def popup_modifier_prescripteur(request, prescripteur_id):
     prescripteur = Prescripteur.objects.filter(id=prescripteur_id).first()
 
@@ -1558,26 +1339,6 @@ def update_prescripteur(request, prescripteur_id):
             'statut': 0,
             'message': "Methode non autorisée !",
             'data': {}
-        }
-
-    return JsonResponse(response)
-
-
-def retirer_prescripteur_prestataire(request, prestataire_id, prescripteur_id):
-    if request.method == 'POST':
-        prescripteur_prestataire = PrescripteurPrestataire.objects.filter(prescripteur_id=prescripteur_id,
-                                                                          prestataire_id=prestataire_id,
-                                                                          statut_validite=StatutValidite.VALIDE).update(
-            statut_validite=StatutValidite.CLOTURE,
-            deleted_by=request.user,
-            deleted_at=datetime.datetime.now(tz=timezone.utc),
-        )
-
-        response = {
-            'statut': 1,
-            'message': "Prescripteur retiré avec succès !",
-            'data': {
-            }
         }
 
     return JsonResponse(response)
@@ -7047,34 +6808,6 @@ def supprimer_postedommage(request, postedommage_id):
 
 #------------------------FIN POSTE DE DOMMAGE----------------------------------
 
-
-#--------------------------------------APPORTEUR INTERNAL----------------------------------------------------------
-
-class ApporteurinternationalView(PermissionRequiredMixin, TemplateView):
-    template_name = 'apporteur_international/apporteur_inter.html'
-    permission_required = "configurations.view_apporteurinternational"
-    model = ApporteurInternational
-
-    def get(self, request, *args, **kwargs):
-        context_original = self.get_context_data(**kwargs)
-
-        apporteurinternational = ApporteurInternational.objects.all()
-        utilisateurs = User.objects.filter(bureau=request.user.bureau, type_utilisateur__code="INTERNE",
-                                           is_active=True).order_by('last_name')
-
-        context_perso = {'apporteur': apporteurinternational, 'utilisateurs': utilisateurs}
-
-        context = {**context_original, **context_perso}
-
-        return self.render_to_response(context)
-
-    def get_context_data(self, **kwargs):
-        pprint(kwargs)
-        return {
-            **super().get_context_data(**kwargs),
-            **admin.site.each_context(self.request),
-            "opts": self.model._meta,
-        }
 
 #--------------------------------------COURRIER--------------------------------------------------
 

@@ -3,7 +3,6 @@ from django.db import connection
 from django.core.files.base import File
 from django.http import HttpResponse
 
-from configurations.models import BackgroundQueryTask
 from django.core.mail import send_mail
 from configurations.models import BackgroundQueryTask, CronLog
 from django.conf import settings

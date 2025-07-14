@@ -9,7 +9,7 @@ from import_export.admin import ImportExportModelAdmin
 from django import forms
 from admin_custom.admin import custom_admin_site
 from configurations.forms import ActionLogForm, PermissionForm, SousRubriqueForm, TarifForm, \
-    CompagnieAdminForm, BanqueAdminForm, ApporteurInternationalForm, GarantieBrancheForm, \
+    CompagnieAdminForm, BanqueAdminForm, GarantieBrancheForm, \
     GarantieFormuleForm
 from configurations.models import *
 from production.models import Quittance, SecteurActivite, TypeDocument, Mouvement, Motif
@@ -503,11 +503,6 @@ class BackgroundQueryTaskAdmin(admin.ModelAdmin):
 
     class Media:
         js = ("configurations/js/custom.js",)
-
-
-class ApporteurInternationalAdmin(admin.ModelAdmin):
-    list_display = ('code', 'nom', 'pays')
-    form = ApporteurInternationalForm
 
 
 class ModelLettreChequeAdmin(admin.ModelAdmin):

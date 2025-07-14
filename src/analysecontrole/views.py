@@ -24,10 +24,10 @@ from openpyxl.utils import get_column_letter
 from django.db.models import Subquery, OuterRef
 
 from configurations.helper_config import verify_sql_query
-from configurations.models import ActionLog, Prescripteur, PrescripteurPrestataire, Prestataire, Secteur, \
-    Bureau,BusinessUnit,Branche,Banque,Apporteur,ApporteurInternational,Devise,\
+from configurations.models import ActionLog, Prescripteur, Prestataire, Secteur, \
+    Bureau,BusinessUnit,Branche,Banque,Apporteur, Devise,\
     User, AuthGroup, TypeEtablissement,Tarif, Rubrique, RegroupementActe, Acte, \
-    WsBoby, ParamWsBoby, BackgroundQueryTask, ParamProduitCompagnie, Compagnie, \
+    WsBoby, ParamWsBoby, ParamProduitCompagnie, Compagnie, \
     ParamActe, TypeApporteur, TypePersonne, Pays, TypeCompagnie, TypeGarant, TauxCommission, Carosserie, \
     CategorieVehicule, Civilite, CompteTresorerie, ConditionsAssurance, Carburant, Formule, Fractionnement, Garantie, GarantieFormule, \
     Groupe, ModeReglement

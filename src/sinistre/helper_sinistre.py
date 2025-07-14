@@ -2,7 +2,7 @@ from pprint import pprint
 
 from comptabilite.models import EncaissementCommission
 from configurations.helper_config import send_notification_background_task_mail, execute_query
-from configurations.models import ActionLog, BackgroundQueryTask, CronLog, Prestataire, Retenue
+from configurations.models import ActionLog, CronLog, Prestataire, Retenue
 from production.models import MouvementPolice, Reglement, Quittance, ApporteurPolice
 from shared.enum import StatutReversementCompagnie, StatutEncaissementCommission, StatutValidite
 import openpyxl

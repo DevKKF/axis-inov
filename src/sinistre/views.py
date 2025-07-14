@@ -34,9 +34,9 @@ from django.template.loader import get_template
 #
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.timezone import make_aware
 from django.utils.datastructures import MultiValueDictKeyError
 from django.utils.decorators import method_decorator
-from django.utils.timezone import make_aware, now
 from django.views.decorators.cache import never_cache
 from django.views.generic import TemplateView, ListView
 from num2words import num2words
@@ -46,12 +46,12 @@ from uuid import uuid4
 
 from configurations.helper_config import execute_query, create_query_background_task
 from configurations.models import Compagnie, User, Rubrique, \
-    TypePriseencharge, Pays, TypeIntervenant, Responsabilite, TypeSinistre, Circonstance, Garantie, GarantieCirconstance, PosteDommage, \
+    TypePriseencharge, Pays, TypeIntervenant, TauxResponsabilite, TypeSinistre, Circonstance, Garantie, GarantieCirconstance, PosteDommage, \
     ActionLog, PeriodeComptable, TypeRemboursement, ModeCreation, \
     BackgroundQueryTask, TypePrefinancement
 from production.models import Statut, TypeDocument, Client
 #
-from production.models import Police, HistoriquePolice, PoliceAssureur, Mouvement, Motif, AlimentPolice, Document
+from production.models import Police, HistoriquePolice, HistoriqueAliment, PoliceAssureur, Mouvement, Motif, AlimentPolice, Document
 from production.forms import DocumentForm
 from production.templatetags.my_filters import money_field, supprimer_espaces
 from shared.enum import StatutPolice
@@ -68,7 +68,7 @@ from sinistre.helper_sinistre import exportation_en_excel_avec_style, \
     requete_liste_sinistre_saisies_entre_2date, requete_sinistres_traites_et_valides_par_les_gestionnaires, \
     requete_analyse_prime_compta_apporteur, get_retenue_selon_contexte
 # Create your views here.
-from sinistre.models import PaiementComptable, Sinistre, SinistreIntervenant, SinistreGarantie, DossierSinistre, MouvementSinistre, \
+from sinistre.models import PaiementComptable, Sinistre, HistoriqueSinistre, Intervenant, SinistreIntervenant, SinistreGarantie, DossierSinistre, MouvementSinistre, \
     RemboursementSinistre, BordereauOrdonnancement, HistoriqueOrdonnancementSinistre
 
 from sinistre.forms import SinistreForm
@@ -285,7 +285,7 @@ def recherche_client_police(request):
 
             client = Client.objects.filter(id=client_id).first()
 
-            polices_qs = (Police.objects.filter(client=client).exclude(Q(statut="ANNULE") | Q(statut="INACTIF")))
+            polices_qs = (Police.objects.filter(client=client))
 
             # Vérification si des polices existent
             if not polices_qs.exists():
@@ -303,8 +303,10 @@ def recherche_client_police(request):
                     'date_debut': plc.date_debut_effet.strftime("%d/%m/%Y") if plc.date_debut_effet else '',
                     'date_echeance': plc.date_fin_effet.strftime("%d/%m/%Y") if plc.date_fin_effet else (plc.date_fin_police.strftime("%d/%m/%Y") if plc.date_fin_police else None),
                 })
+
+            return JsonResponse({'success': True, 'polices': polices})
         if numero_police:
-            polices_qs = (Police.objects.filter(numero=numero_police).exclude(Q(statut="ANNULE") | Q(statut="INACTIF")))
+            polices_qs = (Police.objects.filter(numero=numero_police))
 
             # Vérification si des polices existent
             if not polices_qs.exists():
@@ -324,11 +326,13 @@ def recherche_client_police(request):
                     'date_echeance': plc.date_fin_effet.strftime("%d/%m/%Y") if plc.date_fin_effet else (
                         plc.date_fin_police.strftime("%d/%m/%Y") if plc.date_fin_police else None),
                 })
+
+            return JsonResponse({'success': True, 'polices': polices})
 
         if client_id and numero_police:
             client = Client.objects.filter(id=client_id).first()
 
-            polices_qs = (Police.objects.filter(client=client, numero=numero_police).exclude(Q(statut="ANNULE") | Q(statut="INACTIF")))
+            polices_qs = (Police.objects.filter(client=client, numero=numero_police))
 
             # Vérification si des polices existent
             if not polices_qs.exists():
@@ -348,10 +352,10 @@ def recherche_client_police(request):
                     'date_echeance': plc.date_fin_effet.strftime("%d/%m/%Y") if plc.date_fin_effet else (
                         plc.date_fin_police.strftime("%d/%m/%Y") if plc.date_fin_police else None),
                 })
-        else:
-            pass
 
-        return JsonResponse({'success': True, 'polices': polices})
+            return JsonResponse({'success': True, 'polices': polices})
+        else:
+            return JsonResponse({'success': False, 'message': 'Aucune recherche initiée.'})
 
     return JsonResponse({'success': False, 'message': 'Méthode non autorisée.'})
 
@@ -383,7 +387,7 @@ def recuperer_information_police(request):
         typesinistres = TypeSinistre.objects.filter(statut=1).order_by('libelle')
         typeintervenants = TypeIntervenant.objects.filter(statut=1).order_by('libelle')
         typedocuments = TypeDocument.objects.filter(is_sinistre=1).order_by('libelle')
-        responsabilites = Responsabilite.objects.filter(statut=1)
+        responsabilites = TauxResponsabilite.objects.filter(statut=1)
         circonstances = Circonstance.objects.filter(statut=1, branche_id=police.produit.branche_id).order_by('libelle')
 
         pays = Pays.objects.all().order_by('nom')
@@ -678,20 +682,20 @@ def add_sinistre_gestionnaire(request):
 
         form = SinistreForm(request.POST)
 
+        today = timezone.now().date()
+
         if form.is_valid():
             police = Police.objects.get(id=request.POST.get('police_id'))
             client = Client.objects.get(id=police.client_id)
             vehicule_id = request.POST.get('vehicule_id')
             marchandise_id = request.POST.get('marchandise_id')
             autre_risque_id = request.POST.get('autre_risque_id')
-            autre_risque = request.POST.get('autre_risque')
             compagnie_id = request.POST.get('compagnie_id')
             mouvement_id = request.POST.get('mouvement_id')
             motif_mouvement_id = request.POST.get('motif_mouvement_id')
             date_survenance = request.POST.get('date_survenance')
             date_ouverture = request.POST.get('date_ouverture')
             date_cloture = request.POST.get('date_cloture')
-            risque = request.POST.get('risque')
             date_declaration = request.POST.get('date_declaration')
             date_reouverture = request.POST.get('date_reouverture')
             circonstance_id = request.POST.get('circonstance_id')
@@ -699,11 +703,11 @@ def add_sinistre_gestionnaire(request):
             tva_recuperee = request.POST.get('tva_recuperee')
             type_sinistre_id = request.POST.get('type_sinistre_id')
             franchise = request.POST.get('franchise').replace(' ', '')
-            responsabilite_id = request.POST.get('responsabilite_id')
+            taux_responsabilite_id = request.POST.get('responsabilite_id')
             fait_generateur = request.POST.get('fait_generateur')
             point_de_choc = request.POST.get('point_de_choc')
-            commentaire = request.POST.get('commentaire')
-            saisie_circonstance = request.POST.get('saisie_circonstance')
+            commentaires = request.POST.get('commentaires')
+            risque_sinistre = request.POST.get('risque')
             numero = request.POST.get('numero')
 
             sinistre_created = Sinistre(
@@ -711,10 +715,11 @@ def add_sinistre_gestionnaire(request):
                 police_id=police.id,
                 compagnie_id=compagnie_id,
                 type_sinistre_id=type_sinistre_id,
-                responsabilite_id=responsabilite_id,
+                taux_responsabilite_id=taux_responsabilite_id,
                 circonstance_id=circonstance_id,
-                created_by=request.user,
+                created_by_id=request.user.id,
                 numero=numero,
+                risque_sinistre=risque_sinistre,
                 date_survenance=date_survenance if date_survenance else None,
                 date_declaration=date_declaration if date_declaration else None,
                 date_ouverture=date_ouverture if date_ouverture else None,
@@ -724,8 +729,7 @@ def add_sinistre_gestionnaire(request):
                 tva_recuperee=tva_recuperee,
                 fait_generateur=fait_generateur,
                 point_de_choc=point_de_choc,
-                commentaire=commentaire,
-                autre_circonstance=saisie_circonstance,
+                commentaires=commentaires,
                 franchise=supprimer_espaces(franchise) if franchise else 0,
             )
             sinistre_created.save()
@@ -750,207 +754,48 @@ def add_sinistre_gestionnaire(request):
             ms.created_by = request.user
             ms.save()
 
-            # Créer la ligne de l'aliment lié au sinistre
-            aliment_police = None
-
-            if vehicule_id:
-                try:
-                    aliment_police = AlimentPolice.objects.get(vehicule_id=vehicule_id)
-                except AlimentPolice.DoesNotExist:
-                    pass  # Gérer l'absence de l'objet si nécessaire
-
-            if marchandise_id:
-                try:
-                    aliment_police = AlimentPolice.objects.get(marchandise_id=marchandise_id)
-                except AlimentPolice.DoesNotExist:
-                    pass  # Gérer l'absence de l'objet si nécessaire
-
+            # Récupérer l'historique aliment
+            historique_aliment =''
             if autre_risque_id:
-                try:
-                    aliment_police = AlimentPolice.objects.get(autre_risque_id=autre_risque_id)
+                historique_aliment = HistoriqueAliment.objects.filter(autre_risque_id=autre_risque_id).first()
+            if marchandise_id:
+                historique_aliment = HistoriqueAliment.objects.filter(marchandise_id=marchandise_id).first()
+            if vehicule_id:
+                historique_aliment = HistoriqueAliment.objects.filter(vehicule_id=vehicule_id).first()
 
-                    aliment_police.risque = autre_risque
-                    aliment_police.save()
+            historique_sinistre_created = HistoriqueSinistre(
+                sinistre=sinistre,
+                historique_aliment=historique_aliment if historique_aliment else None,
+                client_id=sinistre.client_id,
+                police_id=sinistre.police_id,
+                compagnie_id=sinistre.compagnie_id,
+                type_sinistre_id=sinistre.type_sinistre_id,
+                taux_responsabilite_id=sinistre.taux_responsabilite_id,
+                circonstance_id=sinistre.circonstance_id,
+                created_by_id=request.user.id,
 
-                except AlimentPolice.DoesNotExist:
-                    pass  # Gérer l'absence de l'objet si nécessaire
-            else:
-                pass
+                date_operation=today,
+                date_survenance=sinistre.date_survenance if sinistre.date_survenance else None,
+                date_declaration=sinistre.date_declaration if sinistre.date_declaration else None,
+                date_ouverture=sinistre.date_ouverture if sinistre.date_ouverture else None,
+                date_cloture=sinistre.date_cloture if sinistre.date_cloture else None,
+                date_reouverture=sinistre.date_reouverture if sinistre.date_reouverture else None,
 
-
-            # Récupérer les intervenants de la session
-            intervenants = request.session.get('intervenants', [])
-            for intervenant in intervenants:
-                intervenant_created = SinistreIntervenant(
-                    sinistre=sinistre,
-                    type_intervenant_id=intervenant.get('type_intervenant_id'),
-                    pays_id=intervenant.get('pays_id'),
-                    nom=intervenant.get('nom'),
-                    prenoms=intervenant.get('prenoms'),
-                    portable=intervenant.get('portable'),
-                    telephone=intervenant.get('telephone'),
-                    fax=intervenant.get('fax'),
-                    email=intervenant.get('email'),
-                    code_postal=intervenant.get('code_postal'),
-                    boite_postale=intervenant.get('boite_postale'),
-                    ville=intervenant.get('ville'),
-                )
-                intervenant_created.save()
-
-
-            # Récupérer les garanties de la session
-            garanties_sinistre = request.session.get("garanties", [])
-            for garantie_sinistre in garanties_sinistre:
-                garantie_sinistre_created = SinistreGarantie(
-                    sinistre=sinistre,
-                    circonstance_id=circonstance_id,
-                    garantie_id=garantie_sinistre.get('garantie_id'),
-                    franchise=supprimer_espaces(garantie_sinistre.get('franchise', 0)) if garantie_sinistre.get('franchise', 0) else None,
-                    capital=supprimer_espaces(garantie_sinistre.get('capital', 0)) if garantie_sinistre.get('capital', 0) else None,
-                    prime_nette=supprimer_espaces(garantie_sinistre.get('prime_net', 0)) if garantie_sinistre.get('prime_net', 0) else None,
-                    prime_ttc=supprimer_espaces(garantie_sinistre.get('prime_ttc', 0)) if garantie_sinistre.get('prime_ttc', 0) else None,
-                )
-                garantie_sinistre_created.save()
-
-            response = {
-                'statut': 1,
-                'message': "Sinistre enregistré avec succès !",
-                'data': {
-                    'id': sinistre.pk,
-                    'numero': sinistre.numero,
-                }
-            }
-
-            return JsonResponse(response)
-
-        else:
-            response = {
-                'statut': 0,
-                'message': "Veuillez renseigner correctement le formulaire",
-                'errors': form.errors,
-            }
-
-            return JsonResponse(response)
-    else:
-        response = {
-            'statut': 0,
-            'message': "Cette méthode n'est pas reconnue !",
-        }
-
-        return JsonResponse(response)
-
-
-def add_sinistre_gestionnaire_v1(request):
-
-    if request.method == 'POST':
-
-        form = SinistreForm(request.POST)
-
-        if form.is_valid():
-            police = Police.objects.get(id=request.POST.get('police_id'))
-            client = Client.objects.get(id=police.client_id)
-            vehicule_id = request.POST.get('vehicule_id')
-            marchandise_id = request.POST.get('marchandise_id')
-            autre_risque_id = request.POST.get('autre_risque_id')
-            autre_risque = request.POST.get('autre_risque')
-            compagnie_id = request.POST.get('compagnie_id')
-            mouvement_id = request.POST.get('mouvement_id')
-            motif_mouvement_id = request.POST.get('motif_mouvement_id')
-            date_survenance = request.POST.get('date_survenance')
-            date_ouverture = request.POST.get('date_ouverture')
-            date_cloture = request.POST.get('date_cloture')
-            risque = request.POST.get('risque')
-            date_declaration = request.POST.get('date_declaration')
-            date_reouverture = request.POST.get('date_reouverture')
-            circonstance_id = request.POST.get('circonstance_id')
-            lieu_survenance = request.POST.get('lieu_survenance')
-            tva_recuperee = request.POST.get('tva_recuperee')
-            type_sinistre_id = request.POST.get('type_sinistre_id')
-            franchise = request.POST.get('franchise').replace(' ', '')
-            responsabilite_id = request.POST.get('responsabilite_id')
-            fait_generateur = request.POST.get('fait_generateur')
-            point_de_choc = request.POST.get('point_de_choc')
-            commentaire = request.POST.get('commentaire')
-            saisie_circonstance = request.POST.get('saisie_circonstance')
-            numero = request.POST.get('numero')
-
-            sinistre_created = Sinistre(
-                client_id=client.id,
-                police_id=police.id,
-                compagnie_id=compagnie_id,
-                type_sinistre_id=type_sinistre_id,
-                responsabilite_id=responsabilite_id,
-                circonstance_id=circonstance_id,
-                created_by=request.user,
-                numero=numero,
-                date_survenance=date_survenance if date_survenance else None,
-                date_declaration=date_declaration if date_declaration else None,
-                date_ouverture=date_ouverture if date_ouverture else None,
-                date_cloture=date_cloture if date_cloture else None,
-                date_reouverture=date_reouverture if date_reouverture else None,
-                lieu_survenance=lieu_survenance,
-                tva_recuperee=tva_recuperee,
-                fait_generateur=fait_generateur,
-                point_de_choc=point_de_choc,
-                commentaire=commentaire,
-                autre_circonstance=saisie_circonstance,
-                franchise=supprimer_espaces(franchise) if franchise else 0,
+                lieu_survenance=sinistre.lieu_survenance,
+                tva_recuperee=sinistre.tva_recuperee,
+                fait_generateur=sinistre.fait_generateur,
+                point_de_choc=sinistre.point_de_choc,
+                commentaires=sinistre.commentaires,
+                risque_sinistre=sinistre.risque_sinistre,
+                franchise=sinistre.franchise if sinistre.franchise else 0,
             )
-            sinistre_created.save()
-
-            code_bureau = request.user.bureau.code
-            sinistre_created.numero_provisoire = str(code_bureau) + 'S' + str(Date.today().year)[-2:] + str(
-                sinistre_created.pk).zfill(6)
-            if sinistre_created.numero == "":
-                sinistre_created.numero = sinistre_created.numero_provisoire
-
-            sinistre_created.save()
-
-            sinistre = Sinistre.objects.get(id=sinistre_created.pk)
-
-            # Créer une ligne de mouvement_sinistre avec le mouvement ouverture sinistre et le motif ouverture sinistre
-            ms = MouvementSinistre()
-            ms.sinistre = sinistre
-            ms.police = police
-            ms.mouvement = Mouvement.objects.get(code=mouvement_id)
-            ms.motif = Motif.objects.get(code=motif_mouvement_id)
-            ms.date_effet = sinistre.date_ouverture
-            ms.created_by = request.user
-            ms.save()
-
-            # Créer la ligne de l'aliment lié au sinistre
-            aliment_police = None
-
-            if vehicule_id:
-                try:
-                    aliment_police = AlimentPolice.objects.get(vehicule_id=vehicule_id)
-                except AlimentPolice.DoesNotExist:
-                    pass  # Gérer l'absence de l'objet si nécessaire
-
-            if marchandise_id:
-                try:
-                    aliment_police = AlimentPolice.objects.get(marchandise_id=marchandise_id)
-                except AlimentPolice.DoesNotExist:
-                    pass  # Gérer l'absence de l'objet si nécessaire
-
-            if autre_risque_id:
-                try:
-                    aliment_police = AlimentPolice.objects.get(autre_risque_id=autre_risque_id)
-
-                    aliment_police.risque = autre_risque
-                    aliment_police.save()
-
-                except AlimentPolice.DoesNotExist:
-                    pass  # Gérer l'absence de l'objet si nécessaire
-            else:
-                pass
-
+            historique_sinistre_created.save()
+            historique_sinistre = HistoriqueSinistre.objects.get(id=historique_sinistre_created.pk)
 
             # Récupérer les intervenants de la session
             intervenants = request.session.get('intervenants', [])
             for intervenant in intervenants:
-                intervenant_created = SinistreIntervenant(
-                    sinistre=sinistre,
+                intervenant_created = Intervenant(
                     type_intervenant_id=intervenant.get('type_intervenant_id'),
                     pays_id=intervenant.get('pays_id'),
                     nom=intervenant.get('nom'),
@@ -962,6 +807,17 @@ def add_sinistre_gestionnaire_v1(request):
                     code_postal=intervenant.get('code_postal'),
                     boite_postale=intervenant.get('boite_postale'),
                     ville=intervenant.get('ville'),
+                    created_by_id=request.user.id,
+                )
+                intervenant_created.save()
+
+                intervenant = Intervenant.objects.get(id=intervenant_created.pk)
+
+                intervenant_created = SinistreIntervenant(
+                    sinistre=sinistre,
+                    historique_sinistre=historique_sinistre,
+                    intervenant=intervenant,
+                    created_by_id=request.user.id,
                 )
                 intervenant_created.save()
 
@@ -977,37 +833,9 @@ def add_sinistre_gestionnaire_v1(request):
                     capital=supprimer_espaces(garantie_sinistre.get('capital', 0)) if garantie_sinistre.get('capital', 0) else None,
                     prime_nette=supprimer_espaces(garantie_sinistre.get('prime_net', 0)) if garantie_sinistre.get('prime_net', 0) else None,
                     prime_ttc=supprimer_espaces(garantie_sinistre.get('prime_ttc', 0)) if garantie_sinistre.get('prime_ttc', 0) else None,
+                    created_by_id=request.user.id,
                 )
                 garantie_sinistre_created.save()
-
-            # Récupérer les données des provisions
-            provisions_data = request.POST.get('provisions_data')
-            print(f'Provisions data: {provisions_data}')
-            if provisions_data:
-                provisions_list = json.loads(provisions_data)
-
-                # Supprimer les anciennes provisions pour ce sinistre
-                Provision.objects.filter(sinistre=sinistre).delete()
-
-                # Créer les nouvelles provisions
-                for provision_data in provisions_list:
-                    try:
-                        garantie = Garantie.objects.get(id=provision_data['garantie_id'])
-                        poste_dommage = PosteDommage.objects.get(libelle=provision_data['poste_dommage_id'])
-
-                        Provision.objects.create(
-                            sinistre=sinistre,
-                            garantie=garantie,
-                            poste_dommage=poste_dommage,
-                            estimation=provision_data.get('estimation', 0),
-                            deja_regle=provision_data.get('deja_regle', 0),
-                            provision=provision_data.get('provision', 0)
-                        )
-                    except (Garantie.DoesNotExist, PosteDommage.DoesNotExist) as e:
-                        return JsonResponse({
-                            'statut': 0,
-                            'errors': {'provisions': f'Garantie ou poste dommage non trouvé: {str(e)}'}
-                        })
 
             response = {
                 'statut': 1,
@@ -1127,7 +955,7 @@ def dossier_sinistre_datatable(request):
         detail_url = reverse('details_dossier_sinistre', args=[sin.id])
         actions_html = f'<a href="{detail_url}" target="_blank"><span class="badge btn-sm btn-details rounded-pill"><i class="fa fa-eye"></i> Détails</span></a>'
         numero_html = f'<a href="{detail_url}" class="text-center bouton_action" style="color:#F16623;" target="_blank">{sin.numero}</a>'
-        statut_html = f'<span class="badge badge-{sin.statut.lower().replace(" ", "-")}">{sin.statut}</span>'
+        statut_html = f'<span class="badge badge-{sin.etat_sinistre.lower().replace(" ", "-")}">{sin.etat_sinistre}</span>'
 
         data.append({
             "id": sin.id,
@@ -1574,53 +1402,11 @@ class IntervenantDossierSinistreView(TemplateView):
 
 
 @login_required
-def modifier_intervenant(request, intervenant_id):
-    intervenant = SinistreIntervenant.objects.get(id=intervenant_id)
-    today = timezone.now().date()
-
-    if request.method == 'POST':
-        SinistreIntervenant.objects.filter(id=intervenant_id).update(
-            nom=request.POST.get('nom'),
-            type_intervenant_id=request.POST.get('type_intervenant_id'),
-            pays_id=request.POST.get('pays_id'),
-            prenoms=request.POST.get('prenoms'),
-            portable=request.POST.get('portable'),
-            telephone=request.POST.get('telephone'),
-            fax=request.POST.get('fax'),
-            email=request.POST.get('email'),
-            code_postal=request.POST.get('code_postal'),
-            boite_postale=request.POST.get('boite_postale'),
-            ville=request.POST.get('ville'),
-            updated_at=today,
-        )
-
-        response = {
-            'statut': 1,
-            'message': "Modification effectuée avec succès !",
-            'data': {
-                'id': intervenant.pk
-            }
-        }
-
-        return JsonResponse(response)
-
-    else:
-
-        intervenant = SinistreIntervenant.objects.get(id=intervenant_id)
-
-        pays = Pays.objects.all().order_by('nom')
-        typeintervenants = TypeIntervenant.objects.filter(statut=1).order_by('libelle')
-
-        return render(request, 'modification_intervenant.html',
-                      {'intervenant': intervenant, 'typeintervenants': typeintervenants, 'pays': pays})
-
-
-@login_required
-def details_intervenant(request, intervenant_id):
-    intervenant = SinistreIntervenant.objects.get(id=intervenant_id)
+def details_intervenant(request, sinistre_intervenant_id):
+    sinistre_intervenant = SinistreIntervenant.objects.get(id=sinistre_intervenant_id)
 
     context = {
-        'intervenant': intervenant,
+        'sinistre_intervenant': sinistre_intervenant,
     }
     return render(request, 'details_intervenant.html', context)
 
@@ -1687,7 +1473,7 @@ def mouvement_sinistre(request, sinistre_id, motif_id):
         typesinistres = TypeSinistre.objects.filter(statut=1).order_by('libelle')
         typeintervenants = TypeIntervenant.objects.filter(statut=1).order_by('libelle')
         typedocuments = TypeDocument.objects.filter(is_sinistre=1).order_by('libelle')
-        responsabilites = Responsabilite.objects.filter(statut=1)
+        responsabilites = TauxResponsabilite.objects.filter(statut=1)
         circonstances = Circonstance.objects.filter(statut=1, branche_id=police.produit.branche_id).order_by('libelle')
 
         pays = Pays.objects.all().order_by('nom')

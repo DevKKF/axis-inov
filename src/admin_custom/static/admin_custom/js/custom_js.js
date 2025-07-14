@@ -1515,131 +1515,6 @@ $(document).ready(function () {
 
     //----------------- DEBUT AJOUT INTERVENANT SINISTRE ------------------//
 
-    //Modification d'un intervenant
-    $(document).on('click', '.btn_modifier_intervenant', function () {
-        let model_name = $(this).attr('data-model_name');
-        let modal_title = $(this).attr('data-modal_title');
-        let href = $(this).attr('data-href');
-
-        $('#olea_std_dialog_box').load(href, function () {
-
-            $('#modal-modification_intervenant').attr('data-backdrop', 'static').attr('data-keyboard', false);
-
-            $('#modal-modification_intervenant').find('.modal-title').text(modal_title);
-            $('#modal-modification_intervenant').find('#btn_valider').attr({ 'data-model_name': model_name, 'data-href': href });
-            $('#modal-modification_intervenant').find('.modal-dialog').addClass('modal-lg').removeClass('modal-lg');
-
-            //
-            $('#modal-modification_intervenant').modal();
-
-            //gestion du clique sur valider les modifications
-            $("#btn_save_modification_intervenant_sinistre").on('click', function () {
-
-                let formulaire = $('#form_modification_intervenant_sinistre');
-                let href = formulaire.attr('action');
-
-                $.validator.setDefaults({ ignore: [] });
-
-                let formData = new FormData();
-
-                if (formulaire.valid()) {
-
-                    //demander confirmation
-                    let n = noty({
-                        text: 'Voulez-vous vraiment modifier cet intervenant ?',
-                        type: 'warning',
-                        dismissQueue: true,
-                        layout: 'center',
-                        theme: 'defaultTheme',
-                        buttons: [
-                            {
-                                addClass: 'btn btn-primary', text: 'OUI', onClick: function ($noty) {
-                                    $noty.close();
-
-                                    let data_serialized = formulaire.serialize();
-                                    $.each(data_serialized.split('&'), function (index, elem) {
-                                        let vals = elem.split('=');
-
-                                        let key = vals[0];
-                                        let valeur = decodeURIComponent(vals[1].replace(/\+/g, '  '));
-
-                                        formData.append(key, valeur);
-
-                                    });
-
-                                    $.ajax({
-                                        type: 'post',
-                                        url: href,
-                                        data: formData,
-                                        processData: false,
-                                        contentType: false,
-                                        success: function (response) {
-
-                                            if (response.statut == 1) {
-
-                                                notifySuccess(response.message, function () {
-                                                    location.reload();
-                                                });
-
-                                            } else {
-
-                                                let errors = JSON.parse(JSON.stringify(response.errors));
-                                                let errors_list_to_display = '';
-                                                for (field in errors) {
-                                                    errors_list_to_display += '- ' + ucfirst(field) + ' : ' + errors[field] + '<br/>';
-                                                }
-
-                                                $('#modal-modification_intervenant .alert .message').html(errors_list_to_display);
-
-                                                $('#modal-modification_intervenant .alert ').fadeTo(2000, 500).slideUp(500, function () {
-                                                    $(this).slideUp(500);
-                                                }).removeClass('alert-success').addClass('alert-warning');
-
-                                            }
-
-                                        },
-                                        error: function (request, status, error) {
-
-                                            notifyWarning("Erreur lors de l'enregistrement");
-                                        }
-
-                                    });
-
-                                    //fin confirmation obtenue
-
-                                }
-                            },
-                            {
-                                addClass: 'btn btn-danger', text: 'Annuler', onClick: function ($noty) {
-                                    //confirmation refusée
-                                    $noty.close();
-
-                                }
-                            }
-                        ]
-                    });
-
-                } else {
-
-                    $('label.error').css({ display: 'none', height: '0px' }).removeClass('error').text('');
-
-                    let validator = formulaire.validate();
-
-                    $.each(validator.errorMap, function (index, value) {
-
-                        console.log('Id: ' + index + ' Message: ' + value);
-
-                    });
-
-                    notifyWarning('Veuillez renseigner tous les champs obligatoires');
-                }
-
-            });
-
-        });
-
-    });
-
     //Détails d'un intervenant
     $(document).on('click', '.btn_details_intervenant', function () {
         let model_name = $(this).attr('data-model_name');
@@ -8101,6 +7976,7 @@ $(document).ready(function () {
     }
 
     //soumission du formulaire de sinistre
+    /*
     $(document).on('click', "#btn_save_sinistre_gestionnaire", function () {
         let formulaire = $('#form_add_sinistre_gestionnaire');
         let href = formulaire.attr('action');
@@ -8182,7 +8058,120 @@ $(document).ready(function () {
             notifyWarning('Veuillez renseigner correctement le forumulaire');
         }
     });
-    
+    */
+
+    $(document).on('click', "#btn_save_sinistre_gestionnaire", function () {
+        let formulaire = $('#form_add_sinistre_gestionnaire');
+        let href = formulaire.attr('action');
+
+        $.validator.setDefaults({ ignore: [] });
+        let formData = new FormData();
+
+        if (formulaire.valid()) {
+            // Récupération des dates
+            let date_du_jour = $('#date_du_jour').val();
+            let date_fin_effet = $('#date_fin_effet').val();
+            console.log(date_du_jour);
+            console.log(date_fin_effet);
+
+            // Construction des données du formulaire
+            let data_serialized = formulaire.serialize();
+            $.each(data_serialized.split('&'), function (index, elem) {
+                let vals = elem.split('=');
+                let key = vals[0];
+                let valeur = decodeURIComponent(vals[1].replace(/\+/g, '  '));
+                formData.append(key, valeur);
+            });
+
+            // Données des provisions
+            let provisionsData = collecterDonneesProvisions();
+            formData.append('provisions_data', JSON.stringify(provisionsData));
+
+            // Message de confirmation enrichi
+            let texte_confirmation = "";
+
+            if (date_du_jour > date_fin_effet) {
+                texte_confirmation =
+                    '<div class="text-left">' +
+                    '<div class="mb-2"><i class="fa fa-exclamation-triangle text-danger"></i> <strong>Attention</strong></div>' +
+                    'La date du jour (<strong>' + $('#date_du_jour').val() + '</strong>) est <span class="text-danger">postérieure</span> à la date de fin d’effet du contrat (<strong>' + $('#date_fin_effet').val() + '</strong>).<br><br>' +
+                    'Cela signifie que le contrat est <span class="text-danger font-weight-bold">échu</span> et qu’il pourrait ne plus couvrir ce sinistre.<br><br>' +
+                    'Souhaitez-vous <strong>malgré tout</strong> enregistrer ce sinistre ?' +
+                    '</div>';
+            } else if (date_du_jour === date_fin_effet) {
+                texte_confirmation =
+                    '<div class="text-left">' +
+                    'La date du jour (<strong>' + $('#date_du_jour').val() + '</strong>) est <strong>égale</strong> à la date de fin d’effet (<strong>' + $('#date_fin_effet').val() + '</strong>).<br><br>' +
+                    'Veuillez confirmer l’enregistrement du sinistre.' +
+                    '</div>';
+            }else {
+                texte_confirmation = "Voulez-vous vraiment enregistrer ce sinistre 2025 ?";
+            }
+
+            // Affichage du noty de confirmation
+            noty({
+                text: texte_confirmation,
+                type: 'warning',
+                dismissQueue: true,
+                layout: 'center',
+                theme: 'defaultTheme',
+                buttons: [
+                    {
+                        addClass: 'btn btn-primary', text: 'VALIDER', onClick: function ($noty) {
+                            $noty.close();
+                            envoyerFormulaireAjax(formulaire, href, formData);
+                        }
+                    },
+                    {
+                        addClass: 'btn btn-secondary', text: 'ANNULER', onClick: function ($noty) {
+                            $noty.close();
+                        }
+                    }
+                ]
+            });
+
+        } else {
+            $('label.error').css({ display: 'none', height: '0px' }).removeClass('error').text('');
+            let validator = formulaire.validate();
+            $.each(validator.errorMap, function (index, value) {
+                console.log('Id: ' + index + ' Message: ' + value);
+            });
+            notifyWarning('Veuillez renseigner correctement le forumulaire');
+        }
+    });
+
+    function envoyerFormulaireAjax(formulaire, href, formData) {
+        $.ajax({
+            type: 'post',
+            url: href,
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function (response) {
+                if (response.statut == 1) {
+                    resetFields('#' + formulaire.attr('id'));
+                    notifySuccess(response.message, function () {
+                        location.reload();
+                    });
+                } else {
+                    let errors = response.errors;
+                    let errors_list_to_display = '';
+                    for (field in errors) {
+                        errors_list_to_display += '- ' + ucfirst(field) + ' : ' + errors[field] + '<br/>';
+                    }
+                    $('#formulaire_page .alert .message').html(errors_list_to_display);
+                    $('#formulaire_page .alert ').fadeTo(2000, 500).slideUp(500, function () {
+                        $(this).slideUp(500);
+                    }).removeClass('alert-success').addClass('alert-warning');
+                }
+            },
+            error: function (request, status, error) {
+                notifyWarning("Erreur lors de l'enregistrement");
+            }
+        });
+    }
+
+
     // Fonction pour collecter les données des provisions
     function collecterDonneesProvisions() {
         let donnees = [];

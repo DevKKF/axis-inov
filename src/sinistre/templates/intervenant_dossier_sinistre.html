@@ -44,20 +44,23 @@
                                         Téléphone
                                     </th>
                                     <th class="sorting" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-label="Platform(s): activate to sort column ascending">
+                                        Mont Total Remboursé
+                                    </th>
+                                    <th class="sorting" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-label="Platform(s): activate to sort column ascending">
                                         Action
                                     </th>
                                 </tr>
                             </thead>
                             <tbody>
-                                {% for intervenant in intervenants %}
+                                {% for interv in intervenants %}
                                     <tr class="odd">
-                                        <td class="dtr-control" tabindex="0">{{ intervenant.nom }} {{ intervenant.prenoms }}</td>
-                                        <td class="dtr-control" tabindex="0">{{ intervenant.type_intervenant.libelle }}</td>
-                                        <td class="dtr-control" tabindex="0">{{ intervenant.portable }}</td>
-                                        <td class="dtr-control" tabindex="0">{{ intervenant.telephone }}</td>
+                                        <td class="dtr-control" tabindex="0">{{ interv.intervenant.nom }} {{ interv.intervenant.prenoms }}</td>
+                                        <td class="dtr-control" tabindex="0">{{ interv.intervenant.type_intervenant.libelle }}</td>
+                                        <td class="dtr-control" tabindex="0">{{ interv.intervenant.portable }}</td>
+                                        <td class="dtr-control" tabindex="0">{{ interv.intervenant.telephone }}</td>
+                                        <td class="dtr-control" tabindex="0"></td>
                                         <td class="text-center">
-                                            <span style="cursor:pointer;" class="btn_details_intervenant badge badge-info text-white rounded-pill text-center" data-intervenant_id="{intervenant.id}" data-model_name="details-intervenant" data-modal_title="INFORMATIONS" data-href="{% url 'details_intervenant' intervenant.id %}"><i class="fas fa-eye"></i> Détails</span>
-                                            <span style="cursor:pointer;" class="btn_modifier_intervenant badge badge-warning text-white rounded-pill text-center" data-intervenant_id="{intervenant.id}" data-model_name="intervenant" data-modal_title="MODIFICATION D'UN INTERVENANT" data-href="{% url 'modifier_intervenant' intervenant.id %}"><i class="fas fa-edit"></i> Modifier</span>
+                                            <span style="cursor:pointer;" class="btn_details_intervenant badge badge-info text-white rounded-pill text-center" data-intervenant_id="{interv.id}" data-model_name="details-intervenant" data-modal_title="INFORMATIONS" data-href="{% url 'details_intervenant' interv.id %}"><i class="fas fa-eye"></i> Détails</span>
                                         </td>
                                     </tr>
                                 {% endfor %}

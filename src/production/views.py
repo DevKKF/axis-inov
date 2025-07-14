@@ -42,10 +42,10 @@ from django.utils.timezone import now
 from django.db import transaction
 from django.utils.translation import gettext as _
 
-from configurations.models import Compagnie, MarqueVehicule, Pays, Civilite, Profession, \
+from configurations.models import Compagnie, Pays, Civilite, Profession, \
     Produit, Formule, GarantieBranche, GarantieFormule, ConditionsAssurance, MoyensTransport, \
-    ModeCalcul, Duree, TypeCarosserie, User, Fractionnement, ModeReglement, \
-    Regularisation, Bureau, BusinessUnit, TypeCompagnie, Groupe, PosteDommage, TypeSinistre, TypeIntervenant, Responsabilite, Circonstance, \
+    Duree, TypeCarosserie, User, Fractionnement, ModeReglement, \
+    Regularisation, Bureau, BusinessUnit, TypeCompagnie, Groupe, PosteDommage, TypeSinistre, TypeIntervenant, TauxResponsabilite, Circonstance, \
     Devise, Taxe, BureauTaxe, Apporteur, BaseCalcul, TypeQuittance, NatureQuittance, TypeClient, TypePersonne, Langue, \
     Branche, ParamProduitCompagnie, CategorieVehicule, Banque, Carburant, Usage, Carosserie, GarantieCirconstance, \
     NatureOperation, TypeTarif, Rubrique, Periodicite, AuthGroup, ActionLog, SousRubrique, TypePrefinancement, CompteTresorerie, \
@@ -141,7 +141,6 @@ class DetailsClientView(TemplateView):
             taxes = Taxe.objects.all().order_by('libelle')
             bureau_taxes = BureauTaxe.objects.filter(bureau_id=client.bureau_id)
             bases_calculs = BaseCalcul.objects.all().order_by('libelle')
-            modes_calculs = ModeCalcul.objects.all().order_by('libelle')
 
             placement_gestion = PlacementEtGestion
             mode_renouvellement = ModeRenouvellement
@@ -163,7 +162,7 @@ class DetailsClientView(TemplateView):
                              'devises': devises, 'utilisateurs': utilisateurs, 'bureaux': bureaux, 'taxes': taxes,
                              'bureau_taxes': bureau_taxes,
                              'apporteurs': apporteurs, 'bases_calculs': bases_calculs,
-                             'type_majoration_contrat': type_majoration_contrat, 'modes_calculs': modes_calculs,
+                             'type_majoration_contrat': type_majoration_contrat,
                              'statut_contrat': statut_contrat,
                              'types_prefinancements': types_prefinancements,
                              'anciennes_polices': anciennes_polices
@@ -2203,7 +2202,6 @@ def modifier_police(request, police_id):
         taxes = Taxe.objects.all().order_by('libelle')
         bureau_taxes = BureauTaxe.objects.filter(bureau_id=police.bureau_id)
         bases_calculs = BaseCalcul.objects.all().order_by('libelle')
-        modes_calculs = ModeCalcul.objects.all().order_by('libelle')
         branches = Branche.objects.filter(status=True).order_by('nom')
         types_prefinancements = TypePrefinancement.objects.filter(statut=Statut.ACTIF).order_by('libelle')
 
@@ -2293,7 +2291,7 @@ def modifier_police(request, police_id):
                        'regularisations': regularisations, 'typecompagnie': typecompagnie,
                        'devises': devises, 'taxes': taxes, 'types_prefinancements': types_prefinancements,
                        'bureau_taxes': bureau_taxes, 'compagnie_autre': compagnie_autre,
-                       'apporteurs': apporteurs, 'bases_calculs': bases_calculs, 'modes_calculs': modes_calculs,
+                       'apporteurs': apporteurs, 'bases_calculs': bases_calculs,
                        'apporteurs_police': apporteurs_police, 'type_majoration_contrat': type_majoration_contrat,
                        'catgories': catgories, 'carburants': carburants, 'usages': usages,
                        'carosseries': carosseries, 'conditions_assurances': conditions_assurances,
@@ -3937,7 +3935,7 @@ class PoliceSinistresView(TemplateView):
             typesinistres = TypeSinistre.objects.filter(statut=1).order_by('libelle')
             typeintervenants = TypeIntervenant.objects.filter(statut=1).order_by('libelle')
             typedocuments = TypeDocument.objects.filter(is_sinistre=1).order_by('libelle')
-            responsabilites = Responsabilite.objects.filter(statut=1)
+            responsabilites = TauxResponsabilite.objects.filter(statut=1)
             circonstances = Circonstance.objects.filter(statut=1, branche_id=police.produit.branche_id).order_by('libelle')
 
             garanties = PoliceGarantie.objects.filter(police_id=police.id, statut="ACTIF", deleted_at=None)
@@ -4323,7 +4321,7 @@ def police_save_sinistre(request, police_id):
                 police_id=police.id,
                 compagnie_id=compagnie_id,
                 type_sinistre_id=type_sinistre_id,
-                responsabilite_id=responsabilite_id,
+                taux_responsabilite_id=responsabilite_id,
                 circonstance_id=circonstance_id,
                 created_by=request.user,
                 numero=numero,
@@ -4433,7 +4431,7 @@ def modifier_sinistre(request, sinistre_id):
             police_id=sinistre_old.police_id,
             compagnie_id=sinistre_old.compagnie_id,
             type_sinistre_id=sinistre_old.type_sinistre_id,
-            responsabilite_id=sinistre_old.responsabilite_id,
+            taux_responsabilite_id=sinistre_old.responsabilite_id,
             circonstance_id=sinistre_old.circonstance_id,
             created_by=sinistre_old.created_by,
             numero=sinistre_old.numero,
@@ -4536,7 +4534,7 @@ def modifiersinistre(request, sinistre_id):
         tva_recuperee = request.POST.get('tva_recuperee')
         type_sinistre_id = request.POST.get('type_sinistre_id')
         franchise = request.POST.get('franchise').replace(' ', '')
-        responsabilite_id = request.POST.get('responsabilite_id')
+        taux_responsabilite_id = request.POST.get('responsabilite_id')
         fait_generateur = request.POST.get('fait_generateur')
         point_de_choc = request.POST.get('point_de_choc')
         commentaire = request.POST.get('commentaire')
@@ -4548,7 +4546,7 @@ def modifiersinistre(request, sinistre_id):
             police_id=sinistre_old.police_id,
             compagnie_id=sinistre_old.compagnie_id,
             type_sinistre_id=sinistre_old.type_sinistre_id,
-            responsabilite_id=sinistre_old.responsabilite_id,
+            taux_responsabilite_id=sinistre_old.responsabilite_id,
             circonstance_id=sinistre_old.circonstance_id,
             created_by=sinistre_old.created_by,
             numero=sinistre_old.numero,
@@ -4572,7 +4570,7 @@ def modifiersinistre(request, sinistre_id):
         # Mise à jour du sinistre
         sinistre = Sinistre.objects.filter(id=sinistre_id).update(
             type_sinistre_id=type_sinistre_id,
-            responsabilite_id=responsabilite_id,
+            taux_responsabilite_id=responsabilite_id,
             circonstance_id=circonstance_id,
             updated_at=datetime.now(),
             date_survenance=date_survenance if date_survenance else None,
@@ -4774,7 +4772,7 @@ def modifiersinistre(request, sinistre_id):
         typesinistres = TypeSinistre.objects.filter(statut=1).order_by('libelle')
         typeintervenants = TypeIntervenant.objects.filter(statut=1).order_by('libelle')
         typedocuments = TypeDocument.objects.filter(is_sinistre=1).order_by('libelle')
-        responsabilites = Responsabilite.objects.filter(statut=1)
+        taux_responsabilites = Responsabilite.objects.filter(statut=1)
         #circonstances = Circonstance.objects.filter(statut=1, branche_id=police.produit.branche_id).order_by('libelle')
         circonstances = Circonstance.objects.filter(statut=1).order_by('libelle')
         pays = Pays.objects.all().order_by('nom')
@@ -4821,7 +4819,7 @@ def modifiersinistres(request, sinistre_id):
             police_id=sinistre_old.police_id,
             compagnie_id=sinistre_old.compagnie_id,
             type_sinistre_id=sinistre_old.type_sinistre_id,
-            responsabilite_id=sinistre_old.responsabilite_id,
+            taux_responsabilite_id=sinistre_old.responsabilite_id,
             circonstance_id=sinistre_old.circonstance_id,
             created_by=sinistre_old.created_by,
             numero=sinistre_old.numero,
@@ -4845,7 +4843,7 @@ def modifiersinistres(request, sinistre_id):
         # Mise à jour du sinistre
         sinistre = Sinistre.objects.filter(id=sinistre_id).update(
             type_sinistre_id=type_sinistre_id,
-            responsabilite_id=responsabilite_id,
+            taux_responsabilite_id=responsabilite_id,
             circonstance_id=circonstance_id,
             updated_at=datetime.now(),
             date_survenance=date_survenance if date_survenance else None,
@@ -4907,7 +4905,7 @@ def modifiersinistres(request, sinistre_id):
         mouvements = Mouvement.objects.filter(type_mouvement_id=2).order_by('libelle')
         typesinistres = TypeSinistre.objects.filter(statut=1).order_by('libelle')
         typedocuments = TypeDocument.objects.filter(is_sinistre=1).order_by('libelle')
-        responsabilites = Responsabilite.objects.filter(statut=1)
+        responsabilites = TauxResponsabilite.objects.filter(statut=1)
         circonstances = Circonstance.objects.filter(statut=1, branche_id=police.produit.branche_id).order_by('libelle')
 
         aliments = 0

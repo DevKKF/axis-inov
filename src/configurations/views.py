@@ -34,8 +34,6 @@ from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill
 from datetime import datetime, timezone
 from django.db.models import Sum, Q, ExpressionWrapper, F, DurationField, Max
-from django.utils.timezone import now
-
 from configurations.helper_config import verify_sql_query
 from configurations.models import ActionLog, Secteur, \
     Bureau ,BusinessUnit, Branche, Banque, Apporteur, ApporteurInternational,Devise,\
@@ -43,7 +41,7 @@ from configurations.models import ActionLog, Secteur, \
     BackgroundQueryTask, ParamProduitCompagnie, Compagnie, \
     TypeApporteur, TypePersonne, Pays, TypeCompagnie, TypeGarant, TauxCommission, Carosserie, \
     CategorieVehicule, Civilite, CompteTresorerie, ConditionsAssurance, Carburant, Formule, Fractionnement, Garantie, GarantieFormule, \
-    Groupe, ModeReglement, Circonstance, Responsabilite, TypeIntervenant, TypeMouvement, TypeSinistre, PosteDommage, GarantieCirconstance, RegroupementActe, Prescripteur, Prestataire, Acte, WsBoby, ParamWsBoby, ParamActe
+    Groupe, ModeReglement, Circonstance, TauxResponsabilite, TypeIntervenant, TypeMouvement, TypeSinistre, PosteDommage, GarantieCirconstance, RegroupementActe, Prescripteur, Prestataire, Acte, WsBoby, ParamWsBoby, ParamActe
 from inov import settings
 # Create your views here.
 from production.models import Client, Mouvement, \
@@ -5960,12 +5958,12 @@ def supprimer_pays(request, pays_id):
 class ResponsabiliteView(PermissionRequiredMixin,TemplateView):
     template_name = 'responsabilites/responsabilite.html'
     permission_required = "configurations.view_responsabilite"
-    model = Responsabilite
+    model = TauxResponsabilite
 
     def get(self, request, *args, **kwargs):
         context_original = self.get_context_data(**kwargs)
 
-        responsabilites = Responsabilite.objects.all().order_by('-id')
+        responsabilites = TauxResponsabilite.objects.all().order_by('-id')
 
         context_perso = {'responsabilites': responsabilites}
 
@@ -5991,7 +5989,7 @@ def add_responsabilite(request):
     if request.method == 'POST':
 
         # Créer une nouveau responsabilité
-        responsabilite_created = Responsabilite.objects.create(
+        responsabilite_created = TauxResponsabilite.objects.create(
             libelle=request.POST.get('libelle'),
             taux_responsabilite=request.POST.get('taux_responsabilite'),
             statut=request.POST.get('statut'),
@@ -6013,7 +6011,7 @@ def add_responsabilite(request):
 @login_required
 def modifier_responsabilite(request, responsabilite_id):
 
-    responsabilite = Responsabilite.objects.get(id=responsabilite_id)
+    responsabilite = TauxResponsabilite.objects.get(id=responsabilite_id)
 
     if request.method == 'POST':
         user = User.objects.get(id=request.user.id)
@@ -6045,7 +6043,7 @@ def supprimer_responsabilite(request, responsabilite_id):
 
         responsabilite_id = request.POST.get('responsabilite_id')
         print("responsabilite id : ", responsabilite_id)
-        responsabilite = Responsabilite.objects.get(id=responsabilite_id)
+        responsabilite = TauxResponsabilite.objects.get(id=responsabilite_id)
         if responsabilite.pk is not None:
 
             responsabilite.delete()

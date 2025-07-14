@@ -5,7 +5,7 @@
   <div class="modal-dialog modal-xl" style="width:;">
     <div class="modal-content">
       <div class="modal-header">
-        <h4 class="modal-title">INTERVENANT <b>{{ intervenant.nom }} {{ intervenant.prenoms }}</b> DU SINISTRE <b>{{ intervenant.sinistre.numero }}</b></h4>
+        <h4 class="modal-title">INTERVENANT <b>{{ sinistre_intervenant.intervenant.nom }} {{ sinistre_intervenant.intervenant.prenoms }}</b> DU SINISTRE <b>{{ sinistre_intervenant.intervenant.sinistre.numero }}</b></h4>
         <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">×</span></button>
       </div>
        <div class="modal-body">
@@ -25,37 +25,37 @@
                                 <div class="form-group row">
                                     <label class="col-sm-5 col-form-label">Type intervenant</label>
                                     <div class="col-sm-7">
-                                        <span class="form-control">{{ intervenant.type_intervenant.libelle|default_if_none:"" }}</span>
+                                        <span class="form-control">{{ sinistre_intervenant.intervenant.type_sinistre_intervenant.intervenant.libelle|default_if_none:"" }}</span>
                                     </div>
                                 </div>
                                 <div class="form-group row">
                                     <label class="col-sm-5 col-form-label">Prénoms</label>
                                     <div class="col-sm-7">
-                                        <span class="form-control">{{ intervenant.nom|default_if_none:"" }}</span>
+                                        <span class="form-control">{{ sinistre_intervenant.intervenant.nom|default_if_none:"" }}</span>
                                     </div>
                                 </div>
                                 <div class="form-group row">
                                     <label class="col-sm-5 col-form-label">Téléphone</label>
                                     <div class="col-sm-7">
-                                        <span class="form-control">{{ intervenant.telephone|default_if_none:"" }}</span>
+                                        <span class="form-control">{{ sinistre_intervenant.intervenant.telephone|default_if_none:"" }}</span>
                                     </div>
                                 </div>
                                 <div class="form-group row">
                                     <label class="col-sm-5 col-form-label">Email</label>
                                     <div class="col-sm-7">
-                                        <span class="form-control">{{ intervenant.email|default_if_none:"" }}</span>
+                                        <span class="form-control">{{ sinistre_intervenant.intervenant.email|default_if_none:"" }}</span>
                                     </div>
                                 </div>
                                 <div class="form-group row">
                                     <label class="col-sm-5 col-form-label">Boite postale</label>
                                     <div class="col-sm-7">
-                                        <span class="form-control">{{ intervenant.boite_postale|default_if_none:"" }}</span>
+                                        <span class="form-control">{{ sinistre_intervenant.intervenant.boite_postale|default_if_none:"" }}</span>
                                     </div>
                                 </div>
                                 <div class="form-group row">
                                     <label class="col-sm-5 col-form-label">Ville</label>
                                     <div class="col-sm-7">
-                                        <span class="form-control">{{ intervenant.ville|default_if_none:"" }}</span>
+                                        <span class="form-control">{{ sinistre_intervenant.intervenant.ville|default_if_none:"" }}</span>
                                     </div>
                                 </div>
                             </div>
@@ -64,37 +64,37 @@
                             <div class="form-group row">
                                 <label class="col-sm-5 col-form-label">Nom</label>
                                 <div class="col-sm-7">
-                                    <span class="form-control">{{ intervenant.prenoms|default_if_none:"" }}</span>
+                                    <span class="form-control">{{ sinistre_intervenant.intervenant.prenoms|default_if_none:"" }}</span>
                                 </div>
                             </div>
                             <div class="form-group row">
                                 <label class="col-sm-5 col-form-label">Portable</label>
                                 <div class="col-sm-7">
-                                    <span class="form-control">{{ intervenant.portable|default_if_none:"" }}</span>
+                                    <span class="form-control">{{ sinistre_intervenant.intervenant.portable|default_if_none:"" }}</span>
                                 </div>
                             </div>
                             <div class="form-group row">
                                 <label class="col-sm-5 col-form-label">Fax</label>
                                 <div class="col-sm-7">
-                                    <span class="form-control">{{ intervenant.fax|default_if_none:"" }}</span>
+                                    <span class="form-control">{{ sinistre_intervenant.intervenant.fax|default_if_none:"" }}</span>
                                 </div>
                             </div>
                             <div class="form-group row">
                                 <label class="col-sm-5 col-form-label">Code postal</label>
                                 <div class="col-sm-7">
-                                    <span class="form-control">{{ intervenant.code_postal|default_if_none:"" }}</span>
+                                    <span class="form-control">{{ sinistre_intervenant.intervenant.code_postal|default_if_none:"" }}</span>
                                 </div>
                             </div>
                             <div class="form-group row">
                                 <label class="col-sm-5 col-form-label">Pays</label>
                                 <div class="col-sm-7">
-                                    <span class="form-control">{{ intervenant.pays.nom|default_if_none:"" }}</span>
+                                    <span class="form-control">{{ sinistre_intervenant.intervenant.pays.nom|default_if_none:"" }}</span>
                                 </div>
                             </div>
                             <div class="form-group row">
                                 <label class="col-sm-5 col-form-label">Date création</label>
                                 <div class="col-sm-7">
-                                    <span class="form-control">{{ intervenant.created_at|date:'Y-m-d' }}</span>
+                                    <span class="form-control">{{ sinistre_intervenant.intervenant.created_at|date:'Y-m-d' }}</span>
                                 </div>
                             </div>
                         </div>

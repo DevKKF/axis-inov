@@ -765,7 +765,6 @@ def requete_analyse_prime_compta(request):
             # c.police.famille_branche if hasattr(c.police, 'famille_branche') else '', #5
             c.police.produit.branche if hasattr(c.police, 'Branches') else 'SANTE',  #6
             # c.police.client.groupe if hasattr(c.police.client, 'groupe') else '',#7
-            # c.police.groupe_compagnie if hasattr(c.police, 'groupe_compagnie') else '', #8
             c.police.compagnie.nom if hasattr(c.police, 'compagnie') else '', #9
             c.police.numero if hasattr(c.police, 'numero') else '', #10
             # c.police.programme if hasattr(c.police, 'programme') else '', #11
@@ -1052,9 +1051,6 @@ def requete_analyse_prime_compta_apporteur(request):
         # groups inter
         groupe_international = c.police.client.groupe_international if c.police.client.groupe_international else None
 
-        # groupe compagnie
-        groupe_compagnie = c.compagnie.groupe_compagnie.code if c.compagnie.groupe_compagnie else None
-
         data_iten = [
             c.police.bureau.pays.nom if hasattr(c.police, 'bureau') else '', #1
             c.police.bureau.code if hasattr(c.police, 'bureau') else '', #2
@@ -1063,7 +1059,6 @@ def requete_analyse_prime_compta_apporteur(request):
             nom_client, #5
             c.police.produit.famille_branche if hasattr(c.police, 'famille_branche') else 'ASSURANCE DE PERSONNES', #6 --
             c.police.produit.branche if hasattr(c.police, 'Branches') else 'SANTE',  #7
-            groupe_compagnie if groupe_compagnie else '', #8 -- groupe_compagnie
             c.police.compagnie.nom if hasattr(c.police, 'compagnie') else '', #9
             c.police.numero if hasattr(c.police, 'numero') else '', #10
             programme if programme else '', #11 --

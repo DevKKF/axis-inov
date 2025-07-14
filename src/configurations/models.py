@@ -306,22 +306,6 @@ class TypeCompagnie(models.Model):
         verbose_name_plural = "Types de compagnie"
 
 
-class GroupeCompagnie(models.Model):
-    code = models.CharField(max_length=255, blank=True, default=None, null=True)
-    nom = models.CharField(max_length=255)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    status = models.BooleanField(default=True)
-
-    def __str__(self):
-        return self.nom
-
-    class Meta:
-        db_table = 'groupe_compagnie'
-        verbose_name = 'Groupe compagnie'
-        verbose_name_plural = 'Groupes de compagnies'
-
-
 class Compagnie(models.Model):
     type_garant = models.ForeignKey(TypeGarant, on_delete=models.RESTRICT, null=True)
     nom = models.CharField(max_length=255)
@@ -1202,35 +1186,6 @@ class QualiteBeneficiaire(models.Model):
         verbose_name_plural = 'Qualités bénéficiaire'
 
 
-class TypeAssurance(models.Model):
-    libelle = models.CharField(max_length=50, blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return self.libelle
-
-    class Meta:
-        db_table = 'type_assurance'
-        verbose_name = 'Type assurance'
-        verbose_name_plural = "Types d'assurance"
-
-
-class ModeCalcul(models.Model):
-    libelle = models.CharField(max_length=50, blank=True, null=True)
-    code = models.CharField(max_length=30, blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return self.libelle
-
-    class Meta:
-        db_table = 'modes_calculs'
-        verbose_name = 'Mode de calcul'
-        verbose_name_plural = "Modes de calcul"
-
-
 class BaseCalcul(models.Model):
     libelle = models.CharField(max_length=50, blank=True, null=True)
     code = models.CharField(max_length=50, blank=True, null=True)
@@ -1388,21 +1343,6 @@ class Usage(models.Model):
         db_table = 'usage'
         verbose_name = 'Usages'
         verbose_name_plural = "Usages"
-
-
-class MarqueVehicule(models.Model):
-    libelle = models.CharField(max_length=50, blank=True, null=True)
-    code = models.CharField(max_length=50, blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return self.libelle
-
-    class Meta:
-        db_table = 'marque_vehicule'
-        verbose_name = 'Marque'
-        verbose_name_plural = "Marques"
 
 
 class Tarif(models.Model):
@@ -1941,9 +1881,9 @@ class TypeIntervenant(models.Model):
         verbose_name_plural = "Type d'intervenant"
 
 
-class Responsabilite(models.Model):
+class TauxResponsabilite(models.Model):
     libelle = models.CharField(max_length=100, blank=True, null=True)
-    taux_responsabilite = models.FloatField(null=True, )
+    taux_responsabilite = models.FloatField(null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     statut = models.BooleanField(default=True)
@@ -1952,7 +1892,7 @@ class Responsabilite(models.Model):
         return f'{self.libelle} - {self.taux_responsabilite} - {self.statut} - {self.created_at}'
 
     class Meta:
-        db_table = 'responsabilite'
+        db_table = 'taux_responsabilites'
         verbose_name = "Taux de responsabilite"
         verbose_name_plural = "Taux de responsabilite"
 

@@ -5,7 +5,7 @@ from django.utils import timezone
 
 
 from configurations.models import CompteTresorerie, Devise, Medicament, Compagnie, User, TypePriseencharge, Prestataire, Prescripteur, Acte, \
-    Rubrique, SousRubrique, RegroupementActe, TypePrefinancement, PeriodeComptable, ModeCreation, Bureau, Circonstance, TypeSinistre, Responsabilite, TypeIntervenant, PosteDommage, Pays, \
+    Rubrique, SousRubrique, RegroupementActe, TypePrefinancement, PeriodeComptable, ModeCreation, Bureau, Circonstance, TypeSinistre, TauxResponsabilite, TypeIntervenant, PosteDommage, Pays, \
     TypeRemboursement, ModeReglement, Banque, BordereauLettreCheque, Garantie
 from production.models import TypeDocument, Aliment, HistoriqueAliment, Police, HistoriquePolice, PeriodeCouverture, FormuleGarantie, Bareme, Client, AlimentPolice, Mouvement, Motif
 from shared.enum import StatutFacture, StatutSinistre, SatutBordereauDossierSinistres, StatutSinistreBordereau, \
@@ -33,22 +33,48 @@ class Sinistre(models.Model):
     montant_recours = models.DecimalField(max_digits=20, decimal_places=2, default=Decimal("0"), null=True, blank=True)
     montant_recours_regle = models.DecimalField(max_digits=20, decimal_places=2, default=Decimal("0"), null=True, blank=True)
     montant_sinistre = models.DecimalField(max_digits=20, decimal_places=2, default=Decimal("0"), null=True, blank=True)
+    franchise = models.DecimalField(max_digits=20, decimal_places=2, default=Decimal("0"), null=True, blank=True)
 
     point_de_choc = models.CharField(max_length=255, null=True, blank=True)
     fait_generateur = models.CharField(max_length=255, null=True, blank=True)
     commentaires = models.TextField(null=True, blank=True)
     lieu_survenance = models.CharField(max_length=255, null=True, blank=True)
 
+    risque_sinistre = models.CharField(max_length=255, null=True, blank=True)
+
     tva_recuperee = models.BooleanField(null=True, blank=True)
 
+    client = models.ForeignKey(Client, null=True, related_name='sinistres', on_delete=models.RESTRICT)
     police = models.ForeignKey(Police, null=True, blank=True, on_delete=models.RESTRICT, related_name='sinistres')
     historique_police = models.ForeignKey(HistoriquePolice, null=True, blank=True, on_delete=models.RESTRICT, related_name='sinistres')
     historique_aliment = models.ForeignKey(HistoriqueAliment, null=True, blank=True, on_delete=models.RESTRICT, related_name='sinistres')
     historique_sinistre = models.ForeignKey('HistoriqueSinistre', null=True, blank=True, on_delete=models.RESTRICT, related_name='sinistres')
-    taux_responsabilite = models.ForeignKey(Responsabilite, null=True, on_delete=models.RESTRICT, related_name='sinistres')
+    taux_responsabilite = models.ForeignKey(TauxResponsabilite, null=True, on_delete=models.RESTRICT, related_name='sinistres')
     type_sinistre = models.ForeignKey(TypeSinistre, null=True, on_delete=models.RESTRICT, related_name='sinistres')
     circonstance = models.ForeignKey(Circonstance, null=True, blank=True, on_delete=models.RESTRICT, related_name='sinistres')
     compagnie = models.ForeignKey(Compagnie, null=True, blank=True, on_delete=models.RESTRICT, related_name='sinistres')
+
+    created_by = models.ForeignKey(User, related_name="sinistre_created_by", null=True, on_delete=models.RESTRICT)
+    updated_by = models.ForeignKey(User, related_name="sinistre_updated_by", null=True, on_delete=models.RESTRICT)
+    deleted_by = models.ForeignKey(User, related_name="sinistre_deleted_by", null=True, on_delete=models.RESTRICT)
+
+    created_at = models.DateTimeField(auto_now_add=True, null=True)
+    updated_at = models.DateTimeField(auto_now=True, null=True)
+    deleted_at = models.DateTimeField(auto_now=True, null=True)
+
+    def get_dernier_historique(self):
+        return MouvementSinistre.objects.filter(sinistre=self).order_by('-created_at').first()
+
+    @property
+    def etat_sinistre(self):
+        today = timezone.now().date()
+
+        mouvement = MouvementSinistre.objects.filter(sinistre_id=self.id, date_effet__lte=today, statut_validite=StatutValidite.VALIDE).order_by('-id').first()
+
+        if mouvement:
+            return mouvement.motif.etat_sinistre
+        else:
+            return "En attente"
 
     class Meta:
         db_table = 'sinistres'
@@ -73,25 +99,37 @@ class HistoriqueSinistre(models.Model):
     montant_recours = models.DecimalField(max_digits=20, decimal_places=2, default=Decimal("0"), null=True, blank=True)
     montant_recours_regle = models.DecimalField(max_digits=20, decimal_places=2, default=Decimal("0"), null=True, blank=True)
     montant_sinistre = models.DecimalField(max_digits=20, decimal_places=2, default=Decimal("0"), null=True, blank=True)
+    franchise = models.DecimalField(max_digits=20, decimal_places=2, default=Decimal("0"), null=True, blank=True)
 
     point_de_choc = models.CharField(max_length=255, null=True, blank=True)
     fait_generateur = models.CharField(max_length=255, null=True, blank=True)
     commentaires = models.TextField(null=True, blank=True)
     lieu_survenance = models.CharField(max_length=255, null=True, blank=True)
 
+    risque_sinistre = models.CharField(max_length=255, null=True, blank=True)
+
     tva_recuperee = models.BooleanField(null=True, blank=True)
 
+    client = models.ForeignKey(Client, null=True, related_name='historique_sinistres', on_delete=models.RESTRICT)
     police = models.ForeignKey(Police, null=True, blank=True, on_delete=models.RESTRICT, related_name='historiques_sinistres')
     historique_police = models.ForeignKey(HistoriquePolice, null=True, blank=True, on_delete=models.RESTRICT, related_name='historiques_sinistres')
     sinistre = models.ForeignKey(Sinistre, null=True, blank=True, on_delete=models.RESTRICT, related_name='historiques')
     historique_aliment = models.ForeignKey(HistoriqueAliment, null=True, blank=True, on_delete=models.RESTRICT, related_name='historiques_sinistres')
-    taux_responsabilite = models.ForeignKey(Responsabilite,null=True,  on_delete=models.RESTRICT, related_name='historiques_sinistres')
+    taux_responsabilite = models.ForeignKey(TauxResponsabilite,null=True,  on_delete=models.RESTRICT, related_name='historiques_sinistres')
     type_sinistre = models.ForeignKey(TypeSinistre,null=True,  on_delete=models.RESTRICT, related_name='historiques_sinistres')
     circonstance = models.ForeignKey(Circonstance, null=True, blank=True, on_delete=models.RESTRICT, related_name='historiques_sinistres')
     mouvement = models.ForeignKey(Mouvement, null=True, blank=True, on_delete=models.RESTRICT, related_name='historiques_sinistres')
     motif_mouvement = models.ForeignKey(Motif, null=True, blank=True, on_delete=models.RESTRICT, related_name='historiques_sinistres')
     operateur_de_saisie = models.ForeignKey(User, null=True, blank=True, on_delete=models.RESTRICT, related_name='historiques_sinistres')
     compagnie = models.ForeignKey(Compagnie, null=True, blank=True, on_delete=models.RESTRICT, related_name='historiques_sinistres')
+
+    created_by = models.ForeignKey(User, related_name="historique_sinistre_created_by", null=True, on_delete=models.RESTRICT)
+    updated_by = models.ForeignKey(User, related_name="historique_sinistre_updated_by", null=True, on_delete=models.RESTRICT)
+    deleted_by = models.ForeignKey(User, related_name="historique_sinistre_deleted_by", null=True, on_delete=models.RESTRICT)
+
+    created_at = models.DateTimeField(auto_now_add=True, null=True)
+    updated_at = models.DateTimeField(auto_now=True, null=True)
+    deleted_at = models.DateTimeField(auto_now=True, null=True)
 
     class Meta:
         db_table = 'historique_sinistres'
@@ -114,8 +152,14 @@ class Intervenant(models.Model):
     code_postal = models.TextField(blank=True, null=True)
     boite_postale = models.TextField(blank=True, null=True)
     ville = models.TextField(blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+
+    created_by = models.ForeignKey(User, related_name="intervenant_created_by", null=True, on_delete=models.RESTRICT)
+    updated_by = models.ForeignKey(User, related_name="intervenant_updated_by", null=True, on_delete=models.RESTRICT)
+    deleted_by = models.ForeignKey(User, related_name="intervenant_deleted_by", null=True, on_delete=models.RESTRICT)
+
+    created_at = models.DateTimeField(auto_now_add=True, null=True)
+    updated_at = models.DateTimeField(auto_now=True, null=True)
+    deleted_at = models.DateTimeField(auto_now=True, null=True)
 
 
     class Meta:
@@ -128,6 +172,14 @@ class SinistreIntervenant(models.Model):
     sinistre = models.ForeignKey(Sinistre, null=True, blank=True, on_delete=models.RESTRICT, related_name='sinistre_intervenants')
     historique_sinistre = models.ForeignKey(HistoriqueSinistre, null=True, blank=True, on_delete=models.RESTRICT, related_name='historique_sinistre_intervenants')
     intervenant = models.ForeignKey(Intervenant, null=True, blank=True, on_delete=models.RESTRICT, related_name='intervenant_sinistres')
+
+    created_by = models.ForeignKey(User, related_name="sinistre_intervenant_created_by", null=True, on_delete=models.RESTRICT)
+    updated_by = models.ForeignKey(User, related_name="sinistre_intervenant_updated_by", null=True, on_delete=models.RESTRICT)
+    deleted_by = models.ForeignKey(User, related_name="sinistre_intervenant_deleted_by", null=True, on_delete=models.RESTRICT)
+
+    created_at = models.DateTimeField(auto_now_add=True, null=True)
+    updated_at = models.DateTimeField(auto_now=True, null=True)
+    deleted_at = models.DateTimeField(auto_now=True, null=True)
 
     class Meta:
         db_table = 'sinistre_intervenants'
@@ -153,6 +205,14 @@ class SinistreGarantie(models.Model):
     garantie = models.ForeignKey(Garantie, on_delete=models.RESTRICT, related_name='garantie_sinistres')
     #historique_sinistre_garantie = models.ForeignKey('HistoriqueSinistreGarantie', null=True, blank=True, on_delete=models.RESTRICT, related_name='sinistres_garanties')
 
+    created_by = models.ForeignKey(User, related_name="sinistre_garantie_created_by", null=True, on_delete=models.RESTRICT)
+    updated_by = models.ForeignKey(User, related_name="sinistre_garantie_updated_by", null=True, on_delete=models.RESTRICT)
+    deleted_by = models.ForeignKey(User, related_name="sinistre_garantie_deleted_by", null=True, on_delete=models.RESTRICT)
+
+    created_at = models.DateTimeField(auto_now_add=True, null=True)
+    updated_at = models.DateTimeField(auto_now=True, null=True)
+    deleted_at = models.DateTimeField(auto_now=True, null=True)
+
     class Meta:
         db_table = 'sinistre_garanties'
         verbose_name = 'Garantie liée à un sinistre'
@@ -169,6 +229,14 @@ class VentilationRecour(models.Model):
     sinistre = models.ForeignKey(Sinistre, null=True, blank=True, on_delete=models.RESTRICT, related_name='ventilation_recours')
     garantie = models.ForeignKey(Garantie, null=True, blank=True, on_delete=models.RESTRICT, related_name='ventilation_recours')
     poste_dommage = models.ForeignKey(PosteDommage, null=True, blank=True, on_delete=models.RESTRICT, related_name='ventilation_recours')
+
+    created_by = models.ForeignKey(User, related_name="ventilation_recour_created_by", null=True, on_delete=models.RESTRICT)
+    updated_by = models.ForeignKey(User, related_name="ventilation_recour_updated_by", null=True, on_delete=models.RESTRICT)
+    deleted_by = models.ForeignKey(User, related_name="ventilation_recour_deleted_by", null=True, on_delete=models.RESTRICT)
+
+    created_at = models.DateTimeField(auto_now_add=True, null=True)
+    updated_at = models.DateTimeField(auto_now=True, null=True)
+    deleted_at = models.DateTimeField(auto_now=True, null=True)
 
     class Meta:
         db_table = 'ventilation_recours'
@@ -187,8 +255,16 @@ class VentilationProvision(models.Model):
     garantie = models.ForeignKey(Garantie, null=True, blank=True, on_delete=models.RESTRICT, related_name='ventilation_provision')
     poste_dommage = models.ForeignKey(PosteDommage, null=True, blank=True, on_delete=models.RESTRICT, related_name='ventilation_provision')
 
+    created_by = models.ForeignKey(User, related_name="ventilation_provision_created_by", null=True, on_delete=models.RESTRICT)
+    updated_by = models.ForeignKey(User, related_name="ventilation_provision_updated_by", null=True, on_delete=models.RESTRICT)
+    deleted_by = models.ForeignKey(User, related_name="ventilation_provision_deleted_by", null=True, on_delete=models.RESTRICT)
+
+    created_at = models.DateTimeField(auto_now_add=True, null=True)
+    updated_at = models.DateTimeField(auto_now=True, null=True)
+    deleted_at = models.DateTimeField(auto_now=True, null=True)
+
     class Meta:
-        db_table = 'ventilation_provision'
+        db_table = 'ventilation_provisions'
         verbose_name = 'Ventilation de provision'
         verbose_name_plural = 'Ventilations de provision'
 

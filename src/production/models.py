@@ -419,6 +419,11 @@ class AutreRisque(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     statut = models.fields.CharField(choices=StatutPolice.choices, default=StatutPolice.ACTIF, max_length=15, null=True)
 
+    @property
+    def autre_risque_dernier_historique(self):
+        autre_risque = HistoriqueAliment.objects.filter(autre_risque_id=self.id).order_by('-created_at').first()
+        return autre_risque
+
     def get_dernier_historique(self):
         return HistoriqueAliment.objects.filter(autre_risque=self).order_by('-created_at').first()
 
@@ -448,8 +453,8 @@ class Vehicule(models.Model):
     @property
     def vehicule_dernier_historique(self):
         vehicule = HistoriqueAliment.objects.filter(vehicule_id=self.id).order_by('-created_at').first()
-
         return vehicule
+
 
     def get_dernier_historique(self):
         return HistoriqueAliment.objects.filter(vehicule=self).order_by('-created_at').first()
@@ -522,6 +527,11 @@ class Marchandise(models.Model):
 
     def __str__(self):
         return f'{self.num_certificat}'
+
+    @property
+    def marchandise_dernier_historique(self):
+        marchandise = HistoriqueAliment.objects.filter(marchandise_id=self.id).order_by('-created_at').first()
+        return marchandise
 
     def get_dernier_historique(self):
         return HistoriqueAliment.objects.filter(marchandise=self).order_by('-created_at').first()

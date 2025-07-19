@@ -62,8 +62,10 @@ class Sinistre(models.Model):
     updated_at = models.DateTimeField(auto_now=True, null=True)
     deleted_at = models.DateTimeField(auto_now=True, null=True)
 
-    def get_dernier_historique(self):
-        return MouvementSinistre.objects.filter(sinistre=self).order_by('-created_at').first()
+    @property
+    def sinistre_dernier_historique(self):
+        sinistre = HistoriqueSinistre.objects.filter(sinistre_id=self.id).order_by('-created_at').first()
+        return sinistre
 
     @property
     def etat_sinistre(self):
@@ -213,13 +215,18 @@ class SinistreGarantie(models.Model):
     updated_at = models.DateTimeField(auto_now=True, null=True)
     deleted_at = models.DateTimeField(auto_now=True, null=True)
 
+    @property
+    def sinistre_garantie_dernier_historique(self):
+        sinistre_garantie = HistoriqueSinistreGarantie.objects.filter(sinistre_garantie_id=self.id).order_by('-created_at').first()
+        return sinistre_garantie
+
     class Meta:
         db_table = 'sinistre_garanties'
         verbose_name = 'Garantie liée à un sinistre'
         verbose_name_plural = 'Garanties liées à un sinistre'
 
     def __str__(self):
-        return f"{self.garantie} (Sinistre: {self.sinistre_id})"
+        return f"{self.garantie}"
 
 
 class HistoriqueSinistreGarantie(models.Model):
@@ -243,7 +250,7 @@ class HistoriqueSinistreGarantie(models.Model):
         verbose_name_plural = 'Garanties liées à un sinistre'
 
     def __str__(self):
-        return f"{self.garantie} (Sinistre: {self.sinistre_id})"
+        return f"{self.sinistre_garantie}"
 
 
 class VentilationRecour(models.Model):
@@ -268,7 +275,7 @@ class VentilationRecour(models.Model):
         verbose_name_plural = 'Ventilations de recours'
 
     def __str__(self):
-        return f"Recours {self.montant_recours} / {self.sinistre_id}"
+        return f"Recours {self.montant_recours} / {self.sinistre}"
 
 
 class VentilationProvision(models.Model):
@@ -293,7 +300,7 @@ class VentilationProvision(models.Model):
         verbose_name_plural = 'Ventilations de provision'
 
     def __str__(self):
-        return f"Provision {self.montant_provision} / {self.sinistre_id}"
+        return f"Provision {self.montant_provision} / {self.sinistre}"
 
 
 class ReglementSinistre(models.Model):

@@ -22200,7 +22200,8 @@ $(document).ready(function () {
                 });
             });
 
-        } else {
+        }
+        else {
             $("#form_add_sinistre_gestionnaire #btn_ajout_garantie").hide();
             console.log('circonstance non choisie');
         }

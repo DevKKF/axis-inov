@@ -1,3 +1,5 @@
+{% load my_filters %}
+{% load i18n static jazzmin admin_urls %}
 <form id="form_add_sinistre_gestionnaire" action="{% url 'add_sinistre_gestionnaire' %}" method="post">
    {% csrf_token %}
    <input type="hidden" name="police_id" value="{{ police.id }}">
@@ -76,9 +78,14 @@
                      </div>
                   </div>
                   <div class="form-group row">
-                     <label class="col-sm-5 col-form-label">Gestionnaire sinistre</label>
+                     <label class="col-sm-5 col-form-label">Gestionnaire sinistre <span class="required">*</span></label>
                      <div class="col-sm-7">
-                        <span class="form-control" title="{{ police.gestionnaire.first_name|default_if_none:'' }}">{{ police.gestionnaire.first_name }}</span>
+                        <select class="form-control tags-multiple" name="gestionnaire_sinistre_id" required>
+                           <option value="">Choisir</option>
+                           {% for gest_sin in gestionnaire_sinistres %}
+                              <option value="{{ gest_sin.id }}" {% if gest_sin.id == police.gestionnaire_id %} selected {% endif %}>{{ gest_sin.first_name }} {{ gest_sin.last_name }}</option>
+                           {% endfor %}
+                        </select>
                      </div>
                   </div>
                   <div class="form-group row">
@@ -126,14 +133,14 @@
                               <label class="col-sm-5 col-form-label">Recherche risque</label>
                               <div class="col-sm-7">
                                  {% if police.produit.code == '10001' or police.produit.code == '10002' %}
-                                 <select class="form-control tags-multiple vehicule" name="vehicule_id" id="vehicule_id">
+                                 <select class="form-control tags-multiple vehicule" name="vehicule_id" id="vehicule_id" required>
                                     <option value=""></option>
                                     {% for aliment in aliments %}
-                                    <option value="{{ aliment.vehicule.id }}">{{ aliment.vehicule.marque|default_if_none:"" }}-{{ aliment.vehicule.numero_immatriculation|default_if_none:"" }}</option>
+                                       <option value="{{ aliment.vehicule.id }}">{{ aliment.vehicule.marque|default_if_none:"" }}-{{ aliment.vehicule.numero_immatriculation|default_if_none:"" }}</option>
                                     {% endfor %}
                                  </select>
                                  {% elif police.produit.code == '50001' or police.produit.code == '50002' %}
-                                 <select class="form-control tags-multiple marchandise" name="marchandise_id" id="marchandise_id">
+                                 <select class="form-control tags-multiple marchandise" name="marchandise_id" id="marchandise_id" required>
                                     <option value=""></option>
                                     {% for aliment in aliments %}
                                        <option value="{{ aliment.marchandise.id }}">{{ aliment.marchandise.num_certificat|default_if_none:"" }}</option>
@@ -176,7 +183,7 @@
                               <label class="col-sm-5 col-form-label">Risque <span class="required">*</span></label>
                               <div class="col-sm-7">
                                  {% if police.produit.code == '50001' or police.produit.code == '50002' %}
-                                    <input type="text" class="form-control" name="risque" id="marchandise" value="{{ aliment.marchandise.num_certificat }}" required />
+                                    <input type="text" class="form-control" name="marchandise" id="marchandise" value="{{ aliment.marchandise.num_certificat }}" required />
                                  {% else %}
                                     <input type="text" class="form-control" name="risque" id="risque" value="{{ aliment.autre_risque.libelle }}" required />
                                  {% endif %}
@@ -202,7 +209,7 @@
                            <div class="form-group row">
                               <label class="col-sm-5 col-form-label">Circonstance <span class="required">*</span></label>
                               <div class="col-sm-7">
-                                 <select class="form-control" name="circonstance_id" id="circonstance_id" required>
+                                 <select class="form-control tags-multiple" name="circonstance_id" id="circonstance_id" required>
                                     <option value="">Choisir</option>
                                     {% for circonstance in circonstances %}
                                     <option value="{{ circonstance.id }}" data-circonstance_id="{{ circonstance.id }}">{{ circonstance.libelle|default_if_none:"" }}</option>
@@ -265,13 +272,13 @@
                            <div class="form-group row">
                               <label class="col-sm-12 col-form-label">Fait générateur</label>
                               <div class="col-sm-12">
-                                 <textarea class="form-control" name="fait_generateur" id="fait_generateur" cols="3" rows="1"></textarea>
+                                 <textarea class="form-control" name="fait_generateur" id="fait_generateur" cols="3" rows="3"></textarea>
                               </div>
                            </div>
                            <div class="form-group row">
                               <label class="col-sm-12 col-form-label">Point de choc</label>
                               <div class="col-sm-12">
-                                 <textarea class="form-control" name="point_de_choc" id="point_de_choc" cols="3" rows="2"></textarea>
+                                 <textarea class="form-control" name="point_de_choc" id="point_de_choc" cols="3" rows="5"></textarea>
                               </div>
                            </div>
                            <div class="form-group row">

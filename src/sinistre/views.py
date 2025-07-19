@@ -50,7 +50,8 @@ from configurations.models import Compagnie, User, Rubrique, \
     ActionLog, PeriodeComptable, TypeRemboursement, ModeCreation, TypePrefinancement
 from production.models import Statut, TypeDocument, Client
 #
-from production.models import Police, HistoriquePolice, HistoriqueAliment, PoliceAssureur, Mouvement, Motif, AlimentPolice, Document
+from production.models import Police, HistoriquePolice, HistoriqueAliment, PoliceAssureur, Mouvement, Motif, AlimentPolice, Document, AutreRisque, Marchandise, \
+    Vehicule
 from production.forms import DocumentForm
 from production.templatetags.my_filters import money_field, supprimer_espaces
 from shared.enum import StatutPolice
@@ -67,7 +68,7 @@ from sinistre.helper_sinistre import exportation_en_excel_avec_style, \
     requete_liste_sinistre_saisies_entre_2date, requete_sinistres_traites_et_valides_par_les_gestionnaires, \
     requete_analyse_prime_compta_apporteur, get_retenue_selon_contexte
 # Create your views here.
-from sinistre.models import PaiementComptable, Sinistre, HistoriqueSinistre, Intervenant, SinistreIntervenant, SinistreGarantie, DossierSinistre, MouvementSinistre, \
+from sinistre.models import PaiementComptable, Sinistre, HistoriqueSinistre, Intervenant, SinistreIntervenant, SinistreGarantie, HistoriqueSinistreGarantie, DossierSinistre, MouvementSinistre, \
     RemboursementSinistre, BordereauOrdonnancement, HistoriqueOrdonnancementSinistre
 
 from sinistre.forms import SinistreForm
@@ -709,9 +710,23 @@ def add_sinistre_gestionnaire(request):
             risque_sinistre = request.POST.get('risque')
             numero = request.POST.get('numero')
 
+            # Récupérer l'historique aliment
+            historique_aliment = ''
+            if autre_risque_id:
+                autre_risque = AutreRisque.objects.filter(id=autre_risque_id).first()
+                historique_aliment = autre_risque.autre_risque_dernier_historique.id if autre_risque.autre_risque_dernier_historique else None
+            if marchandise_id:
+                marchandise = Marchandise.objects.filter(id=marchandise_id).first()
+                historique_aliment = marchandise.marchandise_dernier_historique.id if marchandise.marchandise_dernier_historique else None
+            if vehicule_id:
+                vehicule = Vehicule.objects.filter(id=vehicule_id).first()
+                historique_aliment = vehicule.vehicule_dernier_historique.id if vehicule.vehicule_dernier_historique else None
+
             sinistre_created = Sinistre(
                 client_id=client.id,
                 police_id=police.id,
+                historique_aliment_id=historique_aliment if historique_aliment else None,
+                historique_police_id=police.police_dernier_historique.id if police else None,
                 compagnie_id=compagnie_id,
                 type_sinistre_id=type_sinistre_id,
                 taux_responsabilite_id=taux_responsabilite_id,
@@ -743,35 +758,20 @@ def add_sinistre_gestionnaire(request):
 
             sinistre = Sinistre.objects.get(id=sinistre_created.pk)
 
-            # Créer une ligne de mouvement_sinistre avec le mouvement ouverture sinistre et le motif ouverture sinistre
-            ms = MouvementSinistre()
-            ms.sinistre = sinistre
-            ms.police = police
-            ms.mouvement = Mouvement.objects.get(code=mouvement_id)
-            ms.motif = Motif.objects.get(code=motif_mouvement_id)
-            ms.date_effet = sinistre.date_ouverture
-            ms.created_by = request.user
-            ms.save()
-
-            # Récupérer l'historique aliment
-            historique_aliment =''
-            if autre_risque_id:
-                historique_aliment = HistoriqueAliment.objects.filter(autre_risque_id=autre_risque_id).first()
-            if marchandise_id:
-                historique_aliment = HistoriqueAliment.objects.filter(marchandise_id=marchandise_id).first()
-            if vehicule_id:
-                historique_aliment = HistoriqueAliment.objects.filter(vehicule_id=vehicule_id).first()
-
             historique_sinistre_created = HistoriqueSinistre(
                 sinistre=sinistre,
-                historique_aliment=historique_aliment if historique_aliment else None,
+                historique_aliment_id=historique_aliment if historique_aliment else None,
                 client_id=sinistre.client_id,
                 police_id=sinistre.police_id,
+                historique_police_id=sinistre.police.police_dernier_historique.id if sinistre.police else None,
                 compagnie_id=sinistre.compagnie_id,
                 type_sinistre_id=sinistre.type_sinistre_id,
                 taux_responsabilite_id=sinistre.taux_responsabilite_id,
                 circonstance_id=sinistre.circonstance_id,
                 created_by_id=request.user.id,
+                operateur_de_saisie_id=request.user.id,
+                mouvement=Mouvement.objects.get(code=mouvement_id),
+                motif_mouvement=Motif.objects.get(code=motif_mouvement_id),
 
                 date_operation=today,
                 date_survenance=sinistre.date_survenance if sinistre.date_survenance else None,
@@ -789,7 +789,21 @@ def add_sinistre_gestionnaire(request):
                 franchise=sinistre.franchise if sinistre.franchise else 0,
             )
             historique_sinistre_created.save()
+
             historique_sinistre = HistoriqueSinistre.objects.get(id=historique_sinistre_created.pk)
+
+            sinistre.historique_sinistre = historique_sinistre
+            sinistre.save()
+
+            # Créer une ligne de mouvement_sinistre avec le mouvement ouverture sinistre et le motif ouverture sinistre
+            ms = MouvementSinistre()
+            ms.sinistre = sinistre
+            ms.police = police
+            ms.mouvement = Mouvement.objects.get(code=mouvement_id)
+            ms.motif = Motif.objects.get(code=motif_mouvement_id)
+            ms.date_effet = sinistre.date_ouverture
+            ms.created_by = request.user
+            ms.save()
 
             # Récupérer les intervenants de la session
             intervenants = request.session.get('intervenants', [])
@@ -826,7 +840,6 @@ def add_sinistre_gestionnaire(request):
             for garantie_sinistre in garanties_sinistre:
                 garantie_sinistre_created = SinistreGarantie(
                     sinistre=sinistre,
-                    circonstance_id=circonstance_id,
                     garantie_id=garantie_sinistre.get('garantie_id'),
                     franchise=supprimer_espaces(garantie_sinistre.get('franchise', 0)) if garantie_sinistre.get('franchise', 0) else None,
                     capital=supprimer_espaces(garantie_sinistre.get('capital', 0)) if garantie_sinistre.get('capital', 0) else None,
@@ -835,6 +848,20 @@ def add_sinistre_gestionnaire(request):
                     created_by_id=request.user.id,
                 )
                 garantie_sinistre_created.save()
+                garantie_sinistre = SinistreGarantie.objects.get(id=garantie_sinistre_created.pk)
+
+                historique_garantie_sinistre_created = HistoriqueSinistreGarantie(
+                    sinistre_garantie=garantie_sinistre,
+                    historique_sinistre=historique_sinistre,
+                    mouvement=Mouvement.objects.get(code=mouvement_id),
+                    date_mouvement=today,
+                    created_by_id=request.user.id,
+                )
+                historique_garantie_sinistre_created.save()
+                historique_garantie_sinistre = HistoriqueSinistreGarantie.objects.get(id=historique_garantie_sinistre_created.pk)
+
+                garantie_sinistre.historique_garantie_sinistre = historique_garantie_sinistre
+                garantie_sinistre.save()
 
             response = {
                 'statut': 1,
@@ -1448,15 +1475,12 @@ def motifs_by_mouvement(request, mouvement_id):
 
 @login_required
 def mouvement_sinistre(request, sinistre_id, motif_id):
-    sinistre = Sinistre.objects.get(id=sinistre_id)
-    motif = Motif.objects.filter(id=motif_id).first()
-    if not motif:
-        print(f"Motif with ID {motif_id} not found.")
-        return redirect(f'/sinistre/dossier_sinistre/{sinistre_id}/mouvements')
+    sinistre = Sinistre.objects.filter(id=sinistre_id).first()
+    if sinistre:
+        motif = Motif.objects.filter(id=motif_id).first()
+        if not motif:
+            return redirect(f'/sinistre/dossier_sinistre/{sinistre_id}/mouvements')
 
-    if request.method == 'POST':
-        pass
-    else:
         police = Police.objects.get(id=sinistre.police_id, bureau=request.user.bureau, statut_validite='VALIDE')
 
         # Récupération de client
@@ -1481,6 +1505,13 @@ def mouvement_sinistre(request, sinistre_id, motif_id):
 
         liste_motifs = Motif.objects.filter(mouvement_id=motif.mouvement_id)
 
+        gestionnaire_sinistres = []
+
+        utilisateur = User.objects.all().order_by('-first_name').exclude(is_admin_group=1)
+        for user in utilisateur:
+            if user.is_sinistre:
+                gestionnaire_sinistres.append(user)
+
         context = {
             'sinistre': sinistre,
             'check_motif': motif,
@@ -1499,9 +1530,21 @@ def mouvement_sinistre(request, sinistre_id, motif_id):
             'pays': pays,
             'mouvements': mouvements,
             'liste_motifs': liste_motifs,
+            'gestionnaire_sinistres': gestionnaire_sinistres,
         }
 
         return render(request, 'mouvement_sinistre.html', context)
 
+    return redirect('dossiersinistre')
 
+
+
+@login_required
+def update_sinistre_gestionnaire(request, sinistre_id):
+    sinistre = Sinistre.objects.filter(id=sinistre_id).first()
+    if sinistre:
+        if request.method == 'POST':
+            pass
+
+    return redirect('dossiersinistre')
 

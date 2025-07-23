@@ -83,7 +83,7 @@
                         <select class="form-control tags-multiple" name="gestionnaire_sinistre_id" required>
                            <option value="">Choisir</option>
                            {% for gest_sin in gestionnaire_sinistres %}
-                              <option value="{{ gest_sin.id }}" {% if gest_sin.id == police.gestionnaire_id %} selected {% endif %}>{{ gest_sin.first_name }} {{ gest_sin.last_name }}</option>
+                              <option value="{{ gest_sin.id }}" {% if police.gestionnaire_id == gest_sin.id %} selected {% endif %}>{{ gest_sin.first_name }} {{ gest_sin.last_name }}</option>
                            {% endfor %}
                         </select>
                      </div>

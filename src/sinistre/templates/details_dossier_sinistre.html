@@ -37,7 +37,7 @@
                     <div class="form-group row">
                         <label class="col-sm-6 col-form-label">Numero sinistre</label>
                         <div class="col-sm-6">
-                        <span class="form-control" title="{{ sinistre.numero|default_if_none:'' }}">{{ sinistre.numero|default_if_none:"" }}</span>
+                            <span class="form-control" title="{{ sinistre.numero|default_if_none:'' }}">{{ sinistre.numero|default_if_none:"" }}</span>
                         </div>
                     </div>
                     <div class="form-group row">
@@ -62,6 +62,14 @@
                             </span>
                         </div>
                     </div>
+                    <div class="form-group row">
+                        <label class="col-sm-6 col-form-label">Gestionnaire sinistre</label>
+                        <div class="col-sm-6">
+                            <span class="form-control" title="{{ sinistre.gestionnaire_sinistre.first_name|default_if_none:'' }} {{ sinistre.gestionnaire_sinistre.last_name|default_if_none:'' }}">
+                                {{ sinistre.gestionnaire_sinistre.first_name|default_if_none:"" }} {{ sinistre.gestionnaire_sinistre.last_name|default_if_none:"" }}
+                            </span>
+                        </div>
+                    </div>
                 </div>
                 <div class="vl"></div>
                 <div class="col-md-5">
@@ -81,7 +89,7 @@
                         <label class="col-sm-6 col-form-label">Taux de responsabilité</label>
                         <div class="col-sm-6">
                             <span class="form-control" title="{{ sinistre.responsabilite.libelle|default_if_none:'' }}">
-                                {{ sinistre.responsabilite.libelle|default_if_none:""|slice:":37" }}
+                                {{ sinistre.taux_responsabilite.libelle|default_if_none:""|slice:":37" }}
                             </span>
                         </div>
                     </div>
@@ -90,6 +98,14 @@
                         <div class="col-sm-6">
                             <span class="form-control">
                                 {{ sinistre.created_at|date:'d/m/Y H:s:i' }}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="form-group row">
+                        <label class="col-sm-6 col-form-label">Dernière modification</label>
+                        <div class="col-sm-6">
+                            <span class="form-control">
+                                {{ sinistre.updated_at|date:'d/m/Y H:s:i' }}
                             </span>
                         </div>
                     </div>
@@ -149,7 +165,7 @@
                     <div class="form-group row">
                         <label class="col-sm-6 col-form-label">Risque</label>
                         <div class="col-sm-6">
-                        <span class="form-control" title="{{aliment_police_sinistre.risque|default_if_none:''}}">{{aliment_police_sinistre.risque|default_if_none:""|slice:":36"}}</span>
+                        <span class="form-control" title="{{sinistre.risque_sinistre|default_if_none:''}}">{{sinistre.risque_sinistre|default_if_none:""|slice:":36"}}</span>
                         </div>
                     </div>
                     <div class="form-group row">
@@ -170,7 +186,13 @@
                     <div class="form-group row">
                         <label class="col-sm-6 col-form-label">TVA récupérée</label>
                         <div class="col-sm-6">
-                        <span class="form-control">{{sinistre.tva_recuperee|default_if_none:""}}</span>
+                        <span class="form-control">
+                            {% if sinistre.tva_recuperee %}
+                                OUI
+                            {% else %}
+                                NON
+                            {% endif %}
+                        </span>
                         </div>
                     </div>
                 </div>
@@ -287,9 +309,9 @@
                         </div>
                     </div>
                     <div class="form-group row">
-                        <label class="col-sm-2 col-form-label">Commentaire</label>
+                        <label class="col-sm-2 col-form-label">Commentaires</label>
                         <div class="col-sm-10">
-                            <textarea class="form-control" cols="3" rows="2">{{sinistre.commentaire|default_if_none:""}}</textarea>
+                            <textarea class="form-control" cols="3" rows="2">{{sinistre.commentaires|default_if_none:""}}</textarea>
                         </div>
                     </div>
                 </div>

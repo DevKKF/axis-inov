@@ -392,6 +392,12 @@ def recuperer_information_police(request):
 
         pays = Pays.objects.all().order_by('nom')
 
+        gestionnaire_sinistres = []
+        utilisateur = User.objects.all().order_by('-first_name').exclude(is_admin_group=1)
+        for user in utilisateur:
+            if user.is_sinistre:
+                gestionnaire_sinistres.append(user)
+
         aliments = 0
         aliment = 0
         if police.produit.code in ['10001', '10002', '50001', '50002']:
@@ -414,7 +420,8 @@ def recuperer_information_police(request):
             'circonstances': circonstances,
             'pays': pays,
             'aliments': aliments,
-            'aliment': aliment
+            'aliment': aliment,
+            'gestionnaire_sinistres': gestionnaire_sinistres,
         }
 
         return render(request, 'formulaire_sinistre.html', context)
@@ -685,6 +692,7 @@ def add_sinistre_gestionnaire(request):
         today = timezone.now().date()
 
         if form.is_valid():
+
             police = Police.objects.get(id=request.POST.get('police_id'))
             client = Client.objects.get(id=police.client_id)
             vehicule_id = request.POST.get('vehicule_id')
@@ -693,6 +701,7 @@ def add_sinistre_gestionnaire(request):
             compagnie_id = request.POST.get('compagnie_id')
             mouvement_id = request.POST.get('mouvement_id')
             motif_mouvement_id = request.POST.get('motif_mouvement_id')
+            gestionnaire_sinistre_id = request.POST.get('gestionnaire_sinistre_id')
             date_survenance = request.POST.get('date_survenance')
             date_ouverture = request.POST.get('date_ouverture')
             date_cloture = request.POST.get('date_cloture')
@@ -700,7 +709,7 @@ def add_sinistre_gestionnaire(request):
             date_reouverture = request.POST.get('date_reouverture')
             circonstance_id = request.POST.get('circonstance_id')
             lieu_survenance = request.POST.get('lieu_survenance')
-            tva_recuperee = request.POST.get('tva_recuperee')
+            tva_recuperee_str = request.POST.get('tva_recuperee')
             type_sinistre_id = request.POST.get('type_sinistre_id')
             franchise = request.POST.get('franchise').replace(' ', '')
             taux_responsabilite_id = request.POST.get('responsabilite_id')
@@ -709,6 +718,13 @@ def add_sinistre_gestionnaire(request):
             commentaires = request.POST.get('commentaires')
             risque_sinistre = request.POST.get('risque')
             numero = request.POST.get('numero')
+
+            if tva_recuperee_str == "1":
+                tva_recuperee = True
+            elif tva_recuperee_str == "0":
+                tva_recuperee = False
+            else:
+                tva_recuperee = None
 
             # Récupérer l'historique aliment
             historique_aliment = ''
@@ -731,6 +747,8 @@ def add_sinistre_gestionnaire(request):
                 type_sinistre_id=type_sinistre_id,
                 taux_responsabilite_id=taux_responsabilite_id,
                 circonstance_id=circonstance_id,
+                gestionnaire_sinistre_id=gestionnaire_sinistre_id,
+                operateur_de_saisie_id=request.user.id,
                 created_by_id=request.user.id,
                 numero=numero,
                 risque_sinistre=risque_sinistre,
@@ -740,7 +758,7 @@ def add_sinistre_gestionnaire(request):
                 date_cloture=date_cloture if date_cloture else None,
                 date_reouverture=date_reouverture if date_reouverture else None,
                 lieu_survenance=lieu_survenance,
-                tva_recuperee=tva_recuperee,
+                tva_recuperee=tva_recuperee if tva_recuperee else 0,
                 fait_generateur=fait_generateur,
                 point_de_choc=point_de_choc,
                 commentaires=commentaires,
@@ -768,6 +786,7 @@ def add_sinistre_gestionnaire(request):
                 type_sinistre_id=sinistre.type_sinistre_id,
                 taux_responsabilite_id=sinistre.taux_responsabilite_id,
                 circonstance_id=sinistre.circonstance_id,
+                gestionnaire_sinistre_id=sinistre.gestionnaire_sinistre_id,
                 created_by_id=request.user.id,
                 operateur_de_saisie_id=request.user.id,
                 mouvement=Mouvement.objects.get(code=mouvement_id),
@@ -781,7 +800,7 @@ def add_sinistre_gestionnaire(request):
                 date_reouverture=sinistre.date_reouverture if sinistre.date_reouverture else None,
 
                 lieu_survenance=sinistre.lieu_survenance,
-                tva_recuperee=sinistre.tva_recuperee,
+                tva_recuperee=sinistre.tva_recuperee if sinistre.tva_recuperee else 0,
                 fait_generateur=sinistre.fait_generateur,
                 point_de_choc=sinistre.point_de_choc,
                 commentaires=sinistre.commentaires,
@@ -981,7 +1000,10 @@ def dossier_sinistre_datatable(request):
         detail_url = reverse('details_dossier_sinistre', args=[sin.id])
         actions_html = f'<a href="{detail_url}" target="_blank"><span class="badge btn-sm btn-details rounded-pill"><i class="fa fa-eye"></i> Détails</span></a>'
         numero_html = f'<a href="{detail_url}" class="text-center bouton_action" style="color:#F16623;" target="_blank">{sin.numero}</a>'
-        statut_html = f'<span class="badge badge-{sin.etat_sinistre.lower().replace(" ", "-")}">{sin.etat_sinistre}</span>'
+        if sin.etat_sinistre:
+            statut_html = f'<span class="badge badge-{sin.etat_sinistre.lower().replace(" ", "-")}">{sin.etat_sinistre}</span>'
+        else:
+            statut_html = '<span class="badge badge-secondary">En attente</span>'
 
         data.append({
             "id": sin.id,

@@ -1550,13 +1550,17 @@ def upload_location_document(instance, filename):
 
 
 class Document(models.Model):
-    from sinistre.models import Sinistre
+    from sinistre.models import Sinistre, HistoriqueSinistre
     client = models.ForeignKey(Client, null=True, on_delete=models.RESTRICT)
     police = models.ForeignKey(Police, null=True, on_delete=models.RESTRICT)
     aliment = models.ForeignKey(Aliment, null=True, on_delete=models.RESTRICT)
     type_document = models.ForeignKey(TypeDocument, on_delete=models.RESTRICT)
     quittance = models.ForeignKey(Quittance, null=True, on_delete=models.RESTRICT)
     sinistre = models.ForeignKey(Sinistre, null=True, on_delete=models.RESTRICT)
+
+    historique_police = models.ForeignKey(HistoriquePolice, null=True, blank=True, on_delete=models.RESTRICT, related_name='historique_polices')
+    historique_sinistre = models.ForeignKey(HistoriqueSinistre, null=True, blank=True, on_delete=models.RESTRICT, related_name='historique_sinistres')
+
     nom = models.CharField(max_length=255, blank=True, null=True)
     fichier = models.FileField(upload_to=upload_location_document, blank=True, default=None, null=True)
     confidentialite = models.fields.CharField(choices=OptionYesNo.choices, default=OptionYesNo.OUI, max_length=15, null=True)

@@ -42,8 +42,10 @@ class Sinistre(models.Model):
 
     risque_sinistre = models.CharField(max_length=255, null=True, blank=True)
 
+    tva_recuperee = models.BooleanField(null=True, blank=True)
+
     created_at = models.DateTimeField(auto_now_add=True, null=True)
-    updated_at = models.DateTimeField(auto_now=True, null=True)
+    updated_at = models.DateTimeField(null=True)
     deleted_at = models.DateTimeField(null=True)
 
     client = models.ForeignKey(Client, null=True, related_name='sinistres', on_delete=models.RESTRICT)
@@ -55,14 +57,16 @@ class Sinistre(models.Model):
     type_sinistre = models.ForeignKey(TypeSinistre, null=True, on_delete=models.RESTRICT, related_name='sinistres')
     circonstance = models.ForeignKey(Circonstance, null=True, blank=True, on_delete=models.RESTRICT, related_name='sinistres')
     compagnie = models.ForeignKey(Compagnie, null=True, blank=True, on_delete=models.RESTRICT, related_name='sinistres')
+    operateur_de_saisie = models.ForeignKey(User, null=True, blank=True, on_delete=models.RESTRICT, related_name='sinistres')
+    gestionnaire_sinistre = models.ForeignKey(User, null=True, blank=True, on_delete=models.RESTRICT, related_name='gestionnaire_sinistres')
 
     created_by = models.ForeignKey(User, related_name="sinistre_created_by", null=True, on_delete=models.RESTRICT)
     updated_by = models.ForeignKey(User, related_name="sinistre_updated_by", null=True, on_delete=models.RESTRICT)
     deleted_by = models.ForeignKey(User, related_name="sinistre_deleted_by", null=True, on_delete=models.RESTRICT)
 
     created_at = models.DateTimeField(auto_now_add=True, null=True)
-    updated_at = models.DateTimeField(auto_now=True, null=True)
-    deleted_at = models.DateTimeField(auto_now=True, null=True)
+    updated_at = models.DateTimeField(null=True)
+    deleted_at = models.DateTimeField(null=True)
 
     @property
     def sinistre_dernier_historique(self):
@@ -126,14 +130,15 @@ class HistoriqueSinistre(models.Model):
     motif_mouvement = models.ForeignKey(Motif, null=True, blank=True, on_delete=models.RESTRICT, related_name='historiques_sinistres')
     operateur_de_saisie = models.ForeignKey(User, null=True, blank=True, on_delete=models.RESTRICT, related_name='historiques_sinistres')
     compagnie = models.ForeignKey(Compagnie, null=True, blank=True, on_delete=models.RESTRICT, related_name='historiques_sinistres')
+    gestionnaire_sinistre = models.ForeignKey(User, null=True, blank=True, on_delete=models.RESTRICT, related_name='gestionnaire_historiques_sinistres')
 
     created_by = models.ForeignKey(User, related_name="historique_sinistre_created_by", null=True, on_delete=models.RESTRICT)
     updated_by = models.ForeignKey(User, related_name="historique_sinistre_updated_by", null=True, on_delete=models.RESTRICT)
     deleted_by = models.ForeignKey(User, related_name="historique_sinistre_deleted_by", null=True, on_delete=models.RESTRICT)
 
     created_at = models.DateTimeField(auto_now_add=True, null=True)
-    updated_at = models.DateTimeField(auto_now=True, null=True)
-    deleted_at = models.DateTimeField(auto_now=True, null=True)
+    updated_at = models.DateTimeField(null=True)
+    deleted_at = models.DateTimeField(null=True)
 
     class Meta:
         db_table = 'historique_sinistres'
@@ -162,8 +167,8 @@ class Intervenant(models.Model):
     deleted_by = models.ForeignKey(User, related_name="intervenant_deleted_by", null=True, on_delete=models.RESTRICT)
 
     created_at = models.DateTimeField(auto_now_add=True, null=True)
-    updated_at = models.DateTimeField(auto_now=True, null=True)
-    deleted_at = models.DateTimeField(auto_now=True, null=True)
+    updated_at = models.DateTimeField(null=True)
+    deleted_at = models.DateTimeField(null=True)
 
 
     class Meta:
@@ -182,8 +187,8 @@ class SinistreIntervenant(models.Model):
     deleted_by = models.ForeignKey(User, related_name="sinistre_intervenant_deleted_by", null=True, on_delete=models.RESTRICT)
 
     created_at = models.DateTimeField(auto_now_add=True, null=True)
-    updated_at = models.DateTimeField(auto_now=True, null=True)
-    deleted_at = models.DateTimeField(auto_now=True, null=True)
+    updated_at = models.DateTimeField(null=True)
+    deleted_at = models.DateTimeField(null=True)
 
     class Meta:
         db_table = 'sinistre_intervenants'
@@ -214,8 +219,8 @@ class SinistreGarantie(models.Model):
     deleted_by = models.ForeignKey(User, related_name="sinistre_garantie_deleted_by", null=True, on_delete=models.RESTRICT)
 
     created_at = models.DateTimeField(auto_now_add=True, null=True)
-    updated_at = models.DateTimeField(auto_now=True, null=True)
-    deleted_at = models.DateTimeField(auto_now=True, null=True)
+    updated_at = models.DateTimeField(null=True)
+    deleted_at = models.DateTimeField(null=True)
 
     @property
     def sinistre_garantie_dernier_historique(self):
@@ -243,8 +248,8 @@ class HistoriqueSinistreGarantie(models.Model):
     deleted_by = models.ForeignKey(User, related_name="historique_sinistre_garantie_deleted_by", null=True, on_delete=models.RESTRICT)
 
     created_at = models.DateTimeField(auto_now_add=True, null=True)
-    updated_at = models.DateTimeField(auto_now=True, null=True)
-    deleted_at = models.DateTimeField(auto_now=True, null=True)
+    updated_at = models.DateTimeField(null=True)
+    deleted_at = models.DateTimeField(null=True)
 
     class Meta:
         db_table = 'historique_sinistre_garanties'
@@ -268,8 +273,8 @@ class VentilationRecour(models.Model):
     deleted_by = models.ForeignKey(User, related_name="ventilation_recour_deleted_by", null=True, on_delete=models.RESTRICT)
 
     created_at = models.DateTimeField(auto_now_add=True, null=True)
-    updated_at = models.DateTimeField(auto_now=True, null=True)
-    deleted_at = models.DateTimeField(auto_now=True, null=True)
+    updated_at = models.DateTimeField(null=True)
+    deleted_at = models.DateTimeField(null=True)
 
     class Meta:
         db_table = 'ventilation_recours'
@@ -293,8 +298,8 @@ class VentilationProvision(models.Model):
     deleted_by = models.ForeignKey(User, related_name="ventilation_provision_deleted_by", null=True, on_delete=models.RESTRICT)
 
     created_at = models.DateTimeField(auto_now_add=True, null=True)
-    updated_at = models.DateTimeField(auto_now=True, null=True)
-    deleted_at = models.DateTimeField(auto_now=True, null=True)
+    updated_at = models.DateTimeField(null=True)
+    deleted_at = models.DateTimeField(null=True)
 
     class Meta:
         db_table = 'ventilation_provisions'

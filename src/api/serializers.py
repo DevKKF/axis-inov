@@ -3,9 +3,8 @@ from rest_framework.serializers import ModelSerializer
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 from api.models import InfoActe
-from configurations.models import KeyValueData, User, Prestataire, Acte, Bureau, ModeReglement, \
-    Civilite, QualiteBeneficiaire, Pays, Profession
-from production.models import Aliment, Carte, Client, FormuleGarantie, Bareme, CarteDigitalDematerialisee
+from configurations.models import KeyValueData, User, Prestataire, Acte, Bureau, ModeReglement, Civilite, Pays
+from production.models import Aliment, Carte, Client, Bareme, CarteDigitalDematerialisee
 from sinistre.models import Sinistre
 
 from grh.models import Prospect
@@ -26,27 +25,11 @@ class CiviliteSerializer(ModelSerializer):
         managed = False
 
 
-class QualiteBeneficiaireSerializer(ModelSerializer):
-    class Meta:
-        model = QualiteBeneficiaire
-        fields = ['id', 'code', 'libelle']
-        managed = False
-
 class PaysSerializer(ModelSerializer):
     class Meta:
         model = Pays
         fields = ['id', 'nom', 'indicatif']
         managed = False
-        # depth = 1
-
-
-class ProfessionSerializer(ModelSerializer):
-    class Meta:
-        model = Profession
-        fields = ['id', 'code', 'name']
-        managed = False
-        # depth = 1
-
 
 
 # APPLICATION MOBILE SANTE API REST SERIALIZER
@@ -70,19 +53,6 @@ class ClientSerializer(ModelSerializer):
         model = Client
         fields = "__all__"
         # depth = 3
-        # extra_kwargs = {'user_extranet': {'write_only': True}}
-
-# class CourrierSerializer(ModelSerializer):
-#     class Meta:
-#         model = Courrier
-#         fields = "__all__"
-
-
-class FormuleGarantieSerializer(ModelSerializer):
-    class Meta:
-        model = FormuleGarantie
-        fields = "__all__"
-        depth = 1
         # extra_kwargs = {'user_extranet': {'write_only': True}}
 
 
@@ -110,7 +80,6 @@ class AlimentSerializer(ModelSerializer):
     carte = serializers.SerializerMethodField()
     client = serializers.SerializerMethodField()
     formule = serializers.SerializerMethodField()
-    # formules = FormuleGarantieSerializer(many=True)
     class Meta:
         model = Aliment
         fields = ["id",
@@ -164,7 +133,6 @@ class AlimentSerializer(ModelSerializer):
                   "pays_naissance",
                   "pays_residence",
                   "pays_activite_professionnelle",
-                  "profession",
                   "user_extranet",
                   "carte",
                   "client",
@@ -186,13 +154,6 @@ class AlimentSerializer(ModelSerializer):
             client = obj.client()
             return ClientSerializer(client).data
         except Client.DoesNotExist:
-            return None
-
-    def get_formule(self, obj):
-        try:
-            formule = obj.formule
-            return FormuleGarantieSerializer(formule).data
-        except FormuleGarantie.DoesNotExist:
             return None
 
 

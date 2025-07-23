@@ -32,16 +32,13 @@ from api.serializers import KeyValueDataSerializer, UserSerializer, AlimentSeria
     ResetPasswordUserSerializer, UserDataSerializer, BarremeSerializer, SinisteSerializer, \
     ModeRemboursementSerializer, DemandeRemboursementSerializer, PrestataireSerializer, \
     PrestataireDataSerializer, ActeSerializer, BureauSerializer, \
-    ProspectSerializer, CarteDigitalDematerialiseeSerializer, CiviliteSerializer, \
-    QualiteBeneficiaireSerializer, PaysSerializer, ProfessionSerializer
+    ProspectSerializer, CarteDigitalDematerialiseeSerializer, CiviliteSerializer, PaysSerializer
 from configurations.helper_config import verify_sql_query, execute_query
-from configurations.models import Acte, Prescripteur, Prestataire, \
-    KeyValueData, WsBoby, Bureau, Civilite, \
-    QualiteBeneficiaire, Pays, Profession
+from configurations.models import Acte, Prescripteur, Prestataire, KeyValueData, WsBoby, Bureau, Civilite, Pays
 from configurations.models import User, ModeReglement
 from grh.helper import generate_uiid
 from grh.models import CampagneAppmobile, CampagneAppmobileProspect
-from production.models import Aliment, AlimentFormule, Bareme, Carte, FormuleGarantie, CarteDigitalDematerialisee, \
+from production.models import Aliment, AlimentFormule, Bareme, Carte, CarteDigitalDematerialisee, \
     TypeDocument, Police
 from shared.enum import EtatPolice, Statut, StatutSinistre, StatutEnrolement
 from shared.enum import StatutRemboursement
@@ -131,14 +128,6 @@ def info(request):
                     Sum('part_compagnie'))['part_compagnie__sum'] or 0
 
                 formule = aliment.formule
-
-                # son plafond chambre et plafond hospit
-                bareme_plafond_chambre = Bareme.objects.filter(formulegarantie_id=aliment.formule.id,
-                                                               acte__code="G66023CI01")
-                plafond_chambre = bareme_plafond_chambre.first().plafond_acte if bareme_plafond_chambre else 0
-                bareme_plafond_hospitalisation = Bareme.objects.filter(formulegarantie_id=aliment.formule.id,
-                                                                       acte__code="G66027CI01")
-                plafond_hospitalisation = bareme_plafond_hospitalisation.first().plafond_acte if bareme_plafond_hospitalisation else 0
 
                 # vérifie s'il y a au moins 2 éléments dans la liste et
                 #  si tous les éléments de la liste sont des chaînes de caractères. Si ces conditions sont remplies,
@@ -321,14 +310,6 @@ def service_save(request):
 
             formule = aliment.formule
 
-            # son plafond chambre et plafond hospit
-            bareme_plafond_chambre = Bareme.objects.filter(formulegarantie_id=aliment.formule.id,
-                                                           acte__code="G66023CI01")
-            plafond_chambre = bareme_plafond_chambre.first().plafond_acte if bareme_plafond_chambre else 0
-            bareme_plafond_hospitalisation = Bareme.objects.filter(formulegarantie_id=aliment.formule.id,
-                                                                   acte__code="G66027CI01")
-            plafond_hospitalisation = bareme_plafond_hospitalisation.first().plafond_acte if bareme_plafond_hospitalisation else 0
-
             # vérifie s'il y a au moins 2 éléments dans la liste et
             #  si tous les éléments de la liste sont des chaînes de caractères. Si ces conditions sont remplies,
             if isinstance(codes_acte, list) and len(codes_acte) >= 2 and all(
@@ -360,14 +341,11 @@ def service_save(request):
                 prestataire_id=prestataire_id,
                 centre_prescripteur_id=prestataire.id,  # a confirmer
                 aliment_id=aliment.id,
-                formulegarantie_id=aliment.formule.id,
                 police_id=aliment.formule.police.id,
                 compagnie_id=aliment.formule.police.compagnie.id,
                 prescripteur_id=prescripteur_id,
                 type_priseencharge_id=type_prise_en_charge_id,
                 renseignement_clinique=rc,
-                plafond_chambre=plafond_chambre,
-                plafond_hospit=plafond_hospitalisation,
                 affection_id=affection.pk
             )
 
@@ -445,7 +423,6 @@ def service_save(request):
                                     adherent_principal_id=aliment.adherent_principal.id,
                                     police_id=aliment.formule.police.id,
                                     periode_couverture_id=aliment.formule.police.periode_couverture_encours.pk,
-                                    formulegarantie_id=aliment.formule.id,
                                     bareme_id=bareme_id,
                                     compagnie_id=aliment.formule.police.compagnie.id,
                                     prescripteur_id=prescripteur_id,
@@ -1033,28 +1010,6 @@ class BeneficiariesByCarteView(views.APIView):
                             'detail': "La police d'assurance de cet assuré n'est pas en cours. Merci de prendre les dispositions nécessaires en fonction de cette situation."
                         }, status=status.HTTP_400_BAD_REQUEST)
 
-                    # Police is active, return OK
-                    if prestataire_id is not None:
-                        formule_garantie = FormuleGarantie.objects.get(id=aliment.formule.id)
-                        print(formule_garantie)
-                        print(formule_garantie.code)
-                        print(formule_garantie.reseau_soin)
-
-                        if formule_garantie.reseau_soin is not None:
-                            reseau_soin = formule_garantie.reseau_soin
-                            prestataires = ""
-                            print(prestataires)
-                        else:
-                            prestataires = Prestataire.objects.filter(
-                                bureau=formule_garantie.police.bureau,
-                                id=prestataire_id
-                            )
-
-                        if len(prestataires) == 0:
-                            return Response({
-                                'detail': "Nous constatons que vous ne faites pas partie du réseau de soins de cet assuré. Veuillez vérifier les informations fournies et nous en informer si nécessaire."
-                            }, status=status.HTTP_400_BAD_REQUEST)
-
                     # Serialize and return aliment data
                     serializer = AlimentSerializer(aliment)
                     return Response(serializer.data)
@@ -1080,7 +1035,6 @@ class BarremeView(views.APIView):
     parser_classes = [JSONParser]
 
     def get(self, request, formul_id):
-        barrem = Bareme.objects.filter(formulegarantie_id=formul_id, statut=Statut.ACTIF)
         serializer = BarremeSerializer(barrem, many=True)
         return Response(serializer.data)
 
@@ -1309,8 +1263,7 @@ class AddAyantDroitView(views.APIView):
     def post(self, request, *args, **kwargs):
         user = self.request.user
         aliment = user.aliment
-        formules = FormuleGarantie.objects.get(id=aliment.formule.id)
-        polices = formules.police
+        polices = ""
 
         pprint('Hello Joseph')
 
@@ -1320,7 +1273,6 @@ class AddAyantDroitView(views.APIView):
             campagne = CampagneAppmobile.objects.create(
                 created_by=user,
                 police=polices,
-                formulegarantie=formules,
                 statut=StatutEnrolement.VALIDE
             )
 
@@ -1328,12 +1280,10 @@ class AddAyantDroitView(views.APIView):
 
         data = request.data
         bureau = user.bureau
-        formulegarantie = formules
         police = polices
         aliment_adherent_principal = user.aliment.adherent_principal
 
         data['bureau'] = bureau.id
-        data['formulegarantie'] = formulegarantie.id
         data['police'] = police.id
         data['aliment_adherent_principal'] = aliment_adherent_principal.id
         data['statut_enrolement'] = StatutEnrolement.SOUMIS
@@ -1478,8 +1428,7 @@ class PriseEnChargeView(views.APIView):
         affection_id = 1  # par default AUTRE AFFECTION
         type_document_id = 1 # par defaut AUTRE
 
-        formules = FormuleGarantie.objects.get(id=aliment.formule.id)
-        polices = formules.police
+        polices = ""
 
         json_data = request.data
 
@@ -1592,11 +1541,7 @@ class PriseEnChargeView(views.APIView):
             formule = aliment.formule
 
             # son plafond chambre et plafond hospit
-            bareme_plafond_chambre = Bareme.objects.filter(formulegarantie_id=aliment.formule.id,
-                                                           acte__code="G66023CI01")
             plafond_chambre = bareme_plafond_chambre.first().plafond_acte if bareme_plafond_chambre else 0
-            bareme_plafond_hospitalisation = Bareme.objects.filter(formulegarantie_id=aliment.formule.id,
-                                                                   acte__code="G66027CI01")
             plafond_hospitalisation = bareme_plafond_hospitalisation.first().plafond_acte if bareme_plafond_hospitalisation else 0
 
             # vérifie s'il y a au moins 2 éléments dans la liste et
@@ -1627,7 +1572,6 @@ class PriseEnChargeView(views.APIView):
                 prestataire_id=prestataire_id,
                 centre_prescripteur_id=prestataire.id,  # a confirmer
                 aliment_id=aliment.id,
-                formulegarantie_id=aliment.formule.id,
                 police_id=aliment.formule.police.id,
                 compagnie_id=aliment.formule.police.compagnie.id,
                 prescripteur_id=prescripteur_id,
@@ -1664,17 +1608,6 @@ class PriseEnChargeView(views.APIView):
                 fs.save(file_upload_path2, document2)
 
                 type_document = TypeDocument.objects.get(id=type_document_id)
-
-                # print(vars(document1_save))
-                # print(vars(document2_save))
-                #
-                # documents.append({
-                #     'id': document.pk,
-                #     # 'nom': document.nom,
-                #     'fichier': '<a href="' + document.fichier.url + '"><i class="fa fa-file" title="Aperçu"></i> Afficher</a>',
-                #     'type_document': document.type_document.libelle,
-                #     # 'confidentialite': document.confidentialite,
-                # })
 
 
             except MultiValueDictKeyError:
@@ -1732,7 +1665,6 @@ class PriseEnChargeView(views.APIView):
                         adherent_principal_id=aliment.adherent_principal.id,
                         police_id=aliment.formule.police.id,
                         periode_couverture_id=aliment.formule.police.periode_couverture_encours.pk,
-                        formulegarantie_id=aliment.formule.id,
                         bareme_id=bareme_id,
                         compagnie_id=aliment.formule.police.compagnie.id,
                         prescripteur_id=prescripteur_id,
@@ -1867,14 +1799,6 @@ class PriseEnChargeActeInfoView(views.APIView):
 
             formule = aliment.formule
 
-            # son plafond chambre et plafond hospit
-            bareme_plafond_chambre = Bareme.objects.filter(formulegarantie_id=aliment.formule.id,
-                                                           acte__code="G66023CI01")
-            plafond_chambre = bareme_plafond_chambre.first().plafond_acte if bareme_plafond_chambre else 0
-            bareme_plafond_hospitalisation = Bareme.objects.filter(formulegarantie_id=aliment.formule.id,
-                                                                   acte__code="G66027CI01")
-            plafond_hospitalisation = bareme_plafond_hospitalisation.first().plafond_acte if bareme_plafond_hospitalisation else 0
-
             # vérifie s'il y a au moins 2 éléments dans la liste et
             #  si tous les éléments de la liste sont des chaînes de caractères. Si ces conditions sont remplies,
             type_prise_en_charge = acte.rubrique.type_priseencharge
@@ -1969,19 +1893,13 @@ class ConstantesView(views.APIView):
 
     def get(self, request):
         civilite = Civilite.objects.all()
-        qualite_beneficiaire = QualiteBeneficiaire.objects.all()
         pays = Pays.objects.all()
-        profession = Profession.objects.all()
 
         civilite_serializer = CiviliteSerializer(civilite, many=True)
-        qualite_beneficiaire_serializer = QualiteBeneficiaireSerializer(qualite_beneficiaire, many=True)
         pays_serializer = PaysSerializer(pays, many=True)
-        profession_serializer = ProfessionSerializer(profession, many=True)
 
         data = {
             "civilites": civilite_serializer.data,
-            "qualite_beneficiaires": qualite_beneficiaire_serializer.data,
-            "professions": profession_serializer.data,
             "pays": pays_serializer.data
 
         }

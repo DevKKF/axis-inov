@@ -1,7 +1,7 @@
-<div  class="modal fade"  id="modal-avenant"  aria-hidden="true" data-backdrop="static" data-keyboard="false" style="display: none">
+<div  class="modal fade"  id="modal-mouvement"  aria-hidden="true" data-backdrop="static" data-keyboard="false" style="display: none">
 	<div class="modal-dialog modal-lg">
 		<div class="modal-content">
-			<form id="form_add_avenant" action="" method="post">
+			<form id="form_add_mouvement" action="" method="post">
 				{% csrf_token %}
                 <input type="hidden" name="sinistre_id" data-sinistre-id="{{ sinistre.id }}" id="sinistre_id" value="{{ sinistre.id }}">
 				<div class="modal-header">
@@ -36,7 +36,7 @@
 				</div>
 				<div class="modal-footer justify-content-between">
 					<button type="button" class="btn btn-danger" data-dismiss="modal"><i class="fa fa-remove"></i> Retour</button>
-					<button type="button" id="btn_save_avenant" data-href_sinistre="" class="btn btn-info"><i class="fa fa-check-circle"></i> Enregistrer</button>
+					<button type="button" id="btn_save_mouvement_sinistre" data-href_sinistre="" class="btn btn-info"><i class="fa fa-check-circle"></i> Enregistrer</button>
 				</div>
 			</form>
 		</div>

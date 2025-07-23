@@ -130,13 +130,6 @@ class Police(models.Model):
     def __str__(self):
         return f'{self.numero}'
 
-    """
-    def save(self, *args, **kwargs):
-        type_assurance_olea_sante = TypeAssurance.objects.get(id=1)
-        self.type_assurance = type_assurance_olea_sante
-        super(HistoriquePolice, self).save(*args, **kwargs)
-    """
-
     class Meta:
         db_table = 'polices'
         verbose_name = 'Police'
@@ -345,22 +338,6 @@ class HistoriquePolice(models.Model):
         return 0  # Retourne 0 si aucune durée valide n'est trouvée
 
 
-class PoliceClient(models.Model):
-    client = models.ForeignKey(Client, on_delete=models.RESTRICT)
-    police = models.ForeignKey(Police, on_delete=models.RESTRICT)
-    date_debut = models.DateTimeField(blank=True, null=True)
-    date_fin = models.DateTimeField(blank=True, null=True)
-    observation = models.CharField(max_length=255, null=True, blank=True)
-    statut = models.fields.CharField(choices=Statut.choices, default=Statut.ACTIF, max_length=15, null=True, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        db_table = 'client_police'
-        verbose_name = 'Client police'
-        verbose_name_plural = 'Clients-polices'
-
-
 class PoliceGarantie(models.Model):
     client = models.ForeignKey(Client, on_delete=models.RESTRICT, null=True)
     police = models.ForeignKey(Police, on_delete=models.RESTRICT, null=True)
@@ -432,6 +409,14 @@ class AutreRisque(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     statut = models.fields.CharField(choices=StatutPolice.choices, default=StatutPolice.ACTIF, max_length=15, null=True)
 
+    @property
+    def autre_risque_dernier_historique(self):
+        autre_risque = HistoriqueAliment.objects.filter(autre_risque_id=self.id).order_by('-created_at').first()
+        return autre_risque
+
+    def get_dernier_historique(self):
+        return HistoriqueAliment.objects.filter(autre_risque=self).order_by('-created_at').first()
+
     class Meta:
         db_table = 'autre_risque'
         verbose_name = 'Autres Risques'
@@ -455,16 +440,19 @@ class Vehicule(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+    @property
+    def vehicule_dernier_historique(self):
+        vehicule = HistoriqueAliment.objects.filter(vehicule_id=self.id).order_by('-created_at').first()
+        return vehicule
+
+
+    def get_dernier_historique(self):
+        return HistoriqueAliment.objects.filter(vehicule=self).order_by('-created_at').first()
+
     class Meta:
         db_table = 'vehicules'
         verbose_name = 'Véhicules'
         verbose_name_plural = 'Véhicules'
-
-    @property
-    def vehicule_dernier_historique(self):
-        vehicule = HistoriqueAliment.objects.filter(vehicule_id=self.id).order_by('-created_at').first()
-
-        return vehicule
 
 
 class Marchandise(models.Model):
@@ -529,6 +517,14 @@ class Marchandise(models.Model):
 
     def __str__(self):
         return f'{self.num_certificat}'
+
+    @property
+    def marchandise_dernier_historique(self):
+        marchandise = HistoriqueAliment.objects.filter(marchandise_id=self.id).order_by('-created_at').first()
+        return marchandise
+
+    def get_dernier_historique(self):
+        return HistoriqueAliment.objects.filter(marchandise=self).order_by('-created_at').first()
 
     class Meta:
         db_table = 'marchandises'
@@ -728,23 +724,6 @@ class Bareme(models.Model):
         db_table = 'bareme'
         verbose_name = 'Barème'
         verbose_name_plural = 'Barème'
-
-
-class TauxCouvertureVariable(models.Model):
-    created_by = models.ForeignKey(User, null=True, on_delete=models.RESTRICT)
-    secteur = models.ForeignKey(Secteur, on_delete=models.RESTRICT)  # Pour une même formule, le taux de couverture varie selon le secteur (public/privé) du prestataire
-    taux_couverture = models.IntegerField(null=False)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    statut_validite = models.fields.CharField(choices=StatutValidite.choices, default=StatutValidite.VALIDE, max_length=15, null=True)
-
-    def __str__(self):
-        return f'{self.taux_couverture} %'
-
-    class Meta:
-        db_table = 'taux_couverture_variable'
-        verbose_name = "Taux de couverture"
-        verbose_name_plural = "Taux de couverture"
 
 
 def upload_location_aliment(instance, filename):

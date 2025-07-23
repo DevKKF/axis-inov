@@ -18,11 +18,6 @@ class InfoActeSerialiser(ModelSerializer):
         fields = ['numero_assure', 'medecin', 'acte', 'affection', 'rc']
         managed = False
 
-class TypeActeSerialiser(ModelSerializer):
-    class Meta:
-        model = TypeActe
-        fields = ['id', 'code', 'libelle']
-        managed = False
 
 class CiviliteSerializer(ModelSerializer):
     class Meta:

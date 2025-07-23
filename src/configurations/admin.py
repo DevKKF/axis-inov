@@ -9,7 +9,7 @@ from import_export.admin import ImportExportModelAdmin
 from django import forms
 from admin_custom.admin import custom_admin_site
 from configurations.forms import ActionLogForm, PermissionForm, SousRubriqueForm, TarifForm, \
-    CompagnieAdminForm, BanqueAdminForm, ApporteurInternationalForm, GarantieBrancheForm, \
+    CompagnieAdminForm, BanqueAdminForm, GarantieBrancheForm, \
     GarantieFormuleForm
 from configurations.models import *
 from production.models import Quittance, SecteurActivite, TypeDocument, Mouvement, Motif
@@ -498,11 +498,6 @@ class BackgroundQueryTaskAdmin(admin.ModelAdmin):
         js = ("configurations/js/custom.js",)
 
 
-class ApporteurInternationalAdmin(admin.ModelAdmin):
-    list_display = ('code', 'nom', 'pays')
-    form = ApporteurInternationalForm
-
-
 class ModelLettreChequeAdmin(admin.ModelAdmin):
     list_display = ('libelle', 'banque', 'auteur', 'statut',)
     list_filter = ('statut', ('bureau', admin.RelatedOnlyFieldListFilter), ('banque', admin.RelatedOnlyFieldListFilter))
@@ -789,7 +784,7 @@ admin.site.register(BureauTaxe, BureauTaxeAdmin)
 admin.site.register(TauxCommission, TauxCommissionAdmin)
 admin.site.register(TypeSinistre)
 admin.site.register(TypeIntervenant)
-admin.site.register(Responsabilite)
+admin.site.register(TauxResponsabilite)
 admin.site.register(TypeMouvement)
 admin.site.register(Circonstance)
 admin.site.register(PosteDommage)

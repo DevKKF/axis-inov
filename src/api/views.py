@@ -47,7 +47,7 @@ from shared.enum import EtatPolice, Statut, StatutSinistre, StatutEnrolement
 from shared.enum import StatutRemboursement
 from shared.helpers import get_tarif_acte_from_bareme, generate_numero_carte
 from sinistre.helper_sinistre import get_retenue_selon_contexte
-from sinistre.models import DossierSinistre, Sinistre, DocumentDossierSinistre
+from sinistre.models import DossierSinistre, Sinistre
 
 
 def get_user_id_from_token(token):
@@ -261,12 +261,6 @@ def service_save(request):
                 numero_ordre=medecin['numero_ordre'],
                 telephone=medecin['telephone'],
                 email=medecin['email'])
-
-            # LINK CREATED PRESCRIPTEUR TO PRESTATAIRE (INSERT LINE )
-            PrescripteurPrestataire.objects.create(
-                prestataire=prestataire,
-                prescripteur=prescripteur
-            )
 
         # GET AFFECTION BY CODE
         affection = Affection.objects.filter(code_cim_10=affectionJson['code_cim_10']).first()
@@ -1617,25 +1611,6 @@ class PriseEnChargeView(views.APIView):
                 fs.save(file_upload_path2, document2)
 
                 type_document = TypeDocument.objects.get(id=type_document_id)
-                document1_save = DocumentDossierSinistre.objects.create(dossier_sinistre=dossier_sinistre,
-                                                                  type_document=type_document,
-                                                                  fichier=file_upload_path1)
-                document2_save = DocumentDossierSinistre.objects.create(dossier_sinistre=dossier_sinistre,
-                                                                  type_document=type_document,
-                                                                  fichier=file_upload_path2)
-
-
-
-                # print(vars(document1_save))
-                # print(vars(document2_save))
-                #
-                # documents.append({
-                #     'id': document.pk,
-                #     # 'nom': document.nom,
-                #     'fichier': '<a href="' + document.fichier.url + '"><i class="fa fa-file" title="Aperçu"></i> Afficher</a>',
-                #     'type_document': document.type_document.libelle,
-                #     # 'confidentialite': document.confidentialite,
-                # })
 
 
             except MultiValueDictKeyError:
@@ -1920,16 +1895,13 @@ class ConstantesView(views.APIView):
     parser_classes = [JSONParser]
 
     def get(self, request):
-        type_acte = TypeActe.objects.all()
         civilite = Civilite.objects.all()
         pays = Pays.objects.all()
 
-        typeacte_serializer = TypeActeSerialiser(type_acte, many=True)
         civilite_serializer = CiviliteSerializer(civilite, many=True)
         pays_serializer = PaysSerializer(pays, many=True)
 
         data = {
-            "type_actes": typeacte_serializer.data,
             "civilites": civilite_serializer.data,
             "pays": pays_serializer.data
 

@@ -42,10 +42,10 @@ from django.utils.timezone import now
 from django.db import transaction
 from django.utils.translation import gettext as _
 
-from configurations.models import Compagnie, MarqueVehicule, Pays, Civilite, \
+from configurations.models import Compagnie, Pays, Civilite, Profession, \
     Produit, Formule, GarantieBranche, GarantieFormule, ConditionsAssurance, MoyensTransport, \
-    ModeCalcul, Duree, TypeCarosserie, User, Fractionnement, ModeReglement, \
-    Regularisation, Bureau, BusinessUnit, TypeCompagnie, Groupe, PosteDommage, TypeSinistre, TypeIntervenant, Responsabilite, Circonstance, \
+    Duree, TypeCarosserie, User, Fractionnement, ModeReglement, \
+    Regularisation, Bureau, BusinessUnit, TypeCompagnie, Groupe, PosteDommage, TypeSinistre, TypeIntervenant, TauxResponsabilite, Circonstance, \
     Devise, Taxe, BureauTaxe, Apporteur, BaseCalcul, TypeQuittance, NatureQuittance, TypeClient, TypePersonne, Langue, \
     Branche, ParamProduitCompagnie, CategorieVehicule, Banque, Carburant, Usage, Carosserie, GarantieCirconstance, \
     NatureOperation, TypeTarif, Rubrique, AuthGroup, ActionLog, SousRubrique, TypePrefinancement, CompteTresorerie, \
@@ -66,8 +66,8 @@ from production.templatetags.my_filters import money_field, convertir_date_multi
     arrondis_nombre, transformer_statut
 from shared.enum import StatutIncorporation, StatutValidite, StatutSinistre, StatutEnrolement, StatutTraitement, \
     StatutReversementCompagnie, StatutValiditeQuittance, Confidentialite, StatutBordereau
-from sinistre.models import Sinistre, DossierSinistre, MouvementSinistre, AlimentPoliceSinistre, SinistreIntervenant, GarantieSinistre, Provision, ReglementSinistre, \
-    HistoriqueSinistre, HistoriqueGarantieSinistre, HistoriqueAlimentPoliceSinistre
+from sinistre.models import Sinistre, DossierSinistre, MouvementSinistre, SinistreIntervenant, SinistreGarantie, ReglementSinistre, \
+    HistoriqueSinistre
 from sinistre.forms import SinistreForm
 from comptabilite.models import EncaissementCommission
 
@@ -141,7 +141,6 @@ class DetailsClientView(TemplateView):
             taxes = Taxe.objects.all().order_by('libelle')
             bureau_taxes = BureauTaxe.objects.filter(bureau_id=client.bureau_id)
             bases_calculs = BaseCalcul.objects.all().order_by('libelle')
-            modes_calculs = ModeCalcul.objects.all().order_by('libelle')
 
             placement_gestion = PlacementEtGestion
             mode_renouvellement = ModeRenouvellement
@@ -163,7 +162,7 @@ class DetailsClientView(TemplateView):
                              'devises': devises, 'utilisateurs': utilisateurs, 'bureaux': bureaux, 'taxes': taxes,
                              'bureau_taxes': bureau_taxes,
                              'apporteurs': apporteurs, 'bases_calculs': bases_calculs,
-                             'type_majoration_contrat': type_majoration_contrat, 'modes_calculs': modes_calculs,
+                             'type_majoration_contrat': type_majoration_contrat,
                              'statut_contrat': statut_contrat,
                              'types_prefinancements': types_prefinancements,
                              'anciennes_polices': anciennes_polices
@@ -2203,7 +2202,6 @@ def modifier_police(request, police_id):
         taxes = Taxe.objects.all().order_by('libelle')
         bureau_taxes = BureauTaxe.objects.filter(bureau_id=police.bureau_id)
         bases_calculs = BaseCalcul.objects.all().order_by('libelle')
-        modes_calculs = ModeCalcul.objects.all().order_by('libelle')
         branches = Branche.objects.filter(status=True).order_by('nom')
         types_prefinancements = TypePrefinancement.objects.filter(statut=Statut.ACTIF).order_by('libelle')
 
@@ -2293,7 +2291,7 @@ def modifier_police(request, police_id):
                        'regularisations': regularisations, 'typecompagnie': typecompagnie,
                        'devises': devises, 'taxes': taxes, 'types_prefinancements': types_prefinancements,
                        'bureau_taxes': bureau_taxes, 'compagnie_autre': compagnie_autre,
-                       'apporteurs': apporteurs, 'bases_calculs': bases_calculs, 'modes_calculs': modes_calculs,
+                       'apporteurs': apporteurs, 'bases_calculs': bases_calculs,
                        'apporteurs_police': apporteurs_police, 'type_majoration_contrat': type_majoration_contrat,
                        'catgories': catgories, 'carburants': carburants, 'usages': usages,
                        'carosseries': carosseries, 'conditions_assurances': conditions_assurances,
@@ -3937,7 +3935,7 @@ class PoliceSinistresView(TemplateView):
             typesinistres = TypeSinistre.objects.filter(statut=1).order_by('libelle')
             typeintervenants = TypeIntervenant.objects.filter(statut=1).order_by('libelle')
             typedocuments = TypeDocument.objects.filter(is_sinistre=1).order_by('libelle')
-            responsabilites = Responsabilite.objects.filter(statut=1)
+            responsabilites = TauxResponsabilite.objects.filter(statut=1)
             circonstances = Circonstance.objects.filter(statut=1, branche_id=police.produit.branche_id).order_by('libelle')
 
             garanties = PoliceGarantie.objects.filter(police_id=police.id, statut="ACTIF", deleted_at=None)
@@ -4094,9 +4092,8 @@ class DetailsSinistreView(TemplateView):
             total_prime_ttc = sinistre.total_prime_ttc
 
             intervenants = SinistreIntervenant.objects.filter(sinistre_id=sinistre_id)
-            garantie_sinistres = GarantieSinistre.objects.filter(sinistre_id=sinistre_id)
+            garantie_sinistres = SinistreGarantie.objects.filter(sinistre_id=sinistre_id)
             mouvement_sinistre = MouvementSinistre.objects.filter(sinistre_id=sinistre_id, statut_validite=StatutValidite.VALIDE).order_by('-id').first()
-            aliment_police_sinistre = AlimentPoliceSinistre.objects.filter(sinistre_id=sinistre_id).order_by('-id').first()
 
             context_perso = {
                 'sinistre': sinistre,
@@ -4107,7 +4104,6 @@ class DetailsSinistreView(TemplateView):
                 'total_capitaux': total_capitaux,
                 'total_prime_nette': total_prime_nette,
                 'total_prime_ttc': total_prime_ttc,
-                'aliment_police_sinistre': aliment_police_sinistre,
             }
             context = {**context_original, **context_perso}
 
@@ -4325,7 +4321,7 @@ def police_save_sinistre(request, police_id):
                 police_id=police.id,
                 compagnie_id=compagnie_id,
                 type_sinistre_id=type_sinistre_id,
-                responsabilite_id=responsabilite_id,
+                taux_responsabilite_id=responsabilite_id,
                 circonstance_id=circonstance_id,
                 created_by=request.user,
                 numero=numero,
@@ -4391,18 +4387,6 @@ def police_save_sinistre(request, police_id):
                 except AlimentPolice.DoesNotExist:
                     pass  # Gérer l'absence de l'objet si nécessaire
 
-            if aliment_police:
-                aliment_sinitre_created = AlimentPoliceSinistre(
-                    police=police,
-                    sinistre=sinistre,
-                    aliment_police=aliment_police,
-                    risque=risque,
-                )
-                aliment_sinitre_created.save()
-            else:
-                # Ajouter une gestion si l'aliment_police n'existe pas.
-                print(f"Aucun AlimentPolice trouvé pour vehicule_id={vehicule_id} ou marchandise_id={marchandise_id} ou autre_risque_id={autre_risque_id}")
-
             response = {
                 'statut': 1,
                 'message': "Sinistre enregistré avec succès !",
@@ -4437,7 +4421,6 @@ def modifier_sinistre(request, sinistre_id):
 
     if request.method == 'POST':
         sinistre_old = Sinistre.objects.get(id=sinistre_id)
-        alimentpolicesinistre = AlimentPoliceSinistre.objects.filter(sinistre_id=sinistre_old.id).first()
 
         commentaire = request.POST.get('commentaire')
 
@@ -4448,7 +4431,7 @@ def modifier_sinistre(request, sinistre_id):
             police_id=sinistre_old.police_id,
             compagnie_id=sinistre_old.compagnie_id,
             type_sinistre_id=sinistre_old.type_sinistre_id,
-            responsabilite_id=sinistre_old.responsabilite_id,
+            taux_responsabilite_id=sinistre_old.responsabilite_id,
             circonstance_id=sinistre_old.circonstance_id,
             created_by=sinistre_old.created_by,
             numero=sinistre_old.numero,
@@ -4536,7 +4519,6 @@ def modifiersinistre(request, sinistre_id):
 
     if request.method == 'POST':
         sinistre_old = Sinistre.objects.get(id=sinistre_id)
-        alimentpolicesinistre = AlimentPoliceSinistre.objects.filter(sinistre_id=sinistre_old.id).first()
 
         vehicule_id = request.POST.get('vehicule_id')
         marchandise_id = request.POST.get('marchandise_id')
@@ -4552,7 +4534,7 @@ def modifiersinistre(request, sinistre_id):
         tva_recuperee = request.POST.get('tva_recuperee')
         type_sinistre_id = request.POST.get('type_sinistre_id')
         franchise = request.POST.get('franchise').replace(' ', '')
-        responsabilite_id = request.POST.get('responsabilite_id')
+        taux_responsabilite_id = request.POST.get('responsabilite_id')
         fait_generateur = request.POST.get('fait_generateur')
         point_de_choc = request.POST.get('point_de_choc')
         commentaire = request.POST.get('commentaire')
@@ -4564,7 +4546,7 @@ def modifiersinistre(request, sinistre_id):
             police_id=sinistre_old.police_id,
             compagnie_id=sinistre_old.compagnie_id,
             type_sinistre_id=sinistre_old.type_sinistre_id,
-            responsabilite_id=sinistre_old.responsabilite_id,
+            taux_responsabilite_id=sinistre_old.responsabilite_id,
             circonstance_id=sinistre_old.circonstance_id,
             created_by=sinistre_old.created_by,
             numero=sinistre_old.numero,
@@ -4588,7 +4570,7 @@ def modifiersinistre(request, sinistre_id):
         # Mise à jour du sinistre
         sinistre = Sinistre.objects.filter(id=sinistre_id).update(
             type_sinistre_id=type_sinistre_id,
-            responsabilite_id=responsabilite_id,
+            taux_responsabilite_id=responsabilite_id,
             circonstance_id=circonstance_id,
             updated_at=datetime.now(),
             date_survenance=date_survenance if date_survenance else None,
@@ -4655,21 +4637,7 @@ def modifiersinistre(request, sinistre_id):
         #Garanties sinistre
         with transaction.atomic():
             # 1️⃣ Récupérer les anciennes garanties du sinistre
-            garanties_existantes = GarantieSinistre.objects.filter(sinistre=sinistre)
-
-            # 2️⃣ Enregistrer dans HistoriqueGarantieSinistre avant modification
-            historiques = []
-            for garantie in garanties_existantes:
-                historiques.append(HistoriqueGarantieSinistre(
-                    historique_sinistre_id=historiq_sinistre.id,
-                    circonstance=garantie.circonstance,
-                    garantie=garantie.garantie,
-                    franchise=garantie.franchise,
-                    capital=garantie.capital,
-                    prime_nette=garantie.prime_nette,
-                    prime_ttc=garantie.prime_ttc,
-                ))
-            HistoriqueGarantieSinistre.objects.bulk_create(historiques)
+            garanties_existantes = SinistreGarantie.objects.filter(sinistre=sinistre)
 
             # 3️⃣ Parcourir les garanties récupérées depuis la session
             garanties_sinistre = request.session.get("garanties_sinistre", [])
@@ -4678,7 +4646,7 @@ def modifiersinistre(request, sinistre_id):
                 garantie_id = garantie_sinistre.get('id')
 
                 # Vérifie si la garantie existe déjà pour ce sinistre + circonstance
-                garantie_obj, created = GarantieSinistre.objects.update_or_create(
+                garantie_obj, created = SinistreGarantie.objects.update_or_create(
                     sinistre=sinistre,
                     circonstance_id=circonstance_id,
                     garantie_id=garantie_id,
@@ -4756,34 +4724,6 @@ def modifiersinistre(request, sinistre_id):
             except AlimentPolice.DoesNotExist:
                 pass  # Gérer l'absence de l'objet si nécessaire
 
-        if aliment_police:
-            if alimentpolicesinistre:
-                histo_aliment_sinitre = HistoriqueAlimentPoliceSinistre(
-                    historique_sinistre_id=historiq_sinistre.id,
-                    police_id=sinistre.police_id,
-                    sinistre=sinistre,
-                    aliment_police=aliment_police,
-                    risque=risque,
-                )
-                histo_aliment_sinitre.save()
-
-                # Mise à jour
-                aliment_sinitre = AlimentPoliceSinistre.objects.filter(id=alimentpolicesinistre.id).update(
-                    aliment_police=aliment_police,
-                    risque=risque,
-                )
-            else:
-                aliment_sinitre_created = AlimentPoliceSinistre(
-                    police_id=sinistre.police_id,
-                    sinistre=sinistre,
-                    aliment_police=aliment_police,
-                    risque=risque,
-                )
-                aliment_sinitre_created.save()
-        else:
-            # Ajouter une gestion si l'aliment_police n'existe pas.
-            print(f"Aucun AlimentPolice trouvé pour vehicule_id={vehicule_id} ou marchandise_id={marchandise_id} ou autre_risque_id={autre_risque_id}")
-
         # Relier l'historique sinistre au mouvement sinistre
         # Obtenir l'avant-dernier mouvement de sinistre
         mouvement_sinistre = MouvementSinistre.objects.filter(sinistre_id=sinistre_id, historique_sinistre_id__isnull=True).order_by('-id').first()
@@ -4832,7 +4772,7 @@ def modifiersinistre(request, sinistre_id):
         typesinistres = TypeSinistre.objects.filter(statut=1).order_by('libelle')
         typeintervenants = TypeIntervenant.objects.filter(statut=1).order_by('libelle')
         typedocuments = TypeDocument.objects.filter(is_sinistre=1).order_by('libelle')
-        responsabilites = Responsabilite.objects.filter(statut=1)
+        taux_responsabilites = Responsabilite.objects.filter(statut=1)
         #circonstances = Circonstance.objects.filter(statut=1, branche_id=police.produit.branche_id).order_by('libelle')
         circonstances = Circonstance.objects.filter(statut=1).order_by('libelle')
         pays = Pays.objects.all().order_by('nom')
@@ -4843,8 +4783,6 @@ def modifiersinistre(request, sinistre_id):
             aliments = AlimentPolice.objects.filter(police_id=police.id)
         else:
             aliment = AlimentPolice.objects.filter(police_id=police.id).first()
-
-        alimentpolicesinistre = AlimentPoliceSinistre.objects.filter(sinistre_id=sinistre.id).first()
 
         return render(request, 'sinistre/modal_sinistre_modification.html',{
           'sinistre': sinistre,
@@ -4862,7 +4800,6 @@ def modifiersinistre(request, sinistre_id):
           'pays': pays,
           'aliments': aliments,
           'aliment': aliment,
-          'alimentpolicesinistre': alimentpolicesinistre,
         })
 
 
@@ -4882,7 +4819,7 @@ def modifiersinistres(request, sinistre_id):
             police_id=sinistre_old.police_id,
             compagnie_id=sinistre_old.compagnie_id,
             type_sinistre_id=sinistre_old.type_sinistre_id,
-            responsabilite_id=sinistre_old.responsabilite_id,
+            taux_responsabilite_id=sinistre_old.responsabilite_id,
             circonstance_id=sinistre_old.circonstance_id,
             created_by=sinistre_old.created_by,
             numero=sinistre_old.numero,
@@ -4906,7 +4843,7 @@ def modifiersinistres(request, sinistre_id):
         # Mise à jour du sinistre
         sinistre = Sinistre.objects.filter(id=sinistre_id).update(
             type_sinistre_id=type_sinistre_id,
-            responsabilite_id=responsabilite_id,
+            taux_responsabilite_id=responsabilite_id,
             circonstance_id=circonstance_id,
             updated_at=datetime.now(),
             date_survenance=date_survenance if date_survenance else None,
@@ -4968,7 +4905,7 @@ def modifiersinistres(request, sinistre_id):
         mouvements = Mouvement.objects.filter(type_mouvement_id=2).order_by('libelle')
         typesinistres = TypeSinistre.objects.filter(statut=1).order_by('libelle')
         typedocuments = TypeDocument.objects.filter(is_sinistre=1).order_by('libelle')
-        responsabilites = Responsabilite.objects.filter(statut=1)
+        responsabilites = TauxResponsabilite.objects.filter(statut=1)
         circonstances = Circonstance.objects.filter(statut=1, branche_id=police.produit.branche_id).order_by('libelle')
 
         aliments = 0
@@ -4977,8 +4914,6 @@ def modifiersinistres(request, sinistre_id):
             aliments = AlimentPolice.objects.filter(police_id=police.id)
         else:
             aliment = AlimentPolice.objects.filter(police_id=police.id).first()
-
-        alimentpolicesinistre = AlimentPoliceSinistre.objects.filter(sinistre_id=sinistre.id).first()
 
         return render(request, 'sinistre/modal_sinistre_modification.html',{
           'sinistre': sinistre,
@@ -4994,7 +4929,6 @@ def modifiersinistres(request, sinistre_id):
           'circonstances': circonstances,
           'aliments': aliments,
           'aliment': aliment,
-          'alimentpolicesinistre': alimentpolicesinistre,
         })
 
 
@@ -5347,7 +5281,7 @@ def charger_garanties_circonstance_session_sinistre(request):
         session_ids = {str(g['id']) for g in garanties_session}
 
         # Récupérer les garanties liées à cette circonstance
-        garanties = GarantieSinistre.objects.filter(circonstance_id=circonstance_id, sinistre_id=sinistre_id)
+        garanties = SinistreGarantie.objects.filter(circonstance_id=circonstance_id, sinistre_id=sinistre_id)
 
         # Ajouter uniquement celles qui ne sont pas déjà en session
         for garan in garanties:
@@ -6866,11 +6800,6 @@ def add_avenant(request, police_id):
                     date_debut_effet=mouvement_police.date_effet,
                     date_fin_effet=mouvement_police.date_fin_periode_garantie,
                 ).save()
-
-                #Mettre à jour la date début_effet et fin_effet de la police
-                # police.date_debut_effet = mouvement_police.date_effet
-                # police.date_fin_effet = mouvement_police.date_fin_periode_garantie
-                # police.save()
 
                 #Pour une avenant de renouvelement changer le statut de la police
                 if motif.code == "RENOUV":

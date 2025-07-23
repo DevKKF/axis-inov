@@ -275,22 +275,6 @@ class TypeCompagnie(models.Model):
         verbose_name_plural = "Types de compagnie"
 
 
-class GroupeCompagnie(models.Model):
-    code = models.CharField(max_length=255, blank=True, default=None, null=True)
-    nom = models.CharField(max_length=255)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    status = models.BooleanField(default=True)
-
-    def __str__(self):
-        return self.nom
-
-    class Meta:
-        db_table = 'groupe_compagnie'
-        verbose_name = 'Groupe compagnie'
-        verbose_name_plural = 'Groupes de compagnies'
-
-
 class Compagnie(models.Model):
     type_garant = models.ForeignKey(TypeGarant, on_delete=models.RESTRICT, null=True)
     nom = models.CharField(max_length=255)
@@ -554,21 +538,6 @@ class SousRubrique(models.Model):
         verbose_name_plural = 'Sous-rubriques'
 
 
-class TypeActe(models.Model):
-    libelle = models.CharField(max_length=50, blank=True, null=True)
-    code = models.CharField(max_length=50, blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return self.libelle
-
-    class Meta:
-        db_table = 'type_actes'
-        verbose_name = "Type d'acte"
-        verbose_name_plural = "Types d'acte"
-
-
 class RegroupementActe(models.Model):
     rubrique = models.ForeignKey(Rubrique, null=True, on_delete=models.RESTRICT)
     libelle = models.CharField(max_length=255)
@@ -637,7 +606,6 @@ class SousRubriqueRegroupementActe(models.Model):
 class Acte(models.Model):
     rubrique = models.ForeignKey(Rubrique, null=True, on_delete=models.RESTRICT)
     regroupement_acte = models.ForeignKey(RegroupementActe, null=True, on_delete=models.RESTRICT)
-    type_acte = models.ForeignKey(TypeActe, null=True, on_delete=models.RESTRICT)
     libelle = models.CharField(max_length=255)
     code = models.CharField(max_length=255, unique=True, blank=True, default=None, null=True)
     lettre_cle = models.CharField(max_length=5, blank=True, null=True)
@@ -1054,44 +1022,6 @@ class ParamActe(models.Model):
         verbose_name_plural = "Paramétrages de l'acte"
 
 
-class PrescripteurPrestataire(models.Model):
-    created_by = models.ForeignKey(User, related_name="pp_created_by", null=True, on_delete=models.RESTRICT)
-    deleted_by = models.ForeignKey(User, related_name="pp_deleted_by", null=True, on_delete=models.RESTRICT)
-    prestataire = models.ForeignKey(Prestataire, null=True, on_delete=models.RESTRICT)
-    prescripteur = models.ForeignKey(Prescripteur, null=True, on_delete=models.RESTRICT)
-    statut_validite = models.fields.CharField(choices=StatutValidite.choices, default=StatutValidite.VALIDE, max_length=15, null=True)
-    observation = models.CharField(max_length=255, blank=True, null=True)
-    deleted_at = models.DateTimeField(blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return self.prestataire.name + ' de ' + self.prescripteur.name
-
-    class Meta:
-        db_table = 'prescripteur_prestataire'
-        verbose_name = 'Prescripteur du prestataire'
-        verbose_name_plural = 'Prescripteurs du prestataire'
-
-
-class ApporteurInternational(models.Model):
-    created_by = models.ForeignKey(User, null=True, on_delete=models.RESTRICT)
-    pays = models.ForeignKey(Pays, null=True, on_delete=models.RESTRICT)
-    nom = models.CharField(max_length=100, blank=True, default=None, null=True)
-    code = models.CharField(max_length=25, blank=True, default=None, null=True, unique=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    status = models.BooleanField(default=True)
-
-    def __str__(self):
-        return f"{self.nom} - {self.code} - {self.status} - {self.pays}"
-
-
-    class Meta:
-        db_table = 'apporteur_international'
-        verbose_name = 'Apporteur international'
-        verbose_name_plural = 'Apporteurs internationaux'
-
-
 class Apporteur(models.Model):
     created_by = models.ForeignKey(User, null=True, on_delete=models.RESTRICT)
     id_per = models.CharField(max_length=25, blank=True, null=True)
@@ -1152,35 +1082,6 @@ class Apporteur(models.Model):
         db_table = 'apporteurs'
         verbose_name = 'Apporteurs'
         verbose_name_plural = 'Intermediaires'
-
-
-class TypeAssurance(models.Model):
-    libelle = models.CharField(max_length=50, blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return self.libelle
-
-    class Meta:
-        db_table = 'type_assurance'
-        verbose_name = 'Type assurance'
-        verbose_name_plural = "Types d'assurance"
-
-
-class ModeCalcul(models.Model):
-    libelle = models.CharField(max_length=50, blank=True, null=True)
-    code = models.CharField(max_length=30, blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return self.libelle
-
-    class Meta:
-        db_table = 'modes_calculs'
-        verbose_name = 'Mode de calcul'
-        verbose_name_plural = "Modes de calcul"
 
 
 class BaseCalcul(models.Model):
@@ -1340,21 +1241,6 @@ class Usage(models.Model):
         db_table = 'usage'
         verbose_name = 'Usages'
         verbose_name_plural = "Usages"
-
-
-class MarqueVehicule(models.Model):
-    libelle = models.CharField(max_length=50, blank=True, null=True)
-    code = models.CharField(max_length=50, blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return self.libelle
-
-    class Meta:
-        db_table = 'marque_vehicule'
-        verbose_name = 'Marque'
-        verbose_name_plural = "Marques"
 
 
 class Tarif(models.Model):
@@ -1865,9 +1751,9 @@ class TypeIntervenant(models.Model):
         verbose_name_plural = "Type d'intervenant"
 
 
-class Responsabilite(models.Model):
+class TauxResponsabilite(models.Model):
     libelle = models.CharField(max_length=100, blank=True, null=True)
-    taux_responsabilite = models.FloatField(null=True, )
+    taux_responsabilite = models.FloatField(null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     statut = models.BooleanField(default=True)
@@ -1876,7 +1762,7 @@ class Responsabilite(models.Model):
         return f'{self.libelle} - {self.taux_responsabilite} - {self.statut} - {self.created_at}'
 
     class Meta:
-        db_table = 'responsabilite'
+        db_table = 'taux_responsabilites'
         verbose_name = "Taux de responsabilite"
         verbose_name_plural = "Taux de responsabilite"
 

@@ -8,7 +8,6 @@ from django_dump_die.middleware import dd
 
 from configurations.helper_config import send_notification_background_task_mail
 from configurations.models import CronLog
-from sinistre.helper_sinistre import load_backgroound_request_task
 
 from sinistre.models import Sinistre
 
@@ -31,7 +30,6 @@ def cron_backgroundrequesttask(request):
     CronLog.objects.create(action="export", table="background_query_task",
                            description="Background request task cron executed").save()
     send_notification_background_task_mail('a.tissi@inov.africa', None)
-    # load_backgroound_request_task()
     # return JsonResponse({"message": "Background request task cron executed"}, safe=False)
 
 

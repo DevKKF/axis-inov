@@ -1767,9 +1767,6 @@ msgstr "Code formule"
 msgid "Libelle_Formule"
 msgstr "Libellé formule"
 
-msgid "Territorialite"
-msgstr "Territorialité"
-
 msgid "GARANTIE"
 msgstr "GARANTIE"
 

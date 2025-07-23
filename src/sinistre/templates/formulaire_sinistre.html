@@ -1,3 +1,5 @@
+{% load my_filters %}
+{% load i18n static jazzmin admin_urls %}
 <form id="form_add_sinistre_gestionnaire" action="{% url 'add_sinistre_gestionnaire' %}" method="post">
    {% csrf_token %}
    <input type="hidden" name="police_id" value="{{ police.id }}">
@@ -39,6 +41,7 @@
                   <div class="form-group row">
                      <label class="col-sm-5 col-form-label">Date début période</label>
                      <div class="col-sm-7">
+                        <input type="hidden" name="date_debut_effet" id="date_debut_effet" class="form-control" value="{{ police.date_debut_effet }}" />
                         <span class="form-control" title="{{ police.date_debut_effet|date:'d/m/Y' }}">{{ police.date_debut_effet|date:'d/m/Y' }}</span>
                      </div>
                   </div>
@@ -75,14 +78,21 @@
                      </div>
                   </div>
                   <div class="form-group row">
-                     <label class="col-sm-5 col-form-label">Gestionnaire sinistre</label>
+                     <label class="col-sm-5 col-form-label">Gestionnaire sinistre <span class="required">*</span></label>
                      <div class="col-sm-7">
-                        <span class="form-control" title="{{ police.gestionnaire.first_name|default_if_none:'' }}">{{ police.gestionnaire.first_name }}</span>
+                        <select class="form-control tags-multiple" name="gestionnaire_sinistre_id" required>
+                           <option value="">Choisir</option>
+                           {% for gest_sin in gestionnaire_sinistres %}
+                              <option value="{{ gest_sin.id }}" {% if gest_sin.id == police.gestionnaire_id %} selected {% endif %}>{{ gest_sin.first_name }} {{ gest_sin.last_name }}</option>
+                           {% endfor %}
+                        </select>
                      </div>
                   </div>
                   <div class="form-group row">
                      <label class="col-sm-5 col-form-label">Date fin période</label>
                      <div class="col-sm-7">
+                        <input type="hidden" name="date_du_jour" id="date_du_jour" class="form-control" value="{{ today|date:'Y-m-d' }}" />
+                        <input type="hidden" name="date_fin_effet" id="date_fin_effet" class="form-control" value="{{ police.date_fin_effet|date:'Y-m-d' }}" />
                         <span class="form-control" title="{% if police.date_fin_effet %} {{ police.date_fin_effet|date:'d/m/Y' }} {% else %} {{ police.date_fin_police|date:'d/m/Y' }} {% endif %}">
                         {% if police.date_fin_effet %} {{ police.date_fin_effet|date:'d/m/Y' }} {% else %} {{ police.date_fin_police|date:'d/m/Y' }} {% endif %}
                         </span>
@@ -108,9 +118,6 @@
          <li class="nav-item"><a class="nav-link active" id="generalite-tab" data-toggle="tab" href="#generalite" role="tab" aria-controls="generalite" aria-selected="true">{{_("GENERALITE")}}</a></li>
          <li class="nav-item"><a class="nav-link" id="garantie_sinistres-tab" data-toggle="tab" href="#garantie_sinistres" role="tab" aria-controls="garantie_sinistres" aria-selected="false">{{_("GARANTIES SINISTRES")}}</a></li>
          <li class="nav-item"><a class="nav-link" id="intervenants-tab" data-toggle="tab" href="#intervenants" role="tab" aria-controls="intervenants" aria-selected="false">{{_("INTERVENANTS")}}</a></li>
-         <!--li class="nav-item"><a class="nav-link" id="provisions-tab" data-toggle="tab" href="#provisions" role="tab" aria-controls="provisions" aria-selected="false">{{_("PROVISIONS")}}</a></li>
-            <li class="nav-item"><a class="nav-link" id="reglements-tab" data-toggle="tab" href="#reglements" role="tab" aria-controls="reglements" aria-selected="false">{{_("REGLEMENTS")}}</a></li>
-            <li class="nav-item"><a class="nav-link" id="syntheses-tab" data-toggle="tab" href="#syntheses" role="tab" aria-controls="syntheses" aria-selected="false">{{_("SYNTHESE")}}</a></li-->
       </ul>
       <div class="card-body">
          <div class="tab-content" id="myTabContent">
@@ -126,22 +133,22 @@
                               <label class="col-sm-5 col-form-label">Recherche risque</label>
                               <div class="col-sm-7">
                                  {% if police.produit.code == '10001' or police.produit.code == '10002' %}
-                                 <select class="form-control tags-multiple vehicule" name="vehicule_id" id="vehicule_id">
+                                 <select class="form-control tags-multiple vehicule" name="vehicule_id" id="vehicule_id" required>
                                     <option value=""></option>
                                     {% for aliment in aliments %}
-                                    <option value="{{ aliment.vehicule.id }}">{{ aliment.vehicule.marque|default_if_none:"" }}-{{ aliment.vehicule.numero_immatriculation|default_if_none:"" }}</option>
+                                       <option value="{{ aliment.vehicule.id }}">{{ aliment.vehicule.marque|default_if_none:"" }}-{{ aliment.vehicule.numero_immatriculation|default_if_none:"" }}</option>
                                     {% endfor %}
                                  </select>
                                  {% elif police.produit.code == '50001' or police.produit.code == '50002' %}
-                                 <select class="form-control tags-multiple marchandise" name="marchandise_id" id="marchandise_id">
+                                 <select class="form-control tags-multiple marchandise" name="marchandise_id" id="marchandise_id" required>
                                     <option value=""></option>
                                     {% for aliment in aliments %}
-                                    <option value="{{ aliment.marchandise.id }}">{{ aliment.marchandise.num_certificat|default_if_none:"" }}</option>
+                                       <option value="{{ aliment.marchandise.id }}">{{ aliment.marchandise.num_certificat|default_if_none:"" }}</option>
                                     {% endfor %}
                                  </select>
                                  {% else %}
-                                 <input type="text" class="form-control" readonly>
-                                 <input type="hidden" class="form-control" name="autre_risque_id" value="{{ aliment.autre_risque_id }}" />
+                                    <input type="text" class="form-control" readonly>
+                                    <input type="hidden" class="form-control" name="autre_risque_id" value="{{ aliment.autre_risque_id }}" />
                                  {% endif %}
                               </div>
                            </div>
@@ -175,12 +182,10 @@
                            <div class="form-group row">
                               <label class="col-sm-5 col-form-label">Risque <span class="required">*</span></label>
                               <div class="col-sm-7">
-                                 {% if police.produit.code == '10001' or police.produit.code == '10002' %}
-                                 <input type="text" class="form-control" name="risque" id="risque" readonly />
-                                 {% elif police.produit.code == '50001' or police.produit.code == '50002' %}
-                                 <input type="text" class="form-control" name="risque" id="marchandise" value="{{ aliment.marchandise.num_certificat }}" required />
+                                 {% if police.produit.code == '50001' or police.produit.code == '50002' %}
+                                    <input type="text" class="form-control" name="marchandise" id="marchandise" value="{{ aliment.marchandise.num_certificat }}" required />
                                  {% else %}
-                                 <input type="text" class="form-control" name="risque" id="risque" value="{{ aliment.autre_risque.libelle }}" required />
+                                    <input type="text" class="form-control" name="risque" id="risque" value="{{ aliment.autre_risque.libelle }}" required />
                                  {% endif %}
                               </div>
                            </div>
@@ -204,7 +209,7 @@
                            <div class="form-group row">
                               <label class="col-sm-5 col-form-label">Circonstance <span class="required">*</span></label>
                               <div class="col-sm-7">
-                                 <select class="form-control" name="circonstance_id" id="circonstance_id" required>
+                                 <select class="form-control tags-multiple" name="circonstance_id" id="circonstance_id" required>
                                     <option value="">Choisir</option>
                                     {% for circonstance in circonstances %}
                                     <option value="{{ circonstance.id }}" data-circonstance_id="{{ circonstance.id }}">{{ circonstance.libelle|default_if_none:"" }}</option>
@@ -223,8 +228,8 @@
                               <div class="col-sm-7">
                                  <select class="form-control" name="tva_recuperee" id="tva_recuperee">
                                     <option value="">Choisir</option>
-                                    <option value="OUI">OUI</option>
-                                    <option value="NON">NON</option>
+                                    <option value="1">OUI</option>
+                                    <option value="0">NON</option>
                                  </select>
                               </div>
                            </div>
@@ -267,19 +272,19 @@
                            <div class="form-group row">
                               <label class="col-sm-12 col-form-label">Fait générateur</label>
                               <div class="col-sm-12">
-                                 <textarea class="form-control" name="fait_generateur" id="fait_generateur" cols="3" rows="1"></textarea>
+                                 <textarea class="form-control" name="fait_generateur" id="fait_generateur" cols="3" rows="3"></textarea>
                               </div>
                            </div>
                            <div class="form-group row">
                               <label class="col-sm-12 col-form-label">Point de choc</label>
                               <div class="col-sm-12">
-                                 <textarea class="form-control" name="point_de_choc" id="point_de_choc" cols="3" rows="2"></textarea>
+                                 <textarea class="form-control" name="point_de_choc" id="point_de_choc" cols="3" rows="5"></textarea>
                               </div>
                            </div>
                            <div class="form-group row">
-                              <label class="col-sm-12 col-form-label">Commentaire</label>
+                              <label class="col-sm-12 col-form-label">Commentaires</label>
                               <div class="col-sm-12">
-                                 <textarea class="form-control" name="commentaire" id="commentaire" cols="10" rows="5"></textarea>
+                                 <textarea class="form-control" name="commentaires" id="commentaires" cols="10" rows="5"></textarea>
                               </div>
                            </div>
                         </div>
@@ -333,10 +338,11 @@
       </div>
    </div>
    <div class="modal-footer justify-content-between" style="background:#ccc">
-      <img src="" id="loading" />
+      <img src="" id="loading">
       <button type="button" id="btn_save_sinistre_gestionnaire" class="btn btn-info"><i class="fa fa-check-circle"></i> Enregistrer</button>
    </div>
 </form>
+
 <script>
    function formatMontant(input) {
        // Supprimez d'abord tous les caractères non numériques

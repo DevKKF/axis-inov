@@ -796,44 +796,6 @@ class DossierSinistre(models.Model):
         return True if (self.type_prefinancement and self.type_prefinancement.code == 'PREF_TOUT') else False
 
 
-def upload_location_factureprestataire(instance, filename):
-    filebase, extension = filename.rsplit('.', 1)
-    file_name = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
-    return 'dossiers_sinistres/bordereaux/%s.%s' % (file_name, extension)
-
-
-class FacturePrestataire(models.Model):
-    numero = models.CharField(max_length=255, blank=True, null=True, unique=True)
-    bureau = models.ForeignKey(Bureau, null=True, on_delete=models.RESTRICT)
-    type_remboursement = models.ForeignKey(TypeRemboursement, null=True, on_delete=models.RESTRICT)
-    prestataire = models.ForeignKey(Prestataire, null=True, on_delete=models.RESTRICT)
-    adherent_principal = models.ForeignKey(Aliment, null=True, on_delete=models.RESTRICT)
-    assure = models.ForeignKey(Client, null=True, on_delete=models.RESTRICT)
-    periode_comptable = models.ForeignKey(PeriodeComptable, null=True, on_delete=models.RESTRICT)
-    fichier = models.FileField(upload_to=upload_location_factureprestataire, blank=True, default=None, null=True)
-    observation = models.CharField(max_length=255, blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    created_by = models.ForeignKey(User, null=True, on_delete=models.RESTRICT)
-    fp_deleted_by = models.ForeignKey(User, related_name="fp_deleted_by", null=True, on_delete=models.RESTRICT)
-    statut = models.fields.CharField(choices=SatutBordereauDossierSinistres.choices, default=SatutBordereauDossierSinistres.ATTENTE, max_length=30, null=True)
-    statut_validite = models.fields.CharField(choices=StatutValidite.choices, default=StatutValidite.VALIDE, max_length=15, null=True)
-    net_a_payer = models.FloatField(null=True, )
-
-    def __str__(self):
-        return f'{self.numero} | {self.prestataire}'
-
-    class Meta:
-        db_table = 'factures_prestataires'
-        verbose_name = 'Facture prestataire'
-        verbose_name_plural = 'Factures prestataires'
-
-        permissions = [
-            #("can_views_factures", "Can do something with this model"),
-            #("can_do_another_thing", "Can do another thing with this model"),
-        ]
-
-
 def upload_location_bordereauordonnancement(instance, filename):
     filebase, extension = filename.rsplit('.', 1)
     file_name = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
@@ -984,23 +946,6 @@ class ReglementCompagnie(models.Model):
         verbose_name_plural = 'Reglements faits par les compagnies'
 
 
-class ReglementFactureCompagnie(models.Model):
-    bureau = models.ForeignKey(Bureau, null=True, on_delete=models.RESTRICT)
-    created_by = models.ForeignKey(User, null=True, on_delete=models.RESTRICT)
-    reglement_compagnie = models.ForeignKey(ReglementCompagnie, on_delete=models.RESTRICT)
-    facture_compagnie = models.ForeignKey(FactureCompagnie, on_delete=models.RESTRICT)
-    montant_regle = models.DecimalField(max_digits=20, decimal_places=0, blank=True, null=True)
-    observation = models.CharField(max_length=255, null=True)
-    statut_validite = models.fields.CharField(choices=StatutValidite.choices, default=StatutValidite.VALIDE, max_length=15, null=True)
-    created_at = models.DateTimeField(auto_now=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        db_table = 'reglement_facture_compagnie'
-        verbose_name = 'Reglement facture'
-        verbose_name_plural = 'Reglement facture'
-
-
 class RemboursementSinistre(models.Model):
     created_by = models.ForeignKey(User, related_name="remboursements_crees", null=True, on_delete=models.RESTRICT)
     designation = models.CharField(max_length=255, blank=True, null=True)
@@ -1033,29 +978,6 @@ class RemboursementSinistre(models.Model):
         return False
 
 
-class ProrogationSinistre(models.Model):
-    created_by = models.ForeignKey(User, null=True, on_delete=models.RESTRICT)
-    reviewed_by = models.ForeignKey(User, null=True, related_name='reviewed_by', on_delete=models.RESTRICT)
-    sinistre = models.ForeignKey(Sinistre, related_name="prorogations", on_delete=models.RESTRICT)
-    motif_demande = models.CharField(max_length=255, blank=True, null=True)
-    motif_rejet = models.CharField(max_length=255, blank=True, null=True)
-    jour_demande = models.IntegerField(default=0)
-    jour_accorde = models.IntegerField(default=0)
-    date_entree = models.DateTimeField(null=True)
-    date_sortie = models.DateTimeField(null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    statut = models.fields.CharField(choices=StatutSinistre.choices, default=StatutSinistre.ATTENTE, max_length=15, null=True)
-
-    def __str__(self):
-        return f' Demande de prorogation de {self.jour_demande} jour(s)'
-
-    class Meta:
-        db_table = 'prorogation_sinistre'
-        verbose_name = 'Prorogation'
-        verbose_name_plural = 'Prorogations'
-
-
 #historique des sinistres sur un bordereau d'ordonnancment au cas ou on doit annuler un bordereau d'ordonnancement on concerve l'historique
 class HistoriqueOrdonnancementSinistre(models.Model):
     created_by = models.ForeignKey(User, null=True, on_delete=models.RESTRICT)
@@ -1070,104 +992,3 @@ class HistoriqueOrdonnancementSinistre(models.Model):
         db_table = 'historique_ordonnancement_sinistre'
         verbose_name = 'Historique ordonnancement sinistre'
         verbose_name_plural = 'Historique ordonnancement sinistre'
-
-
-class ControlePlafond(models.Model):
-    session_pec = models.CharField(max_length=255, blank=True, null=True)
-    plafond_conso_famille = models.CharField(max_length=255, blank=True, null=True)
-    plafond_conso_individuel = models.CharField(max_length=255, blank=True, null=True)
-    plafond_conso_sous_rubrique = models.CharField(max_length=255, blank=True, null=True)
-    plafond_conso_regroupement_acte = models.CharField(max_length=255, blank=True, null=True)
-    plafond_conso_acte = models.CharField(max_length=255, blank=True, null=True)
-    rubrique = models.ForeignKey(Rubrique, on_delete=models.RESTRICT)
-    sous_rubrique = models.ForeignKey(SousRubrique, null=True, on_delete=models.RESTRICT)
-    regroupement_acte = models.ForeignKey(RegroupementActe, null=True, on_delete=models.RESTRICT)
-    acte = models.ForeignKey(Acte, null=True, on_delete=models.RESTRICT)
-    aliment = models.ForeignKey(Aliment, null=True, on_delete=models.RESTRICT)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        db_table = 'controle_plafond'
-        verbose_name = 'Controle plafond'
-        verbose_name_plural = 'Controle plafonds'
-
-
-#pour permettre le calcul de plafond pendant les ambulatoires
-class SinistreTemporaire(models.Model):
-    session_pec = models.CharField(max_length=100, blank=True, null=True)
-    observation = models.CharField(max_length=255, blank=True, null=True)
-
-    created_by = models.ForeignKey(User, null=True, on_delete=models.RESTRICT)
-    updated_price_by = models.ForeignKey(User, related_name="st_updated_price_by", null=True, on_delete=models.RESTRICT)
-    approuved_by = models.ForeignKey(User, related_name="st_approbateur", null=True, on_delete=models.RESTRICT)
-    served_by = models.ForeignKey(User, related_name="st_serveur", null=True, on_delete=models.RESTRICT)
-    dossier_sinistre = models.ForeignKey(DossierSinistre, related_name="st_sinistres", null=True, on_delete=models.RESTRICT)
-    aliment = models.ForeignKey(Aliment, null=True, on_delete=models.RESTRICT)
-    adherent_principal = models.ForeignKey(Aliment, related_name="st_famille", null=True, on_delete=models.RESTRICT)
-    compagnie = models.ForeignKey(Compagnie, null=True, on_delete=models.RESTRICT)
-    police = models.ForeignKey(Police, null=True, on_delete=models.RESTRICT)
-    periode_couverture = models.ForeignKey(PeriodeCouverture, null=True, on_delete=models.RESTRICT)
-    bareme = models.ForeignKey(Bareme, null=True, blank=True, on_delete=models.RESTRICT)
-    acte = models.ForeignKey(Acte, null=True, on_delete=models.RESTRICT)
-    medicament = models.ForeignKey(Medicament, null=True, on_delete=models.RESTRICT)
-    prestataire = models.ForeignKey(Prestataire, null=True, on_delete=models.RESTRICT)
-    prescripteur = models.ForeignKey(Prescripteur, null=True, on_delete=models.RESTRICT)
-    numero = models.CharField(max_length=50, blank=True, null=True)
-    type_sinistre = models.CharField(max_length=100, blank=False, null=True)
-    prix_unitaire = models.IntegerField(default=0, null=True)
-    frais_reel = models.DecimalField(max_digits=50, decimal_places=16, null=True)
-    ticket_moderateur = models.DecimalField(max_digits=50, decimal_places=16, null=True)
-    depassement = models.DecimalField(max_digits=50, decimal_places=16, null=True)
-
-    nombre_demande = models.IntegerField(null=True, )
-    nombre_accorde = models.IntegerField(null=True, )
-
-    plafond_chambre = models.DecimalField(max_digits=50, decimal_places=16, null=True)
-    plafond_hospit = models.DecimalField(max_digits=50, decimal_places=16, null=True)
-
-    montant_plafond = models.DecimalField(max_digits=50, decimal_places=16, null=True)
-    nombre_plafond = models.IntegerField(null=True, )
-    nature = models.IntegerField(null=True, )
-    frequence = models.IntegerField(null=True, )
-    unite_frequence = models.IntegerField(null=True, )
-    franchise_min = models.FloatField(null=True, )
-    franchise_max = models.FloatField(null=True, )
-    delai_controle = models.IntegerField(null=True, )
-
-    part_assure = models.DecimalField(max_digits=50, decimal_places=16, null=True)
-    part_compagnie = models.DecimalField(max_digits=50, decimal_places=16, null=True)
-
-    date_survenance = models.DateTimeField(null=True)
-    date_entree = models.DateTimeField(null=True)
-    date_sortie = models.DateTimeField(null=True)
-    reference_facture = models.CharField(max_length=50, blank=True, null=True)
-    date_reception_facture = models.DateTimeField(blank=True, null=True)
-    motif_rejet = models.CharField(max_length=255, blank=True, null=True)
-    statut = models.fields.CharField(choices=StatutSinistre.choices, default=StatutSinistre.ACCORDE, max_length=15, null=True)
-    statut_prestation = models.fields.CharField(choices=StatutSinistrePrestation.choices, default=StatutSinistrePrestation.ATTENTE, max_length=15, null=True)
-    statut_bordereau = models.fields.CharField(choices=StatutSinistreBordereau.choices, default=StatutSinistreBordereau.ATTENTE, max_length=20, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    reviewed_at = models.DateTimeField(null=True)
-
-    class Meta:
-        db_table = 'sinistres_temporaires'
-        verbose_name = 'Sinistre temporaire'
-        verbose_name_plural = 'Sinistres temporaires'
-
-
-# Historique des sinistres payés
-class HistoriquePaiementComptableSinistre(models.Model):
-    created_by = models.ForeignKey(User, null=True, on_delete=models.RESTRICT)
-    paiement_comptable = models.ForeignKey(PaiementComptable, on_delete=models.RESTRICT)
-    sinistre = models.ForeignKey(Sinistre, on_delete=models.RESTRICT)
-    montant_paye = models.DecimalField(max_digits=50, decimal_places=16, null=True)
-    observation = models.CharField(max_length=255, blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        db_table = 'historique_paiement_comptable_sinistre'
-        verbose_name = 'Historique paiement comptable sinistre'
-        verbose_name_plural = 'Historique paiement comptable sinistre'

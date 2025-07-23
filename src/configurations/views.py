@@ -49,8 +49,7 @@ from shared.enum import PasswordType, Statut, StatutValidite, BaseCalculTM, Stat
 from django.contrib import messages
 from django.db import transaction
 
-from sinistre.models import Sinistre, PaiementComptable, HistoriqueOrdonnancementSinistre, \
-    HistoriquePaiementComptableSinistre, BordereauOrdonnancement
+from sinistre.models import Sinistre, PaiementComptable, HistoriqueOrdonnancementSinistre, BordereauOrdonnancement
 import json
 import io
 
@@ -2844,13 +2843,6 @@ class DbSuperAdminQueryView(TemplateView):
                         # mettre la facture à ordonnancer
                         sinistre.facture_prestataire.statut = SatutBordereauDossierSinistres.ORDONNANCE
                         sinistre.facture_prestataire.save()
-
-                        # historiser les lignes qui étaient sur le bordereau
-                        HistoriquePaiementComptableSinistre.objects.create(created_by=request.user,
-                                                                        paiement_comptable=paiement_comptable,
-                                                                        sinistre=sinistre,
-                                                                        montant_paye=sinistre.montant_remb_accepte,
-                                                                        observation=observation)
 
                 # enregistrer dans les log
                 ActionLog.objects.create(done_by=request.user, action="annulation_bordereau_paiement",

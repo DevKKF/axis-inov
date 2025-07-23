@@ -29,7 +29,7 @@ from configurations.models import Acte, Prestataire, Prescripteur, Tarif, \
     SousRubriqueRegroupementActe, TypePrefinancement
 from production.models import Aliment, TarifPrestataireClient, Bareme, AlimentFormule, Carte
 from shared.enum import StatutSinistre, Statut, StatutValidite, StatutRemboursement
-from sinistre.models import Sinistre, SinistreTemporaire
+from sinistre.models import Sinistre
 from django.core.files.base import File
 
 
@@ -584,26 +584,8 @@ def get_tarif_acte_from_bareme(type_priseencharge_code, date_survenance, acte_id
         plafond_conso_famille = float(plafond_conso_famille)
         plafond_conso_individuelle = float(plafond_conso_individuelle)
 
-
-        pprint("plafond_conso_famille:" + str(plafond_conso_famille) + ", plafond_conso_individuelle:" + str(plafond_conso_individuelle)+ ", devise:" + str(devise))
-
-
-        #Added on 27092023: utiliser une table temporaire pour controler les plafonds de consommation
-        # ajouter les consommations des sinistres temporaires
-        consommation_individuelle_temporaire = SinistreTemporaire.objects.filter(
-            periode_couverture_id=periode_couverture_encours.pk,
-            aliment_id=aliment.id,
-            session_pec=session_pec
-        ).aggregate(Sum('part_compagnie'))['part_compagnie__sum'] or 0
-
-        consommation_famille_temporaire = SinistreTemporaire.objects.filter(
-            periode_couverture_id=periode_couverture_encours.pk,
-            adherent_principal_id=aliment.adherent_principal.id,
-            session_pec=session_pec
-        ).aggregate(Sum('part_compagnie'))['part_compagnie__sum'] or 0
-
-        consommation_individuelle += float(consommation_individuelle_temporaire)
-        consommation_famille += float(consommation_famille_temporaire)
+        consommation_individuelle += float(0)
+        consommation_famille += float(0)
 
 
         # Vérifier si la somme des consommations famille de l’individu n’est pas atteinte
@@ -661,16 +643,8 @@ def get_tarif_acte_from_bareme(type_priseencharge_code, date_survenance, acte_id
             # les consommations de l'assuré
             consommation_acte = 0
 
-            consommation_acte_temporaire = SinistreTemporaire.objects.filter(
-                periode_couverture_id=periode_couverture_encours.pk,
-                acte_id=acte.pk,
-                aliment_id=aliment.id,
-                session_pec=session_pec
-            ).aggregate(Sum('part_compagnie'))['part_compagnie__sum'] or 0
-
 
             consommation_regroupement_acte = 0
-            consommation_regroupement_acte_temporaire = 0
             if acte.regroupement_acte:
                 consommation_regroupement_acte = Sinistre.objects.filter(
                     periode_couverture_id=periode_couverture_encours.pk,
@@ -680,14 +654,6 @@ def get_tarif_acte_from_bareme(type_priseencharge_code, date_survenance, acte_id
                     statut_remboursement__in=[StatutRemboursement.ATTENTE, StatutRemboursement.DEMANDE, StatutRemboursement.ACCEPTE, StatutRemboursement.ACCEPTE_PARTIELLEMENT],
                     statut_validite=StatutValidite.VALIDE
                 ).aggregate(Sum('part_compagnie'))['part_compagnie__sum'] or 0
-
-                consommation_regroupement_acte_temporaire = SinistreTemporaire.objects.filter(
-                    periode_couverture_id=periode_couverture_encours.pk,
-                    acte__regroupement_acte_id=acte.regroupement_acte.pk,
-                    aliment_id=aliment.id,
-                    session_pec=session_pec
-                ).aggregate(Sum('part_compagnie'))['part_compagnie__sum'] or 0
-
 
             # les consommations par sous-rubrique pour chaque sous-rubrique auxquelles appartient l'acte
             # rechercher les sous-rubriques dans lesquel le regroupement_acte de l'acte est présent
@@ -703,17 +669,10 @@ def get_tarif_acte_from_bareme(type_priseencharge_code, date_survenance, acte_id
                 statut_validite=StatutValidite.VALIDE
             ).aggregate(Sum('part_compagnie'))['part_compagnie__sum'] or 0
 
-            cconsommation_rubrique_temporaire = SinistreTemporaire.objects.filter(
-                periode_couverture_id=periode_couverture_encours.pk,
-                acte__rubrique_id=acte.rubrique.pk,
-                aliment_id=aliment.id,
-                session_pec=session_pec
-            ).aggregate(Sum('part_compagnie'))['part_compagnie__sum'] or 0
-
             #additionner les consos déjà effectuées et les temporaires
-            consommation_acte += consommation_acte_temporaire
-            consommation_regroupement_acte += consommation_regroupement_acte_temporaire
-            consommation_rubrique += cconsommation_rubrique_temporaire
+            consommation_acte += 0
+            consommation_regroupement_acte += 0
+            consommation_rubrique += 0
 
 
 
@@ -1413,21 +1372,7 @@ def get_tarif_acte_from_bareme(type_priseencharge_code, date_survenance, acte_id
                                     statut_validite=StatutValidite.VALIDE
                                 ).aggregate(Sum('part_compagnie'))['part_compagnie__sum'] or 0
 
-                                consommation_sous_rubrique_temporaire = SinistreTemporaire.objects.filter(
-                                    periode_couverture_id=periode_couverture_encours.pk,
-                                    acte__regroupement_acte_id__in=(regroupements_of_sous_rubrique.values_list('regroupement_acte_id', flat=True).distinct().all()),
-                                    aliment_id=aliment.id,
-                                    session_pec=session_pec
-                                ).aggregate(Sum('part_compagnie'))['part_compagnie__sum'] or 0
-
-
-                                consommation_sous_rubrique += consommation_sous_rubrique_temporaire
-
-
-                                pprint("session_pec: " + str(session_pec))
-                                pprint("ACTE: " + acte.libelle)
-                                pprint("consommation_sous_rubrique += consommation_sous_rubrique_temporaire")
-                                pprint(str(consommation_sous_rubrique) + " + " + str(consommation_sous_rubrique_temporaire))
+                                consommation_sous_rubrique += 0
 
                                 nouvelle_conso_sous_rubrique = float(consommation_sous_rubrique) + montant_couverture
 
@@ -1472,20 +1417,7 @@ def get_tarif_acte_from_bareme(type_priseencharge_code, date_survenance, acte_id
                                     statut_validite=StatutValidite.VALIDE
                                 ).aggregate(Sum('part_compagnie'))['part_compagnie__sum'] or 0
 
-                                consommation_sous_rubrique_temporaire = SinistreTemporaire.objects.filter(
-                                    periode_couverture_id=periode_couverture_encours.pk,
-                                    acte__regroupement_acte_id__in=(regroupements_of_sous_rubrique.values_list('regroupement_acte_id', flat=True).distinct().all()),
-                                    aliment_id=aliment.id,
-                                    session_pec=session_pec
-                                ).aggregate(Sum('part_compagnie'))['part_compagnie__sum'] or 0
-
-                                consommation_sous_rubrique += consommation_sous_rubrique_temporaire
-
-                                pprint("session_pec: " + str(session_pec))
-                                pprint("ACTE: " + acte.libelle)
-                                pprint("consommation_sous_rubrique += consommation_sous_rubrique_temporaire")
-                                pprint (str(consommation_sous_rubrique) + " + " + str(consommation_sous_rubrique_temporaire))
-
+                                consommation_sous_rubrique += 0
                                 nouvelle_conso_sous_rubrique = float(consommation_sous_rubrique) + montant_couverture
 
                                 if plafond_sous_rubrique and nouvelle_conso_sous_rubrique > plafond_sous_rubrique and plafond_sous_rubrique > 0:
@@ -1636,52 +1568,7 @@ def get_tarif_acte_from_bareme(type_priseencharge_code, date_survenance, acte_id
                 #Added on 06102023: uniquement AMBULATOIRE, OPTIQUE, DENTAIRE ou on peut sélectionner plusieurs actes
 
                 if type_priseencharge_code != "CONSULT" and type_priseencharge_code != "HOSPIT":
-
-                    #Added on 27092023: créer un sinistre temporaire pour gérer le calcul des plafonds pendant la sélection des actes à effectuer
-
-                    #supprimer tout sinistre temporaire portant l'acte et l'assuré, avant de recréer le sinistre
-                    SinistreTemporaire.objects.filter(
-                        acte_id=acte.id,
-                        aliment_id=aliment.id,
-                        session_pec=session_pec
-                    ).delete()
-
-                    #créer le sinistre temporaire
-                    sinistre_temporaire = SinistreTemporaire.objects.create(type_sinistre="acte",
-                                                       created_by_id=1,#a remplacer par l'utilisateur connecté plus tard
-                                                       prestataire_id=prestataire.id,
-                                                       aliment_id=aliment.id,
-                                                       adherent_principal_id=aliment.adherent_principal.id,
-                                                       police_id=formule.police.id,
-                                                       periode_couverture_id=periode_couverture_encours.pk,
-                                                       bareme_id=bareme_id,
-                                                       compagnie_id=formule.police.compagnie.id,
-                                                       prescripteur_id=prescripteur_id,
-                                                       acte_id=acte_id,
-                                                       frais_reel=frais_reel,
-                                                       part_compagnie=part_compagnie,
-                                                       part_assure=part_assure,
-                                                       ticket_moderateur=montant_tm,
-                                                       depassement=depassement,
-
-                                                       montant_plafond=plafond_acte,
-                                                       nombre_plafond=nombre_acte,
-                                                       frequence=frequence,
-                                                       unite_frequence=unite_frequence,
-
-                                                       nombre_demande=nombre_acte,
-                                                       nombre_accorde=0,
-                                                       statut=statut,
-                                                       session_pec=session_pec,
-                                                       observation="acte = " + acte.libelle + ", session_pec= " + str(session_pec),
-                                                       )
-
-                    sinistre_temporaire.numero = 'STEMP' + str(Date.today().year) + str(sinistre_temporaire.pk).zfill(6)
-                    sinistre_temporaire.save()
-
-
-
-
+                    pass
         else:
 
             response = {

@@ -25,9 +25,9 @@ from django_dump_die.middleware import dd
 from xhtml2pdf import pisa
 import secrets
 
-from configurations.models import Acte, Prestataire, Prescripteur, Periodicite, Tarif, \
+from configurations.models import Acte, Prestataire, Prescripteur, Tarif, \
     SousRubriqueRegroupementActe, TypePrefinancement
-from production.models import Aliment, TarifPrestataireClient, Bareme, AlimentFormule, Carte, FormuleGarantie
+from production.models import Aliment, TarifPrestataireClient, Bareme, AlimentFormule, Carte
 from shared.enum import StatutSinistre, Statut, StatutValidite, StatutRemboursement
 from sinistre.models import Sinistre, SinistreTemporaire
 from django.core.files.base import File
@@ -447,7 +447,7 @@ def get_plafond_rubrique(acte, aliment, formule, date_survenance):
 
     # Vérifier si la rubrique est dans les spécificités
     baremes_rubrique = Bareme.objects.filter(
-        Q(statut=Statut.ACTIF, formulegarantie_id=formule.id, rubrique_id=acte.rubrique.id, sous_rubrique_id__isnull=True,
+        Q(statut=Statut.ACTIF, rubrique_id=acte.rubrique.id, sous_rubrique_id__isnull=True,
           regroupement_acte_id__isnull=True, acte_id__isnull=True) & criteres_dates)
 
     if baremes_rubrique:
@@ -491,7 +491,7 @@ def get_plafond_regroupement_acte(acte, aliment, formule, date_survenance):
     # vérifier si le regroupement_acte est dans les spécificités (SANS ACTE)
     if acte.regroupement_acte:
         baremes_regroupement_acte = Bareme.objects.filter(
-            Q(statut=Statut.ACTIF, formulegarantie_id=formule.id, regroupement_acte_id=acte.regroupement_acte_id,
+            Q(statut=Statut.ACTIF, regroupement_acte_id=acte.regroupement_acte_id,
               acte_id__isnull=True) & criteres_dates)
 
         if baremes_regroupement_acte:
@@ -762,7 +762,6 @@ def get_tarif_acte_from_bareme(type_priseencharge_code, date_survenance, acte_id
             nombre_acte = 0
             unite_frequence = 0
             frequence = 0
-            periodicite_id = 0
             bareme_id = None  # précisera la ligne bareme qui sera choisi pour faire le calcul
             take_formule_info = False
 
@@ -779,7 +778,7 @@ def get_tarif_acte_from_bareme(type_priseencharge_code, date_survenance, acte_id
 
 
             # vérifier si l'acte est dans les spécificités (et que c'est garanti)
-            baremes_acte = Bareme.objects.filter(Q(statut=Statut.ACTIF, formulegarantie_id=formule.id, acte_id=acte.id) & criteres_dates)
+            baremes_acte = Bareme.objects.filter(Q(statut=Statut.ACTIF, acte_id=acte.id) & criteres_dates)
             if baremes_acte:
                 if baremes_acte.count() == 1:
                     bareme_acte = baremes_acte.first()
@@ -799,26 +798,15 @@ def get_tarif_acte_from_bareme(type_priseencharge_code, date_survenance, acte_id
                         nombre_acte = bareme_acte.nombre_acte
                         unite_frequence = bareme_acte.unite_frequence
                         frequence = bareme_acte.frequence
-                        periodicite_id = bareme_acte.periodicite_id
 
                         search_bareme_selon_regroupement_acte = False
                         search_bareme_selon_sous_rubrique = False
                         search_bareme_selon_rubrique = False
-                        pprint("la seule ligne du bareme (avec l'acte) trouvée correspond aux critères")
-                        pprint("bareme_acte")
-                        debug(bareme_acte)
 
                     else:
                         search_bareme_selon_regroupement_acte = True
-                        pprint("la seule ligne du bareme (avec l'acte) trouvée ne correspond pas aux critères")
-
 
                 else:
-
-                    pprint("Plusieurs lignes du bareme (avec l'acte) trouvée")
-                    pprint("Filtrer sur le lien de parenté, puis sur l'age min et sur l'age max")
-                    # s'il existe plusieurs lignes du meme acte
-                    # filtrer les baremes_selon_acte trouvés selon le lien de parente
 
                     selected_bareme = filtrer_selon_lien_parente_et_age(baremes_acte, aliment)
 
@@ -833,10 +821,6 @@ def get_tarif_acte_from_bareme(type_priseencharge_code, date_survenance, acte_id
                     nombre_acte = selected_bareme.nombre_acte
                     unite_frequence = selected_bareme.unite_frequence
                     frequence = selected_bareme.frequence
-                    periodicite_id = selected_bareme.periodicite_id
-
-                    pprint("selected_bareme")
-                    debug(selected_bareme)
 
 
                 pprint("FIN DE LA RECHERCHE SELON L'ACTE")
@@ -844,15 +828,11 @@ def get_tarif_acte_from_bareme(type_priseencharge_code, date_survenance, acte_id
 
             else:
                 search_bareme_selon_regroupement_acte = True
-                pprint("Aucune ligne du bareme (avec l'acte) trouvée")
-                pprint("Rechercher les baremes avec le regroupement_acte")
-
-
 
             # vérifier si le regroupement_acte est dans les spécificités (SANS ACTE)
             if search_bareme_selon_regroupement_acte and acte.regroupement_acte:
                 baremes_regroupement_acte = Bareme.objects.filter(
-                    Q(statut=Statut.ACTIF, formulegarantie_id=formule.id, regroupement_acte_id=acte.regroupement_acte_id,
+                    Q(statut=Statut.ACTIF, regroupement_acte_id=acte.regroupement_acte_id,
                       acte_id__isnull=True) & criteres_dates)
 
                 if baremes_regroupement_acte:
@@ -872,7 +852,6 @@ def get_tarif_acte_from_bareme(type_priseencharge_code, date_survenance, acte_id
                         nombre_acte = 0
                         unite_frequence = 0
                         frequence = 0
-                        periodicite_id = None
 
                         search_bareme_selon_sous_rubrique = False
                         search_bareme_selon_rubrique = False
@@ -897,7 +876,6 @@ def get_tarif_acte_from_bareme(type_priseencharge_code, date_survenance, acte_id
                         nombre_acte = 0
                         unite_frequence = 0
                         frequence = 0
-                        periodicite_id = None
 
                         pprint("selected_bareme")
                         debug(selected_bareme)
@@ -919,7 +897,7 @@ def get_tarif_acte_from_bareme(type_priseencharge_code, date_survenance, acte_id
 
                     # Récupérer toutes les sous-rubriques du baremes qui appartiennent à sous_rubriques
                     baremes_sous_rubrique = Bareme.objects.filter(
-                        Q(statut=Statut.ACTIF, formulegarantie_id=formule.id,
+                        Q(statut=Statut.ACTIF,
                           sous_rubrique_id__in=(sous_rubriques.values_list('sous_rubrique_id', flat=True).distinct().all()),
                           regroupement_acte_id__isnull=True, acte_id__isnull=True) & criteres_dates)
 
@@ -941,7 +919,6 @@ def get_tarif_acte_from_bareme(type_priseencharge_code, date_survenance, acte_id
                             nombre_acte = 0
                             unite_frequence = 0
                             frequence = 0
-                            periodicite_id = selected_bareme.periodicite_id
 
                             pprint("selected_bareme")
                             debug(selected_bareme)
@@ -968,7 +945,6 @@ def get_tarif_acte_from_bareme(type_priseencharge_code, date_survenance, acte_id
                             nombre_acte = 0
                             unite_frequence = 0
                             frequence = 0
-                            periodicite_id = None
 
                             pprint("selected_bareme")
                             debug(selected_bareme)
@@ -991,7 +967,7 @@ def get_tarif_acte_from_bareme(type_priseencharge_code, date_survenance, acte_id
             print("# Vérifier si la rubrique est dans les spécificités")
             if search_bareme_selon_rubrique:
                 baremes_rubrique = Bareme.objects.filter(
-                    Q(statut=Statut.ACTIF, formulegarantie_id=formule.id, rubrique_id=acte.rubrique.id, sous_rubrique_id__isnull=True,
+                    Q(statut=Statut.ACTIF, rubrique_id=acte.rubrique.id, sous_rubrique_id__isnull=True,
                       regroupement_acte_id__isnull=True, acte_id__isnull=True) & criteres_dates)
 
                 pprint("baremes_rubrique")
@@ -1014,15 +990,8 @@ def get_tarif_acte_from_bareme(type_priseencharge_code, date_survenance, acte_id
                         nombre_acte = 0
                         unite_frequence = 0
                         frequence = 0
-                        periodicite_id = None
 
-                        pprint("la seule ligne du bareme (avec la rubrique) trouvée correspond aux critères")
-                        pprint("bareme_rubrique")
-                        (debug)(bareme_rubrique)
 
-                    else:
-                        pprint("Plusieurs lignes du bareme (avec la rubrique) trouvée")
-                        pprint("Filtrer sur le lien de parentée, puis sur l'age min et sur l'age max")
 
                         selected_bareme = filtrer_selon_lien_parente_et_age(baremes_rubrique, aliment)
 
@@ -1037,16 +1006,10 @@ def get_tarif_acte_from_bareme(type_priseencharge_code, date_survenance, acte_id
                         nombre_acte = 0
                         unite_frequence = 0
                         frequence = 0
-                        periodicite_id = None
-
-                        pprint("selected_bareme")
-                        debug(selected_bareme)
 
 
                 else:
                     take_formule_info = True
-                    pprint("Aucune ligne du bareme (avec la rubrique) trouvée")
-                    pprint("Prendre les données de la formule de garantie")
 
 
             # take_formule_info = False #A remettre dans le else
@@ -1063,7 +1026,6 @@ def get_tarif_acte_from_bareme(type_priseencharge_code, date_survenance, acte_id
                 nombre_acte = 0
                 unite_frequence = 0
                 frequence = 0
-                periodicite_id = 0
                 delais_controle = acte.delais_controle if acte.delais_controle else 0
                 base_calcul_tm = acte.base_calcul_tm
 
@@ -1082,51 +1044,6 @@ def get_tarif_acte_from_bareme(type_priseencharge_code, date_survenance, acte_id
                 # PARTIE CALCUL PROPREMENT DIT
                 # CONTROLE PLAFOND NOMBRE D'ACTE PAR JOUR, MOIS, ANNEE, BI-ANNEE
                 pprint("CONTROLE PLAFOND NOMBRE D'ACTE PAR JOUR, MOIS, ANNEE, BI-ANNEE")
-                pprint("nombre_acte")
-                pprint(nombre_acte)
-                pprint("periodicite_id")
-                pprint(periodicite_id)
-                if nombre_acte > 0:
-                    nbre_acte_renseigne = True
-                    periodicite_obj = Periodicite.objects.filter(id=periodicite_id)
-                    pprint("periodicite_obj")
-                    pprint(periodicite_obj)
-                    if periodicite_obj:
-                        periodicite = periodicite_obj.first()
-                        nombre_jour_periode = periodicite.nombre_jours
-
-                        pprint("nombre_jour_periode")
-                        pprint(nombre_jour_periode)
-
-                        # compter le nombre d'acte effectué sur la période (depuis d, jusqu'à la date de survenance du sinistre)
-                        date_fin_periode = date_survenance.date()
-                        date_debut_periode = date_fin_periode - datetime.timedelta(days=nombre_jour_periode)
-
-                        pprint("date_debut_periode")
-                        pprint(date_debut_periode)
-                        pprint("date_fin_periode")
-                        pprint(date_fin_periode)
-
-                        # Filter sinistres within the specified period and acte_id
-                        sinistres_effectues_sur_periode = Sinistre.objects.filter(
-                            aliment_id=aliment.id,
-                            acte_id=acte.id,
-                            date_survenance__date__gte=date_debut_periode,
-                            date_survenance__date__lte=date_fin_periode,
-                            statut=StatutSinistre.ACCORDE,
-                            statut_validite=StatutValidite.VALIDE
-                        )
-
-                        pprint("sinistres_effectues_sur_periode")
-                        pprint(sinistres_effectues_sur_periode)
-                        pprint(sinistres_effectues_sur_periode.count())
-
-                        if sinistres_effectues_sur_periode.count() > nombre_acte:
-                            response = {
-                                'statut': 0,
-                                'message': "LE NOMBRE D'ACTES AUTORISÉS POUR CETTE PÉRIODE EST ATTEINT",
-                            }
-                            return response
 
                 # FIN CONTROLE PLAFOND NOMBRE D'ACTE PAR JOUR, MOIS, ANNEE, BI-ANNEE
 
@@ -1318,14 +1235,6 @@ def get_tarif_acte_from_bareme(type_priseencharge_code, date_survenance, acte_id
                             pprint("Tarif public")
                             frais_reel = tarif.cout_public_hg
 
-                            #si type_etablissement_code
-                            if prestataire.type_etablissement.code == "ICA":
-                                frais_reel = tarif.cout_public_ica
-                            elif prestataire.type_etablissement.code == "CHU":
-                                frais_reel = tarif.cout_public_chu
-                            else:
-                                frais_reel = tarif.cout_public_hg
-
 
                     # frais_reel = float(frais_reel)
                     if not frais_reel:
@@ -1466,7 +1375,7 @@ def get_tarif_acte_from_bareme(type_priseencharge_code, date_survenance, acte_id
                     # Récupérer toutes les sous-rubriques du baremes qui appartiennent à sous_rubriques
                     pprint("Récupérer toutes les sous-rubriques du baremes qui appartiennent à sous_rubriques")
                     baremes_sous_rubrique = Bareme.objects.filter(
-                        Q(statut=Statut.ACTIF, formulegarantie_id=formule.id,
+                        Q(statut=Statut.ACTIF,
                           sous_rubrique_id__in=(sous_rubriques.values_list('sous_rubrique_id', flat=True).distinct().all()),
                           regroupement_acte_id__isnull=True, acte_id__isnull=True) & criteres_dates)
 
@@ -1745,7 +1654,6 @@ def get_tarif_acte_from_bareme(type_priseencharge_code, date_survenance, acte_id
                                                        adherent_principal_id=aliment.adherent_principal.id,
                                                        police_id=formule.police.id,
                                                        periode_couverture_id=periode_couverture_encours.pk,
-                                                       formulegarantie_id=formule.id,
                                                        bareme_id=bareme_id,
                                                        compagnie_id=formule.police.compagnie.id,
                                                        prescripteur_id=prescripteur_id,
@@ -2159,48 +2067,20 @@ def generate_numero_carte(aliment):
 
 def bool_plafond_atteint(dossier_sinistre):
     plafond_atteint = False
-    formule = dossier_sinistre.formulegarantie
-    
-    if formule:
-        # récupérer ses consommations individuel et par famille
-        periode_couverture_encours = formule.police.periode_couverture_encours_atdate(dossier_sinistre.date_survenance)
-        consommation_individuelle = Sinistre.objects.filter(periode_couverture_id=periode_couverture_encours.pk,
-                                                            aliment_id=dossier_sinistre.aliment.id,
-                                                            statut=StatutSinistre.ACCORDE,
-                                                            statut_remboursement__in=[StatutRemboursement.ATTENTE, StatutRemboursement.DEMANDE, StatutRemboursement.ACCEPTE, StatutRemboursement.ACCEPTE_PARTIELLEMENT],
-                                                            statut_validite=StatutValidite.VALIDE
-                                                            ).aggregate(Sum('part_compagnie'))['part_compagnie__sum'] or 0
-
-        consommation_famille = Sinistre.objects.filter(periode_couverture_id=periode_couverture_encours.pk,
-                                                       adherent_principal_id=dossier_sinistre.aliment.adherent_principal.id,
-                                                       statut=StatutSinistre.ACCORDE,
-                                                       statut_remboursement__in=[StatutRemboursement.ATTENTE, StatutRemboursement.DEMANDE, StatutRemboursement.ACCEPTE, StatutRemboursement.ACCEPTE_PARTIELLEMENT],
-                                                       statut_validite=StatutValidite.VALIDE
-                                                       ).aggregate(Sum('part_compagnie'))['part_compagnie__sum'] or 0
-
-
-        #TODO : Tenir compte du fait que le champs formule.plafond_conso_individuelle peut être null ou contenir 0
-        niveau_consommation_individuelle = consommation_individuelle * 100 / formule.plafond_conso_individuelle if formule.plafond_conso_individuelle is not None and formule.plafond_conso_individuelle > 0 else 0
-        niveau_consommation_famille = consommation_famille * 100 / formule.plafond_conso_famille if formule.plafond_conso_famille is not None and formule.plafond_conso_famille > 0 else 0
-
-        if niveau_consommation_individuelle >= 80 or niveau_consommation_famille >= 80:
-            plafond_atteint = True
 
     return plafond_atteint
 
 
 
-def get_ticket_moderateur_pharmacie(aliment_id, formulegarantie_id, date_survenance):
+def get_ticket_moderateur_pharmacie(aliment_id, date_survenance):
     aliment = Aliment.objects.filter(id=aliment_id).first()
-    formulegarantie = FormuleGarantie.objects.filter(id=formulegarantie_id).first()
 
-    tc_generale = formulegarantie.taux_couverture
     tc = 0
 
     # vérifier si l'acte est dans les spécificités (et que c'est garanti)
     criteres_regroupement_acte = Q(Q(regroupement_acte__isnull=True) | Q(regroupement_acte__code='RAPHAR0020'))#pharmacie usuelle
     criteres_dates = Q(date_debut__lte=date_survenance) & (Q(date_fin__gte=date_survenance) | Q(date_fin__isnull=True))
-    baremes = Bareme.objects.filter(Q(statut=Statut.ACTIF, formulegarantie_id=formulegarantie.id,
+    baremes = Bareme.objects.filter(Q(statut=Statut.ACTIF,
                                       rubrique__code='PHARMACIE',
                                       acte_id__isnull=True,
                                       is_garanti=True
@@ -2229,7 +2109,7 @@ def get_ticket_moderateur_pharmacie(aliment_id, formulegarantie_id, date_survena
         tc = bareme.taux_couverture
 
     else:
-        tc = tc_generale
+        tc = 0
 
 
     tm = 100 - tc

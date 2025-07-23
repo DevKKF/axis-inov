@@ -94,7 +94,6 @@ def requete_liste_sinistre_ordonnancee_par_period(bureau_id, date_debut, date_fi
     
     
     FROM sinistres sin
-    LEFT JOIN formulegarantie fg on fg.id = sin.formulegarantie_id
     LEFT JOIN aliments alm ON alm.id = sin.aliment_id
     LEFT JOIN aliments alm_adh ON alm_adh.id=alm.adherent_principal_id
     LEFT JOIN cartes cart on cart.aliment_id=alm.id AND cart.statut='ACTIF'
@@ -205,7 +204,6 @@ def requete_liste_sinistre_ordonnancee_par_period_par_prestataire(bureau_id, dat
 
 
     FROM sinistres sin
-    LEFT JOIN formulegarantie fg on fg.id = sin.formulegarantie_id
     LEFT JOIN aliments alm ON alm.id = sin.aliment_id
     LEFT JOIN aliments alm_adh ON alm_adh.id=alm.adherent_principal_id
     LEFT JOIN cartes cart on cart.aliment_id=alm.id AND cart.statut='ACTIF'
@@ -318,7 +316,6 @@ def requete_liste_sinistre_ordonnancee_par_period_par_beneficiaire(bureau_id, da
 
 
     FROM sinistres sin
-    LEFT JOIN formulegarantie fg on fg.id = sin.formulegarantie_id
     LEFT JOIN aliments alm ON alm.id = sin.aliment_id
     LEFT JOIN aliments alm_adh ON alm_adh.id=alm.adherent_principal_id
     LEFT JOIN cartes cart on cart.aliment_id=alm.id AND cart.statut='ACTIF'
@@ -553,7 +550,6 @@ def requete_liste_sinistre_entre_2date(bureau_id, date_debut, date_fin, referenc
     JOIN aliments alm ON alm.id = sin.aliment_id
     JOIN cartes cart on cart.aliment_id=alm.id AND cart.statut='ACTIF'
     JOIN aliments alm_adh ON alm_adh.id=alm.adherent_principal_id
-    JOIN formulegarantie fg on fg.id = sin.formulegarantie_id
     JOIN qualite_beneficiaire qtbf on qtbf.id = alm.qualite_beneficiaire_id
     JOIN actes act on act.id = sin.acte_id
     JOIN regroupement_acte rg_act on rg_act.id  = act.regroupement_acte_id
@@ -1432,7 +1428,6 @@ def requete_liste_paiement_sinistre_sante_entre_deux_dates(code_bureau, date_deb
     join polices po on po.id = s.police_id
     join clients cl on cl.id = po.client_id
     join compagnies cie on cie.id = po.compagnie_id
-    join formulegarantie fg on fg.id = s.formulegarantie_id
     join aliments adh on adh.id = s.aliment_id
     join cartes c on c.aliment_id = adh.id and c.date_desactivation is null
     join aliments ap on ap.id = adh.adherent_principal_id
@@ -1541,7 +1536,6 @@ def requete_liste_sinistre_saisies_entre_2date(bureau_id, date_debut, date_fin, 
     JOIN aliments alm ON alm.id = sin.aliment_id
     JOIN cartes cart on cart.aliment_id=alm.id AND cart.statut='ACTIF'
     JOIN aliments alm_adh ON alm_adh.id=alm.adherent_principal_id
-    JOIN formulegarantie fg on fg.id = sin.formulegarantie_id
     JOIN qualite_beneficiaire qtbf on qtbf.id = alm.qualite_beneficiaire_id
     JOIN actes act on act.id = sin.acte_id
     JOIN regroupement_acte rg_act on rg_act.id  = act.regroupement_acte_id

@@ -9,7 +9,7 @@ from django.utils import timezone
 from configurations.models import CompteTresorerie, Devise, Medicament, Compagnie, User, TypePriseencharge, Prestataire, Prescripteur, Acte, \
     Rubrique, SousRubrique, RegroupementActe, TypePrefinancement, PeriodeComptable, ModeCreation, Bureau, Circonstance, TypeSinistre, Responsabilite, TypeIntervenant, PosteDommage, Pays, \
     TypeRemboursement, ModeReglement, Banque, BordereauLettreCheque, Garantie, TypeRecours, EtapeSinistre
-from production.models import TypeDocument, Aliment, Police, PeriodeCouverture, FormuleGarantie, Bareme, Client, AlimentPolice, Mouvement, Motif
+from production.models import TypeDocument, Aliment, Police, PeriodeCouverture, Bareme, Client, AlimentPolice, Mouvement, Motif
 from shared.enum import StatutFacture, StatutSinistre, SatutBordereauDossierSinistres, StatutSinistreBordereau, \
     StatutSinistrePrestation, StatutValidite, StatutRemboursement, StatutRemboursementSinistre, Statut, \
     OptionRefacturation, StatutPaiementSinistre, SourceCreationSinistre
@@ -53,8 +53,8 @@ class Sinistre(models.Model):
     statut_paiement = models.fields.CharField(choices=StatutPaiementSinistre.choices, default=StatutPaiementSinistre.ATTENTE, max_length=15, null=True)
     date_paiement = models.DateField(blank=True, null=True)
 
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True, null=True)
+    updated_at = models.DateTimeField(auto_now=True, null=True)
     deleted_at = models.DateTimeField(null=True)
 
     class Meta:
@@ -81,7 +81,7 @@ class Sinistre(models.Model):
 
     @property
     def total_capitaux(self):
-        """Calcule la somme des capital pour ce sinistre."""
+        """Calcule la somme des capitaux pour ce sinistre."""
         return self.garanties.aggregate(models.Sum('capital'))['capital__sum'] or 0
 
     @property
@@ -150,8 +150,8 @@ class HistoriqueSinistre(models.Model):
     statut_paiement = models.fields.CharField(choices=StatutPaiementSinistre.choices, default=StatutPaiementSinistre.ATTENTE, max_length=15, null=True)
     date_paiement = models.DateField(blank=True, null=True)
 
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True, null=True)
+    updated_at = models.DateTimeField(auto_now=True, null=True)
     deleted_at = models.DateTimeField(null=True)
 
     class Meta:
@@ -222,8 +222,8 @@ class Intervenant(models.Model):
     code_postal = models.TextField(blank=True, null=True)
     boite_postale = models.TextField(blank=True, null=True)
     ville = models.TextField(blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True, null=True)
+    updated_at = models.DateTimeField(auto_now=True, null=True)
 
 
     class Meta:
@@ -236,8 +236,8 @@ class Intervenant(models.Model):
 class SinistreIntervenant(models.Model):
     sinistre = models.ForeignKey(Sinistre, null=True, on_delete=models.RESTRICT)
     intervenant = models.ForeignKey(Intervenant, null=True, on_delete=models.RESTRICT)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True, null=True)
+    updated_at = models.DateTimeField(auto_now=True, null=True)
 
 
     class Meta:
@@ -249,8 +249,8 @@ class SinistreIntervenant(models.Model):
 class HistoriqueSinistreIntervenant(models.Model):
     historique_sinistre = models.ForeignKey(HistoriqueSinistre, null=True, on_delete=models.RESTRICT)
     intervenant = models.ForeignKey(Intervenant, null=True, on_delete=models.RESTRICT)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
+    created_at = models.DateTimeField(auto_now_add=True, null=True)
+    updated_at = models.DateTimeField(auto_now=True, null=True)
 
 
     class Meta:
@@ -423,7 +423,6 @@ class DossierSinistre(models.Model):
     prescripteur = models.ForeignKey(Prescripteur, null=True, on_delete=models.RESTRICT)
     aliment = models.ForeignKey(Aliment, null=True, on_delete=models.RESTRICT)
     compagnie = models.ForeignKey(Compagnie, null=True, on_delete=models.RESTRICT)
-    formulegarantie = models.ForeignKey(FormuleGarantie, null=True, on_delete=models.RESTRICT)
     police = models.ForeignKey(Police, null=True, on_delete=models.RESTRICT)
     renseignement_clinique = models.TextField(blank=False, null=True)
     commentaire = models.TextField(blank=False, null=True)
@@ -1187,7 +1186,6 @@ class SinistreTemporaire(models.Model):
     compagnie = models.ForeignKey(Compagnie, null=True, on_delete=models.RESTRICT)
     police = models.ForeignKey(Police, null=True, on_delete=models.RESTRICT)
     periode_couverture = models.ForeignKey(PeriodeCouverture, null=True, on_delete=models.RESTRICT)
-    formulegarantie = models.ForeignKey(FormuleGarantie, null=True, on_delete=models.RESTRICT)
     bareme = models.ForeignKey(Bareme, null=True, blank=True, on_delete=models.RESTRICT)
     acte = models.ForeignKey(Acte, null=True, on_delete=models.RESTRICT)
     medicament = models.ForeignKey(Medicament, null=True, on_delete=models.RESTRICT)

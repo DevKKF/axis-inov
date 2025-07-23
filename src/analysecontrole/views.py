@@ -26,14 +26,14 @@ from django.db.models import Subquery, OuterRef
 from configurations.helper_config import verify_sql_query
 from configurations.models import ActionLog, Prescripteur, PrescripteurPrestataire, Prestataire, Secteur, \
     Bureau,TypeActe,BusinessUnit,Branche,Banque,Apporteur,ApporteurInternational,Devise,\
-    User, AuthGroup, TypeEtablissement,Tarif, Rubrique, RegroupementActe, Acte, \
+    User, AuthGroup,Tarif, Rubrique, RegroupementActe, Acte, \
     WsBoby, ParamWsBoby, BackgroundQueryTask, ParamProduitCompagnie, Compagnie, \
     ParamActe, TypeApporteur, TypePersonne, Pays, TypeCompagnie, TypeGarant, TauxCommission, Carosserie, \
     CategorieVehicule, Civilite, CompteTresorerie, ConditionsAssurance, Carburant, Formule, Fractionnement, Garantie, GarantieFormule, \
     Groupe, ModeReglement
 from inov import settings
 # Create your views here.
-from production.models import TarifPrestataireClient, Client, Aliment, AlimentFormule, Mouvement, MouvementAliment, \
+from production.models import TarifPrestataireClient, Client, Aliment, AlimentFormule, Mouvement, \
     Carte, Quittance, Reglement, Courrier, Produit, PoliceAssureur, Police, HistoriquePolice, MouvementPolice
 from analysecontrole.models import AnalysePortefeuille, ControleCommission
 from production.templatetags.my_filters import money_field, convertir_date_multiformat

@@ -26,7 +26,7 @@
       <td>{{ reglement.numero|default_if_none:"" }}</td>
       <td>{{ reglement.numero_piece|default_if_none:"" }}</td>
       <td class="text-right">{{ reglement.montant_retrocession_apporteur_solde|money_field }}</td>
-      <td><input type="text" class="form-control montant_encaisse_retro handle_calculer_montant_total_a_encaisser money_field" name="montant_encaisse_retro{{reglement.id}}" value="0" readonly></td>
+      <td><input type="text" class="form-control montant_encaisse_retro handle_calculer_montant_total_a_encaisser money_field" name="montant_encaisse_retro{{reglement.id}}" id="montant_encaisse_retro" value="{{ reglement.montant_retrocession_apporteur_solde|money_field }}" readonly></td>
       <td><input type="text" class="form-control restant_total money_field" name="restant_total{{reglement.id}}" id="restant_total" value="{{ reglement.montant_retrocession_apporteur_solde|money_field }}" readonly></td>
       <td>{{ reglement.quittance.numero|default_if_none:"" }}</td>
       <td>{{ reglement.quittance.police.client.nom|default_if_none:"" }}</td>

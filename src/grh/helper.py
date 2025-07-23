@@ -57,9 +57,6 @@ def export_beneficiaire(request, police_id):
     today = datetime.datetime.now(tz=timezone.utc)
     
     if police:
-        #queryset = Aliment.objects.select_related('qualite_beneficiaire', 'police__client').filter(formulegarantie__police=police=police).order_by('-id')
-        # Optimisation de la recuperation des beneficiaires
-        #queryset = AlimentFormule.objects.filter(formule_id__in=[p.id for p in police.formules], statut=Statut.ACTIF).order_by('-id')
 
         # Récupérer les IDs des aliments dans aliment_formule
         aliment_ids = AlimentFormule.objects.filter(

@@ -1,7 +1,22 @@
 {% extends "admin/base_site.html" %}
-{% block extrastyle %} {% endblock %}
-{% block content %}
 {% load my_filters %}
+{% load i18n %}
+{% block extrastyle %} {% endblock %}
+{% block content_title %}
+    <div class="row mb-2">
+          <div class="col-sm-6">
+                <h1 class="m-0">{{_("Liste des commission de ") }} {% if type == "courtage" %}{{_("courtage") }}{% else %}{{_("gestion") }}{% endif %}</h1>
+          </div>
+          <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                      <li class="breadcrumb-item"><a href="{% url 'admin:index' %}">{% trans 'Home' %}</a></li>
+                      <li class="breadcrumb-item">Comptabilité</li>
+                      <li class="breadcrumb-item active">Liste des commissions de {% if type == "courtage" %}{{_("couratge") }}{% else %}{{_("gestion") }}{% endif %}</li>
+                </ol>
+          </div>
+    </div>
+{% endblock %}
+{% block content %}
 <div class="col-12 col-md-12 order-2 order-md-1">
   <div class="card">
     <div class="card-header">

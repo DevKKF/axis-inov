@@ -20,7 +20,6 @@ urlpatterns = [
 
     path('fonds-de-roulements/', InitialisationFondRoulementView.as_view(), name='initialisation_fonds_de_roulements'),
     path('add_mise_en_initialiser_fdr_garant/',views.add_mise_en_initialiser_fdr_garant, name='add_mise_en_initialiser_fdr_garant'),
-    path("edition-caution-compagnie/<int:compagnie_id>/", views.edition_caution_compagnie, name='edition_caution_compagnie'),
     path('get-fdr-data/', views.get_fdr_data, name='get_fdr_data'),
     path('fonds-de-roulements/init/', views.init_fonds_de_roulements, name='init_fonds_de_roulements'), # SCRIPT
 

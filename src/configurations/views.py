@@ -39,7 +39,7 @@ from django.utils.timezone import now
 from configurations.helper_config import verify_sql_query
 from configurations.models import ActionLog, Secteur, \
     Bureau ,BusinessUnit, Branche, Banque, Apporteur, ApporteurInternational,Devise,\
-    User, AuthGroup, TypeEtablissement,Tarif, Rubrique, \
+    User, AuthGroup,Tarif, Rubrique, \
     BackgroundQueryTask, ParamProduitCompagnie, Compagnie, \
     TypeApporteur, TypePersonne, Pays, TypeCompagnie, TypeGarant, TauxCommission, Carosserie, \
     CategorieVehicule, Civilite, CompteTresorerie, ConditionsAssurance, Carburant, Formule, Fractionnement, Garantie, GarantieFormule, \
@@ -120,10 +120,8 @@ def recalculer_parts_sinistres_sucaf(request):
     if sinistres:
         for sinistre in sinistres:
 
-            taux_couverture = sinistre.formulegarantie.taux_couverture
-            taux_tm = sinistre.formulegarantie.taux_tm
             part_compagnie = Decimal(taux_couverture/100) * sinistre.frais_reel - sinistre.depassement
-            part_assure = Decimal(taux_tm/100) * sinistre.frais_reel + sinistre.depassement
+            part_assure = sinistre.frais_reel + sinistre.depassement
 
             #
             sinistre.part_compagnie = part_compagnie
@@ -822,12 +820,10 @@ class PrestatairesView(PermissionRequiredMixin, TemplateView):
 
         secteurs = Secteur.objects.all()
         bureaux = Bureau.objects.filter(id=request.user.bureau.pk)
-        types_etablissements = TypeEtablissement.objects.all()
 
         context_perso = {
             'bureaux': bureaux,
             'secteurs': secteurs,
-            'types_etablissements': types_etablissements,
         }
 
         context = {**context_original, **context_perso}
@@ -1106,12 +1102,10 @@ def modifier_prestataire(request, prestataire_id):
     prestataire = Prestataire.objects.get(id=prestataire_id)
 
     secteurs = Secteur.objects.all()
-    types_etablissements = TypeEtablissement.objects.all()
 
     return render(request, 'prestataires/modal_modifier_prestataire.html', {
         'prestataire': prestataire,
         'secteurs': secteurs,
-        'types_etablissements': types_etablissements
     })
 
 
@@ -1123,7 +1117,6 @@ def supprimer_prestataire(request, prestataire_id):
 
         type_prestataire_id = request.POST.get('type_prestataire_id')
         secteur_id = request.POST.get('secteur_id')
-        type_etablissement_id = request.POST.get('type_etablissement_id')
 
         prestataire.name = request.POST.get('name')
         prestataire.rb_ordre = request.POST.get('rb_ordre')
@@ -1135,7 +1128,6 @@ def supprimer_prestataire(request, prestataire_id):
 
         prestataire.secteur_id = secteur_id
         prestataire.type_prestataire_id = type_prestataire_id
-        prestataire.type_etablissement_id = type_etablissement_id
 
         try:
             prestataire.latitude = float(request.POST.get('latitude').replace(",", ".").replace(" ", ""))
@@ -5387,15 +5379,10 @@ def modifier_garantieformule(request, garantieformule_id):
 
     garantieformule = GarantieFormule.objects.get(id=garantieformule_id)
     garanties = Garantie.objects.filter(status=1).order_by('nom')
-    formulegaranties = GarantieFormule.objects.filter(formule_id=garantieformule.formule_id)
     formules = Formule.objects.filter(status=1).order_by('libelle')
 
     if request.method == 'POST':
         user = User.objects.get(id=request.user.id)
-
-        #Suppression l'existant
-        for formulegarantie in formulegaranties:
-            formulegarantie.delete()
 
         garantieformules = request.POST.getlist('garantieformules')
 
@@ -5430,13 +5417,11 @@ def modifier_garantieformule(request, garantieformule_id):
     else:
         print('garantieformule ', garantieformule)
         print('garanties ', garanties)
-        print('formulegaranties ', formulegaranties)
         print('formules ', formules)
 
         context = {
             'garantieformule':garantieformule,
             'garanties':garanties,
-            'formulegaranties':formulegaranties,
             'formules':formules,
         }
 

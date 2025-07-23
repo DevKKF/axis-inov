@@ -1,5 +1,20 @@
 {% extends "admin/base_site.html" %}
+{% load i18n %}
 {% block extrastyle %} {% endblock %}
+{% block content_title %}
+    <div class="row mb-2">
+          <div class="col-sm-6">
+                <h1 class="m-0">Règlements apporteurs</h1>
+          </div>
+          <div class="col-sm-6">
+                <ol class="breadcrumb float-sm-right">
+                      <li class="breadcrumb-item"><a href="{% url 'admin:index' %}">{% trans 'Home' %}</a></li>
+                      <li class="breadcrumb-item">Comptabilité</li>
+                      <li class="breadcrumb-item active">Liste des rétrocessions</li>
+                </ol>
+          </div>
+    </div>
+{% endblock %}
 {% block content %}
 {% load my_filters %}
 <div class="col-12 col-md-12 order-2 order-md-1">
@@ -9,7 +24,8 @@
     </div>
     <div class="card-body">
         <div class="pull-right mb-2">
-            <span id="btnOpenDialogAddEncaissementRetrocession" class="btn btn-sm btn-primary mb-1" data-toggle="modal" data-href="{% url 'add_encaissement_retrocession_apporteur' %}"><i class="fas fa-money-bill"></i> {{_("Encaisser des retrocessions apporteurs") }}</span>
+            <span id="btnOpenDialogAddEncaissementRetrocession" class="btn btn-sm btn-primary mb-1" data-toggle="modal" data-href="{% url 'add_encaissement_retrocession_apporteur' %}"><i class="fas fa-money-bill"></i> Encaisser des retrocessions apporteurs</span>
+            <a class="btn btn-sm btn-info mb-1" href=""><i class="fas fa-list"></i> Historique paiement apporteur</a>
         </div>
       <div id="example1_wrapper" class="dataTables_wrapper dt-bootstrap4">
         <div class="row">
@@ -18,11 +34,11 @@
                   <thead>
                       <tr>
                         <th scope="col" width="4%"></th>
-                        <th scope="col">{{_("Apporteur") }}</th>
-                        <th scope="col">{{_("Montant total reglé client") }}</th>
-                        <th scope="col">{{_("Total retro apporteur") }}</th>
-                        <th scope="col">{{_("Restant retro apporteur") }}</th>
-                        <th scope="col">{{_("Nbre lignes") }}</th>
+                        <th scope="col">Apporteur</th>
+                        <th scope="col">Montant total reglé client</th>
+                        <th scope="col">Total retro apporteur</th>
+                        <!--th scope="col">Restant retro apporteur</th-->
+                        <th scope="col">Nbre lignes</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -32,7 +48,7 @@
                             <td>{{ apporteur.nom|default_if_none:"" }} {{ apporteur.prenoms|default_if_none:"" }}</td>
                             <td class="text-right">{{  apporteur.sum_reglements|money_field }}</td>
                             <td class="text-right">{{ apporteur.total_montant_retrocession_apporteur|money_field }}</td>
-                            <td class="text-right">{{ apporteur.solde_montant_retrocession_apporteur|money_field }}</td>
+                            <!--td class="text-right">{{ apporteur.solde_montant_retrocession_apporteur|money_field }}</td-->
                             <td class="text-center">{{ apporteur.nombre_reglements_a_recevoir_retrocession|money_field }}</td>
                           </tr>
                         {% endfor %}

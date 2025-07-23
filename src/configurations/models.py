@@ -12,7 +12,7 @@ from django_currentuser.middleware import (get_current_user, get_current_authent
 from django.core.exceptions import ValidationError
 
 from shared.enum import StatutReversementCompagnie, StatutEncaissementCommission, BaseCalculTM, Statut, PasswordType, \
-    StatutValidite, TypeAlerte, TypeBonConsultation, TypeEtape, StatutReversementApporteur
+    StatutValidite, TypeAlerte, TypeBonConsultation, TypeEtape, StatutReversementApporteur, StatutQuittance
 
 
 class FloatRangeField(models.FloatField):
@@ -78,22 +78,6 @@ class TypeRemboursement(models.Model):
         verbose_name_plural = 'Types de remboursement'
 
 
-class Periodicite(models.Model):
-    libelle = models.CharField(max_length=100, blank=True, null=True)
-    code = models.CharField(max_length=10, blank=True, null=True)
-    nombre_jours = models.IntegerField(blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return self.libelle
-
-    class Meta:
-        db_table = 'periodicite'
-        verbose_name = 'Périodicité'
-        verbose_name_plural = 'Périodicites'
-
-
 class TypeTarif(models.Model):
     libelle = models.CharField(max_length=50, blank=True, null=True)
     code = models.CharField(max_length=50, blank=True, null=True)
@@ -122,21 +106,6 @@ class Secteur(models.Model):
         db_table = 'secteur'
         verbose_name = 'Secteur'
         verbose_name_plural = "Secteurs"
-
-
-class TypeEtablissement(models.Model):
-    libelle = models.CharField(max_length=50, blank=True, null=True)
-    code = models.CharField(max_length=50, blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return self.libelle
-
-    class Meta:
-        db_table = 'type_etablissement'
-        verbose_name = "Type d'établissement"
-        verbose_name_plural = "Types d'établissements"
 
 
 class Taxe(models.Model):
@@ -475,7 +444,6 @@ class Prestataire(models.Model):
     fichier_tarification = models.FileField(upload_to='prestataires/tarifs', blank=True, default=None, null=True)
     liste_prescripteurs = models.FileField(upload_to='prescripteurs/liste', blank=True, default=None, null=True)
     secteur = models.ForeignKey(Secteur, on_delete=models.RESTRICT, null=True)
-    type_etablissement = models.ForeignKey(TypeEtablissement, null=True, on_delete=models.RESTRICT)
     bureau = models.ForeignKey(Bureau, null=True, on_delete=models.RESTRICT)
     rb_ordre = models.CharField(max_length=255, blank=True, default=None, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -731,22 +699,6 @@ class Medicament(models.Model):
         verbose_name_plural = 'Medicaments'
 
 
-class Profession(models.Model):
-    code = models.CharField(max_length=255, blank=True, default=None, null=True)
-    name = models.CharField(max_length=255)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    status = models.BooleanField(default=True)
-
-    def __str__(self):
-        return self.name
-
-    class Meta:
-        db_table = 'professions'
-        verbose_name = 'Profession'
-        verbose_name_plural = 'Professions'
-
-
 class Civilite(models.Model):
     name = models.CharField(max_length=20)
     code = models.CharField(max_length=5, blank=True, null=True, )
@@ -806,21 +758,6 @@ class TypeClient(models.Model):
         db_table = 'type_clients'
         verbose_name = 'Type de client'
         verbose_name_plural = 'Types de client'
-
-
-class Territorialite(models.Model):
-    libelle = models.CharField(max_length=100, blank=True, null=True)
-    code = models.CharField(max_length=100, blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return self.libelle
-
-    class Meta:
-        db_table = 'territorialites'
-        verbose_name = 'Territorialites'
-        verbose_name_plural = 'Territorialites'
 
 
 class TypeProduit(models.Model):
@@ -1175,9 +1112,8 @@ class Apporteur(models.Model):
     @property
     def nombre_reglements_a_recevoir_retrocession(self):
         reglements = self.app_reglements.filter(
-            statut_reversement_apporteur=StatutReversementApporteur.NON_REVERSE,
-            statut_commission=StatutEncaissementCommission.ENCAISSEE,
-            statut_validite=StatutValidite.VALIDE
+            quittance__statut=StatutQuittance.PAYE,
+            statut_commission=StatutEncaissementCommission.ENCAISSEE
         ).exclude(
             Q(montant_com_intermediaire=0) | Q(montant_com_intermediaire__isnull=True)
         )
@@ -1216,21 +1152,6 @@ class Apporteur(models.Model):
         db_table = 'apporteurs'
         verbose_name = 'Apporteurs'
         verbose_name_plural = 'Intermediaires'
-
-
-class QualiteBeneficiaire(models.Model):
-    libelle = models.CharField(max_length=50, blank=True, null=True)
-    code = models.CharField(max_length=10, blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return self.libelle
-
-    class Meta:
-        db_table = 'qualite_beneficiaire'
-        verbose_name = 'Qualité bénéficiaire'
-        verbose_name_plural = 'Qualités bénéficiaire'
 
 
 class TypeAssurance(models.Model):
@@ -1667,34 +1588,6 @@ class AdminGroupeBureau(models.Model):
         db_table = 'admin_groupe_permission'
         verbose_name = 'Admin Groupe Bureau'
         verbose_name_plural = 'Admin Groupes Bureaux'
-
-
-class Caution(models.Model):
-    bureau = models.ForeignKey(Bureau, on_delete=models.RESTRICT, null=True)  # Faciliter les req
-    compagnie = models.ForeignKey(Compagnie, null=False, on_delete=models.RESTRICT)
-    created_by = models.ForeignKey(User, null=True, related_name="created_by", on_delete=models.RESTRICT)
-    montant = models.BigIntegerField(null=False)
-    date_debut_effet = models.DateTimeField(default=None)
-    date_fin_effet = models.DateTimeField(null=True, default=None)  # Date_fin_effet plus important que statut
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    status = models.BooleanField(default=True)
-
-    def __str__(self):
-        return self.montant
-
-    @classmethod
-    def par_bureau(cls, bureau):
-        return cls.objects.filter(bureau=bureau)
-
-    @classmethod
-    def actif(cls):
-        return cls.objects.filter(date_fin_effet__isnull=True, status=True)
-
-    class Meta:
-        db_table = 'caution'
-        verbose_name = 'Caution'
-        verbose_name_plural = 'Cautions'
 
 
 class MailingList(models.Model):

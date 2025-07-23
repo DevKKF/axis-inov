@@ -11,10 +11,10 @@ from django.db.models import F, ExpressionWrapper, DurationField
 
 from configurations.helper_config import execute_query
 from configurations.models import Banque, Bureau, Civilite, Compagnie, Fractionnement, ModeReglement, \
-    Regularisation, Territorialite, User, Langue, Pays, Produit, TypeClient, TypePersonne, TypeCompagnie, \
-    QualiteBeneficiaire, TypeAssurance, Devise, Profession, ModeCalcul, Taxe, Apporteur, BaseCalcul, TypeQuittance, \
+    Regularisation, User, Langue, Pays, Produit, TypeClient, TypePersonne, TypeCompagnie, \
+    TypeAssurance, Devise, ModeCalcul, Taxe, Apporteur, BaseCalcul, TypeQuittance, \
     NatureQuittance, TypeCarosserie, CategorieVehicule, MarqueVehicule, NatureOperation, Prestataire, TypeTarif, Acte, \
-    Rubrique, Periodicite, RegroupementActe, SousRubrique, TypePrefinancement, CompteTresorerie, TypeMouvement, \
+    Rubrique, RegroupementActe, SousRubrique, TypePrefinancement, CompteTresorerie, TypeMouvement, \
     Secteur, Carosserie, Formule, Usage, Carburant, BusinessUnit, Garantie, ConditionsAssurance, MoyensTransport, TypeCourrier, Groupe
 from shared.enum import Genre, Statut, StatutRelation, OptionYesNo, PlacementEtGestion, \
     ModeRenouvellement, TypeEncaissementCommission, TypeMajorationContrat, CalculTM, StatutContrat, StatutPolice, \
@@ -158,16 +158,6 @@ class Police(models.Model):
             return (last_mouvement_avenant.date_fin_periode_garantie < today)
         else:
             return False
-
-    @property
-    def formules(self):
-        try:
-            formules = FormuleGarantie.objects.filter(police_id=self.id, statut=Statut.ACTIF)
-
-            return formules
-
-        except:
-            return None
 
     @property
     def periode_couverture_encours(self, date_survenance=None):
@@ -608,48 +598,6 @@ class ModePrefinancement(models.Model):
         verbose_name_plural = 'Modes de prefinancement'
 
 
-class FormuleGarantie(models.Model):
-    mode_prefinancement = models.ForeignKey(ModePrefinancement, null=True, on_delete=models.RESTRICT)
-    created_by = models.ForeignKey(User, null=True, on_delete=models.RESTRICT)
-    updated_by = models.ForeignKey(User, related_name="fg_updated_by", null=True, on_delete=models.RESTRICT)
-    deleted_by = models.ForeignKey(User, related_name="fg_deleted_by", null=True, on_delete=models.RESTRICT)
-    police = models.ForeignKey(Police, on_delete=models.RESTRICT, null=True)
-    bureau = models.ForeignKey(Bureau, on_delete=models.RESTRICT, null=True)
-    territorialite = models.ForeignKey(Territorialite, on_delete=models.RESTRICT, null=True)
-    type_tarif = models.ForeignKey(TypeTarif, on_delete=models.RESTRICT, null=True)
-    libelle = models.CharField(max_length=100, blank=True, null=True)
-    exclusion = models.TextField(max_length=250, blank=True, null=True)  # New text field
-
-    # Champs complementaires
-    infos_carte_consultation = models.CharField(max_length=100, blank=True, null=True)
-    infos_carte_hospitalisation = models.CharField(max_length=100, blank=True, null=True)
-    infos_carte_ambulatoire = models.CharField(max_length=100, blank=True, null=True)
-    infos_carte_vitamine = models.CharField(max_length=100, blank=True, null=True)
-    infos_carte_vaccination = models.CharField(max_length=100, blank=True, null=True)
-    infos_carte_numero_police = models.CharField(max_length=100, blank=True, null=True)
-    infos_carte_show_numero_police = models.BooleanField(default=True)
-
-    garantis_pharmacie = models.CharField(max_length=255, blank=True, null=True)
-    code = models.CharField(max_length=50, blank=True, null=True, unique=True)
-    taux_couverture = models.IntegerField(blank=True, null=True)
-    taux_tm = models.IntegerField(blank=True, null=True)
-    plafond_conso_famille = models.DecimalField(max_digits=30, decimal_places=3, blank=True, null=True)
-    plafond_conso_individuelle = models.DecimalField(max_digits=30, decimal_places=3, blank=True, null=True)
-    date_debut = models.DateField(blank=True, null=True)
-    date_fin = models.DateField(blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    statut = models.fields.CharField(choices=Statut.choices, default=Statut.ACTIF, max_length=15, null=True)
-
-    def __str__(self):
-        return self.libelle
-
-    class Meta:
-        db_table = 'formulegarantie'
-        verbose_name = 'Formule de garantie'
-        verbose_name_plural = 'Formule de garantie'
-
-
 class HistoriqueAliment(models.Model):
     # LES CHAMPS DU MODEL MARCHANDISE
     marchandise = models.ForeignKey(Marchandise, related_name="marchandises", on_delete=models.RESTRICT, null=True)
@@ -744,18 +692,15 @@ class HistoriqueAliment(models.Model):
 
 
 # les jointures sont faibles,
-# si le bareme concerne toute la police, alors uniquement la police sera renseigné, collège et qualite_beneficiaire resteront vides,
 #s'il concerne un college en particulier alors college sera renseigné
 class Bareme(models.Model):
     created_by = models.ForeignKey(User, null=True, on_delete=models.RESTRICT)
     deleted_by = models.ForeignKey(User, related_name="deleted_by", null=True, on_delete=models.RESTRICT)
-    formulegarantie = models.ForeignKey(FormuleGarantie, on_delete=models.RESTRICT, null=True)
     rubrique = models.ForeignKey(Rubrique, on_delete=models.RESTRICT, null=True)
     sous_rubrique = models.ForeignKey(SousRubrique, on_delete=models.RESTRICT, null=True)
     regroupement_acte = models.ForeignKey(RegroupementActe, on_delete=models.RESTRICT, null=True)
     acte = models.ForeignKey(Acte, on_delete=models.RESTRICT, null=True)
     is_garanti = models.BooleanField(default=True)
-    qualite_beneficiaire = models.ForeignKey(QualiteBeneficiaire, on_delete=models.RESTRICT, null=True)
     taux_tm = models.IntegerField(blank=True, null=True)
     taux_couverture = models.IntegerField(blank=True, null=True)
     plafond_rubrique = models.IntegerField(blank=True, null=True)
@@ -764,7 +709,6 @@ class Bareme(models.Model):
     plafond_sous_regroupement_acte = models.IntegerField(blank=True, null=True)
     plafond_acte = models.IntegerField(blank=True, null=True)
     nombre_acte = models.IntegerField(blank=True, null=True)
-    periodicite = models.ForeignKey(Periodicite, on_delete=models.RESTRICT, null=True)
     unite_frequence = models.IntegerField(blank=True, null=True)
     frequence = models.IntegerField(blank=True, null=True)
     plafond_individuel = models.IntegerField(blank=True, null=True)
@@ -787,7 +731,6 @@ class Bareme(models.Model):
 
 class TauxCouvertureVariable(models.Model):
     created_by = models.ForeignKey(User, null=True, on_delete=models.RESTRICT)
-    formulegarantie = models.ForeignKey(FormuleGarantie, on_delete=models.RESTRICT)
     secteur = models.ForeignKey(Secteur, on_delete=models.RESTRICT)  # Pour une même formule, le taux de couverture varie selon le secteur (public/privé) du prestataire
     taux_couverture = models.IntegerField(null=False)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -795,7 +738,7 @@ class TauxCouvertureVariable(models.Model):
     statut_validite = models.fields.CharField(choices=StatutValidite.choices, default=StatutValidite.VALIDE, max_length=15, null=True)
 
     def __str__(self):
-        return f'{self.formulegarantie.libelle} - {self.taux_couverture} %'
+        return f'{self.taux_couverture} %'
 
     class Meta:
         db_table = 'taux_couverture_variable'
@@ -818,14 +761,9 @@ class Aliment(models.Model):
     #
     bureau = models.ForeignKey(Bureau, null=True, on_delete=models.RESTRICT)
     adherent_principal = models.ForeignKey('self', null=True, on_delete=models.RESTRICT)
-    formules = models.ManyToManyField(FormuleGarantie, through='AlimentFormule')
-    qualite_beneficiaire = models.ForeignKey(QualiteBeneficiaire, null=True, on_delete=models.RESTRICT)
     civilite = models.ForeignKey(Civilite, null=True, on_delete=models.RESTRICT)
     pays_naissance = models.ForeignKey(Pays, related_name='pays_naissance', null=True, on_delete=models.RESTRICT)
     pays_residence = models.ForeignKey(Pays, related_name='pays_residence', null=True, on_delete=models.RESTRICT)
-    pays_activite_professionnelle = models.ForeignKey(Pays, related_name='pays_activite_professionnelle', null=True, on_delete=models.RESTRICT)
-    profession = models.ForeignKey(Profession, null=True, on_delete=models.RESTRICT)
-    profession_libelle = models.CharField(max_length=50, blank=False, null=True)
     nom = models.CharField(max_length=50, blank=False, null=True)
     prenoms = models.CharField(max_length=50, blank=False, null=True)
     nom_jeune_fille = models.CharField(max_length=100, blank=False, null=True)
@@ -918,120 +856,6 @@ class Aliment(models.Model):
             return self.cartes.filter(statut=Statut.ACTIF).latest('id')
         except Carte.DoesNotExist:
             return ""
-
-    def client(self):
-        try:
-            aliment_formule = AlimentFormule.objects.filter(aliment_id=self.id, statut=Statut.ACTIF).latest('id')
-            police = aliment_formule.formule.police
-            client = police.client
-            return client
-
-        except Client.DoesNotExist:
-            return None
-
-    @property
-    def formules(self):
-        try:
-            aliment_formules = AlimentFormule.objects.filter(aliment_id=self.id)
-
-            return aliment_formules
-
-        except:
-            return None
-
-    @property
-    def aliment_formule(self):
-        try:
-            aliment_formule = AlimentFormule.objects.filter(aliment_id=self.id, statut=Statut.ACTIF).latest('id')
-
-            return aliment_formule
-
-        except AlimentFormule.DoesNotExist:
-            return None
-
-    @property
-    def formule(self, date_prise_en_charge=None):
-        if date_prise_en_charge is None:
-            date_prise_en_charge = datetime.datetime.now(tz=datetime.timezone.utc).date()
-            # date_debut=date_prise_en_charge
-
-        try:
-            query = Q(aliment_id=self.id, date_debut__date__lte=date_prise_en_charge) & (
-                        Q(date_fin__isnull=True) | Q(date_fin__date__gte=date_prise_en_charge))
-            aliment_formules = AlimentFormule.objects.filter(query)
-
-            if aliment_formules:
-                aliment_formule = AlimentFormule.objects.filter(query).latest('id')
-                formule = aliment_formule.formule if aliment_formule else None
-                return formule
-
-            else:
-                return None
-
-        except FormuleGarantie.DoesNotExist:
-            pprint("FormuleGarantie.DoesNotExist")
-            return None
-
-    # Identique à formule sauf que formule est une propriété et formuleencours une fonction
-    # sera plus utilisé quand les gestionnaires vont saisir les sinistre en retards
-    def formuleencours(self, date_prise_en_charge=None):
-        if date_prise_en_charge is None:
-            date_prise_en_charge = datetime.datetime.now(tz=datetime.timezone.utc).date()
-            # date_debut=date_prise_en_charge
-
-        try:
-            query = Q(aliment_id=self.id, date_debut__date__lte=date_prise_en_charge) & (
-                        Q(date_fin__isnull=True) | Q(date_fin__date__gte=date_prise_en_charge))
-            aliment_formules = AlimentFormule.objects.filter(query)
-
-            if aliment_formules:
-                aliment_formule = AlimentFormule.objects.filter(query).latest('id')
-                formule = aliment_formule.formule if aliment_formule else None
-                return formule
-
-            else:
-                return None
-
-        except FormuleGarantie.DoesNotExist:
-            pprint("FormuleGarantie.DoesNotExist")
-            return None
-
-    # Identique à formule sauf que formule est une propriété et formuleencours une fonction
-    # sera plus utilisé quand les gestionnaires vont saisir les sinistre en retards
-    def formule_atdate(self, date_prise_en_charge=None):
-        if date_prise_en_charge is None:
-            date_prise_en_charge = datetime.datetime.now(tz=datetime.timezone.utc).date()
-            # date_debut=date_prise_en_charge
-        else:
-            if isinstance(date_prise_en_charge, datetime.datetime):
-                date_prise_en_charge = date_prise_en_charge.date()
-
-        try:
-            query = Q(aliment_id=self.id, date_debut__date__lte=date_prise_en_charge) & (
-                        Q(date_fin__isnull=True) | Q(date_fin__date__gte=date_prise_en_charge))
-            aliment_formules = AlimentFormule.objects.filter(query)
-
-            if aliment_formules:
-                aliment_formule = AlimentFormule.objects.filter(query).latest('id')
-                formule = aliment_formule.formule if aliment_formule else None
-
-                return formule
-
-            else:
-                return None
-
-        except FormuleGarantie.DoesNotExist:
-            pprint("FormuleGarantie.DoesNotExist")
-            return None
-
-    @property
-    def last_formule(self):
-        query = Q(aliment_id=self.id, statut_validite=StatutValidite.VALIDE)
-        aliment_formule = AlimentFormule.objects.filter(query).latest('id')
-
-        formule = aliment_formule.formule if aliment_formule else None
-
-        return formule
 
     @property
     def last_sinistre(self):
@@ -1194,7 +1018,6 @@ class PhotoIdentite(models.Model):
 class AlimentFormule(models.Model):
     created_by = models.ForeignKey(User, null=True, on_delete=models.RESTRICT)
     aliment = models.ForeignKey(Aliment, related_name="historique_formules", on_delete=models.RESTRICT)
-    formule = models.ForeignKey(FormuleGarantie, null=True, on_delete=models.RESTRICT)
     motif = models.CharField(max_length=255, blank=True, null=True)
     observation = models.CharField(max_length=255, blank=True, null=True)
     date_debut = models.DateTimeField(blank=True, null=True)
@@ -1390,30 +1213,6 @@ class MouvementPolice(models.Model):
         verbose_name_plural = 'Mouvements de la police'
 
 
-class MouvementAliment(models.Model):
-    created_by = models.ForeignKey(User, null=True, on_delete=models.RESTRICT)
-    aliment = models.ForeignKey(Aliment, related_name="ses_mouvements", on_delete=models.RESTRICT)
-    mouvement = models.ForeignKey(Mouvement, on_delete=models.RESTRICT)
-    police = models.ForeignKey(Police, null=True, on_delete=models.RESTRICT)
-    # motif = models.ForeignKey(Motif, on_delete=models.RESTRICT)
-    motif = models.CharField(max_length=255, blank=True, null=True)
-    date_effet = models.DateField(blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    statut_validite = models.fields.CharField(choices=StatutValidite.choices, default=StatutValidite.VALIDE,
-                                              max_length=15, null=True)
-    statut_traitement = models.fields.CharField(choices=StatutTraitement.choices, default=StatutTraitement.TRAITE,
-                                                max_length=15, null=True)
-
-    def __str__(self):
-        return f'{self.mouvement.libelle} du bénéficiaire {self.aliment.nom} {self.aliment.prenoms}'
-
-    class Meta:
-        db_table = 'mouvements_aliments'
-        verbose_name = "Mouvement sur l'aliment"
-        verbose_name_plural = "Mouvements sur l'aliment"
-
-
 class Quittance(models.Model):
     bureau = models.ForeignKey(Bureau, null=True, on_delete=models.RESTRICT)
     created_by = models.ForeignKey(User, null=True, on_delete=models.RESTRICT)
@@ -1446,10 +1245,8 @@ class Quittance(models.Model):
     date_emission = models.DateField(blank=True, null=True)
     date_debut = models.DateField(blank=True, null=True)
     date_fin = models.DateField(blank=True, null=True)
-    statut = models.fields.CharField(choices=StatutQuittance.choices, default=StatutQuittance.IMPAYE, max_length=15,
-                                     null=True)
-    statut_validite = models.fields.CharField(choices=StatutValidite.choices, default=StatutValidite.VALIDE,
-                                              max_length=15, null=True)
+    statut = models.fields.CharField(choices=StatutQuittance.choices, default=StatutQuittance.IMPAYE, max_length=15, null=True)
+    statut_validite = models.fields.CharField(choices=StatutValidite.choices, default=StatutValidite.VALIDE, max_length=15, null=True)
     observation = models.CharField(max_length=255, blank=True, null=True)
     import_stats = models.BooleanField(default=False, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
@@ -1489,24 +1286,6 @@ class TaxeQuittance(models.Model):
         db_table = 'taxe_quittance'
         verbose_name = 'Autre taxe de la quittance'
         verbose_name_plural = 'Autres taxes de la quittance'
-
-
-class MouvementQuittance(models.Model):
-    created_by = models.ForeignKey(User, null=True, on_delete=models.RESTRICT)
-    mouvement = models.ForeignKey(Mouvement, on_delete=models.RESTRICT)
-    quittance = models.ForeignKey(Quittance, on_delete=models.RESTRICT)
-    motif = models.CharField(max_length=255, blank=True, null=True)
-    observation = models.CharField(max_length=255, blank=True, null=True)
-    date_effet = models.DateField(blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    statut_validite = models.fields.CharField(choices=StatutValidite.choices, default=StatutValidite.VALIDE,
-                                              max_length=15, null=True)
-
-    class Meta:
-        db_table = 'mouvement_quittance'
-        verbose_name = 'Mouvements sur la quittance'
-        verbose_name_plural = 'Mouvements sur les quittances'
 
 
 def upload_location_operation(instance, filename):
@@ -1848,22 +1627,6 @@ class Contact(models.Model):
         verbose_name_plural = 'Contacts'
 
 
-class VehiculePolice(models.Model):
-    vehicule = models.ForeignKey(Vehicule, on_delete=models.RESTRICT)
-    police = models.ForeignKey(Police, on_delete=models.RESTRICT)
-    formule = models.ForeignKey(FormuleGarantie, null=True, on_delete=models.RESTRICT)
-    motif = models.CharField(max_length=255, blank=True, null=True)
-    date_mouvement = models.DateTimeField(blank=True, null=True)
-    statut = models.fields.CharField(choices=Statut.choices, default=Statut.ACTIF, max_length=15, null=True, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        db_table = 'vehicule_police'
-        verbose_name = 'Véhicule de la police'
-        verbose_name_plural = 'Véhicules de la police'
-
-
 def upload_location_tarifprestataireclient(instance, filename):
     filebase, extension = filename.rsplit('.', 1)
     file_name = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
@@ -1873,7 +1636,6 @@ def upload_location_tarifprestataireclient(instance, filename):
 class TarifPrestataireClient(models.Model):
     prestataire = models.ForeignKey(Prestataire, on_delete=models.RESTRICT, null=True)
     client = models.ForeignKey(Client, on_delete=models.RESTRICT, null=True)
-    formule = models.ForeignKey(FormuleGarantie, on_delete=models.RESTRICT, null=True)
     fichier_tarification = models.FileField(upload_to=upload_location_tarifprestataireclient, blank=True, default=None, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

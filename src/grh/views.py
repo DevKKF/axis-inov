@@ -25,9 +25,9 @@ from sinistre.models import Sinistre
 
 User = get_user_model()
 
-from production.models import Aliment, AlimentFormule, Bareme, Document, FormuleGarantie, Mouvement, \
-    MouvementAliment, MouvementPolice, Police, Quittance, Reglement, TarifPrestataireClient, TypeDocument, Client
-from configurations.models import Civilite, Pays, Prestataire, QualiteBeneficiaire, User
+from production.models import Aliment, AlimentFormule, Bareme, Document, Mouvement, \
+    MouvementPolice, Police, Quittance, Reglement, TarifPrestataireClient, TypeDocument, Client
+from configurations.models import Civilite, Pays, Prestataire, User
 from shared.enum import Statut, StatutQuittance, Genre, StatutEnrolement, StatutValidite, StatutIncorporation, \
     StatutTraitement
 
@@ -197,15 +197,6 @@ class DashboardView(TemplateView):
             solde_total_client = total_reglements - total_quittances
             context['solde_total_client'] = intcomma(solde_total_client)
 
-            # GHRAPHE - TOTAL CONSOMMATION [ SINISTRES ] / TYPE ALIMENT
-            quality_libelles = QualiteBeneficiaire.objects.values_list('libelle', flat=True)
-            total_sums = {}
-            for libelle  in quality_libelles:
-                total_frais_reel = Sinistre.objects.filter(police__in=police_clients, aliment__qualite_beneficiaire__libelle =libelle ).aggregate(total=Sum('part_compagnie'))
-                total_sum = total_frais_reel['total'] or Decimal('0')  
-                total_sums[libelle ] = float(total_sum)  
-            context['total_sums'] = json.dumps(total_sums)
-
             # GRAPHE - TOTAL EVOLUTION POPULATION
             current_year = timezone.now().year
             current_month = timezone.now().month
@@ -292,18 +283,8 @@ class DashboardView(TemplateView):
             context['solde_police_client'] = solde_police_client
 
             # FILTER BY POLICE - TOTAL CONSOMMATION SINISTRE / TYPE ALIMENT
-            quality_libelles_fltr = QualiteBeneficiaire.objects.values_list('libelle', flat=True)
-            aliments_for_selected_police = Aliment.objects.filter(historique_formules__formule__police=selected_police)                
-            qualites_with_counts = QualiteBeneficiaire.objects.annotate(aliment_count=Count('aliment'))
-            aliment_count_for_police = {}
-            for qualite in qualites_with_counts:
-                aliment_count_for_police = aliments_for_selected_police.filter(qualite_beneficiaire=qualite).count()
-                context['aliment_count_for_police'] = json.dumps(aliment_count_for_police)
+            aliments_for_selected_police = Aliment.objects.filter(historique_formules__formule__police=selected_police)
             total_sums_selected_police = {}
-            for libelle in quality_libelles_fltr:
-                total_frais_reel_selected_police = Sinistre.objects.filter(police=selected_police, aliment__qualite_beneficiaire__libelle=libelle).aggregate(total=Sum('part_compagnie'))
-                total_sum_selected_police = total_frais_reel_selected_police['total'] or Decimal('0')
-                total_sums_selected_police[libelle] = float(total_sum_selected_police)
             context['total_sums_selected_police'] = json.dumps(total_sums_selected_police)
             context['total_police_active_id'] = total_police_active_id
 
@@ -415,15 +396,6 @@ class OnBoardingView(TemplateView):
                     campagne.statut = StatutValidite.CLOTURE
                     campagne.save()
 
-            context['related_formules'] = {
-                police.pk: [
-                    {'name': formule.pk, 'value': formule.libelle}
-                    for formule in FormuleGarantie.objects.filter(police_id=police.pk, statut=Statut.ACTIF)
-                ]
-                for police in related_polices
-            }
-
-
             context['campagnes'] = campagnes
             context['today'] = today
 
@@ -467,7 +439,6 @@ class OnBoardingView(TemplateView):
         selected_police = request.POST.get('police', None)
         police = get_object_or_404(Police, id=selected_police)
         selected_formule = request.POST.get('formule', None)
-        formule = get_object_or_404(FormuleGarantie, id=selected_formule)
 
         date_debut = None
         date_fin = None
@@ -479,7 +450,6 @@ class OnBoardingView(TemplateView):
 
         email_group = request.POST.get('list_email', None)
         destinataires = email_group.split(';')
-        qualite_beneficiaire = QualiteBeneficiaire.objects.filter(code='AD').first()
 
         today = timezone.now().date()
 
@@ -495,7 +465,6 @@ class OnBoardingView(TemplateView):
             created_by=admin_grh,
             libelle=libelle_campagne,
             police=police,
-            formulegarantie=formule,
             date_debut=date_debut,
             date_fin=date_fin,
             statut=default_statut
@@ -507,16 +476,14 @@ class OnBoardingView(TemplateView):
             if email:
                 try:
                     # CASE EMAIL IN MODEL ALIMENT
-                    aliment = Aliment.objects.filter(email=email, qualite_beneficiaire=qualite_beneficiaire).first()
-                    if (aliment is not None) and (aliment.aliment_formule.formule.police == formule.police):
+                    aliment = Aliment.objects.filter(email=email).first()
+                    if (aliment is not None):
                         prospect = Prospect(
                             nom=aliment.nom,
                             prenoms=aliment.prenoms,
                             email=aliment.email,
                             police=police,
-                            formulegarantie=formule,
                             bureau=aliment.bureau,
-                            qualite_beneficiaire=aliment.qualite_beneficiaire,
                             aliment=aliment,
                             aliment_adherent_principal=aliment,
                         )
@@ -533,9 +500,7 @@ class OnBoardingView(TemplateView):
                     prospect = Prospect(
                         email=email,
                         police=police,
-                        formulegarantie=formule,
                         bureau=bureau,
-                        qualite_beneficiaire=qualite_beneficiaire
                     )
                     prospect.save()
 
@@ -555,9 +520,7 @@ class OnBoardingView(TemplateView):
                     prospect = Prospect(
                         email=email,
                         police=police,
-                        formulegarantie=formule,
                         bureau=bureau,
-                        qualite_beneficiaire=qualite_beneficiaire
                     )
                     prospect.save()
 
@@ -896,10 +859,8 @@ class FormulesPoliceView(TemplateView):
 
         police_id = kwargs.get('police_id')
         police = get_object_or_404(Police, id=police_id)
-        formules = FormuleGarantie.objects.filter(police=police)
 
         context['police'] = police
-        context['formules'] = formules
 
         return context
 
@@ -914,8 +875,6 @@ class DetailsFormulePoliceView(TemplateView):
         formule_id = kwargs.get('formule_id')
 
         police = get_object_or_404(Police, id=police_id)
-        formule = get_object_or_404(FormuleGarantie, id=formule_id, police=police)
-        baremes = Bareme.objects.filter(formulegarantie=formule, statut=Statut.ACTIF).all()
         tarif_prestataire_clients = TarifPrestataireClient.objects.filter(formule=formule)
         reseau_soins = []
 
@@ -927,8 +886,6 @@ class DetailsFormulePoliceView(TemplateView):
                     reseau_soins.append(reseau_soin)
 
         context['police'] = police
-        context['formule'] = formule
-        context['baremes'] = baremes
         context['reseau_soins'] = reseau_soins
 
         return context
@@ -946,11 +903,9 @@ class DetailsGarantieFormulePoliceView(TemplateView):
         bareme_id = kwargs.get('bareme_id')
 
         police = get_object_or_404(Police, id=police_id)
-        formule = get_object_or_404(FormuleGarantie, id=formule_id, police=police)
         bareme = get_object_or_404(Bareme, id=bareme_id)
 
         context['police'] = police
-        context['formule'] = formule
         context['bareme'] = bareme
 
         return context
@@ -968,12 +923,10 @@ class ReseauDeSoinView(TemplateView):
         reseau_soin_id = kwargs.get('reseau_soin_id')
 
         police = get_object_or_404(Police, id=police_id)
-        formule = get_object_or_404(FormuleGarantie, id=formule_id, police=police)
         prestataires = Prestataire.objects.filter(tarifprestataireclient__formule_id=formule_id).distinct()
         reseau_soin = ""
 
         context['police'] = police
-        context['formule'] = formule
         context['prestataires'] = prestataires
         context['reseau_soin'] =reseau_soin
 
@@ -992,7 +945,6 @@ class PrestataireMedicalView(TemplateView):
         prestataire_id = kwargs.get('prestataire_id')
         
         police = get_object_or_404(Police, id=police_id)
-        formule = get_object_or_404(FormuleGarantie, id=formule_id, police=police)
         prestataire = get_object_or_404(Prestataire, id=prestataire_id)
 
         context['police'] = police
@@ -1071,8 +1023,6 @@ class BeneficiairePoliceView(TemplateView):
         police_id = kwargs.get('police_id')
         police = get_object_or_404(Police, id=police_id)
 
-        formules = FormuleGarantie.objects.filter(police=police)
-
         aliment_formule_ids = AlimentFormule.objects.filter(formule_id__in=[p.id for p in police.formules], 
                                                             statut=Statut.ACTIF).values_list('aliment_id', 
                                                                                              flat=True).order_by('-id')
@@ -1101,12 +1051,7 @@ def beneficiaire_police_datatable(request, police_id):
 
     police = get_object_or_404(Police, id=police_id)
 
-    formules = FormuleGarantie.objects.filter(police=police)
-
-    aliment_formule_ids = AlimentFormule.objects.filter(formule_id__in=[p.id for p in police.formules],
-                                                        statut=Statut.ACTIF).values_list('aliment_id',
-                                                                                         flat=True).order_by('-id')
-    queryset = Aliment.objects.filter(id__in=aliment_formule_ids)
+    queryset = Aliment.objects.all()
 
 
     # Map column index to corresponding model field for sorting
@@ -1275,18 +1220,6 @@ class SortirBeneficiaireView(TemplateView):
         motif = request.POST.get('motif', None)
 
         mouvement = Mouvement.objects.filter(code="DMDSORTIE").first()
-        mouvement_aliment = MouvementAliment.objects.create(
-            created_by=request.user,
-            aliment=aliment,
-            mouvement=mouvement,
-            police=police,
-            date_effet=date_sortie,
-            motif=motif,
-            statut_validite=StatutValidite.VALIDE,
-            statut_traitement=StatutTraitement.NON_TRAITE
-        )
-
-        mouvement_aliment.save()
 
         return redirect('grh.police_overview', police_id=police_id)
 
@@ -1331,19 +1264,6 @@ class SuspendreBeneficiaireView(TemplateView):
 
         date_suspension = request.POST.get('date_suspension', None)
         motif = request.POST.get('motif', None)
-
-        mouvement_aliment = MouvementAliment.objects.create(
-            created_by=admin_grh,
-            aliment=aliment,
-            mouvement=mouvement,
-            police=police,
-            date_effet=date_suspension,
-            motif=motif,
-            statut_validite=StatutValidite.VALIDE,
-            statut_traitement=StatutTraitement.NON_TRAITE
-        )
-
-        mouvement_aliment.save()
 
         return redirect('grh.police_overview', police_id=police_id)
 
@@ -1391,15 +1311,9 @@ class GarantiesBeneficiaireView(TemplateView):
         aliment_formule = AlimentFormule.objects.filter(aliment=beneficiaire).first()
         formule = aliment_formule.formule
 
-        if aliment_formule:
-            baremes = Bareme.objects.filter(formulegarantie=formule, statut=Statut.ACTIF)
-        else:
-            baremes = []
-
         context['police'] = police
         context['formule'] = formule
         context['beneficiaire'] = beneficiaire
-        context['baremes'] = baremes
 
         return context
 
@@ -1422,10 +1336,8 @@ class DetailsGarantieFormuleBeneficiaireView(TemplateView):
         police = get_object_or_404(Police, id=police_id)
         beneficiaire = get_object_or_404(Aliment, id=beneficiaire_id)
         bareme = get_object_or_404(Bareme, id=bareme_id)
-        formule = get_object_or_404(FormuleGarantie, id=formule_id)
 
         context['police'] = police
-        context['formule'] = formule
         context['beneficiaire'] = beneficiaire
         context['bareme'] = bareme
 
@@ -1576,7 +1488,6 @@ class AjouterMembreFamilleBeneficiaire(TemplateView):
 
         pays = Pays.objects.all()
         civilites = Civilite.objects.exclude(code='STE')  # CIVILITES
-        formules = FormuleGarantie.objects.filter(police=police, statut=Statut.ACTIF)
 
         has_conjoint = Aliment.objects.filter(adherent_principal=beneficiaire,
                                               qualite_beneficiaire__libelle='CONJOINT').exists()
@@ -1593,7 +1504,6 @@ class AjouterMembreFamilleBeneficiaire(TemplateView):
         context['adherents_principaux'] = adherents_principaux
         context['pays'] = pays
         context['civilites'] = civilites
-        context['formules'] = formules
         context['qualites'] = qualite_benef_types
         context['M'] = masculin
         context['F'] = feminin
@@ -1610,16 +1520,12 @@ class AjouterMembreFamilleBeneficiaire(TemplateView):
         
         nom = request.POST.get('nom', None)
         prenoms = request.POST.get('prenoms', None)
-        qualite_beneficiaire = request.POST.get('qualite_beneficiaire', None)
-        #aliment_adherent_principal = request.POST.get('adherent_principal', None)
 
         civilite_code = request.POST.get('civilite')
         civilite = Civilite.objects.get(code=civilite_code)
         
         date_naissance = request.POST.get('date_naissance', None)
 
-        if qualite_beneficiaire:
-            qualite_beneficiaire = QualiteBeneficiaire.objects.get(libelle=qualite_beneficiaire)
         if date_naissance:
             date_naissance = datetime.strptime(date_naissance, '%Y-%m-%d')
 
@@ -1631,7 +1537,6 @@ class AjouterMembreFamilleBeneficiaire(TemplateView):
         ville = request.POST.get('ville', None)
 
         formule = request.POST.get('formule', None)
-        formulegarantie = get_object_or_404(FormuleGarantie, id=formule)
         numero_securite_sociale = request.POST.get('numero_securite_sociale', None)
 
         bureau = adherent.bureau
@@ -1665,7 +1570,6 @@ class AjouterMembreFamilleBeneficiaire(TemplateView):
             'photo': photo,
             'adresse': adresse,
             'ville': ville,
-            'formulegarantie': formulegarantie,
             'bureau': bureau,
             'police': police,
             'aliment_adherent_principal': adherent,
@@ -1700,17 +1604,13 @@ class AjouterBeneficiaire(TemplateView):
         # Fetch police object; the dispatch method ensures this police is valid
         police = get_object_or_404(Police, id=police_id)
 
-        qualites_beneficiaires = QualiteBeneficiaire.objects.all().order_by('libelle')
-
         if adherent_principal_id:
             adherents_principaux = Aliment.objects.filter(id=adherent_principal_id)
-            qualites_beneficiaires = qualites_beneficiaires.exclude(code='AD')
         else:
             adherents_principaux = getAdherentsPrincipaux(police_id)
 
         pays = Pays.objects.all()
         civilites = Civilite.objects.exclude(code='STE')  # CIVILITES
-        formules = FormuleGarantie.objects.filter(police=police, statut=Statut.ACTIF)
 
         country_code = self.request.user.utilisateur_grh.bureau.pays.code        #has_conjoint = Aliment.objects.filter(adherent_principal=beneficiaire, ualite_beneficiaire__libelle='CONJOINT').exists()
         #if has_conjoint:
@@ -1726,7 +1626,6 @@ class AjouterBeneficiaire(TemplateView):
         context['adherent_principal_id'] = adherent_principal_id
         context['pays'] = pays
         context['civilites'] = civilites
-        context['formules'] = formules
         context['qualites'] = qualite_benef_types
         context['qualites_beneficiaires'] = qualites_beneficiaires
         context['M'] = masculin
@@ -1743,7 +1642,6 @@ class AjouterBeneficiaire(TemplateView):
 
         nom = request.POST.get('nom', None)
         prenoms = request.POST.get('prenoms', None)
-        qualite_beneficiaire = request.POST.get('qualite_beneficiaire', None)
 
         civilite_code = request.POST.get('civilite')
         civilite = Civilite.objects.get(code=civilite_code)
@@ -1752,7 +1650,6 @@ class AjouterBeneficiaire(TemplateView):
         date_affiliation = request.POST.get('date_affiliation', None)
 
         qualite_beneficiaire_id = request.POST.get('qualite_beneficiaire', None)
-        qualite_beneficiaire = QualiteBeneficiaire.objects.get(id=qualite_beneficiaire_id)
 
 
         adherent_principal_id = request.POST.get('adherent_principal')
@@ -1787,7 +1684,6 @@ class AjouterBeneficiaire(TemplateView):
         pays_residence_id = request.POST.get('pays_residence', None)
 
         formule = request.POST.get('formule', None)
-        formulegarantie = get_object_or_404(FormuleGarantie, id=formule)
 
         bureau = request.user.bureau
 
@@ -1808,7 +1704,6 @@ class AjouterBeneficiaire(TemplateView):
             'photo': photo,
             'adresse': adresse,
             'ville': ville,
-            #'formulegarantie': formulegarantie,
             'pays_naissance': pays_naissance,
             'pays_residence_id': pays_residence_id,
             'bureau': bureau,
@@ -1819,37 +1714,10 @@ class AjouterBeneficiaire(TemplateView):
 
         new_aliment_by_grh = Aliment.objects.create(**new_member_data)
 
-        if qualite_beneficiaire.code == "AD":
-            new_aliment_by_grh.adherent_principal = new_aliment_by_grh
-            new_aliment_by_grh.numero_ordre = 1
-            #générer un numéro de famille
-            new_aliment_by_grh.numero_famille = generate_numero_famille()
-            new_aliment_by_grh.numero_famille_du_mois = generer_nombre_famille_du_mois()
-        else:
-            #compter le nombre de bénéficiaires dans la famille + 1
-            nombre_benefs_of_famille = Aliment.objects.filter(adherent_principal=new_aliment_by_grh.adherent_principal).count()
-            new_aliment_by_grh.numero_ordre = nombre_benefs_of_famille
-
         new_aliment_by_grh.save()
-
-        # renseigner la table association qui lie l'aliment à la police et à la formule
-        aliment_formule = AlimentFormule.objects.create(formule=formulegarantie, aliment_id=new_aliment_by_grh.pk,
-                                                        date_debut=new_aliment_by_grh.date_affiliation,
-                                                        statut=Statut.ACTIF, created_by=request.user)
 
         # créer un mouvement d'incorporation en attente
         mouvement = Mouvement.objects.filter(code="DMD-INCORPO-GRH").first()
-        # Créer l'avenant
-        mouvement_aliment = MouvementAliment.objects.create(created_by=request.user,
-                                                            aliment=new_aliment_by_grh,
-                                                            mouvement=mouvement,
-                                                            police=police,
-                                                            date_effet=new_aliment_by_grh.date_affiliation,
-                                                            motif="Demande d'incorporation par le GRH",
-                                                            statut_validite=StatutValidite.VALIDE,
-                                                            statut_traitement=StatutTraitement.NON_TRAITE
-                                                            )
-        mouvement_aliment.save()
 
         #rester sur la même page et afficher le message de succès
         return redirect('grh.police_overview', police_id=police_id)
@@ -1976,12 +1844,9 @@ class FormulaireEnrolement(TemplateView):
         context['adherent_principal'] = adherent_principal
 
         if prospect_id is not None:
-            campagne_prospect = get_object_or_404(CampagneProspect, uiid=uiid, campagne__id=campagne_id,
-                                                  prospect__id=prospect_id)
+            campagne_prospect = get_object_or_404(CampagneProspect, uiid=uiid, campagne__id=campagne_id, prospect__id=prospect_id)
         else:
             campagne_prospect = None
-
-        qualities = QualiteBeneficiaire.objects.exclude(code='AD')  # QUALITES BENEFS
 
         civilites_list = Civilite.objects.exclude(code='STE')  # CIVILITES
         masculin = Genre.MASCULIN
@@ -1990,7 +1855,6 @@ class FormulaireEnrolement(TemplateView):
         context['campagne'] = campagne
 
         context['country_code'] = country_code
-        context['qualities'] = qualities
         context['civilites_list'] = civilites_list
         context['M'] = masculin
         context['F'] = feminin
@@ -2042,11 +1906,9 @@ class FormulaireEnrolement(TemplateView):
                                                        request.POST.get('selected_country_dial_code_mobile'))
 
             if telephone_fixe:
-                telephone_fixe = format_phone_number(request.POST.get('tel_fixe'),
-                                                     request.POST.get('selected_country_dial_code_fixe'))
+                telephone_fixe = format_phone_number(request.POST.get('tel_fixe'), request.POST.get('selected_country_dial_code_fixe'))
 
             civilite = Civilite.objects.get(code=civilite_code)  # Fk
-            qualite_beneficiaire = QualiteBeneficiaire.objects.get(code=qualite_beneficiaire_code)  # Fk
             numero_securite_sociale = request.POST.get('numero_securite_sociale')  # Retrieve numero_securite_sociale
 
             prospect_data = {
@@ -2059,10 +1921,7 @@ class FormulaireEnrolement(TemplateView):
                 'civilite': civilite,  # Fk
                 'genre': genre,
                 'photo': photo,
-                #
                 'matricule_employe': matricule_employe,
-                
-                'qualite_beneficiaire': qualite_beneficiaire,  # Fk
                 'email': email,
                 'ville': ville,
                 'adresse': adresse,
@@ -2080,8 +1939,7 @@ class FormulaireEnrolement(TemplateView):
                 prospect = Prospect.objects.get(id=kwargs['prospect_id'])
                 prospect_data['photo'] = prospect.photo.name
 
-            adherent_principal = CampagneProspect.objects.filter(campagne=campagne, uiid=uiid,
-                                                                 prospect__qualite_beneficiaire__code='AD').first()
+            adherent_principal = CampagneProspect.objects.filter(campagne=campagne, uiid=uiid, prospect__qualite_beneficiaire__code='AD').first()
 
             if 'prospect_id' in kwargs:
 
@@ -2091,7 +1949,6 @@ class FormulaireEnrolement(TemplateView):
                     setattr(prospect, key, value)
                 prospect.adherent_principal = adherent_principal.prospect  # Self
                 prospect.police = adherent_principal.prospect.police
-                prospect.formulegarantie = adherent_principal.prospect.formulegarantie
                 prospect.save()
 
             else:
@@ -2100,18 +1957,15 @@ class FormulaireEnrolement(TemplateView):
                 if aliment_id:
                     aliment = get_object_or_404(Aliment, id=aliment_id)
                     if aliment:
-                        aliment_prospect = Prospect.objects.filter(email=aliment.email,
-                                                                   campagneprospect__isnull=True).first()
+                        aliment_prospect = Prospect.objects.filter(email=aliment.email, campagneprospect__isnull=True).first()
                         if aliment_prospect:
                             new_prospect.adherent_principal = aliment_prospect.adherent_principal  # Member - Aliment
                             new_prospect.bureau = aliment_prospect.bureau
                             new_prospect.police = aliment_prospect.police
-                            new_prospect.formulegarantie = aliment_prospect.formulegarantie
                 else:
                     new_prospect.adherent_principal = adherent_principal.prospect  # Member - Prospect
                     new_prospect.bureau = adherent_principal.prospect.bureau
                     new_prospect.police = adherent_principal.prospect.police
-                    new_prospect.formulegarantie = adherent_principal.prospect.formulegarantie
 
                 new_prospect.save()
 
@@ -2304,9 +2158,7 @@ class IncorporationsByGrhView(TemplateView):
         police_id = kwargs.get('police_id')
         police = get_object_or_404(Police, id=police_id)
 
-        aliment_ids = MouvementAliment.objects.filter(statut_traitement=StatutTraitement.NON_TRAITE,
-                                                      police=police).values_list('aliment_id')
-        aliments = Aliment.objects.filter(id__in=aliment_ids)
+        aliments = Aliment.objects.all()
 
         context['aliments'] = aliments
         context['police'] = police

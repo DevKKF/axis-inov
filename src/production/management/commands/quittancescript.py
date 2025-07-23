@@ -4,7 +4,7 @@ from django.core.management.base import BaseCommand, CommandError
 from django.db.models import Q
 
 from configurations.helper_config import send_dev_notification_background_task_mail
-from production.models import Carte, Aliment, AlimentFormule, MouvementAliment, Quittance, ApporteurPolice
+from production.models import Carte, Aliment, AlimentFormule, Quittance, ApporteurPolice
 from shared.enum import StatutValidite
 from shared.helpers import generer_qrcode_carte
 

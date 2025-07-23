@@ -74,13 +74,6 @@ class SecteurActiviteAdmin(admin.ModelAdmin):
     list_display = ('libelle', 'status', 'created_at')
 
 
-class ProfessionAdmin(ImportExportModelAdmin):
-    list_filter = ('name', 'code')
-    list_display = ('name', 'code')
-    search_field = ('name', 'code')
-    list_per_page = 10
-
-
 class BureausAdmin(ImportExportModelAdmin):
     inlines = [TaxeInline]
     list_display = ('nom', 'code', 'telephone', 'fax', 'email', 'tarif_bureau')

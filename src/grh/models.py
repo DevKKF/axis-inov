@@ -1,7 +1,7 @@
 from django.db import models
 
-from configurations.models import Profession, Pays, Civilite, QualiteBeneficiaire, Bureau, User
-from production.models import Police, FormuleGarantie, Aliment, Mouvement
+from configurations.models import Pays, Civilite, Bureau, User
+from production.models import Police, Aliment, Mouvement
 from shared.enum import Genre, Statut, StatutEnrolement, StatutValidite
 
 
@@ -10,7 +10,6 @@ from shared.enum import Genre, Statut, StatutEnrolement, StatutValidite
 class Campagne(models.Model):
     created_by = models.ForeignKey(User, null=True, on_delete=models.RESTRICT)
     police = models.ForeignKey(Police, null=True, on_delete=models.RESTRICT)
-    formulegarantie = models.ForeignKey(FormuleGarantie, null=True, on_delete=models.RESTRICT)
     libelle = models.CharField(max_length=255, blank=False, null=True)
     code = models.CharField(max_length=25, unique=True, blank=False, null=True) # UPDATED
     lien = models.CharField(max_length=255, blank=False, null=True)
@@ -32,14 +31,11 @@ class Campagne(models.Model):
 class Prospect(models.Model):
     bureau = models.ForeignKey(Bureau, null=True, on_delete=models.RESTRICT)
     police = models.ForeignKey(Police, null=True, on_delete=models.RESTRICT)
-    formulegarantie = models.ForeignKey(FormuleGarantie, null=True, on_delete=models.RESTRICT)
     adherent_principal = models.ForeignKey('self', null=True, on_delete=models.RESTRICT)
-    qualite_beneficiaire = models.ForeignKey(QualiteBeneficiaire, null=True, on_delete=models.RESTRICT)
     civilite = models.ForeignKey(Civilite, null=True, on_delete=models.RESTRICT)
     pays_naissance = models.ForeignKey(Pays, related_name='pays_naissance_prospect', null=True, on_delete=models.RESTRICT)
     pays_residence = models.ForeignKey(Pays, related_name='pays_residence_prospect', null=True, on_delete=models.RESTRICT)
     pays_activite_professionnelle = models.ForeignKey(Pays, related_name='pays_activite_professionnelle_prospect', null=True, on_delete=models.RESTRICT)
-    profession = models.ForeignKey(Profession, null=True, on_delete=models.RESTRICT)
     nom = models.CharField(max_length=50, blank=False, null=True)
     prenoms = models.CharField(max_length=50, blank=False, null=True)
     nom_jeune_fille = models.CharField(max_length=100, blank=False, null=True)
@@ -102,7 +98,6 @@ class CampagneProspect(models.Model):
 class CampagneAppmobile(models.Model):
     created_by = models.ForeignKey(User, null=True, on_delete=models.RESTRICT)
     police = models.ForeignKey(Police, null=True, on_delete=models.RESTRICT)
-    formulegarantie = models.ForeignKey(FormuleGarantie, null=True, on_delete=models.RESTRICT)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     statut = models.fields.CharField(choices=StatutValidite.choices, max_length=15, null=True)

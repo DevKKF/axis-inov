@@ -2,7 +2,7 @@ from django.core.management.base import BaseCommand, CommandError
 from django.db.models import Q
 
 from configurations.helper_config import send_dev_notification_background_task_mail
-from production.models import Carte, Aliment, AlimentFormule, MouvementAliment
+from production.models import Carte, Aliment, AlimentFormule
 from shared.helpers import generer_qrcode_carte
 
 
@@ -161,39 +161,12 @@ class Command(BaseCommand):
              154649,
              155214]
             nbr = 0
-            for mvt in mouvement1:
-              mov = MouvementAliment.objects.filter(aliment_id=mvt).first()
-              if not mov:
-                 MouvementAliment.objects.create(
-                     date_effet="2024-03-05",
-                     aliment_id=mvt,
-                     mouvement_id=9,
-                     statut_validite="VALIDE",
-                     statut_traitement='TRAITE',
-                     police_id=900
-                 )
-                 nbr += 1
-                 self.stdout.write(self.style.SUCCESS(f'Mouvement aliment_id {mvt} cree avec succès'))
 
             mouvement2 = [151739,
              151740,
              151779,
              151804,
              151853]
-
-            for mvt2 in mouvement2:
-              mov = MouvementAliment.objects.filter(aliment_id=mvt2).first()
-              if not mov:
-                 MouvementAliment.objects.create(
-                     date_effet="2024-04-17",
-                     aliment_id=mvt2,
-                     mouvement_id=9,
-                     statut_validite="VALIDE",
-                     statut_traitement='TRAITE',
-                     police_id=900
-                 )
-                 nbr += 1
-                 self.stdout.write(self.style.SUCCESS(f'Mouvement aliment_id {mvt2} cree avec succès'))
 
             self.stdout.write(self.style.SUCCESS(f'Mouvement nbr {nbr} !'))
 

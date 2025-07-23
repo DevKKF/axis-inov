@@ -6555,9 +6555,6 @@ $(document).ready(function () {
                 //$('#restant_total').val(montant_com_solde);
                 $(this).closest('tr').find('.restant_total').val(montant_com_solde);
 
-
-
-
                 if (this.checked) {
                     input_montant_encaisse_court.removeAttr('readonly');
                     input_montant_encaisse_court.attr('required', true);
@@ -6808,15 +6805,6 @@ $(document).ready(function () {
             }
 
             montant_solde = montant_solde + difference;
-
-            /*
-            difference = montant_com_courtage-montant_a_encaisser_court+montant_com_gestion-montant_a_encaisser_gest
-            if (difference > 0 && difference < 3000){
-                $('#debit_difference').val(difference);
-                $('#credit_difference').val("");
-                $('#credit_difference').attr('readonly','true');
-            }
-            */
 
         });
 
@@ -7483,7 +7471,9 @@ $(document).ready(function () {
 
     //********* FIN FAIRE UN REGLEMENT COMPAGNIE ***********//
 
-    //********* FAIRE UN ENCAISSEMENT DE COMMISSION RETROCESSION APPORTEUR ***********//
+     //********* FAIRE UN ENCAISSEMENT DE COMMISSION RETROCESSION APPORTEUR ***********//
+    /*
+    // Double clic sur une ligne d'apporteur pour charger la modale
     $(".btnOpenDialogDetailApporteurEncaissementRetrocession").on('dblclick', function () {
         $(".btnOpenDialogDetailApporteurEncaissementRetrocession").removeClass('tr_selected');
         $(this).addClass('tr_selected');
@@ -7717,35 +7707,293 @@ $(document).ready(function () {
 
     // Fonction de calcul total
     function calculer_montant_total_a_encaisser_retrocession() {
-    let total_courtage = 0, total_apporteur = 0, total_general = 0;
-    let hasError = false;
+        let total_courtage = 0, total_apporteur = 0, total_general = 0;
+        let hasError = false;
 
-    $('.input_stock').each(function () {
-        const stock = $(this);
-        const montant_courtage = parseFloat(stock.data('reglement_montant')) || 0;
-        const montant_apporteur = parseFloat(stock.data('reglement_montant_apporteur')) || 0;
-        const montant_saisi = parseFloat(stock.val().replaceAll(' ', '')) || 0;
+        $('.input_stock').each(function () {
+            const stock = $(this);
+            const montant_courtage = parseFloat(stock.data('reglement_montant')) || 0;
+            const montant_apporteur = parseFloat(stock.data('reglement_montant_apporteur')) || 0;
+            const montant_saisi = parseFloat(stock.val().replaceAll(' ', '')) || 0;
 
-        if (montant_saisi > montant_courtage) {
-            hasError = true;
+            if (montant_saisi > montant_courtage) {
+                hasError = true;
+            }
+
+            total_courtage += montant_courtage;
+            total_apporteur += montant_apporteur;
+            total_general += montant_saisi;
+        });
+
+        $('.montant_total_reglements_coches').val(total_courtage);
+        $('.montant_total_a_regler_apporteur').val(total_apporteur);
+        $('.montant_total_com').val(total_general);
+
+        if (total_general > 0 && !hasError && $('.input-error').length === 0) {
+            $('#btn_save_encaissement').removeAttr('disabled');
+        } else {
+            $('#btn_save_encaissement').attr('disabled', true);
         }
+    }
+    */
 
-        total_courtage += montant_courtage;
-        total_apporteur += montant_apporteur;
-        total_general += montant_saisi;
+    // Double clic sur une ligne d'apporteur pour charger la modale
+    $(".btnOpenDialogDetailApporteurEncaissementRetrocession").on('dblclick', function () {
+        $(".btnOpenDialogDetailApporteurEncaissementRetrocession").removeClass('tr_selected');
+        $(this).addClass('tr_selected');
+        $("#datatable_stock_input_com").html("");
+        $("#btnOpenDialogAddEncaissementRetrocession").trigger("click");
     });
 
-    $('.montant_total_reglements_coches').val(total_courtage);
-    $('.montant_total_a_regler_apporteur').val(total_apporteur);
-    $('.montant_total_com').val(total_general);
+    // Ouverture de la modale
+    $("#btnOpenDialogAddEncaissementRetrocession").on('click', function () {
+        let model_name = $(this).data('model_name');
+        let modal_title = $(this).data('modal_title');
+        let href = $(this).data('href');
 
-    if (total_general > 0 && !hasError && $('.input-error').length === 0) {
-        $('#btn_save_encaissement').removeAttr('disabled');
-    } else {
-        $('#btn_save_encaissement').attr('disabled', true);
+        $('#olea_std_dialog_box').load(href, function () {
+            AppliquerMaskSaisie();
+
+            const modal = $('#modal-encaissement-retrocession');
+            modal.attr('data-backdrop', 'static').attr('data-keyboard', false);
+            modal.find('.modal-title').text(modal_title);
+            modal.find('#btn_valider').attr({ 'data-model_name': model_name, 'data-href': href });
+            modal.find('.modal-dialog').addClass('modal-xl').removeClass('modal-lg');
+            modal.modal();
+
+            modal.on('shown.bs.modal', function () {
+                let apporteur = $('.tr_selected').data('apporteur') || "";
+                if (apporteur) {
+                    $("#apporteur option[value='" + apporteur + "']").attr('selected', 'selected');
+                    $("#apporteur").trigger('change');
+                }
+            });
+
+            //enregistrement
+            $('#btn_save_retrocession_apporteur').on('click', function () {
+
+                let btn_save_retrocession_apporteur = $(this);
+
+                let formulaire = $('#form_add_encaissement_retrocession');
+                let href = formulaire.attr('action');
+
+                $.validator.setDefaults({ ignore: [] });
+
+                if (formulaire.valid()) {
+
+                    //désactiver le bouton Valider, pour empecher une double soumission du formulaire
+                    btn_save_retrocession_apporteur.attr('disabled', true);
+
+                    //demander confirmation
+                    let n = noty({
+                        text: 'Voulez-vous vraiment effectuer cet encaissement de retrocession apporteur ?',
+                        type: 'warning',
+                        dismissQueue: true,
+                        layout: 'center',
+                        theme: 'defaultTheme',
+                        buttons: [
+                            {
+                                addClass: 'btn btn-primary', text: 'OUI', onClick: function ($noty) {
+                                    $noty.close();
+
+                                    //confirmation obtenu
+                                    $.ajax({
+                                        type: 'post',
+                                        url: href,
+                                        data: formulaire.serialize(),
+                                        success: function (response) {
+
+                                            if (response.statut == 1) {
+
+                                                notifySuccess(response.message, function () {
+
+                                                    $("#datatable_stock_input_com").html("");
+                                                    window.open('../generer_bordereau_encaissement_apporteur_pdf/' + response.data.operation_id, '_blank');
+
+                                                    location.reload();
+                                                });
+
+
+                                            } else {
+
+                                                let errors = JSON.parse(JSON.stringify(response.errors));
+                                                let errors_list_to_display = '';
+                                                for (field in errors) {
+                                                    errors_list_to_display += '- ' + ucfirst(field) + ' : ' + errors[field] + '<br/>';
+                                                }
+
+                                                $('#modal-encaissement-retrocession .alert .message').html(errors_list_to_display);
+
+                                                $('#modal-encaissement-retrocession .alert ').fadeTo(2000, 500).slideUp(500, function () {
+                                                    $(this).slideUp(500);
+                                                }).removeClass('alert-success').addClass('alert-warning');
+
+                                            }
+
+                                        },
+                                        error: function (request, status, error) {
+
+                                            notifyWarning("Erreur lors de l'enregistrement");
+
+                                            btn_save_encaissement.removeAttr('disabled');
+
+                                        }
+
+                                    });
+
+                                }
+                            },
+                            {
+                                addClass: 'btn btn-danger', text: 'Annuler', onClick: function ($noty) {
+                                    //confirmation refusée
+                                    $noty.close();
+
+                                    btn_save_encaissement.removeAttr('disabled');
+
+                                }
+                            }
+                        ]
+                    });
+
+                } else {
+
+                    $('label.error').css({ display: 'none', height: '0px' }).removeClass('error').text('');
+
+                    let validator = formulaire.validate();
+
+                    $.each(validator.errorMap, function (index, value) {
+
+                        console.log('Id: ' + index + ' Message: ' + value);
+
+                    });
+
+                    notifyWarning('Veuillez renseigner tous les champs obligatoires');
+
+                    btn_save_encaissement.removeAttr('disabled');
+
+                }
+
+            });
+        });
+    });
+
+    // Gestion du changement d'apporteur
+    $(document).on('change', '#modal-encaissement-retrocession #apporteur', function () {
+        const select = $(this);
+        const selectedValue = select.val();
+        const href_reglements_reverses = select.children('option:selected').data('href_reglements_reverses');
+
+        $("#datatable_stock_input_com").html("");
+        $('.montant_total_retrocession').val("0");
+        $('#btn_save_retrocession_apporteur').attr('disabled', true);
+
+        if (!selectedValue) {
+            $('#box_reglements_reverses').html("");
+            return;
+        }
+
+        $('#box_reglements_reverses').load(href_reglements_reverses, function () {
+            $('#table_reglements_reverses').DataTable({
+                "language": { "url": "../../static/admin_custom/js/French.json" },
+                lengthMenu: [[10, 25, 50, 100, -1], [10, 25, 50, 100, "Tout"]],
+                paging: false,
+                searching: true,
+                lengthChange: true,
+                bSort: false,
+                scrollX: true,
+            });
+        });
+    });
+
+    // Clic sur une case à cocher pour activer ou désactiver un champ montant
+    $(document).on('click', '.checkbox_quittance_a_encaisser_retro_apporteur', function () {
+        const checkbox = $(this);
+        const tr = checkbox.closest('tr');
+        const reglement_id = checkbox.data('reglement_id');
+        const restant_input = tr.find('.restant_total');
+        const montant_restant = parseFloat(restant_input.val().replaceAll(' ', '')) || 0;
+
+        restant_input.attr('data-restant_ref', montant_restant);
+
+        //input_montant.removeClass('input-error');
+        restant_input.removeClass('input-error').next('.text-error').remove();
+
+        if (checkbox.is(':checked')) {
+            if (!$('#input_stock_' + reglement_id).length) {
+                $("#datatable_stock_input_com").append(
+                    `<input type='text' class='input_stock' id='input_stock_${reglement_id}'
+                        data-reglement_id='${reglement_id}'
+                        data-reglement_montant='${montant_restant}'
+                        data-reglement_montant_apporteur='${checkbox.data('reglement_montant_retrocession_apporteur')}'
+                        value='${checkbox.data('reglement_montant_retrocession_apporteur')}'>`
+                );
+            }
+        } else {
+            $('#input_stock_' + reglement_id).remove();
+            restant_input.val(restant_input.attr('data-restant_ref')).removeClass('input-error').next('.text-error').remove();
+        }
+
+        calculer_montant_total_a_encaisser_retrocession();
+    });
+
+    // Mise à jour dynamique des montants
+    $(document).on('keyup change', '.handle_calculer_montant_total_a_encaisser', function () {
+        const tr = $(this).closest('tr');
+        const checkbox = tr.find('td:first-child input');
+        const reglement_id = checkbox.val();
+        const montant_saisi = parseFloat($(this).val().replaceAll(' ', '')) || 0;
+        const restant_input = tr.find('.restant_total');
+        const montant_restant = parseFloat(restant_input.attr('data-restant_ref')) || 0;
+
+        const input = $(this);
+        let erreur = false;
+
+        if (montant_saisi > montant_restant) {
+            input.addClass('input-error');
+            restant_input.addClass('input-error');
+            erreur = true;
+        } else {
+            input.removeClass('input-error');
+            restant_input.removeClass('input-error');
+            restant_input.next('.text-error').remove();
+        }
+
+        $("#input_stock_" + reglement_id).val($(this).val());
+        restant_input.val((montant_restant - montant_saisi).toFixed(2));
+
+        calculer_montant_total_a_encaisser_retrocession();
+    });
+
+    // Fonction de calcul total
+    function calculer_montant_total_a_encaisser_retrocession() {
+        let total_courtage = 0, total_apporteur = 0, total_general = 0;
+        let hasError = false;
+
+        $('.input_stock').each(function () {
+            const stock = $(this);
+            const montant_courtage = parseFloat(stock.data('reglement_montant')) || 0;
+            const montant_apporteur = parseFloat(stock.data('reglement_montant_apporteur')) || 0;
+
+            total_courtage += montant_courtage;
+            total_apporteur += montant_apporteur;
+            total_general += montant_courtage;
+        });
+
+        console.log("total_courtage: " + total_courtage);
+        console.log("total_apporteur: " + total_apporteur);
+        console.log("total_general: " + total_general);
+
+
+        $('.montant_total_reglements_coches').val(total_courtage);
+        $('.montant_total_a_regler_apporteur').val(total_apporteur);
+        $('.montant_total_retrocession').val(total_general);
+
+        if (total_general > 0 && !hasError && $('.input-error').length === 0) {
+            $('#btn_save_retrocession_apporteur').removeAttr('disabled');
+        } else {
+            $('#btn_save_retrocession_apporteur').attr('disabled', true);
+        }
     }
-}
-
     //********* FIN FAIRE UN ENCAISSEMENT RETROCESSION APPORTEUR ***********//
 
 
@@ -8709,6 +8957,7 @@ $(document).ready(function () {
         //fin demande confirmation
 
     });
+
 
 
     //Enregistrer une demande de prorogation
@@ -9800,19 +10049,6 @@ $(document).ready(function () {
     //FIN GESTION SINISTRE
 
     //GESTION PRESTATAIRE
-
-    $(document).on("change", "#secteur_id", function () {
-        secteur_id = $(this).val();
-        secteur_code = $(this).find(":selected").data("secteur_code");
-
-        if (secteur_code == "PRIVE") {
-            $("#type_etablissement_id").val("");
-            $("#box_type_etablissement").hide();
-        } else {
-            $("#box_type_etablissement").show();
-        }
-    });
-
     $(document).on("click", ".btn_supprimer_tarif_specifique", function (e) {
         let tarif_id = $(this).data('tarif_specifique_id');
         let href = $(this).data('href');

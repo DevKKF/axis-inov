@@ -42,13 +42,13 @@ from django.utils.timezone import now
 from django.db import transaction
 from django.utils.translation import gettext as _
 
-from configurations.models import Compagnie, MarqueVehicule, Pays, Civilite, Profession, \
+from configurations.models import Compagnie, MarqueVehicule, Pays, Civilite, \
     Produit, Formule, GarantieBranche, GarantieFormule, ConditionsAssurance, MoyensTransport, \
-    Territorialite, ModeCalcul, Duree, TypeCarosserie, User, Fractionnement, ModeReglement, \
+    ModeCalcul, Duree, TypeCarosserie, User, Fractionnement, ModeReglement, \
     Regularisation, Bureau, BusinessUnit, TypeCompagnie, Groupe, PosteDommage, TypeSinistre, TypeIntervenant, Responsabilite, Circonstance, \
     Devise, Taxe, BureauTaxe, Apporteur, BaseCalcul, TypeQuittance, NatureQuittance, TypeClient, TypePersonne, Langue, \
     Branche, ParamProduitCompagnie, CategorieVehicule, Banque, Carburant, Usage, Carosserie, GarantieCirconstance, \
-    NatureOperation, TypeTarif, Rubrique, Periodicite, AuthGroup, ActionLog, SousRubrique, TypePrefinancement, CompteTresorerie, \
+    NatureOperation, TypeTarif, Rubrique, AuthGroup, ActionLog, SousRubrique, TypePrefinancement, CompteTresorerie, \
     TypeFichier
 
 from inov import settings
@@ -58,7 +58,7 @@ from production.models import (ModePrefinancement, Motif, Mouvement, Client, Pol
     Acompte, Document, Filiale, AutreRisque, PoliceGarantie, AlimentPolice, PoliceAssureur, Courrier, \
     Contact, Quittance, SecteurActivite, TypeDocument, Statut, MouvementPolice, StatutQuittance, \
     Genre, PlacementEtGestion, ModeRenouvellement, CalculTM, ApporteurPolice, TaxePolice, \
-    TaxeQuittance, Reglement, OptionYesNo, TypeMajorationContrat, Vehicule, VehiculePolice, Energie, \
+    TaxeQuittance, Reglement, OptionYesNo, TypeMajorationContrat, Vehicule, Energie, \
     StatutPolice, Operation, PeriodeCouverture, \
     OperationReglement, HistoriquePolice, HistoriqueApporteurPolice, HistoriqueTaxePolice, Marchandise, HistoriqueAliment, \
     HistoriquePoliceGarantie)

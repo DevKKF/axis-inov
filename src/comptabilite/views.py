@@ -3,6 +3,7 @@ import calendar
 import datetime
 import io
 from datetime import datetime
+from django.db import transaction
 from datetime import timedelta
 from collections import defaultdict
 from decimal import Decimal
@@ -39,7 +40,7 @@ from django.db import transaction
 
 from comptabilite.models import BordereauOrdonnance, CompteComptable, EncaissementCommission, Journal, ReglementReverseCompagnie, ReglementReverseApporteur
 from configurations.helper_config import create_query_background_task, execute_query
-from configurations.models import Bureau, Caution, Compagnie, MailingList, NatureOperation, Devise, ModeReglement, Banque, PeriodeComptable, \
+from configurations.models import Bureau, Compagnie, MailingList, NatureOperation, Devise, ModeReglement, Banque, PeriodeComptable, \
     CompteTresorerie, ActionLog, TypeRemboursement
 from configurations.models import Compagnie, Apporteur, NatureOperation, Devise, ModeReglement, Banque, PeriodeComptable, \
     CompteTresorerie, ActionLog, TypeRemboursement, ModelLettreCheque, \
@@ -48,7 +49,7 @@ from production.models import Aliment, Reglement, Police, Quittance, Operation, 
     Client, PoliceAssureur, HistoriquePolice, ApporteurPolice
 from production.templatetags.my_filters import money_field
 from shared.enum import MoyenPaiement, SatutBordereauDossierSinistres, StatutPaiementSinistre, \
-    StatutReversementCompagnie, StatutEncaissementCommission, StatutReversementApporteur, \
+    StatutReversementCompagnie, StatutEncaissementCommission, StatutReversementApporteur, StatutQuittance, \
     StatutValidite, Statut, StatutBordereau
 from shared.helpers import generate_random_string, render_pdf
 from sinistre.helper_sinistre import requete_analyse_prime_compta
@@ -76,8 +77,6 @@ from reportlab.pdfgen import canvas
 
 
 #locale.setlocale(locale.LC_TIME, 'fr_FR.UTF-8')
-# Create your views here.
-
 
 def uploaded_file_url(file):
     # Simulation de l'upload du fichier sur le serveur
@@ -305,20 +304,10 @@ class InitialisationFondRoulementView(TemplateView):
 
     def get_context_data(self, *args, **kwargs):
         bureau = self.request.user.bureau
-        cautions = Caution.par_bureau(bureau).filter(date_fin_effet__isnull=True, status=True)
-
-        # Liste des garants sans caution (pour le modal et en ajouter)
-        garants_sans_caution = Compagnie.par_bureau(bureau).annotate(
-            caution_exists=Subquery(
-                Caution.objects.filter(compagnie_id=OuterRef('pk'), date_fin_effet__isnull=True).values('compagnie_id')
-            )
-        ).filter(caution_exists__isnull=True)
 
         context_data = {
             **super().get_context_data(**kwargs),
             **admin.site.each_context(self.request),
-            'cautions': cautions,
-            'garants_sans_caution' : garants_sans_caution,
         }
 
         return context_data
@@ -328,10 +317,6 @@ def get_fdr_data(request):
     # Vue appelée via AJAX
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
         bureau = request.user.bureau
-        cautions = Caution.par_bureau(bureau).filter(date_fin_effet__isnull=True, status=True)
-
-        # Effectuez les calculs ou les requêtes nécessaires
-        total_global_caution = cautions.aggregate(total_montant=Sum('montant'))['total_montant'] or 0
 
         total_global_en_attente_de_reglement = FactureCompagnie.objects.filter(
             bureau=bureau,
@@ -347,7 +332,6 @@ def get_fdr_data(request):
         ).aggregate(total_paye=Sum('montant_remboursement_accepte'))['total_paye'] or 0
 
         data = {
-            'total_global_caution': money_field(total_global_caution),
             'total_global_en_attente_de_reglement': money_field(total_global_en_attente_de_reglement),
             'total_global_a_refacturer': money_field(total_global_a_refacturer_global),
         }
@@ -360,22 +344,12 @@ def add_mise_en_initialiser_fdr_garant(request):
     if request.method == 'POST':
         compagnie_id = request.POST.get('compagnie_id')
 
-        saved_caution = save_caution(request=request, compagnie_id=compagnie_id)
-        if saved_caution:
-
-            return JsonResponse(
-                {
-                    'statut': 1,
-                    'message': 'Caution mise à jour avec succès !',
-                }
-            )
-        else:
-            return JsonResponse(
-                {
-                    'statut': 0,
-                    'message': 'Veuillez fournir toutes les données requises'
-                }
-            )
+        return JsonResponse(
+            {
+                'statut': 0,
+                'message': 'Veuillez fournir toutes les données requises'
+            }
+        )
     else:
         return JsonResponse(
             {
@@ -383,149 +357,6 @@ def add_mise_en_initialiser_fdr_garant(request):
                 'message': 'Méthode non autorisée'
             }
         )
-
-
-def save_caution(request, compagnie_id):
-    bureau = request.user.bureau
-    compagnie = Compagnie.objects.get(id=compagnie_id)
-    montant = request.POST.get('montant')
-    # Nettoyer la valeur du montant
-    montant = int(montant.replace(" ", ""))
-
-    date_debut_effet_str = request.POST.get('date_debut_effet')
-    date_debut_effet = datetime.datetime.strptime(date_debut_effet_str, '%Y-%m-%d').date()
-
-    # date_fin_effet = date_debut_effet - datetime.timedelta(days=1) + heure 23h59
-    date_fin_effet = datetime.datetime.combine(date_debut_effet - datetime.timedelta(days=1), datetime.time(23, 59, 59))
-
-    # Vérification des données requises
-    if compagnie and montant and date_debut_effet:
-
-        # Si la compagnie a déjà une ligne dans la table de caution
-        existing_caution = Caution.par_bureau(bureau).filter(compagnie=compagnie, date_fin_effet__isnull=True,
-                                                             status=True).first()
-
-        # Si la compagnie à déjà une ligne dans la table caution set date_fin et RENEW
-        if existing_caution:
-
-            # Mettre date fin  = request.POST.get('date_debut_effet') -1j
-            existing_caution.date_fin_effet = date_fin_effet
-            existing_caution.status = False
-            existing_caution.save();
-
-            new_caution = Caution.objects.create(
-                bureau=compagnie.bureau,
-                compagnie=compagnie,
-                montant=montant,
-                date_debut_effet=date_debut_effet,
-                created_by=request.user,
-                status=True
-            )
-
-            return new_caution
-
-        else:
-            # Créer et enregistrer une instance de Caution dans la base de données
-            new_caution = Caution.objects.create(
-                bureau=compagnie.bureau,
-                compagnie=compagnie,
-                montant=montant,
-                date_debut_effet=date_debut_effet,
-                created_by=request.user,
-                status=True
-            )
-
-            return new_caution
-    else:
-        return False
-
-
-def update_caution_garant(request, garant_id):
-    if request.method == 'POST':
-        bureau = request.user.bureau
-        compagnie = Compagnie.objects.first(id=garant_id)
-        montant = request.POST.get('montant')
-        updated_at = request.POST.get('updated_at')
-
-        # Nettoyer la valeur du montant
-        montant = int(montant.replace(" ", ""))
-
-        # Vérification des données requises
-        if compagnie and montant and updated_at:
-
-            # Si la compagnie a déjà une ligne dans la table de caution
-            existing_caution = Caution.par_bureau(bureau).filter(compagnie=compagnie, date_fin_effet__isnull=True, status=True).first()
-
-
-
-            if not existing_caution:
-                return JsonResponse(
-                    {
-                        'statut': 1,
-                        'message': 'Aucune caution n\'existe pour cette compagnie pour être modifier'
-                    }
-                )
-            else:
-                # Créer et enregistrer une instance de Caution dans la base de données
-                caution = Caution.objects.create(
-                    bureau=compagnie.bureau,
-                    compagnie=compagnie,
-                    montant=montant,
-                    updated_at=updated_at,
-                    created_by=request.user  # l'utilisateur actuel
-                )
-
-                return JsonResponse(
-                    {
-                        'statut': 1,
-                        'message': 'Caution actualisé avec succès !',
-                    }
-                )
-        else:
-            return JsonResponse(
-                {
-                    'statut': 0,
-                    'message': 'Veuillez fournir toutes les données requises'
-                }
-            )
-    else:
-        return JsonResponse(
-            {
-                'statut': 0,
-                'message': 'Méthode non autorisée'
-            }
-        )
-
-
-def edition_caution_compagnie(request, compagnie_id):
-    compagnie = Compagnie.objects.get(id=compagnie_id)
-
-    with transaction.atomic():
-        if request.method == 'POST':
-
-            saved_caution = save_caution(request=request, compagnie_id=compagnie_id)
-
-            if saved_caution:
-
-                return JsonResponse(
-                    {
-                        'statut': 1,
-                        'message': 'Caution mise à jour avec succès !',
-                    }
-                )
-            else:
-                return JsonResponse(
-                    {
-                        'statut': 0,
-                        'message': 'Veuillez fournir toutes les données requises'
-                    }
-                )
-        else:
-            bureau = request.user.bureau
-            compagnie = Compagnie.objects.get(id=compagnie_id)
-            caution = Caution.par_bureau(bureau).filter(compagnie=compagnie, date_fin_effet__isnull=True, status=True).first()
-
-            return render(request, 'modals/editer-fdr-garant.html', {'compagnie': compagnie, 'caution': caution, 'now':timezone.now().date()})
 
 
 #Script / Not for interface
@@ -536,20 +367,7 @@ def init_fonds_de_roulements(request):
     garants = Compagnie.par_bureau(bureau)
 
     for garant in garants:
-
-        caution_exists = Caution.objects.filter(compagnie=garant).exists()
-
-        # SET FDR TO 0 IF NOT INIT
-        if not caution_exists:
-            new_caution = Caution.objects.create(
-                    bureau=bureau,
-                    compagnie=garant,
-                    montant=0,
-                    created_by=user,
-                    date_debut_effet=datetime.datetime.now(tz=timezone.utc)
-                )
-            # pprint("Nouvelle caution set 0 => " + str(new_caution.compagnie))
-
+        pass
     return JsonResponse(
         {
             'statut': 1,
@@ -913,9 +731,6 @@ def get_refacturation_assureur_data(request):
     # Vue appelée via AJAX
     if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
         bureau = request.user.bureau
-        cautions = Caution.par_bureau(bureau).filter(date_fin_effet__isnull=True, status=True)
-        # Effectuez les calculs ou les requêtes nécessaires
-        total_global_caution = cautions.aggregate(total_montant=Sum('montant'))['total_montant'] or 0
         total_global_en_attente_de_reglement = FactureCompagnie.objects.filter(
             bureau=bureau,
             statut=StatutFacture.NON_SOLDE
@@ -928,7 +743,6 @@ def get_refacturation_assureur_data(request):
             dossier_sinistre_id__isnull=False,
             facture_compagnie_id__isnull=True,
         ).aggregate(total_paye=Sum('montant_remboursement_accepte'))['total_paye'] or 0
-        cautions = list(Caution.objects.all().values())
 
         data = {
             'total_global_a_refacturer': money_field(total_global_a_refacturer_global),
@@ -1342,18 +1156,12 @@ class SuiviTresorerie(TemplateView):
         context_original = self.get_context_data(**kwargs)
         bureau = self.request.user.bureau
 
-        # garants_cautionne = Compagnie.par_bureau(bureau).filter(caution__isnull=False).distinct().annotate(
-        #     montant_caution=Sum('caution__montant', distinct=True),
-        #     created_at_caution=Min('caution__created_at'), # Obligé d'utiliser une aggrégation Min ou Max 😕
-        # )
-
         # Préparer les données pour le camembert par bureau uniquement(global et non par compagnie)
         data_camembert = prepare_camembert_data(bureau=bureau)
         data_chart_bar = prepare_chart_bar_data(bureau=bureau)
         data_chart_line = prepare_chart_line_data(bureau=bureau)
 
         context_perso = {
-            # "garants": garants_cautionne,
             # "treso": treso,
             "data_camembert": data_camembert,
             "data_chart_bar": data_chart_bar,
@@ -1390,11 +1198,6 @@ def suivi_treso_datatable(request):
     for compagnie in garants:
         dispo = 0
 
-        caution = Caution.par_bureau(bureau).filter(compagnie=compagnie, date_fin_effet__isnull=True,
-                                                    status=True).first()
-        mcaution = caution.montant if caution else 0
-        montant_caution_formated = money_field(mcaution) + " " + request.user.bureau.pays.devise.code
-        
         # Montant ordonnancé 
         montant_ordonnances = Sinistre.objects.filter(
             statut_paiement=StatutPaiementSinistre.ORDONNANCE,
@@ -1429,12 +1232,8 @@ def suivi_treso_datatable(request):
         # Fin / Sinistre réclamé non encore réglé par le garant
 
         # Trésorerie
-        tresorerie = mcaution - (montant_regle_non_reclame + montant_reclame_non_regle_par_la_compagnie)
+        tresorerie = (montant_regle_non_reclame + montant_reclame_non_regle_par_la_compagnie)
         tresorerie_formate = money_field(tresorerie) + " " + request.user.bureau.pays.devise.code
-        # tresorerie = compagnie.montant_caution - (total_a_refacturer_compagnie + total_refacture_compagnie) + total_rembourse_compagnie
-
-        if mcaution != 0:
-            dispo = int((tresorerie / mcaution) * 100)
 
         disponibilite_html = ''
 
@@ -1456,7 +1255,6 @@ def suivi_treso_datatable(request):
         treso.append({
             # 'code_du_garant': compagnie.code,  # Adapte ces clés aux champs de ton modèle
             'nom_garant': compagnie.nom,
-            'fonds_de_roulement': montant_caution_formated,
             'montant_ordonnances': montant_ordonnances_formated,
             'sinistre_regle_non_reclame': montant_regle_non_reclame_formate,
             'sinistre_reclame_non_regle': montant_reclame_non_regle_par_la_compagnie_formate,
@@ -3653,16 +3451,10 @@ class ReversesementApporteursView(TemplateView):
             if apporteur.nombre_reglements_a_recevoir_retrocession == 0:
                 apporteurs = apporteurs.exclude(id=apporteur.id)
 
-        reglements_apporteurs = Reglement.objects.filter(
-            statut_reversement_apporteur=StatutReversementApporteur.REVERSE,
-            statut_commission=StatutEncaissementCommission.ENCAISSEE)
-
         context = self.get_context_data(**kwargs)
         context['apporteurs'] = apporteurs
-        context['reglements_apporteurs'] = reglements_apporteurs
 
         return self.render_to_response(context)
-
 
     def get_context_data(self, **kwargs):
         return {
@@ -3673,7 +3465,7 @@ class ReversesementApporteursView(TemplateView):
 
 
 @login_required
-def add_encaissement_retrocession_apporteur(request):
+def add_encaissement_retrocession_apporteur_v0(request):
     if request.method == 'POST':
         devise = request.POST.get('devise')
         mode_reglement = request.POST.get('mode_reglement')
@@ -3684,7 +3476,7 @@ def add_encaissement_retrocession_apporteur(request):
         reglements_selectionnes = request.POST.getlist('reglement_selectionne')
         date_encaissement_commission = datetime.now(tz=timezone.utc)
 
-        nature_operation_code = "ENCCOM"
+        nature_operation_code = "REGAPP"
         nature_operation = NatureOperation.objects.filter(code=nature_operation_code).first()
         type_commission = "RETROCESSION"
 
@@ -3785,6 +3577,125 @@ def add_encaissement_retrocession_apporteur(request):
 
 
 @login_required
+def add_encaissement_retrocession_apporteur(request):
+    if request.method == 'POST':
+        try:
+            with transaction.atomic():
+                devise = request.POST.get('devise')
+                mode_reglement = request.POST.get('mode_reglement')
+                compte_tresorerie = request.POST.get('compte_tresorerie')
+                banque_emettrice = request.POST.get('banque_emettrice')
+                numero_piece = request.POST.get('numero_piece')
+                date_paiement = request.POST.get('date_paiement')
+                reglements_selectionnes = request.POST.getlist('reglement_selectionne')
+                date_encaissement_commission = datetime.now(tz=timezone.utc)
+
+                nature_operation_code = "REGAPP"
+                nature_operation = NatureOperation.objects.filter(code=nature_operation_code).first()
+                type_commission = "RETROCESSION"
+
+                montant_total_regle = request.POST.get('montant_total_regle').replace(" ", "")
+                montant_total_regle = float(montant_total_regle) if montant_total_regle else 0.0
+
+                operation = Operation.objects.create(
+                    nature_operation=nature_operation,
+                    numero_piece=numero_piece,
+                    montant_total=montant_total_regle,
+                    compte_tresorerie_id=compte_tresorerie,
+                    devise_id=devise,
+                    banque_emettrice=banque_emettrice,
+                    mode_reglement_id=mode_reglement,
+                    date_operation=date_paiement,
+                    type_commission=type_commission,
+                    created_by=request.user
+                )
+
+                nombre_reglements_selectionnes = 0
+                montant_total_reglements_selectionne = 0
+                devise_obj = None
+
+                for reglement_id in reglements_selectionnes:
+                    montant_encaisse_retro_selectionne = request.POST.get(f'montant_encaisse_retro{reglement_id}', "0")
+                    montant_com_intermediaire = float(montant_encaisse_retro_selectionne.replace(" ", "") or "0")
+
+                    reglement = Reglement.objects.get(id=reglement_id)
+
+                    EncaissementCommission.objects.create(
+                        operation=operation,
+                        reglement=reglement,
+                        created_by=request.user,
+                        montant_com_intermediaire=montant_com_intermediaire,
+                        type_commission=type_commission
+                    )
+
+                    montant_total_reglements_selectionne += montant_com_intermediaire
+                    nombre_reglements_selectionnes += 1
+
+                    if reglement.etat_encaisse_retrocession_apporteur():
+                        reglement.statut_reversement_apporteur = StatutReversementApporteur.REVERSE
+                        reglement.date_encaissement_commission = date_encaissement_commission
+                        reglement.save()
+
+                    devise_obj = reglement.devise  # dernière devise rencontrée
+
+                # mise à jour de l'opération
+                operation.montant_total = montant_total_reglements_selectionne
+                operation.nombre_reglements = nombre_reglements_selectionnes
+                operation.numero = 'OP' + str(Date.today().year) + str(operation.pk).zfill(6)
+                operation.statut_bordereau = "VALIDE"
+                operation.devise = devise_obj
+                operation.save()
+
+                pdf_url = reverse('generer_bordereau_encaissement_apporteur_pdf', args=[operation.pk])
+
+                return JsonResponse({
+                    'statut': 1,
+                    'message': "Encaissement effectué avec succès !",
+                    'data': {
+                        'montant_total_reglements_selectionne': montant_total_reglements_selectionne,
+                        'nombre_reglements_selectionnes': nombre_reglements_selectionnes,
+                        'operation_id': operation.pk,
+                        'pdf_url': pdf_url
+                    }
+                })
+
+        except Exception as e:
+            return JsonResponse({
+                'statut': 0,
+                'message': f"Une erreur est survenue : {str(e)}"
+            })
+
+    else:
+        natures_operations = NatureOperation.objects.all()
+        devises = Devise.objects.all()
+        modes_reglements = ModeReglement.objects.all()
+        banques = Banque.objects.filter(bureau=request.user.bureau).order_by('libelle')
+        comptes_tresoreries = CompteTresorerie.objects.exclude(code="REGCIE").order_by('libelle')
+        reglements_apporteurs = Reglement.objects.filter(
+            statut_reversement_apporteur=StatutReversementApporteur.NON_REVERSE,
+            statut_validite=StatutValidite.VALIDE
+        ).exclude(statut_commission=StatutEncaissementCommission.NON_ENCAISSEE)
+
+        apporteurs = Apporteur.objects.filter(bureau=request.user.bureau).order_by('nom')
+        apporteurs = [a for a in apporteurs if a.nombre_reglements_a_recevoir_retrocession > 0]
+
+        comptes_exercices = CompteComptable.objects.all()
+        today = datetime.now(tz=timezone.utc)
+
+        return render(request, 'modal_add_encaissement_retrocession_apporteur.html', {
+            'reglements_apporteurs': reglements_apporteurs,
+            'apporteurs': apporteurs,
+            'today': today,
+            'devises': devises,
+            'natures_operations': natures_operations,
+            'modes_reglements': modes_reglements,
+            'banques': banques,
+            'comptes_tresoreries': comptes_tresoreries,
+            'comptes_exercices': comptes_exercices
+        })
+
+
+@login_required
 def ajax_reglements_reverses_retrocession_apporteur(request, apporteur_id):
 
     polices = Police.objects.filter(
@@ -3868,20 +3779,6 @@ def generer_bordereau_encaissement_apporteur_pdf(request, operation_id):
     return HttpResponse(File(pdf), content_type='application/pdf')
 
 
-def get_montant_caution(bureau, compagnie=None):
-    queryset = Caution.par_bureau(bureau).filter(date_fin_effet__isnull=True, status=True)
-    if compagnie:
-       queryset = queryset.filter(compagnie=compagnie)
-
-    mcaution = queryset.aggregate(mcaution=Sum('montant'))['mcaution'] or 0
-    return mcaution
-
-    # return queryset.annotate(
-    #     montant_caution=Sum('montant'),
-    #     created_at_caution=Min('caution__created_at')
-    # )
-
-
 def get_montant_sinistre_regle(bureau, compagnie=None, month=None):
     queryset = Sinistre.objects.filter(
         statut_paiement=StatutPaiementSinistre.PAYE,
@@ -3910,7 +3807,6 @@ def prepare_camembert_data(bureau, compagnie=None):
 
     # Preparer les données pour le camembert
     label_global_fdr = "FDR"
-    valeur_global_fdr = get_montant_caution(bureau, compagnie)
     couleur_global_fdr = "#B7482B"
     stroke_couleur_global_fdr = "#B7482B"
 
@@ -3969,21 +3865,6 @@ def get_camembert_data_detail_par_garant(request, compagnie_id):
     ]
 
     return JsonResponse({"pieData": pie_data})
-
-
-def get_sum_fdr_per_month(bureau, month, compagnie=None):
-    queryset = Caution.par_bureau(bureau).filter(date_fin_effet__isnull=True, status=True)
-    if compagnie:
-        queryset = queryset.filter(compagnie=compagnie)
-
-    total_montant = queryset.filter(
-        created_at__month=month,
-        # created_at__year=year
-    ).aggregate(
-        total_montant=Sum('montant')
-    )['total_montant']
-
-    return total_montant if total_montant else 0
 
 
 def get_consumption_per_month(bureau, month, compagnie=None):
@@ -4225,9 +4106,6 @@ def alert_consumption():
         for compagnie in garants:
             try:
                 dispo = 0
-
-                caution = Caution.par_bureau(bureau).filter(compagnie=compagnie, date_fin_effet__isnull=True, status=True).first()
-                mcaution = caution.montant if caution else 0
                 
                 montant_regle_non_reclame = Sinistre.objects.filter(
                     statut_paiement=StatutPaiementSinistre.PAYE,
@@ -4241,11 +4119,6 @@ def alert_consumption():
                     compagnie=compagnie,
                     statut=StatutFacture.NON_SOLDE
                 ).aggregate(total_montant_restant=Sum('montant_restant'))['total_montant_restant'] or 0
-
-                tresorerie = mcaution - (montant_regle_non_reclame + montant_reclame_non_regle_par_la_compagnie)
-                
-                if mcaution != 0:
-                    dispo = int((tresorerie / mcaution) * 100)
                 
                 consommation = dispo
 

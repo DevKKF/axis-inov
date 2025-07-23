@@ -1,7 +1,7 @@
 {% load my_filters %}
 <html>
    <head>
-      <title>{{_("BORDEREAU DES COMMISSIONS DE RETROCESSION")}}</title>
+      <title>{{_("BORDEREAU DES REGLEMENTS APPORTEURS")}}</title>
       <style>
          @page {
          size: a4 landscape;
@@ -78,10 +78,10 @@
                   Mail : {{ bureau.email|default:"" }}
                </td>
                <td class="center" style="padding-bottom:0px; font-size: 14px; vertical-align: middle;" width="60%">
-                  <h3>BORDEREAU APPORTEUR DES RETROCESSIONS REGLEES - {{ operation.devise.libelle|default:"" }} ({{ operation.devise.code|default:"" }}) <br> Au {{ operation.date_operation|date:'d/m/Y'|default_if_none:"" }}</h3>
+                  <h3>BORDEREAU REGLEMENT : {{ apporteur.nom }} {{ compagnie.prenoms|default:"" }} - {{ operation.devise.libelle|default:"" }} ({{ operation.devise.code|default:"" }}) <br> Au {{ operation.date_operation|date:'d/m/Y'|default_if_none:"" }}</h3>
                </td>
                <td width="20%" style="padding-left:20px;">
-                  <span style="background-color:#DFF2FF;">APPORTEUR :</span> {{ apporteur.nom }} {{ compagnie.prenoms|default:"" }}
+
                </td>
             </tr>
             <tr>

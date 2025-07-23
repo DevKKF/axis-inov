@@ -24,21 +24,13 @@ from openpyxl.utils import get_column_letter
 from django.db.models import Subquery, OuterRef
 
 from configurations.helper_config import verify_sql_query
-from configurations.models import ActionLog, Prescripteur, Prestataire, Secteur, \
-    Bureau,BusinessUnit,Branche,Banque,Apporteur, Devise,\
-    User, AuthGroup, TypeEtablissement,Tarif, Rubrique, RegroupementActe, Acte, \
-    WsBoby, ParamWsBoby, ParamProduitCompagnie, Compagnie, \
-    ParamActe, TypeApporteur, TypePersonne, Pays, TypeCompagnie, TypeGarant, TauxCommission, Carosserie, \
-    CategorieVehicule, Civilite, CompteTresorerie, ConditionsAssurance, Carburant, Formule, Fractionnement, Garantie, GarantieFormule, \
-    Groupe, ModeReglement
+from configurations.models import ActionLog, Secteur, Bureau, BusinessUnit, Branche, Banque, Apporteur, Devise, User, AuthGroup,  Tarif, \
+    Compagnie, Garantie, GarantieFormule, Groupe, ModeReglement
 from inov import settings
-# Create your views here.
-from production.models import TarifPrestataireClient, Client, Aliment, AlimentFormule, Mouvement, \
-    Carte, Quittance, Reglement, Courrier, Produit, PoliceAssureur, Police, HistoriquePolice, MouvementPolice
+from production.models import TarifPrestataireClient, Client, Aliment, Mouvement, Produit, PoliceAssureur, Police, HistoriquePolice, MouvementPolice
 from analysecontrole.models import AnalysePortefeuille, ControleCommission
 from production.templatetags.my_filters import money_field, convertir_date_multiformat
-from shared.enum import PasswordType, Statut, StatutValidite, BaseCalculTM, StatutPaiementSinistre, TypePortefeuille, \
-    SatutBordereauDossierSinistres, StatutSinistre, ModeRenouvellement
+from shared.enum import PasswordType, Statut, StatutValidite, BaseCalculTM, StatutPaiementSinistre, TypePortefeuille
 
 from production.templatetags.my_filters import money_field, convertir_date_multiformat, supprimer_espaces, convertir_date_jj_mm_aaaa, format_montant, money_format_mille
 

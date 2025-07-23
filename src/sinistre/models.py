@@ -7,7 +7,7 @@ from django.utils import timezone
 from configurations.models import CompteTresorerie, Devise, Medicament, Compagnie, User, TypePriseencharge, Prestataire, Prescripteur, Acte, \
     Rubrique, SousRubrique, RegroupementActe, TypePrefinancement, PeriodeComptable, ModeCreation, Bureau, Circonstance, TypeSinistre, TauxResponsabilite, TypeIntervenant, PosteDommage, Pays, \
     TypeRemboursement, ModeReglement, Banque, BordereauLettreCheque, Garantie
-from production.models import TypeDocument, Aliment, HistoriqueAliment, Police, HistoriquePolice, PeriodeCouverture, FormuleGarantie, Bareme, Client, AlimentPolice, Mouvement, Motif
+from production.models import TypeDocument, Aliment, HistoriqueAliment, Police, HistoriquePolice, PeriodeCouverture, Bareme, Client, AlimentPolice, Mouvement, Motif
 from shared.enum import StatutFacture, StatutSinistre, SatutBordereauDossierSinistres, StatutSinistreBordereau, \
     StatutSinistrePrestation, StatutValidite, StatutRemboursement, StatutRemboursementSinistre, Statut, \
     OptionRefacturation, StatutPaiementSinistre, SourceCreationSinistre

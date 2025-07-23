@@ -4,7 +4,7 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 from api.models import InfoActe
 from configurations.models import KeyValueData, User, Prestataire, Acte, Bureau, ModeReglement, \
-    TypeActe, Civilite, Pays
+    Civilite, Pays
 from production.models import Aliment, Carte, Client, Bareme, CarteDigitalDematerialisee
 from sinistre.models import Sinistre
 

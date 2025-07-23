@@ -42,8 +42,7 @@ from django.utils.timezone import now
 from django.db import transaction
 from django.utils.translation import gettext as _
 
-from configurations.models import Compagnie, Pays, Civilite, Profession, \
-    Produit, Formule, GarantieBranche, GarantieFormule, ConditionsAssurance, MoyensTransport, \
+from configurations.models import Compagnie, Pays, Civilite, Produit, Formule, GarantieBranche, GarantieFormule, ConditionsAssurance, MoyensTransport, \
     Duree, TypeCarosserie, User, Fractionnement, ModeReglement, \
     Regularisation, Bureau, BusinessUnit, TypeCompagnie, Groupe, PosteDommage, TypeSinistre, TypeIntervenant, TauxResponsabilite, Circonstance, \
     Devise, Taxe, BureauTaxe, Apporteur, BaseCalcul, TypeQuittance, NatureQuittance, TypeClient, TypePersonne, Langue, \

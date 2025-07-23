@@ -32,12 +32,11 @@ from api.serializers import KeyValueDataSerializer, UserSerializer, AlimentSeria
     ResetPasswordUserSerializer, UserDataSerializer, BarremeSerializer, SinisteSerializer, \
     ModeRemboursementSerializer, DemandeRemboursementSerializer, PrestataireSerializer, \
     PrestataireDataSerializer, ActeSerializer, BureauSerializer, \
-    ProspectSerializer, CarteDigitalDematerialiseeSerializer, TypeActeSerialiser, CiviliteSerializer, \
+    ProspectSerializer, CarteDigitalDematerialiseeSerializer, CiviliteSerializer, \
     PaysSerializer
 from configurations.helper_config import verify_sql_query, execute_query
-# from api.serializers import AlimentWaspitoSerialiser, PrestationWaspito
-from configurations.models import Acte, Prescripteur, PrescripteurPrestataire, Prestataire, \
-    KeyValueData, WsBoby, Bureau, TypeActe, Civilite, Pays
+from configurations.models import Acte, Prescripteur, Prestataire, \
+    KeyValueData, WsBoby, Bureau, Civilite, Pays
 from configurations.models import User, ModeReglement
 from grh.helper import generate_uiid
 from grh.models import CampagneAppmobile, CampagneAppmobileProspect

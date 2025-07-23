@@ -12,8 +12,8 @@ from django.db.models import F, ExpressionWrapper, DurationField
 from configurations.helper_config import execute_query
 from configurations.models import Banque, Bureau, Civilite, Compagnie, Fractionnement, ModeReglement, \
     Regularisation, User, Langue, Pays, Produit, TypeClient, TypePersonne, TypeCompagnie, \
-    TypeAssurance, Devise, ModeCalcul, Taxe, Apporteur, BaseCalcul, TypeQuittance, \
-    NatureQuittance, TypeCarosserie, CategorieVehicule, MarqueVehicule, NatureOperation, Prestataire, TypeTarif, Acte, \
+    Devise, Taxe, Apporteur, BaseCalcul, TypeQuittance, \
+    NatureQuittance, TypeCarosserie, CategorieVehicule, NatureOperation, Prestataire, TypeTarif, Acte, \
     Rubrique, RegroupementActe, SousRubrique, TypePrefinancement, CompteTresorerie, TypeMouvement, \
     Secteur, Carosserie, Formule, Usage, Carburant, BusinessUnit, Garantie, ConditionsAssurance, MoyensTransport, TypeCourrier, Groupe
 from shared.enum import Genre, Statut, StatutRelation, OptionYesNo, PlacementEtGestion, \

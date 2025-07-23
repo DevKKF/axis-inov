@@ -36,14 +36,11 @@ from datetime import datetime, timezone
 from django.db.models import Sum, Q, ExpressionWrapper, F, DurationField, Max
 from configurations.helper_config import verify_sql_query
 from configurations.models import ActionLog, Secteur, \
-    Bureau ,BusinessUnit, Branche, Banque, Apporteur, ApporteurInternational,Devise,\
-    User, AuthGroup,Tarif, Rubrique, \
-    BackgroundQueryTask, ParamProduitCompagnie, Compagnie, \
+    Bureau ,BusinessUnit, Branche, Banque, Apporteur, Devise, User, AuthGroup,Tarif, Rubrique,  BackgroundQueryTask, ParamProduitCompagnie, Compagnie, \
     TypeApporteur, TypePersonne, Pays, TypeCompagnie, TypeGarant, TauxCommission, Carosserie, \
     CategorieVehicule, Civilite, CompteTresorerie, ConditionsAssurance, Carburant, Formule, Fractionnement, Garantie, GarantieFormule, \
     Groupe, ModeReglement, Circonstance, TauxResponsabilite, TypeIntervenant, TypeMouvement, TypeSinistre, PosteDommage, GarantieCirconstance, RegroupementActe, Prescripteur, Prestataire, Acte, WsBoby, ParamWsBoby, ParamActe
 from inov import settings
-# Create your views here.
 from production.models import Client, Mouvement, \
     Quittance, Reglement, Courrier, Produit, SecteurActivite, TypeDocument, Mouvement, Motif
 from production.templatetags.my_filters import money_field

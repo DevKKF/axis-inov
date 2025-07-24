@@ -3107,8 +3107,6 @@ def details_quittance(request, quittance_id):
         total_montant_com_intermediaire=Sum('encaissementcommission__reglement__montant_com_intermediaire'),
     ).distinct()
 
-    print(f"encaissements_data: {encaissements_data}")
-
     operations = Operation.objects.filter(
         operationreglement__reglement__quittance_id=quittance_id,
         statut_bordereau="VALIDE"

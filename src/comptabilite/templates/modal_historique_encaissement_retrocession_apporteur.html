@@ -1,0 +1,149 @@
+<div  class="modal fade" id="modal-historique_reglement_apporteur" aria-hidden="true" data-backdrop="static" data-keyboard="false" style="display: none">
+	<div class="modal-dialog modal-xl">
+		<div class="modal-content">
+			 <div class="modal-header">
+				<h4 class="modal-title">HISTORIQUE DE REGLEMENT DES RETROCESSIONS APPORTEURS</h4>
+				<button type="button"class="close"data-dismiss="modal"aria-label="Close">
+					<span aria-hidden="true">×</span>
+				</button>
+			 </div>
+			<div class="modal-body">
+				<div class="alert alert-dismissible fade show hidden" role="alert">
+				  <span class="message">TRAITEMENT EN COURS</span>
+				</div>
+				<div class="col-md-12 offset-0">
+
+					<div class="tab-content" id="myTabContent">
+						<div class="tab-pane fade show active mt-3" id="identity" role="tabpanel" aria-labelledby="identity-tab">
+							<div class="row" style="display:none__;background:#CCCCCC;padding:10px;border-bottom:1px solid #eee;padding-bottom:10px;margin-bottom:10px;">
+								<div class="col-12 col-md-12 col-sm-12 row">
+									<div class="col-md-5">
+						<label>Apporteur :</label>
+						<select class="form-control" name="search_apporteur" id="search_apporteur">
+							<option value="">Choisir</option>
+							{% for app in histo_apporteurs %}
+								<option value="{{ app.id }}">{{ app.nom }} {{ app.prenoms }}</option>
+							{% endfor %}
+						</select>
+					</div>
+					<div class="col-md-3">
+						<label>Date début :</label>
+						<input type="date" class="form-control" id="search_date_debut" name="search_date_debut">
+					</div>
+					<div class="col-md-3">
+						<label>Date fin :</label>
+						<input type="date" class="form-control" id="search_date_fin" name="search_date_fin">
+					</div>
+					<div class="col-md-1 d-flex align-items-end">
+						<button type="button" class="btn btn-primary btn-block" id="btn_search_encaissement_retrocession_apporteur"><i class="fa fa-search"></i></button>
+					</div>
+								</div>
+							</div>
+							<div class="row">
+								<div class="col-12 col-md-12 col-sm-12">
+									<div class="alert alert-danger text-danger text-white mb-2" id="message-error" style="display: none;"></div>
+									<div class="alert alert-warning text-warning text-white mb-2" id="message-warning" style="display: none;"></div>
+									<div class="table-responsive" id="apporteur_encaissement_retrocession">
+										<h6 class="mt-3">Liste des règlements de retrocession apporteur</h6>
+										<table class="table table-bordered table-striped dataTable dtr-inline" id="table_encaissement_retrocession_apporteur">
+											<thead>
+												<tr>
+													<th scope="col">N° Bordereau</th>
+													<th scope="col">Com Courtage</th>
+													<th scope="col">Retro Apporteur</th>
+													<th scope="col">Régler par</th>
+													<th scope="col">Date Reg.</th>
+													<th scope="col">Actions</th>
+												</tr>
+											</thead>
+											<tbody class="body_tableau_encaissement_retrocession_apporteur">
+											</tbody>
+										</table>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="modal-footer justify-content-between">
+					<button type="button" class="btn btn-danger" data-dismiss="modal"><i class="fa fa-remove"></i> Retour</button>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+<script>
+$(document).ready(function () {
+
+    function showTemporaryMessage(selector, message, duration = 5000) {
+        $(selector).text(message).fadeIn();
+        setTimeout(() => {
+            $(selector).fadeOut();
+        }, duration);
+    }
+
+    $('#btn_search_encaissement_retrocession_apporteur').on('click', function () {
+        const apporteur_id = $('#search_apporteur').val();
+        const search_date_debut = $('#search_date_debut').val();
+        const search_date_fin = $('#search_date_fin').val();
+
+        // --- VALIDATIONS ---
+        if (!apporteur_id) {
+            showTemporaryMessage('#message-error', "Veuillez sélectionner un apporteur.");
+            return;
+        }
+
+        if (search_date_debut && !search_date_fin) {
+            showTemporaryMessage('#message-error', "Veuillez renseigner la date de fin.");
+            return;
+        }
+
+        if (search_date_debut && search_date_fin && search_date_debut > search_date_fin) {
+            showTemporaryMessage('#message-error', "La date de début ne peut pas être supérieure à la date de fin.");
+            return;
+        }
+
+        // --- CHARGEMENT ---
+        $('#apporteur_encaissement_retrocession').prepend('<div id="loading-msg" class="text-center mb-3 text-primary">Chargement en cours...</div>');
+
+        $.ajax({
+            url: "{% url 'ajax_encaissement_retrocession_apporteur' %}",
+            type: "GET",
+            data: {
+                apporteur_id: apporteur_id,
+                search_date_debut: search_date_debut,
+                search_date_fin: search_date_fin,
+            },
+            success: function (data) {
+                $('#loading-msg').remove();
+
+                const table = $('#table_encaissement_retrocession_apporteur').DataTable();
+                table.clear().draw();
+
+                if (data.reglements.length === 0) {
+                    showTemporaryMessage('#message-warning', "Aucun règlement trouvé.");
+                    return;
+                }
+
+                // Ajout des données
+                data.reglements.forEach(function (reglement) {
+                    table.row.add([
+                        reglement.numero,
+                        reglement.total_montant_com_courtage,
+                        reglement.total_montant_com_intermediaire,
+                        reglement.regler_par,
+                        reglement.date_operation,
+                        reglement.action
+                    ]).draw(false);
+                });
+            },
+            error: function () {
+                $('#loading-msg').remove();
+                showTemporaryMessage('#message-error', "Erreur lors de la récupération des données.");
+            }
+        });
+    });
+
+});
+</script>
+

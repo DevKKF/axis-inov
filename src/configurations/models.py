@@ -1042,8 +1042,9 @@ class Apporteur(models.Model):
     @property
     def nombre_reglements_a_recevoir_retrocession(self):
         reglements = self.app_reglements.filter(
+            statut_reversement_apporteur=StatutReversementApporteur.NON_REVERSE,
+            statut_commission=StatutEncaissementCommission.ENCAISSEE,
             quittance__statut=StatutQuittance.PAYE,
-            statut_commission=StatutEncaissementCommission.ENCAISSEE
         ).exclude(
             Q(montant_com_intermediaire=0) | Q(montant_com_intermediaire__isnull=True)
         )

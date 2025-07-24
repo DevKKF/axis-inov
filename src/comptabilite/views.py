@@ -49,7 +49,7 @@ from production.models import Aliment, Reglement, Police, Quittance, Operation, 
     Client, PoliceAssureur, HistoriquePolice, ApporteurPolice
 from production.templatetags.my_filters import money_field
 from shared.enum import MoyenPaiement, SatutBordereauDossierSinistres, StatutPaiementSinistre, \
-    StatutReversementCompagnie, StatutEncaissementCommission, StatutReversementApporteur, StatutQuittance, \
+    StatutReversementCompagnie, StatutEncaissementCommission, StatutReversementApporteur, StatutQuittance, TypeEncaissementCommission, \
     StatutValidite, Statut, StatutBordereau
 from shared.helpers import generate_random_string, render_pdf
 from sinistre.helper_sinistre import requete_analyse_prime_compta
@@ -3445,6 +3445,7 @@ class ReversesementApporteursView(TemplateView):
 
     def get(self, request, *args, **kwargs):
 
+        histo_apporteurs = Apporteur.objects.filter(bureau=request.user.bureau).order_by('nom')
         apporteurs = Apporteur.objects.filter(bureau=request.user.bureau).order_by('nom')
 
         for apporteur in apporteurs:
@@ -3452,6 +3453,7 @@ class ReversesementApporteursView(TemplateView):
                 apporteurs = apporteurs.exclude(id=apporteur.id)
 
         context = self.get_context_data(**kwargs)
+        context['histo_apporteurs'] = histo_apporteurs
         context['apporteurs'] = apporteurs
 
         return self.render_to_response(context)
@@ -3588,7 +3590,7 @@ def add_encaissement_retrocession_apporteur(request):
                 numero_piece = request.POST.get('numero_piece')
                 date_paiement = request.POST.get('date_paiement')
                 reglements_selectionnes = request.POST.getlist('reglement_selectionne')
-                date_encaissement_commission = datetime.now(tz=timezone.utc)
+                date_reversement_retro_apporteur = datetime.now(tz=timezone.utc)
 
                 nature_operation_code = "REGAPP"
                 nature_operation = NatureOperation.objects.filter(code=nature_operation_code).first()
@@ -3633,7 +3635,7 @@ def add_encaissement_retrocession_apporteur(request):
 
                     if reglement.etat_encaisse_retrocession_apporteur():
                         reglement.statut_reversement_apporteur = StatutReversementApporteur.REVERSE
-                        reglement.date_encaissement_commission = date_encaissement_commission
+                        reglement.date_reversement_retro_apporteur = date_reversement_retro_apporteur
                         reglement.save()
 
                     devise_obj = reglement.devise  # dernière devise rencontrée
@@ -3707,6 +3709,156 @@ def ajax_reglements_reverses_retrocession_apporteur(request, apporteur_id):
     reglements_apporteurs = ReglementReverseApporteur.objects.filter(quittance__police__in=polices, statut_reversement_apporteur=StatutReversementApporteur.NON_REVERSE, statut_validite=StatutValidite.VALIDE).exclude(statut_commission=StatutEncaissementCommission.NON_ENCAISSEE)
 
     return render(request, 'reglements_reverses_retrocession_apporteur.html', {'reglements_apporteurs':reglements_apporteurs})
+
+
+@login_required
+def ajax_encaissement_retrocession_apporteur_v0(request):
+    apporteur_id = request.GET.get('apporteur_id')
+    date_debut = request.GET.get('search_date_debut')
+    date_fin = request.GET.get('search_date_fin')
+
+    apporteur = Apporteur.objects.filter(id=apporteur_id).first()
+
+    reglement_qs = Reglement.objects.filter(
+        statut_reversement_apporteur=StatutReversementApporteur.NON_REVERSE,
+        statut_commission=StatutEncaissementCommission.ENCAISSEE,
+        quittance__statut=StatutQuittance.PAYE,
+        apporteur_id=apporteur_id
+    )
+
+    if date_debut:
+        reglement_qs = reglement_qs.filter(date_reversement_retro_apporteur=date_debut)
+
+    reglements = []
+    for reg in reglement_qs:
+        reglements.append({
+            'id': reg.id,
+            'numero_reg': reg.numero,
+            'montant': reg.montant_com_intermediaire,
+            'date_reversement': reg.date_reversement_retro_apporteur.strftime("%d/%m/%Y") if reg.date_reversement_retro_apporteur else '',
+        })
+
+    return JsonResponse({
+        'reglements': reglements,
+    })
+
+def ajax_encaissement_retrocession_apporteur_v1(request):
+    apporteur_id = request.GET.get('apporteur_id')
+    date_debut = request.GET.get('search_date_debut')
+    date_fin = request.GET.get('search_date_fin')
+
+    if not apporteur_id:
+        return JsonResponse({'error': "L'apporteur est obligatoire."}, status=400)
+
+    # Validation croisée des dates
+    if date_debut and not date_fin:
+        return JsonResponse({'error': "Veuillez renseigner la date de fin."}, status=400)
+
+    if date_debut and date_fin:
+        try:
+            date_debut_dt = datetime.strptime(date_debut, '%Y-%m-%d')
+            date_fin_dt = datetime.strptime(date_fin, '%Y-%m-%d')
+            if date_debut_dt > date_fin_dt:
+                return JsonResponse({'error': "La date de début ne peut pas être supérieure à la date de fin."}, status=400)
+        except ValueError:
+            return JsonResponse({'error': "Format de date invalide."}, status=400)
+
+    reglement_qs = Reglement.objects.filter(
+        statut_reversement_apporteur=StatutReversementApporteur.REVERSE,
+        statut_commission=StatutEncaissementCommission.ENCAISSEE,
+        quittance__statut=StatutQuittance.PAYE,
+        apporteur_id=apporteur_id
+    )
+
+    encaissements_data = Operation.objects.filter(
+        encaissementcommission__reglement__apporteur_id=apporteur_id,
+        encaissementcommission__type_commission=TypeEncaissementCommission.RETROCESSION
+    ).annotate(
+        total_reglement_montant=Sum('encaissementcommission__reglement__montant'),
+        total_montant_com_encaisse=Sum('encaissementcommission__montant_com_courtage'),
+        total_montant_com_courtage=Sum('encaissementcommission__reglement__montant_com_courtage'),
+        total_montant_com_intermediaire=Sum('encaissementcommission__reglement__montant_com_intermediaire'),
+    ).distinct()
+
+    print("encaissements_data :", encaissements_data)
+
+    # Filtrage date si les 2 sont renseignées
+    if date_debut and date_fin:
+        date_debut_dt = datetime.strptime(date_debut, '%Y-%m-%d')
+        date_fin_dt = datetime.strptime(date_fin, '%Y-%m-%d') + timedelta(days=1)
+        reglement_qs = reglement_qs.filter(date_reversement_retro_apporteur__range=(date_debut_dt, date_fin_dt))
+
+    reglements = []
+    for reg in reglement_qs:
+        operation_reglement = OperationReglement.objects.filter(reglement=reg, statut_bordereau="VALIDE").first()
+
+        detail_url = ""
+        if operation_reglement:
+            detail_url = reverse('generer_bordereau_encaissement_apporteur_pdf', args=[operation_reglement.operation_id])
+        action = f'<a href="{detail_url}" class="text-center bouton_action" style="color:#F16623;" target="_blank"><i class="fa fa-print"></i> Imprimer</a>'
+
+        reglements.append({
+            'id': reg.id,
+            'numero_reg': reg.numero,
+            'numero_quittance': reg.quittance.numero,
+            'client_police': f'{reg.quittance.police.client.nom} {reg.quittance.police.client.prenoms} ({reg.quittance.police.numero})' if reg.quittance.police.client else '',
+            'montant_courtage': money_field(reg.montant_com_courtage),
+            'montant': money_field(reg.montant_com_intermediaire),
+            'date_reversement': reg.date_reversement_retro_apporteur.strftime("%d/%m/%Y") if reg.date_reversement_retro_apporteur else '',
+            'action': action
+        })
+
+    return JsonResponse({'reglements': reglements})
+
+
+def ajax_encaissement_retrocession_apporteur(request):
+    apporteur_id = request.GET.get('apporteur_id')
+    date_debut = request.GET.get('search_date_debut')
+    date_fin = request.GET.get('search_date_fin')
+
+    if not apporteur_id:
+        return JsonResponse({'error': "L'apporteur est obligatoire."}, status=400)
+
+    # Validation des dates
+    date_filter = {}
+    if date_debut and not date_fin:
+        return JsonResponse({'error': "Veuillez renseigner la date de fin."}, status=400)
+
+    if date_debut and date_fin:
+        try:
+            date_debut_dt = datetime.strptime(date_debut, '%Y-%m-%d')
+            date_fin_dt = datetime.strptime(date_fin, '%Y-%m-%d') + timedelta(days=1)
+            if date_debut_dt > date_fin_dt:
+                return JsonResponse({'error': "La date de début ne peut pas être supérieure à la date de fin."}, status=400)
+            date_filter['date_operation__range'] = (date_debut_dt, date_fin_dt)
+        except ValueError:
+            return JsonResponse({'error': "Format de date invalide."}, status=400)
+
+    # Requête principale : uniquement encaissements de type RETROCESSION avec totaux
+    encaissements_data = Operation.objects.filter(
+        encaissementcommission__reglement__apporteur_id=apporteur_id,
+        encaissementcommission__type_commission=TypeEncaissementCommission.RETROCESSION,
+        **date_filter
+    ).annotate(
+        total_montant_com_courtage=Sum('encaissementcommission__reglement__montant_com_courtage'),
+        total_montant_com_intermediaire=Sum('encaissementcommission__reglement__montant_com_intermediaire'),
+    ).distinct()
+
+    reglements = []
+    for enc in encaissements_data:
+        detail_url = reverse('generer_bordereau_encaissement_apporteur_pdf', args=[enc.id])
+        action = f'<a href="{detail_url}" class="text-center bouton_action btn btn-info text-white" target="_blank"><i class="fa fa-print"></i> Imprimer</a>'
+
+        reglements.append({
+            'numero': enc.numero,
+            'total_montant_com_courtage': money_field(enc.total_montant_com_courtage) or 0,
+            'total_montant_com_intermediaire': money_field(enc.total_montant_com_intermediaire) or 0,
+            'regler_par': enc.created_by.email if enc.created_by else '',
+            'date_operation': enc.date_operation.strftime("%d/%m/%Y") if enc.date_operation else '',
+            'action': action,
+        })
+
+    return JsonResponse({'reglements': reglements})
 
 
 @login_required
@@ -3801,70 +3953,6 @@ def get_montant_sinistre_reclame(bureau, compagnie=None):
     if compagnie:
         queryset = queryset.filter(compagnie=compagnie)
     return queryset.aggregate(total_restant=Sum('montant_restant'))['total_restant'] or 0
-
-
-def prepare_camembert_data(bureau, compagnie=None):
-
-    # Preparer les données pour le camembert
-    label_global_fdr = "FDR"
-    couleur_global_fdr = "#B7482B"
-    stroke_couleur_global_fdr = "#B7482B"
-
-    label_global_sinistre_regle = "Sinistres réglés"
-    valeur_global_sinistre_regle = int(get_montant_sinistre_regle(bureau=bureau, compagnie=compagnie))
-    couleur_global_sinistre_regle = "#B8B8B8"
-    stroke_couleur_global_sinistre_regle = "#B8B8B8"
-
-    label_global_sinistre_reclame = "Sinistres réclamés"
-    valeur_global_sinistre_reclame = int(get_montant_sinistre_reclame(bureau=bureau,compagnie=compagnie))
-    couleur_global_sinistre_reclame = "orange"
-    stroke_couleur_global_sinistre_reclame = "orange"
-
-    return {
-        "label_global_fdr": label_global_fdr,
-        "valeur_global_fdr": valeur_global_fdr,
-        "couleur_global_fdr": couleur_global_fdr,
-        "stroke_couleur_global_fdr": stroke_couleur_global_fdr,
-        "label_global_sinistre_regle": label_global_sinistre_regle,
-        "valeur_global_sinistre_regle": valeur_global_sinistre_regle,
-        "couleur_global_sinistre_regle": couleur_global_sinistre_regle,
-        "stroke_couleur_global_sinistre_regle": stroke_couleur_global_sinistre_regle,
-        "label_global_sinistre_reclame": label_global_sinistre_reclame,
-        "valeur_global_sinistre_reclame": valeur_global_sinistre_reclame,
-        "couleur_global_sinistre_reclame": couleur_global_sinistre_reclame,
-        "stroke_couleur_global_sinistre_reclame": stroke_couleur_global_sinistre_reclame,
-    }
-
-
-def get_camembert_data_detail_par_garant(request, compagnie_id):
-
-    compagnie_id = compagnie_id
-    compagnie = Compagnie.objects.get(id=compagnie_id)
-
-
-    bureau = compagnie.bureau if compagnie else None;
-
-    data = prepare_camembert_data(bureau, compagnie)
-
-    pie_data = [
-        {
-            "label": data["label_global_fdr"],
-            "value": data["valeur_global_fdr"],
-            "color": data["couleur_global_fdr"]
-        },
-        {
-            "label": data["label_global_sinistre_regle"],
-            "value": data["valeur_global_sinistre_regle"],
-            "color": data["couleur_global_sinistre_regle"]
-        },
-        {
-            "label": data["label_global_sinistre_reclame"],
-            "value": data["valeur_global_sinistre_reclame"],
-            "color": data["couleur_global_sinistre_reclame"]
-        }
-    ]
-
-    return JsonResponse({"pieData": pie_data})
 
 
 def get_consumption_per_month(bureau, month, compagnie=None):

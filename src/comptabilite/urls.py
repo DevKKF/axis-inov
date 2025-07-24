@@ -90,6 +90,7 @@ urlpatterns = [
     path('reglements_apporteurs/', ReversesementApporteursView.as_view(), name='reglements_apporteurs'),
     path('add_encaissement_retrocession_apporteur',views.add_encaissement_retrocession_apporteur, name='add_encaissement_retrocession_apporteur'),
     path('ajax_reglements_reverses_retrocession_apporteur/<int:apporteur_id>', views.ajax_reglements_reverses_retrocession_apporteur, name='ajax_reglements_reverses_retrocession_apporteur'),
+    path('ajax_encaissement_retrocession_apporteur', views.ajax_encaissement_retrocession_apporteur, name='ajax_encaissement_retrocession_apporteur'),
     path('generer_bordereau_encaissement_apporteur_pdf/<int:operation_id>', views.generer_bordereau_encaissement_apporteur_pdf, name='generer_bordereau_encaissement_apporteur_pdf'),
 
     path('generer_bordereau_reglement_compagnie_pdf/<int:operation_id>', views.generer_bordereau_reglement_compagnie_pdf, name='generer_bordereau_reglement_compagnie_pdf'),

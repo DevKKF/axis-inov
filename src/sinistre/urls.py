@@ -36,6 +36,7 @@ urlpatterns = [
     path('recuperer-garanties-sinistre/', views.recuperer_garanties_sinistre, name='recuperer_garanties_sinistre'),
 
     path('add_sinistre_gestionnaire', views.add_sinistre_gestionnaire, name='add_sinistre_gestionnaire'),
+    path('recuperer_intervenant_sinistre/', views.recuperer_intervenant_sinistre, name='recuperer_intervenant_sinistre'),
     path('update_sinistre_gestionnaire/<int:sinistre_id>', views.update_sinistre_gestionnaire, name='update_sinistre_gestionnaire'),
 
     path('liste-des-dossiers-sinsitres/', DossiersSinistresPhysiquesGestionnairesView.as_view(), name='liste_prestations'),

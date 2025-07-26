@@ -22050,56 +22050,57 @@ $(document).ready(function () {
                     console.log(response);
                     $('#default_page').hide();
                     $('#formulaire_page').show().html(response);
+
+                    console.log('Lancement du chargement des intervenants');
+                    // Appel AJAX pour récupérer l'intervenant par défaut de la police
+                    setTimeout(() => {
+                        // Requête 2 : récupérer l’intervenant
+                        $.ajax({
+                            url: "/sinistre/recuperer_intervenant_police/",
+                            type: "GET",
+                            data: {
+                                police_id: selectedPoliceId
+                            },
+                            success: function (response) {
+                                console.log("Intervenant :", response);
+
+                                if (response.success && response.data.length > 0) {
+                                    const tbody = $("#table_intervenant_sinistre tbody");
+                                    tbody.empty(); // Corriger les doublons
+
+                                    response.data.forEach((row, index) => {
+                                        const isFirst = index === 0;
+                                        tbody.append(`
+                                            <tr data-id="${row.id}">
+                                                <td>
+                                                    <button class="btn btn-danger btn-sm btn-delete-intervenant" type="button" ${isFirst ? 'disabled style="opacity: 0.5; cursor: not-allowed;"' : ''}>
+                                                        <i class="fa fa-trash-o"></i>
+                                                    </button>
+                                                </td>
+                                                <td>${row.nom || ''}</td>
+                                                <td>${row.prenoms || ''}</td>
+                                                <td>${row.type_intervenant || ''}</td>
+                                                <td>${row.portable || ''}</td>
+                                                <td>${row.email || ''}</td>
+                                                <td>${row.boite_postale || ''}</td>
+                                                <td>${row.ville || ''}</td>
+                                            </tr>
+                                        `);
+                                    });
+                                } else {
+                                    console.warn("Aucun intervenant ou réponse invalide :", response.message || response.error);
+                                }
+                            },
+                            error: function (xhr, status, error) {
+                                console.error("Erreur lors de la récupération de l'intervenant :", error);
+                            }
+                        });
+                    }, 100);
                 },
                 error: function (xhr, status, error) {
                     console.error("Erreur lors du chargement des information de la police :", error);
                 }
             });
-
-            // Appel AJAX pour récupérer l'intervenant par défaut de la police
-            setTimeout(() => {
-                    // Requête 2 : récupérer l’intervenant
-                    $.ajax({
-                        url: "/sinistre/recuperer_intervenant_police/",
-                        type: "GET",
-                        data: {
-                            police_id: selectedPoliceId
-                        },
-                        success: function (response) {
-                            console.log("Intervenant :", response);
-
-                            if (response.success && response.data.length > 0) {
-                                const tbody = $("#table_intervenant_sinistre tbody");
-                                tbody.empty(); // Corriger les doublons
-
-                                response.data.forEach((row, index) => {
-                                    const isFirst = index === 0;
-                                    tbody.append(`
-                                        <tr data-id="${row.id}">
-                                            <td>
-                                                <button class="btn btn-danger btn-sm btn-delete-intervenant" type="button" ${isFirst ? 'disabled style="opacity: 0.5; cursor: not-allowed;"' : ''}>
-                                                    <i class="fa fa-trash-o"></i>
-                                                </button>
-                                            </td>
-                                            <td>${row.nom || ''}</td>
-                                            <td>${row.prenoms || ''}</td>
-                                            <td>${row.type_intervenant || ''}</td>
-                                            <td>${row.portable || ''}</td>
-                                            <td>${row.email || ''}</td>
-                                            <td>${row.boite_postale || ''}</td>
-                                            <td>${row.ville || ''}</td>
-                                        </tr>
-                                    `);
-                                });
-                            } else {
-                                console.warn("Aucun intervenant ou réponse invalide :", response.message || response.error);
-                            }
-                        },
-                        error: function (xhr, status, error) {
-                            console.error("Erreur lors de la récupération de l'intervenant :", error);
-                        }
-                    });
-                }, 100);
 
             $('#modal_choose_client').modal('hide');
         } else {
@@ -22483,5 +22484,56 @@ $(document).ready(function () {
         let url = `/sinistre/mouvement_sinistre/${sinistre_id}/${motif.val()}`;
         window.location.href = url;
     });
+
+
+    //Update sinistre
+     $('#intervenants-tab').on('click', function() {
+            const selectedSinistreId = $('#sinistre_id').val();
+            if (!selectedSinistreId) {
+               console.warn("Aucune police sélectionnée.");
+               return;
+           }
+
+           // Requête AJAX pour récupérer les intervenants de la police
+           $.ajax({
+               url: "/sinistre/recuperer_intervenant_sinistre/",
+               type: "GET",
+               data: {
+                   sinistre_id: selectedSinistreId
+               },
+               success: function (response) {
+                   if (response.success && Array.isArray(response.data)) {
+                       const tbody = $("#table_intervenant_sinistre tbody");
+                       tbody.empty(); // Supprimer les lignes précédentes
+
+                       response.data.forEach((row, index) => {
+                           const isFirst = index === 0;
+                           tbody.append(`
+                               <tr data-id="${row.id}">
+                                   <td>
+                                       <button class="btn btn-danger btn-sm btn-delete-intervenant" type="button" ${isFirst ? 'disabled style="opacity: 0.5; cursor: not-allowed;"' : ''}>
+                                           <i class="fa fa-trash-o"></i>
+                                       </button>
+                                   </td>
+                                   <td>${row.nom || ''}</td>
+                                   <td>${row.prenoms || ''}</td>
+                                   <td>${row.type_intervenant || ''}</td>
+                                   <td>${row.portable || ''}</td>
+                                   <td>${row.email || ''}</td>
+                                   <td>${row.boite_postale || ''}</td>
+                                   <td>${row.ville || ''}</td>
+                               </tr>
+                           `);
+                       });
+                   } else {
+                       console.warn("Aucun intervenant trouvé ou réponse invalide :", response.message || response.error);
+                   }
+               },
+               error: function (xhr, status, error) {
+                   console.error("Erreur AJAX (intervenants) :", error);
+               }
+           });
+
+          });
 
 });

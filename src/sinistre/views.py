@@ -69,7 +69,7 @@ from sinistre.helper_sinistre import exportation_en_excel_avec_style, \
     requete_analyse_prime_compta_apporteur, get_retenue_selon_contexte
 # Create your views here.
 from sinistre.models import PaiementComptable, Sinistre, HistoriqueSinistre, Intervenant, SinistreIntervenant, SinistreGarantie, HistoriqueSinistreGarantie, DossierSinistre, MouvementSinistre, \
-    RemboursementSinistre, BordereauOrdonnancement, HistoriqueOrdonnancementSinistre
+    RemboursementSinistre, BordereauOrdonnancement, HistoriqueOrdonnancementSinistre, VentilationProvision
 
 from sinistre.forms import SinistreForm
 
@@ -461,6 +461,8 @@ def recuperer_intervenant_police(request):
         request.session['intervenants'] = intervenants_existant
         request.session.modified = True
 
+        print("🔁 Lancement du chargement des intervenants")
+
         return JsonResponse({
             'success': True,
             'message': "Ajout d'intervenant effectué avec succès !",
@@ -683,6 +685,8 @@ def afficher_provision_sinistre(request):
 
 
 #Save Sinistre by Gestionnaire
+@login_required
+@transaction.atomic
 def add_sinistre_gestionnaire(request):
 
     if request.method == 'POST':
@@ -853,34 +857,30 @@ def add_sinistre_gestionnaire(request):
                 )
                 intervenant_created.save()
 
-
             # Récupérer les garanties de la session
             garanties_sinistre = request.session.get("garanties", [])
             for garantie_sinistre in garanties_sinistre:
-                garantie_sinistre_created = SinistreGarantie(
+                garantie_sinistre_created = SinistreGarantie.objects.create(
                     sinistre=sinistre,
                     garantie_id=garantie_sinistre.get('garantie_id'),
-                    franchise=supprimer_espaces(garantie_sinistre.get('franchise', 0)) if garantie_sinistre.get('franchise', 0) else None,
-                    capital=supprimer_espaces(garantie_sinistre.get('capital', 0)) if garantie_sinistre.get('capital', 0) else None,
-                    prime_nette=supprimer_espaces(garantie_sinistre.get('prime_net', 0)) if garantie_sinistre.get('prime_net', 0) else None,
-                    prime_ttc=supprimer_espaces(garantie_sinistre.get('prime_ttc', 0)) if garantie_sinistre.get('prime_ttc', 0) else None,
-                    created_by_id=request.user.id,
+                    franchise=supprimer_espaces(garantie_sinistre.get('franchise', 0)) or None,
+                    capital=supprimer_espaces(garantie_sinistre.get('capital', 0)) or None,
+                    prime_nette=supprimer_espaces(garantie_sinistre.get('prime_net', 0)) or None,
+                    prime_ttc=supprimer_espaces(garantie_sinistre.get('prime_ttc', 0)) or None,
+                    created_by=request.user,
                 )
-                garantie_sinistre_created.save()
-                garantie_sinistre = SinistreGarantie.objects.get(id=garantie_sinistre_created.pk)
 
-                historique_garantie_sinistre_created = HistoriqueSinistreGarantie(
-                    sinistre_garantie=garantie_sinistre,
+                historique_garantie_sinistre_created = HistoriqueSinistreGarantie.objects.create(
+                    sinistre_garantie=garantie_sinistre_created,
                     historique_sinistre=historique_sinistre,
                     mouvement=Mouvement.objects.get(code=mouvement_id),
                     date_mouvement=today,
-                    created_by_id=request.user.id,
+                    created_by=request.user,
                 )
-                historique_garantie_sinistre_created.save()
-                historique_garantie_sinistre = HistoriqueSinistreGarantie.objects.get(id=historique_garantie_sinistre_created.pk)
 
-                garantie_sinistre.historique_garantie_sinistre = historique_garantie_sinistre
-                garantie_sinistre.save()
+                # Associe directement l'objet sans refaire un .get()
+                garantie_sinistre_created.historique_sinistre_garantie = historique_garantie_sinistre_created
+                garantie_sinistre_created.save()
 
             response = {
                 'statut': 1,
@@ -1383,6 +1383,8 @@ class GEDDossierSinistreView(TemplateView):
         }
 
 
+@login_required
+@transaction.atomic
 def add_document_sinistre(request, sinistre_id):
     if request.method == "POST":
 
@@ -1395,6 +1397,7 @@ def add_document_sinistre(request, sinistre_id):
 
             document = form.save(commit=False)
             document.sinistre = sinistre
+            document.historique_sinistre_id = sinistre.historique_sinistre_id
             document.type_document = TypeDocument.objects.get(id=type_document_id)
             document.save()
 
@@ -1498,6 +1501,11 @@ def motifs_by_mouvement(request, mouvement_id):
 @login_required
 def mouvement_sinistre(request, sinistre_id, motif_id):
     sinistre = Sinistre.objects.filter(id=sinistre_id).first()
+    intervenants = request.session.get('intervenants', None)
+    # Vider les intervenants enregistrés en session
+    if 'intervenants' in request.session:
+        del request.session['intervenants']
+
     if sinistre:
         motif = Motif.objects.filter(id=motif_id).first()
         if not motif:
@@ -1534,6 +1542,10 @@ def mouvement_sinistre(request, sinistre_id, motif_id):
             if user.is_sinistre:
                 gestionnaire_sinistres.append(user)
 
+        poste_dommages = PosteDommage.objects.filter(statut=1)
+        garantie_sinistres = SinistreGarantie.objects.filter(sinistre_id=sinistre.id, date_cloture=None)
+        ventilation_provisions = VentilationProvision.objects.filter(sinistre_id=sinistre.id)
+
         context = {
             'sinistre': sinistre,
             'check_motif': motif,
@@ -1553,12 +1565,60 @@ def mouvement_sinistre(request, sinistre_id, motif_id):
             'mouvements': mouvements,
             'liste_motifs': liste_motifs,
             'gestionnaire_sinistres': gestionnaire_sinistres,
+            'poste_dommages': poste_dommages,
+            'garantie_sinistres': garantie_sinistres,
+            'ventilation_provisions': ventilation_provisions,
         }
 
         return render(request, 'mouvement_sinistre.html', context)
 
     return redirect('dossiersinistre')
 
+
+def recuperer_intervenant_sinistre(request):
+    sinistre_id = request.GET.get('sinistre_id')
+
+    try:
+
+        sinistre_intervenants = SinistreIntervenant.objects.filter(sinistre_id=sinistre_id)
+        intervenants_existant = list(request.session.get('intervenants', []))
+
+        for sinistre_interv in sinistre_intervenants:
+            nouveau_intervenant = {
+                'id': str(uuid4()),
+                'nom': sinistre_interv.intervenant.nom,
+                'prenoms': sinistre_interv.intervenant.prenoms,
+                'telephone': sinistre_interv.intervenant.telephone,
+                'fax': sinistre_interv.intervenant.fax,
+                'email': sinistre_interv.intervenant.email,
+                'portable': sinistre_interv.intervenant.portable,
+                'pays_id': sinistre_interv.intervenant.pays_id,
+                'type_intervenant_id': sinistre_interv.intervenant.type_intervenant.id,
+                'type_intervenant': sinistre_interv.intervenant.type_intervenant.libelle,
+                'boite_postale': sinistre_interv.intervenant.boite_postale,
+                'code_postal': sinistre_interv.intervenant.code_postal,
+                'ville': sinistre_interv.intervenant.ville,
+            }
+
+            intervenants_existant.append(nouveau_intervenant)
+            request.session['intervenants'] = intervenants_existant
+            request.session.modified = True
+
+        intervenants_existants = list(request.session.get('intervenants', []))
+
+        print('intervenants_existants : ', intervenants_existants)
+        print('sinistre_intervenants : ', sinistre_intervenants)
+
+        return JsonResponse({
+            'success': True,
+            'message': "Ajout d'intervenant effectué avec succès !",
+            'data': intervenants_existant
+        }, status=200)
+
+    except Police.DoesNotExist:
+        return JsonResponse({'error': 'Sinistre non trouvée.'}, status=404)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
 
 
 @login_required

@@ -440,6 +440,7 @@ class Vehicule(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
+
     @property
     def vehicule_dernier_historique(self):
         vehicule = HistoriqueAliment.objects.filter(vehicule_id=self.id).order_by('-created_at').first()

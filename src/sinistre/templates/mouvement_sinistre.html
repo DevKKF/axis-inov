@@ -167,14 +167,14 @@
                         </div>
                         <div class="col-md-6">
                            <div class="form-group row">
-                              <label class="col-sm-5 col-form-label">Recherche risque</label>
+                              <label class="col-sm-5 col-form-label">Recherche risque <span class="required">*</span></label>
                               <div class="col-sm-7">
                                  {% if sinistre.police.produit.code == '10001' or sinistre.police.produit.code == '10002' %}
-                                 <input type="text" class="form-control" value="Bonjour" readonly>
+                                    <input type="text" class="form-control" value="{{sinistre.aliment_police.vehicule.numero_immatriculation}}" readonly>
                                  {% elif sinistre.police.produit.code == '50001' or sinistre.police.produit.code == '50002' %}
-                                 <input type="text" class="form-control" value="Bonsoir" readonly>
+                                    <input type="text" class="form-control" value="{{ sinistre.aliment_police.marchandise.num_certificat }}" readonly>
                                  {% else %}
-                                 <input type="text" class="form-control" value="{{ aliment.autre_risque.libelle }}" readonly>
+                                    <input type="text" class="form-control" value="{{ aliment.autre_risque.libelle }}" readonly>
                                  {% endif %}
                               </div>
                            </div>
@@ -231,7 +231,8 @@
                            <div class="form-group row">
                               <label class="col-sm-5 col-form-label">Circonstance <span class="required">*</span></label>
                               <div class="col-sm-7">
-                                 <select class="form-control" name="circonstance_id" id="circonstance_id" required>
+                                 <input type="hidden" name="circonstance_id" id="second_circonstance_id" value="{{ sinistre.circonstance_id }}">
+                                 <select class="form-control" name="circonstance_id" id="circonstance_id" required disabled>
                                     <option value="">Choisir</option>
                                     {% for circonstance in circonstances %}
                                     <option value="{{ circonstance.id }}" {% if sinistre.circonstance_id == circonstance.id %} selected {% endif %} data-circonstance_id="{{ circonstance.id }}">{{ circonstance.libelle|default_if_none:"" }}</option>
@@ -321,7 +322,7 @@
                      <table id="table_garantie_sinistre" style="width: 100%;" class="table table-bordered table-striped dataTable_ dtr-inline">
                         <thead>
                            <tr>
-                              <th style="width: 5%;"></th>
+                              <th style="width: 8%;"></th>
                               <th>Libellé</th>
                               <th style="width: 9%;">Franchise</th>
                               <th style="width: 9%;">Capital</th>
@@ -381,15 +382,18 @@
       </div>
    </div>
 </div>
+<div class="col-md-12">
+   <div class="card">
+      <div class="card-footer">
+         <button type="submit" class="btn btn-info pull-right" id="btn_update_sinistre_gestionnaire">Enregistrer</button>
+         <a href="{% url 'mouvement_dossier_sinistre' sinistre.id %}" class="btn btn-danger pull-left">Annuler</a>
+      </div>
+   </div>
+</div>
+
 {% endblock %}
-{% include 'modal_sinistre_garantie.html' %}
-{% include 'modal_sinistre_intervenant.html'
 {% block extrajs %}%}
    <script>
-      $(document).ready(function () {
-          // Événement de clic sur l'onglet Intervenants
-
-      });
    </script>
 {% endblock %}
 </form>

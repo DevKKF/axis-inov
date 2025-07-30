@@ -32,11 +32,11 @@ urlpatterns = [
     path('ajout-garantie-sinistre/', views.save_session_garanties, name='save_session_garanties'),
     path('supprimer_garantie/<str:garantie_id>/', views.supprimer_garantie, name='supprimer_garantie'),
     path('get_garanties_by_circonstance_clean/', views.get_garanties_by_circonstance_clean, name='get_garanties_by_circonstance_clean'),
-    path('afficher-provision-sinistre/', views.afficher_provision_sinistre, name='afficher_provision_sinistre'),
     path('recuperer-garanties-sinistre/', views.recuperer_garanties_sinistre, name='recuperer_garanties_sinistre'),
 
     path('add_sinistre_gestionnaire', views.add_sinistre_gestionnaire, name='add_sinistre_gestionnaire'),
     path('recuperer_intervenant_sinistre/', views.recuperer_intervenant_sinistre, name='recuperer_intervenant_sinistre'),
+    path('recuperer_garantie_sinistre/', views.recuperer_garantie_sinistre, name='recuperer_garantie_sinistre'),
     path('update_sinistre_gestionnaire/<int:sinistre_id>', views.update_sinistre_gestionnaire, name='update_sinistre_gestionnaire'),
 
     path('liste-des-dossiers-sinsitres/', DossiersSinistresPhysiquesGestionnairesView.as_view(), name='liste_prestations'),

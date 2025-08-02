@@ -565,16 +565,17 @@ def get_garanties_by_circonstance(request):
     return JsonResponse({'garanties': list(garanties)})
 
 
-@csrf_exempt
 def save_session_garanties(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
-            garanties_existant = list(request.session.get('garanties', []))
+            garanties_existantes = request.session.get('garanties', [])
             today = timezone.now().date()
 
+            print(f'Les garanties existantes en session : {garanties_existantes}')
+
             # Extraire les IDs existants pour vérifier les doublons
-            existing_ids = {g['garantie_id'] for g in garanties_existant if g.get('garantie_id') is not None}
+            existing_ids = {g['garantie_id'] for g in garanties_existantes if g.get('garantie_id') is not None}
 
             duplicates_count = 0
             for g in data.get('garanties', []):
@@ -593,7 +594,7 @@ def save_session_garanties(request):
                 nouvelle_garantie = {
                     'id': str(uuid.uuid4()),
                     'sinistre_id': None,  # À remplir plus tard si nécessaire
-                    'garantie_id': garantie_id,
+                    'garantie_id': f'{garantie_id}',
                     'nom': g.get('nom'),
                     'franchise': g.get('franchise'),
                     'capital': g.get('capital'),
@@ -601,10 +602,10 @@ def save_session_garanties(request):
                     'date_ajout': today.isoformat(),
                     'action_mouvement': "Ajout",
                 }
-                garanties_existant.append(nouvelle_garantie)
+                garanties_existantes.append(nouvelle_garantie)
                 existing_ids.add(garantie_id)  # Ajout au set pour les prochains tours
 
-            request.session['garanties'] = garanties_existant
+            request.session['garanties'] = garanties_existantes
             request.session.modified = True
 
             message = "Ajout de garantie effectué avec succès !"
@@ -614,7 +615,7 @@ def save_session_garanties(request):
             return JsonResponse({
                 'success': True,
                 'message': message,
-                'data': garanties_existant
+                'data': garanties_existantes
             }, status=200)
 
         except json.JSONDecodeError:
@@ -1661,7 +1662,6 @@ def recuperer_intervenant_sinistre(request):
 
 def recuperer_garantie_sinistre(request):
     sinistre_id = request.GET.get('sinistre_id')
-
     try:
         sinistre_garanties = SinistreGarantie.objects.filter(sinistre_id=sinistre_id)
         garanties_existantes = list(request.session.get('garanties', []))
@@ -1671,7 +1671,7 @@ def recuperer_garantie_sinistre(request):
 
         for nouvelle_garan in sinistre_garanties:
             if nouvelle_garan.garantie_id and nouvelle_garan.garantie_id in garantie_existant:
-                continue  # Ignorer l'ajout si la garantie_id est déjà présente
+                continue
 
             nouvelle_garantie = {
                 'id': str(uuid.uuid4()),
@@ -1690,18 +1690,45 @@ def recuperer_garantie_sinistre(request):
             request.session['garanties'] = garanties_existantes
             request.session.modified = True
 
-        garanties_existants = list(request.session.get('garanties', []))
+        garanties_existantes = list(request.session.get('garanties', []))
+
+        print("Garanties existantes pour sinistre :", garanties_existantes)
 
         return JsonResponse({
             'success': True,
             'message': "Ajout de garantie effectué avec succès !",
-            'data': garanties_existants
+            'data': garanties_existantes
         }, status=200)
 
     except SinistreGarantie.DoesNotExist:
         return JsonResponse({'error': 'Sinistre non trouvé.'}, status=404)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
+
+
+@csrf_exempt
+def cloture_garantie(request, garantie_id):
+    if request.method == 'POST':
+        garanties = request.session.get("garanties", [])
+
+        # Parcourir les garanties et modifier action_mouvement pour celle correspondant à garantie_id
+        modified = False
+        for g in garanties:
+            if str(g["id"]) == str(garantie_id):
+                g["action_mouvement"] = "Cloture"
+                modified = True
+                break
+
+        if modified:
+            request.session["garanties"] = garanties
+            request.session.modified = True
+            request.session.save()
+
+            return JsonResponse({"success": True})
+        else:
+            return JsonResponse({"success": False, "message": "Garantie non trouvée."}, status=404)
+
+    return JsonResponse({"success": False, "message": "Méthode non autorisée."}, status=405)
 
 
 @login_required

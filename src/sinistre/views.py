@@ -572,8 +572,6 @@ def save_session_garanties(request):
             garanties_existantes = request.session.get('garanties', [])
             today = timezone.now().date()
 
-            print(f'Les garanties existantes en session : {garanties_existantes}')
-
             # Extraire les IDs existants pour vérifier les doublons
             existing_ids = {g['garantie_id'] for g in garanties_existantes if g.get('garantie_id') is not None}
 
@@ -1692,8 +1690,6 @@ def recuperer_garantie_sinistre(request):
 
         garanties_existantes = list(request.session.get('garanties', []))
 
-        print("Garanties existantes pour sinistre :", garanties_existantes)
-
         return JsonResponse({
             'success': True,
             'message': "Ajout de garantie effectué avec succès !",
@@ -1737,7 +1733,10 @@ def update_sinistre_gestionnaire(request, sinistre_id):
     sinistre = Sinistre.objects.filter(id=sinistre_id).first()
     if sinistre:
         if request.method == 'POST':
-            pass
+            garanties = request.session.get('garanties', None)
+            print(garanties)
+            print(request.POST)
+            print(request.POST.dict())
 
     return redirect('dossiersinistre')
 

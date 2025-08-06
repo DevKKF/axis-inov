@@ -8169,6 +8169,93 @@ $(document).ready(function () {
         });
     }
 
+
+    $(document).on('click', "#btn_update_sinistre_gestionnaire", function () {
+        let formulaire = $('#form_update_sinistre_gestionnaire');
+        let href = formulaire.attr('action');
+
+        $.validator.setDefaults({ ignore: [] });
+        let formData = new FormData();
+
+        if (formulaire.valid()) {
+            // Vérifier les dates avant de désactiver le bouton
+            if (!validateSinistreDates()) {
+                return;
+            }
+
+            // Construction des données du formulaire
+            let data_serialized = formulaire.serialize();
+            $.each(data_serialized.split('&'), function (index, elem) {
+                let vals = elem.split('=');
+                let key = vals[0];
+                let valeur = decodeURIComponent(vals[1].replace(/\+/g, '  '));
+                formData.append(key, valeur);
+            });
+
+            // Affichage du noty de confirmation
+            noty({
+                text: "Voulez-vous vraiment modifier ce sinistre ?",
+                type: 'warning',
+                dismissQueue: true,
+                layout: 'center',
+                theme: 'defaultTheme',
+                buttons: [
+                    {
+                        addClass: 'btn btn-primary', text: 'VALIDER', onClick: function ($noty) {
+                            $noty.close();
+                            envoyerFormulaireAjax(formulaire, href, formData);
+                        }
+                    },
+                    {
+                        addClass: 'btn btn-secondary', text: 'ANNULER', onClick: function ($noty) {
+                            $noty.close();
+                        }
+                    }
+                ]
+            });
+
+        } else {
+            $('label.error').css({ display: 'none', height: '0px' }).removeClass('error').text('');
+            let validator = formulaire.validate();
+            $.each(validator.errorMap, function (index, value) {
+                console.log('Id: ' + index + ' Message: ' + value);
+            });
+            notifyWarning('Veuillez renseigner correctement le forumulaire');
+        }
+    });
+
+    function envoyerFormulaireAjax(formulaire, href, formData) {
+        $.ajax({
+            type: 'post',
+            url: href,
+            data: formData,
+            processData: false,
+            contentType: false,
+            success: function (response) {
+                if (response.statut == 1) {
+                    resetFields('#' + formulaire.attr('id'));
+                    notifySuccess(response.message, function () {
+                        location.reload();
+                    });
+                } else {
+                    let errors = response.errors;
+                    let errors_list_to_display = '';
+                    for (field in errors) {
+                        errors_list_to_display += '- ' + ucfirst(field) + ' : ' + errors[field] + '<br/>';
+                    }
+                    $('#formulaire_update_page .alert .message').html(errors_list_to_display);
+                    $('#formulaire_update_page .alert ').fadeTo(2000, 500).slideUp(500, function () {
+                        $(this).slideUp(500);
+                    }).removeClass('alert-success').addClass('alert-warning');
+                }
+            },
+            error: function (request, status, error) {
+                notifyWarning("Erreur lors de l'enregistrement");
+            }
+        });
+    }
+
+
     //DEMANDE DE PROROGATION
     //Enregistrer une demande de prorogation
     $(document).on("click", "#btn_save_demande_prorogation", function (e) {
@@ -22307,6 +22394,8 @@ $(document).ready(function () {
 
     // Appel initial pour les valeurs au chargement de la page
     calculerTotauxParGarantie();
+
+
 
 });
 

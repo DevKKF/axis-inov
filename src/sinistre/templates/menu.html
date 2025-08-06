@@ -26,9 +26,6 @@
     <!-- Bootstrap and adminLTE -->
     <link rel="stylesheet" href="{% static "vendor/adminlte/css/adminlte.min.css" %}" id="adminlte-css">
 
-    <!-- Sinistre CSS -->
-    <link rel="stylesheet" href="{% static "admin_custom/css/sinistre.css" %}" id="adminlte-css">
-
     <!-- Bootswatch theme -->
     {% if jazzmin_ui.theme.name != 'default' %}
         <link rel="stylesheet" href="{{ jazzmin_ui.theme.src }}" id="jazzmin-theme" />
@@ -267,7 +264,7 @@
                 {% get_available_languages as LANGUAGES %}
                 {% get_language_info_list for LANGUAGES as languages %}
 
-                <li class="nav-item dropdown">
+                <!--li class="nav-item dropdown">
                     <a class="nav-link btn" data-toggle="dropdown" href="#" title="Choose language">
                         <i class="fas fa-globe" aria-hidden="true"></i>
                         <img src="{% static 'admin_custom/img/' %}{{ LANGUAGE_CODE }}.png" style="width:20px;">
@@ -283,7 +280,7 @@
                             {% endfor %}
                         </form>
                     </div>
-                </li>
+                </li-->
             {% endif %}
 
             <li class="nav-item dropdown">
@@ -438,9 +435,7 @@
                                 {% endif %}
                             {% endfor %}
                         {% endblock messages %}
-                        <div class="row">
-                            {% block content %} {% endblock %}
-                        </div>
+                        {% block content %} {% endblock %}
 
                     </section>
                 </div>
@@ -475,15 +470,15 @@
   <!-- /.control-sidebar -->
 </div>
 
-
-<div id="olea_std_dialog_box"></div>
-
 <!-- //DEBUT DES MODALS -->
 {% include 'modal_document.html' %}
 {% include 'modal_mouvement.html' %}
 {% include 'modal_sinistre_garantie.html' %}
 {% include 'modal_sinistre_intervenant.html' %}
 <!-- //FIN DES MODALS -->
+
+
+<div id="olea_std_dialog_box"></div>
 
 <!-- jQuery -->
 <script src="{% static "admin/js/vendor/jquery/jquery.js" %}"></script>

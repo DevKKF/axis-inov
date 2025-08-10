@@ -330,7 +330,6 @@ class ReglementSinistre(models.Model):
 
 class MouvementSinistre(models.Model):
     sinistre = models.ForeignKey(Sinistre, null=True, on_delete=models.RESTRICT)
-    police = models.ForeignKey(Police, null=True, on_delete=models.RESTRICT)
     mouvement = models.ForeignKey(Mouvement, null=True, on_delete=models.RESTRICT)
     motif = models.ForeignKey(Motif, null=True, on_delete=models.RESTRICT)
     historique_sinistre = models.ForeignKey(HistoriqueSinistre, null=True, on_delete=models.RESTRICT)

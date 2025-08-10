@@ -4499,13 +4499,8 @@ $(document).ready(function () {
                 // forcer validation de tous les champs même cachés
                 $.validator.setDefaults({ ignore: [] });
 
+                let formData = new FormData();
                 let files = $('#form_update_police #fichier_contrat')[0].files;
-                console.log('files : ', files);
-
-                if (!formulaire.valid()) {
-                    notifyWarning('Il y a des erreurs de saisie dans le formulaire');
-                    return;
-                }
 
                 // Confirmation Noty
                 noty({
@@ -4518,9 +4513,7 @@ $(document).ready(function () {
                             addClass: 'btn btn-primary', text: 'OUI', onClick: function ($noty) {
                                 $noty.close();
 
-                                // Sérialisation vers FormData
-                                const formData = new FormData();
-
+                                // This is the key change: only append the file if it exists.
                                 if (files.length > 0 && files[0]) {
                                     formData.append('fichier_contrat', files[0], files[0].name);
                                 }
@@ -8175,7 +8168,7 @@ $(document).ready(function () {
         let href = formulaire.attr('action');
 
         $.validator.setDefaults({ ignore: [] });
-        let formData = new FormData();
+        let formData = new FormData(formulaire[0]);
 
         if (formulaire.valid()) {
             // Vérifier les dates avant de désactiver le bouton
@@ -8203,7 +8196,7 @@ $(document).ready(function () {
                     {
                         addClass: 'btn btn-primary', text: 'VALIDER', onClick: function ($noty) {
                             $noty.close();
-                            envoyerFormulaireAjax(formulaire, href, formData);
+                            envoyerFormulaireModificationAjax(formulaire, href, formData);
                         }
                     },
                     {
@@ -8224,7 +8217,7 @@ $(document).ready(function () {
         }
     });
 
-    function envoyerFormulaireAjax(formulaire, href, formData) {
+    function envoyerFormulaireModificationAjax(formulaire, href, formData) {
         $.ajax({
             type: 'post',
             url: href,
@@ -8235,6 +8228,7 @@ $(document).ready(function () {
                 if (response.statut == 1) {
                     resetFields('#' + formulaire.attr('id'));
                     notifySuccess(response.message, function () {
+                        window.location.href = response.retour_mouvement_url;
                         location.reload();
                     });
                 } else {
@@ -8254,7 +8248,6 @@ $(document).ready(function () {
             }
         });
     }
-
 
     //DEMANDE DE PROROGATION
     //Enregistrer une demande de prorogation
@@ -8298,7 +8291,6 @@ $(document).ready(function () {
         }
 
     });
-
 
     //dialog approuver
     $(document).on("click", "#btn_open_modal_approuver_prorogation", function () {
@@ -8469,7 +8461,6 @@ $(document).ready(function () {
         //fin demande confirmation
 
     });
-
 
 
     //Enregistrer une demande de prorogation
@@ -8795,116 +8786,6 @@ $(document).ready(function () {
     );
     // Fin Btn submit marquer la seance comme terminée
 
-
-    //afficher le modal de modification dun sinistre medicament
-    $(document).on("click", ".btn_popup_modifier_medicament", function (e) {
-        e.preventDefault();
-
-        href = $(this).data('href');
-
-        $('#olea_std_dialog_box').load(href, function () {
-
-            $('#modal-details_sinistre').attr('data-backdrop', 'static').attr('data-keyboard', false);
-
-            $('#modal-details_sinistre').find('.modal-dialog').addClass('modal-xl').removeClass('modal-lg');
-
-            //
-            $('#modal-details_sinistre').modal();
-
-        });
-
-    });
-
-
-    //POUR ACTE
-    // Sélectionner/désélectionner | APPROUVER OU REJETER DES ACTES
-    $(document).on("click", ".libelle_btnSelectAll", function (e) {
-
-        $("#btnSelectAll").trigger("click");
-    });
-
-    $(document).on("click", "#btnSelectAll", function (e) {
-        var isChecked = $(this).prop('checked');
-        $('#card_liste_actes .select-row:not(:disabled)').prop('checked', isChecked);
-
-        let total_checked = $('#card_liste_actes .select-row:checked:not(:disabled)').length;
-        if (total_checked > 0) {
-            $('.btnActionDesActes').removeAttr('disabled');
-        } else {
-            $('.btnActionDesActes').attr('disabled', 'true');
-        }
-
-    });
-
-    // Hide the btnActionDesActes buttons initially
-
-    // Vérifier si toutes les lignes sont sélectionnées pour cocher le bouton "Sélectionner tout"
-    $(document).on("change", "#card_liste_actes .select-row", function (e) {
-        let cpt_selected = 0;
-
-        let total_not_disabled = $('#card_liste_actes .select-row:not(:disabled)').length;
-        let total_checked = $('#card_liste_actes .select-row:checked:not(:disabled)').length;
-
-        // Cacher ou afficher le groupe de boutons en fonction de la sélection
-        if (total_not_disabled === total_checked) {
-            $('#btnSelectAll').prop('checked', true);
-        } else {
-            $('#btnSelectAll').prop('checked', false);
-        }
-
-        if (total_checked > 0) {
-            $('.btnActionDesActes').removeAttr('disabled');
-        } else {
-            $('.btnActionDesActes').attr('disabled', 'disabled');
-        }
-    });
-
-
-    //POUR MEDICAMENT
-    // Sélectionner/désélectionner | APPROUVER OU REJETER DES ACTES
-    $(document).on("click", ".libelle_btnSelectAllMedicament", function (e) {
-
-        $("#btnSelectAllMedicament").trigger("click");
-    });
-
-    $(document).on("click", "#btnSelectAllMedicament", function (e) {
-        var isChecked = $(this).prop('checked');
-        $('#card_liste_medicaments .select-row:not(:disabled)').prop('checked', isChecked);
-
-        let total_checked = $('#card_liste_medicaments .select-row:checked:not(:disabled)').length;
-        if (total_checked > 0) {
-            $('.btnActionDesMedicaments').removeAttr('disabled');
-        } else {
-            $('.btnActionDesMedicaments').attr('disabled', 'true');
-        }
-
-    });
-
-    // Hide the btnActionDesMedicaments buttons initially
-
-    // Vérifier si toutes les lignes sont sélectionnées pour cocher le bouton "Sélectionner tout"
-    $(document).on("change", "#card_liste_medicaments .select-row", function (e) {
-        let cpt_selected = 0;
-
-        let total_not_disabled = $('#card_liste_medicaments .select-row:not(:disabled)').length;
-        let total_checked = $('#card_liste_medicaments .select-row:checked:not(:disabled)').length;
-
-        // Cacher ou afficher le groupe de boutons en fonction de la sélection
-        if (total_not_disabled === total_checked) {
-            $('#btnSelectAllMedicament').prop('checked', true);
-        } else {
-            $('#btnSelectAllMedicament').prop('checked', false);
-        }
-
-        if (total_checked > 0) {
-            $('.btnActionDesMedicaments').removeAttr('disabled');
-        } else {
-            $('.btnActionDesMedicaments').attr('disabled', 'disabled');
-        }
-    });
-
-    // Sélectionner/désélectionner | APPROUVER OU REJETER DES ACTES
-
     // button editer date de sortie dans details bulletin de sinistre
     $(document).on("click", "#btnEditDateSortie", function (e) {
         e.preventDefault();
@@ -9005,82 +8886,6 @@ $(document).ready(function () {
         new_date = date.format("DD/MM/YYYY");
         date_sortieField.html(new_date);
     });
-
-    $(document).on("click", "#save_nombre_accorde_hositalisation", function (e) {
-        var sinHiddenDateNumber = $("#sinHiddenDateNumber");
-        var date_entree = $("#date_entree").html();
-        var date_sortieField = $("#date_sortie_calcul");
-        var date_sortie = date_sortieField.html();
-        var nombre_jour = $('#nombre_jour_date').val();
-
-        var date = moment(date_entree, "DD/MM/YYYY");
-        date.add(nombre_jour, 'days');
-        new_date = date.format("DD/MM/YYYY");
-        date_sortieField.html(new_date);
-
-        if (nombre_jour < 1) {
-            notifyWarning("La date de sortie ne peut pas être 0.", function () {
-                // location.reload();
-            });
-            e.preventDefault();
-
-        } else {
-
-            let n = noty({
-                text: 'Mettre à jour la date de sortie ?',
-                type: 'warning',
-                dismissQueue: true,
-                layout: 'center',
-                theme: 'defaultTheme',
-                buttons: [
-                    {
-                        addClass: 'btn btn-danger', text: 'Annuler', onClick: function ($noty) {
-                            //confirmation refusée
-                            $noty.close();
-                        }
-                    },
-                    {
-                        addClass: 'btn btn-primary', text: 'Mettre à jour', onClick: function ($noty) {
-                            $noty.close();
-                            //confirmation obtenu
-
-                            // Make the AJAX request
-                            $.ajax({
-                                url: sinHiddenDateNumber.data("action_path"),
-                                method: 'POST', // or 'GET' depending on your needs
-                                data: {
-                                    date_sortie: date_sortieField.html(),
-                                    id_sinistre: sinHiddenDateNumber.data("id_sinistre"),
-                                },
-                                success: function (response) {
-                                    // Handle the success response
-                                    console.log(response);
-                                    if (response.statut == 1) {
-
-                                        notifySuccess(response.message, function () {
-                                            location.href = $.datapath + '/' + response.dossier_sinistre_id
-                                            location.reload();
-                                        });
-
-                                    } else {
-                                        notifyWarning("La date de sortie n'a pas été mise à jour");
-                                    }
-                                },
-                                error: function (error) {
-                                    // Handle the error
-                                    console.error(error);
-                                    notifyWarning("Erreur survenue lors la mise à jour.");
-                                }
-                            });
-                        }
-                    }
-                ]
-            }
-            );
-
-        }
-    });
-    // FIN Mettre à jour nombre de jour hospitalisation
 
     // button editer date de sortie dans details bulletin de sinistre
     $(document).on("click", "#btnEditNombreAccorde", function (e) {
@@ -9310,254 +9115,6 @@ $(document).ready(function () {
     });
     // FIN REJETER LA SELECTION D'UN ACTE
 
-
-    // APPROUVER LISTE DES ACTES SELECTIONNES
-    $(document).on("click", "#btnApprouverActesSelectionnes", function (e) {
-
-        let href_approuver_liste_actes = $(this).data('href');
-        var formulaire = $('#formulaire_liste_actes_selectionnes');
-
-        let btn_approuver_actes_selectionnes = $(this);
-        btn_approuver_actes_selectionnes.attr('disabled', true);
-
-        //demander confirmation
-        let n = noty({
-            text: 'Voulez-vous vraiment approuver tous les actes sélectionnés ?',
-            type: 'warning',
-            dismissQueue: true,
-            layout: 'center',
-            theme: 'defaultTheme',
-            buttons: [
-                {
-                    addClass: 'btn btn-primary', text: 'OUI', onClick: function ($noty) {
-                        $noty.close();
-
-                        //confirmation obtenu
-                        $.ajax({
-                            type: 'post',
-                            url: href_approuver_liste_actes,
-                            data: formulaire.serialize(),
-                            success: function (response) {
-
-                                console.log(response);
-                                if (response.statut == 1) {
-
-                                    notifySuccess(response.message, function () {
-                                        //location.reload();
-                                        location.href = response.redirectto;
-                                    });
-
-                                } else {
-                                    notifyWarning(response.message);
-                                    btn_approuver_actes_selectionnes.removeAttr('disabled');
-                                }
-
-                            },
-                            error: function (request, status, error) {
-
-                                notifyWarning("Erreur, les actes sélectionnés n'ont pas été approuvé");
-                                btn_approuver_actes_selectionnes.removeAttr('disabled');
-                            }
-
-                        });
-
-                    }
-                },
-                {
-                    addClass: 'btn btn-danger', text: 'Annuler', onClick: function ($noty) {
-                        //confirmation refusée
-                        $noty.close();
-                        btn_approuver_actes_selectionnes.removeAttr('disabled');
-                    }
-                }
-            ]
-        });
-        //fin demande confirmation
-
-
-    });
-    // FIN APPROUVER LISTE DES ACTES SELECTIONNES
-
-    // REJETER LISTE DES ACTES SELECTIONNES
-    $(document).on("click", "#btnRejeterActesSelectionnes", function (e) {
-
-        let reject_action_url = $(this).data('reject_action_url');
-
-        var formulaire = $('#formulaire_liste_actes_selectionnes');
-
-        let motif = $('#motif_rejet_modal').val();
-
-        if (formulaire.valid() && motif != "") {
-
-            let btn_rejeter_actes_selectionnes = $(this);
-            btn_rejeter_actes_selectionnes.attr('disabled', true);
-
-            //confirmation obtenu
-            $.ajax({
-                type: 'post',
-                url: reject_action_url + '?motif_rejet=' + motif,
-                data: formulaire.serialize(),
-                success: function (response) {
-
-                    console.log(response);
-                    if (response.statut == 1) {
-
-                        //désélectionner les lignes
-                        $('.select-row').prop('checked', false);
-                        //$('#btnSelectAll').prop('checked', false);
-                        $("#btnSelectAll").trigger("click");//pour déselectionner tout et grisé les boutons rejetertout et approuvertout
-
-                        notifySuccess(response.message, function () {
-                            //location.reload();
-                            location.href = response.redirectto;
-                        });
-
-                    } else {
-                        notifyWarning(response.message);
-                        btn_rejeter_actes_selectionnes.removeAttr('disabled');
-                    }
-
-                },
-                error: function (request, status, error) {
-
-                    notifyWarning("Erreur, les actes sélectionnés n'ont pas été rejété");
-                    btn_rejeter_actes_selectionnes.removeAttr('disabled');
-                }
-
-            });
-
-
-        } else {
-            notifyWarning("Veuillez renseigner correctement le formulaire");
-        }
-    });
-    // FIN REJJETER LISTE DES ACTES SELECTIONNES
-
-
-    // APPROUVER LISTE DES ACTES SELECTIONNES
-    $(document).on("click", "#btnApprouverMedicamentsSelectionnes", function (e) {
-
-        let href_approuver_liste_actes = $(this).data('href');
-        var formulaire = $('#formulaire_liste_medicaments_selectionnes');
-
-        let btn_approuver_medicaments_selectionnes = $(this);
-        btn_approuver_medicaments_selectionnes.attr('disabled', true);
-
-
-        //demander confirmation
-        let n = noty({
-            text: 'Voulez-vous vraiment approuver tous les médicaments sélectionnés ?',
-            type: 'warning',
-            dismissQueue: true,
-            layout: 'center',
-            theme: 'defaultTheme',
-            buttons: [
-                {
-                    addClass: 'btn btn-primary', text: 'OUI', onClick: function ($noty) {
-                        $noty.close();
-
-                        //confirmation obtenu
-                        $.ajax({
-                            type: 'post',
-                            url: href_approuver_liste_actes,
-                            data: formulaire.serialize(),
-                            success: function (response) {
-
-                                console.log(response);
-                                if (response.statut == 1) {
-
-                                    notifySuccess(response.message, function () {
-                                        //location.reload();
-                                        location.href = response.redirectto;
-                                    });
-
-                                } else {
-                                    notifyWarning(response.message);
-                                    btn_approuver_medicaments_selectionnes.removeAttr('disabled');
-                                }
-
-                            },
-                            error: function (request, status, error) {
-
-                                notifyWarning("Erreur, les actes sélectionnés n'ont pas été approuvé");
-                                btn_approuver_medicaments_selectionnes.removeAttr('disabled');
-                            }
-
-                        });
-
-                    }
-                },
-                {
-                    addClass: 'btn btn-danger', text: 'Annuler', onClick: function ($noty) {
-                        //confirmation refusée
-                        $noty.close();
-                        btn_approuver_medicaments_selectionnes.removeAttr('disabled');
-
-                    }
-                }
-            ]
-        });
-        //fin demande confirmation
-
-
-    });
-    // FIN APPROUVER LISTE DES ACTES SELECTIONNES
-
-    // REJETER LISTE DES MEDICAMENTS SELECTIONNES
-    $(document).on("click", "#btnRejeterMedicamentsSelectionnes", function (e) {
-
-        let reject_action_url = $(this).data('reject_action_url');
-
-        var formulaire = $('#formulaire_liste_medicaments_selectionnes');
-
-        let motif = $('#motif_rejet_modal_medicament').val();
-
-        if (formulaire.valid() && motif != "") {
-
-            let btn_rejeter_actes_selectionnes = $(this);
-            btn_rejeter_medicaments_selectionnes.attr('disabled', true);
-
-            //confirmation obtenu
-            $.ajax({
-                type: 'post',
-                url: reject_action_url + '?motif_rejet=' + motif,
-                data: formulaire.serialize(),
-                success: function (response) {
-
-                    console.log(response);
-                    if (response.statut == 1) {
-
-                        //désélectionner les lignes
-                        $('.select-row').prop('checked', false);
-                        //$('#btnSelectAll').prop('checked', false);
-                        $("#btnSelectAllMedicament").trigger("click");//pour déselectionner tout et grisé les boutons rejetertout et approuvertout
-
-                        notifySuccess(response.message, function () {
-                            //location.reload();
-                            location.href = response.redirectto;
-                        });
-
-                    } else {
-                        notifyWarning(response.message);
-                        btn_rejeter_medicaments_selectionnes.removeAttr('disabled');
-                    }
-
-                },
-                error: function (request, status, error) {
-
-                    notifyWarning("Erreur, les médicaments sélectionnés n'ont pas été rejété");
-                    btn_rejeter_medicaments_selectionnes.removeAttr('disabled');
-                }
-
-            });
-
-
-        } else {
-            notifyWarning("Veuillez renseigner correctement le formulaire");
-        }
-    });
-    // FIN REJJETER LISTE DES MEDICAMENTS SELECTIONNES
-
     //FIN GESTION SINISTRE
 
     //GESTION PRESTATAIRE
@@ -9619,170 +9176,8 @@ $(document).ready(function () {
 
     //FIN GESTION PRESTATAIRE
 
-    //GESTION DES RESEAUX DE SOINS
-
-    $(document).on("click", "#btn_save_reseau_soin", function (e) {
-        e.preventDefault();
-
-        let formulaire = $('#form_add_reseau_soin');
-
-        if (formulaire.valid()) {
-
-            //confirmation obtenu
-            $.ajax({
-                type: 'post',
-                url: formulaire.attr('action'),
-                data: formulaire.serialize(),
-                success: function (response) {
-
-                    if (response.statut == 1) {
-
-                        resetFields('#form_add_reseau_soin');
-
-                        notifySuccess(response.message, function () {
-                            location.reload();
-                        });
-
-                    } else {
-                        notifyWarning(response.message);
-                    }
-
-                },
-                error: function (request, status, error) {
-
-                    notifyWarning("Erreur lors de l'enregistrement");
-                }
-
-            });
-
-        } else {
-            notifyWarning("Veuillez renseigner correctement le formulaire");
-        }
-
-    });
-
-    //afficher le modal de modification
-    $(document).on("click", ".btn_modifier_reseau_soin", function (e) {
-        e.preventDefault();
-
-        href = $(this).data('href');
-
-        $('#olea_std_dialog_box').load(href, function () {
-
-            $('#modal_modifier_reseau_soin').attr('data-backdrop', 'static').attr('data-keyboard', false);
-
-            $('#modal_modifier_reseau_soin').find('.modal-dialog').addClass('modal-lg');
-
-            $('#modal_modifier_reseau_soin').modal();
-
-        });
-
-    });
-
-    //GESTION TARIFS
-
-    //afficher le détail d'un sinistre
-    $(document).on("click", ".btn-popup_details_tarif", function (e) {
-        e.preventDefault();
-
-        href = $(this).data('href');
-
-        $('#olea_std_dialog_box').load(href, function () {
-
-            $('#modal-details_tarif').attr('data-backdrop', 'static').attr('data-keyboard', false);
-
-            $('#modal-details_tarif').find('.modal-dialog').addClass('modal-xl').removeClass('modal-lg');
-
-            $('#modal-details_tarif').modal();
-
-        });
-
-    });
-
-    // IMPORT TARIFS
-
-    $(document).on("click", "#btn_importer_tarifs_bureau", function (e) {
-        e.preventDefault();
-
-        let btn_importer_tarifs_bureau = $(this);
-
-        let formulaire = $(this).closest('form');
-
-        if (formulaire.valid()) {
-
-            let formData = new FormData();
-            let files = $('#fichier_import_tarif')[0].files;
-            formData.append('fichier_import_tarif', files[0]);
-
-            //confirmation obtenu
-            $.ajax({
-                type: 'post',
-                url: formulaire.attr('action'),
-                data: formData,
-                processData: false,
-                contentType: false,
-                beforeSend: function () {
-                    $('#loading_gif').show();
-                    btn_importer_tarifs_bureau.hide();
-                },
-                success: function (response) {
-
-                    if (response.statut == 1) {
-
-                        resetFields('#form_importer_tarifs_bureau');
-
-                        $('#loading_gif').hide();
-                        btn_importer_tarifs_bureau.show();
-
-                        notifySuccess(response.message, function () {
-                            location.reload();
-                        });
-
-                    } else {
-
-                        $('#loading_gif').hide();
-                        btn_importer_tarifs_bureau.show();
-
-                        notifyWarning(response.message);
-                    }
-
-                },
-                error: function (request, status, error) {
-                    $('#loading_gif').hide();
-                    btn_importer_tarifs_bureau.show();
-                    notifyWarning("Erreur lors de l'enregistrement");
-                }
-
-            });
-
-        } else {
-            notifyWarning("Veuillez joindre un fichier svp");
-        }
-
-    });
-
-    //FIN GESTION TARIS
-
 
     //******************** GLOBALS ********************//
-
-
-    // Sélectionnez le modal
-    var modal = $('#AddMedication');
-    // Sélectionnez le bouton de fermeture du modal
-    var closeButton = $('.close');
-    var closeModalButton = $('.closeModal');
-
-    var combinedSelection = closeButton.add(closeModalButton);
-    // Ajoutez un gestionnaire d'événement pour fermer le modal
-    combinedSelection.click(function () {
-        // Exécutez votre script ici
-        console.log('Modal fermé');
-        location.reload();
-
-        // Fermez le modal
-        modal.hide();
-    });
 
     //suppression de sinistre medicament
     $(document).on("click", ".btn_supprimer_sinistre", function (e) {
@@ -9936,274 +9331,6 @@ $(document).ready(function () {
 
     //FIN DU TRAITEMENT DE REMBOURSEMENT
 
-
-
-    // DEBUT ACTE
-
-    $(document).on("click", ".btn-popup_details_acte", function (e) {
-        e.preventDefault();
-
-        href = $(this).data('href');
-
-        $('#olea_std_dialog_box').load(href, function () {
-
-            $('#modal-details_acte').attr('data-backdrop', 'static').attr('data-keyboard', false);
-
-            $('#modal-details_acte').find('.modal-dialog').addClass('modal-xl').removeClass('modal-lg');
-
-            $('#modal-details_acte').modal();
-
-        });
-
-    });
-
-
-    $(document).on("click", "#btn_save_acte", function (e) {
-        e.preventDefault();
-
-        let formulaire = $('#form_add_acte');
-
-        if (formulaire.valid()) {
-
-            //confirmation obtenu
-            $.ajax({
-                type: 'post',
-                url: formulaire.attr('action'),
-                data: formulaire.serialize(),
-                success: function (response) {
-
-                    if (response.statut == 1) {
-
-                        resetFields('#form_add_acte');
-
-                        notifySuccess(response.message, function () {
-                            location.reload();
-                        });
-
-                    } else {
-                        notifyWarning(response.message);
-                    }
-
-                },
-                error: function (request, status, error) {
-
-                    notifyWarning("Erreur lors de l'enregistrement");
-                }
-
-            });
-
-        } else {
-            console.log('form not valid -> notifyWarning should appear !');
-            notifyWarning("Veuillez renseigner correctement le formulaire");
-        }
-
-    });
-
-    //Modifier un acte modal
-    $(document).on("click", ".btn_modifier_acte", function () {
-
-        let model_name = $(this).attr('data-model_name');
-        let modal_title = $(this).attr('data-modal_title');
-        let href = $(this).attr('data-href');
-
-        //let dialog_box = $("<div>").addClass('olea_std_dialog_box').appendTo('body');
-
-        $('#olea_std_dialog_box').load(href, function () {
-
-            //appliquer le mask de saisie sur les champs montant
-            AppliquerMaskSaisie();
-
-            $('#modifier_modal_acte .dataTable:not(.customDataTable_)').DataTable({
-                "language": {
-                    "url": "//cdn.datatables.net/plug-ins/9dcbecd42ad/i18n/French.json"
-                },
-                order: [[0, 'desc']],
-                lengthMenu: [
-                    [10],
-                    [10],
-                ],
-                searching: false,
-                lengthChange: false,
-            });
-
-            let i = 0;
-            $('.dropzone_area').each(function (myElement) {
-                let zone_id = $(this).attr('id');
-                let href = $(this).attr('action');
-
-                let dropzone = new Dropzone("#" + zone_id, { url: href, dictDefaultMessage: "" });
-
-            });
-
-            $('#modifier_modal_acte').attr('data-backdrop', 'static').attr('data-keyboard', false);
-
-            $('#modifier_modal_acte').find('.modal-dialog').addClass('modal-xl').removeClass('modal-lg');
-
-            //
-            $('#modifier_modal_acte').modal();
-
-        });
-    });
-
-    $(document).on("click", "#btn_update_acte", function (e) {
-
-        e.preventDefault();
-        console.log("Modification du l'acte");
-        let formulaire = $('#form_update_acte');
-
-        if (formulaire.valid()) {
-
-            let n = noty({
-
-                text: 'Voulez-vous modifier cet acte ?',
-                type: 'warning',
-                dismissQueue: true,
-                layout: 'center',
-                theme: 'defaultTheme',
-                buttons: [
-
-                    {
-                        addClass: 'btn btn-primary', text: 'OUI', onClick: function ($noty) {
-
-                            $noty.close();
-
-                            $.ajax({
-                                type: 'post',
-                                url: formulaire.attr('action'),
-                                data: formulaire.serialize(),
-                                success: function (response) {
-
-                                    if (response.statut == 1) {
-
-                                        resetFields('#form_update_acte');
-
-                                        notifySuccess(response.message, function () {
-                                            location.reload();
-                                        });
-
-                                    } else {
-                                        notifyWarning(response.message);
-                                    }
-
-                                },
-                                error: function (request, status, error) {
-
-                                    notifyWarning("Erreur lors de l'enregistrement");
-                                }
-
-                            });
-
-                        }
-
-                    },
-
-                ]
-
-            });
-
-        } else {
-
-            notifyWarning("Veuillez renseigner correctement le formulaire");
-
-        }
-
-    });
-
-    // ADD NEW ACTE_TARIF
-    $(document).on("click", "#btn_save_acte_tarif", function (e) {
-
-        e.preventDefault();
-
-        let formulaire = $('#form_add_acte_tarif');
-
-        if (formulaire.valid()) {
-
-            $.ajax({
-                type: 'post',
-                url: formulaire.attr('action'),
-                data: formulaire.serialize(),
-                success: function (response) {
-
-                    if (response.statut == 1) {
-
-                        resetFields('#form_add_acte_tarif');
-
-                        notifySuccess(response.message, function () {
-                            location.reload();
-                        });
-
-                    } else {
-                        notifyWarning(response.message);
-                    }
-
-                },
-                error: function (request, status, error) {
-
-                    notifyWarning("Erreur lors de l'enregistrement");
-                }
-
-            });
-
-        } else {
-            notifyWarning("Veuillez renseigner correctement le formulaire");
-        }
-
-    });
-
-    // DESACTIVER ACTE_TARIF
-
-    $(document).on("click", ".btn_desactiver_acte_tarif", function () {
-
-        let ce_bouton = $(this);
-        let href = $(this).data('href');
-
-        let n = noty({
-            text: 'Voulez-vous vraiment désactiver ce tarif ?',
-            type: 'warning',
-            dismissQueue: true,
-            layout: 'center',
-            theme: 'defaultTheme',
-            buttons: [
-                {
-                    addClass: 'btn btn-primary', text: 'OUI', onClick: function ($noty) {
-                        $noty.close();
-
-                        $.ajax({
-                            type: 'post',
-                            url: href,
-                            success: function (response) {
-
-                                if (response.statut == 1) {
-
-                                    notifySuccess(response.message, function () {
-                                        location.reload();
-                                    });
-                                } else {
-                                    notifyWarning(response.message);
-                                }
-
-                            },
-                            error: function (request, status, error) {
-
-                                notifyWarning("Erreur lors de désactivaton du tarif");
-                            }
-
-                        });
-
-                    }
-                },
-                {
-                    addClass: 'btn btn-danger', text: 'Annuler', onClick: function ($noty) {
-                        $noty.close();
-                    }
-                }
-            ]
-        });
-
-    });
-
-    // FIN ACTE
-
     $(document).on("keypress", "input[type=number]", function (evt) {
         var charCode = (evt.which) ? evt.which : evt.keyCode
         if (charCode > 31 && (charCode < 48 || charCode > 57))
@@ -10331,27 +9458,6 @@ $(document).ready(function () {
                 */
             }
         }).mask('.money_field_negative');
-
-        /*
-        new Cleave('.money_field', {
-            numeral: true,
-            numeralThousandsGroupStyle: 'thousand'
-            //delimiter: ' ',
-        });
-        alert("cleve init");
-
-
-        if ($('.money_field').length > 0) {
-
-           AutoNumeric.multiple('.money_field', {
-              currencySymbol: '',
-              digitGroupSeparator: ' ',
-              decimalCharacter: '.',
-              decimalPlaces: 0
-            });
-
-        }
-        */
 
     }
     AppliquerMaskSaisie();
@@ -22051,7 +21157,7 @@ $(document).ready(function () {
                         }
 
                         tbody.append(`
-                            <tr data-id="${row.id}">
+                            <tr data-id="${row.id}" data-garantie_id="${row.garantie_id}">
                                 <td>
                                     ${clotureButton}
                                     ${deleteButton}
@@ -22204,7 +21310,7 @@ $(document).ready(function () {
                 // Clôture de garantie sinistre
                 $(document).on('click', '.btn-cloture-garantie', function () {
                     const row = $(this).closest('tr');
-                    const id = row.data('id');
+                    const garantie_id = row.data('garantie_id');
 
                     let n = noty({
                         text: 'Voulez-vous vraiment clôturer cette garantie ?',
@@ -22221,7 +21327,7 @@ $(document).ready(function () {
 
                                     // Confirmation obtenue, envoyer la requête AJAX
                                     $.ajax({
-                                        url: `/sinistre/cloture_garantie/${id}/`,
+                                        url: `/sinistre/cloture_garantie/${garantie_id}/`,
                                         type: 'POST',
                                         headers: { 'X-CSRFToken': getCookie('csrftoken') },
                                         success: function (response) {

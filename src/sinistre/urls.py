@@ -43,7 +43,6 @@ urlpatterns = [
     path('liste-des-dossiers-sinsitres/', DossiersSinistresPhysiquesGestionnairesView.as_view(), name='liste_prestations'),
     path('dossiersinistre_physique_gestionnaire_datatable/', views.dossiersinistre_physique_gestionnaire_datatable, name='dossiersinistre_physique_gestionnaire_datatable'),
     path('annuler_sinistre/', AnnulerSinistreGestionnairesView.as_view(), name='annuler_sinistre'),
-
 ]
 
 

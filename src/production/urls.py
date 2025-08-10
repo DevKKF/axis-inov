@@ -110,37 +110,7 @@ urlpatterns = [
 
     path('police/<int:police_id>/modifier', views.modifier_police, name='modifier_police'),
     path('police/<int:police_id>/sinistres', PoliceSinistresView.as_view(), name='police_sinistres'),
-    path('police/<int:police_id>/save-sinistre', views.police_save_sinistre, name='police_save_sinistre'),
     path('police/<int:police_id>/sinistres_datatable', views.police_sinistres_datatable, name='police_sinistres_datatable'),
-    path('police/information-vehicule/<int:vehicule_id>', views.information_vehicule, name='information_vehicule'),
-    path('police/information-marchandise/<int:marchandise_id>', views.information_marchandise, name='information_marchandise'),
-    path('polices/<int:police_id>/vehicules/search', views.search_vehicules, name='search_vehicules'),
-    path('polices/<int:police_id>/vehicules/search', views.search_vehicules, name='search_vehicules'),
-    path('polices/vehicule/<int:vehicule_id>', views.vehicule_detail, name='vehicule_detail'),
-
-    path('add_intervenant_session/', views.add_intervenant_session, name='add_intervenant_session'),
-    path('vider_intervenants_garanties/', views.vider_intervenants_garanties_session, name='vider_intervenants_garanties_session'),
-    path('get_intervenants_session/', views.get_intervenants_session, name='get_intervenants_session'),
-    path('get_intervenants_session_sinistre/', views.get_intervenants_session_sinistre, name='get_intervenants_session_sinistre'),
-    path('delete_intervenant_session/', views.delete_intervenant_session, name='delete_intervenant_session'),
-    path('delete_intervenant_session_sinistre/', views.delete_intervenant_session_sinistre, name='delete_intervenant_session_sinistre'),
-
-    path('add_intervenant_session_sinistre/', views.add_intervenant_session_sinistre, name='add_intervenant_session_sinistre'),
-
-    path('charger_garanties_circonstance_session_sinistre/', views.charger_garanties_circonstance_session_sinistre, name='charger_garanties_circonstance_session_sinistre'),
-    path('recuperer_garantie_circonstance/', views.recuperer_garantie_circonstance, name='recuperer_garantie_circonstance'),
-    path('recuperer_garantie_circonstance_sinistre/', views.recuperer_garantie_circonstance_sinistre, name='recuperer_garantie_circonstance_sinistre'),
-    path('vider_garanties_sinistre/', views.vider_garanties_sinistre, name='vider_garanties_sinistre'),
-
-    path("enregistrer_garanties_sinistre/", views.enregistrer_garanties_sinistre, name="enregistrer_garanties_sinistre"),
-    path("enregistrer_garanties_circonstance_sinistre/", views.enregistrer_garanties_circonstance_sinistre, name="enregistrer_garanties_circonstance_sinistre"),
-    path("recuperer_garanties_sinistre/", views.recuperer_garanties_sinistre, name="recuperer_garanties_sinistre"),
-    path('afficher_provision_sinistre/', views.afficher_provision_sinistre, name='afficher_provision_sinistre'),
-    path("recuperer_garanties_circonstance_sinistre/", views.recuperer_garanties_circonstance_sinistre, name="recuperer_garanties_circonstance_sinistre"),
-    path('afficher_provision_circonstance_sinistre/', views.afficher_provision_circonstance_sinistre, name='afficher_provision_circonstance_sinistre'),
-    path('enregistrer_montant_garantie_sinistre/', views.enregistrer_montant_garantie_sinistre, name='enregistrer_montant_garantie_sinistre'),
-    path('enregistrer_montant_garantie_circonstance_sinistre/', views.enregistrer_montant_garantie_circonstance_sinistre, name='enregistrer_montant_garantie_circonstance_sinistre'),
-    path('delete_garantie_session/', views.delete_garantie_session, name='delete_garantie_session'),
 
     path('police/<int:police_id>/courriers', CourrierView.as_view(), name='police_courrier'),
     path('police/<int:police_id>/courrier/<int:courrier_id>/pdf/', views.generer_courrier, name='generer_pdf'),
@@ -150,11 +120,7 @@ urlpatterns = [
 
     path('sinistre/<int:sinistre_id>/details', views.DetailsSinistreView.as_view(), name='sinistre.details'),
     path('sinistre/<int:sinistre_id>/ged', SinistreGedView.as_view(), name='sinistre_ged'),
-    path('sinistre/<int:sinistre_id>/add_document', views.sinistre_add_document, name='sinistre_add_document'),
     path('sinistre/<int:sinistre_id>/mouvements', SinistreAvenantsView.as_view(), name='sinistre_avenants'),
-    path('sinistre/<int:sinistre_id>/add_sinistre_avenant', views.add_sinistre_avenant, name='add_sinistre_avenant'),
-    path('sinistre/<int:sinistre_id>/modifier', views.modifier_sinistre, name='modifier_sinistre'),
-
 
     path('download/<str:filename>', views.download, name='download'),
 

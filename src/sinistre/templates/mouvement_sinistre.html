@@ -390,50 +390,63 @@
                               <thead>
                                  <tr>
                                     <th>Garantie</th>
-                                    <th>Règlements</th>
-                                    <th>Provision</th>
+                                    <th>Mont. provision</th>
+                                    <th>Mont. recours</th>
+                                    <th>Règlements encaissés</th>
                                     <th>Recours encaissés</th>
-                                    <th>Coût</th>
+                                    <th width="15%">Coût total</th>
                                  </tr>
                               </thead>
                               <tbody>
-                                 <tr>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-                                    <td></td>
-                                 </tr>
+                                 {% for garantie_sin in garantie_sinistres %}
+                                    <tr>
+                                       <td>{{ garantie_sin.garantie.nom }}</td>
+                                       <td>{{ garantie_sin.montant_provision|money_field }}</td>
+                                       <td>{{ garantie_sin.montant_recours|money_field }}</td>
+                                       <td>{{ garantie_sin.montant_provision_regle|money_field }}</td>
+                                       <td>{{ garantie_sin.montant_recours_regle|money_field }}</td>
+                                       <td>{{ garantie_sin.montant_garantie|money_field }}</td>
+                                    </tr>
+                                 {% endfor %}
                               </tbody>
                            </table>
                         </div>
-                         <div class="col-md-4 col-sm-6 col-12">
+                        <br>
+                         <div class="col-md-3 col-sm-6 col-12">
                            <div class="info-box shadow">
                              <span class="info-box-icon bg-success"><i class="fa fa-money"></i></span>
-
                              <div class="info-box-content">
                                <span class="info-box-text f-bold green">COÛT TOTAL DU SINISTRE</span>
-                               <span class="info-box-number">0 {{ sinistre.police.devive.code|default:"" }}</span>
+                               <span class="info-box-number">{{ total_montant_garantie|money_field }} {{ sinistre.police.devise.code|default:"" }}</span>
                              </div>
                            </div>
                          </div>
-                         <div class="col-md-4 col-sm-6 col-12">
+                         <div class="col-md-3 col-sm-6 col-12">
                            <div class="info-box shadow-lg">
                              <span class="info-box-icon bg-secondary"><i class="fas fa-piggy-bank"></i></span>
 
                              <div class="info-box-content">
                                <span class="info-box-text f-bold">PROVISION TOTALES</span>
-                               <span class="info-box-number">0 {{ sinistre.police.devive.code|default:"" }}</span>
+                               <span class="info-box-number">{{ total_provisions|money_field }} {{ sinistre.police.devive.code|default:"" }}</span>
                              </div>
                            </div>
                          </div>
-                         <div class="col-md-4 col-sm-6 col-12">
+                         <div class="col-md-3 col-sm-6 col-12">
                            <div class="info-box shadow-lg">
-                             <span class="info-box-icon bg-warning"><i class="fas fa-hand-holding-usd"></i></span>
+                             <span class="info-box-icon bg-info"><i class="fas fa-money"></i></span>
 
                              <div class="info-box-content">
+                               <span class="info-box-text f-bold">REGLEMENTS ENCAISSES</span>
+                               <span class="info-box-number">{{ total_provisions_regle|money_field }} {{ sinistre.police.devive.code|default:"" }}</span>
+                             </div>
+                           </div>
+                         </div>
+                         <div class="col-md-3 col-sm-6 col-12">
+                           <div class="info-box shadow-lg">
+                             <span class="info-box-icon bg-warning"><i class="fas fa-hand-holding-usd"></i></span>
+                             <div class="info-box-content">
                                <span class="info-box-text f-bold">RECOURS ENCAISSES</span>
-                               <span class="info-box-number">0 {{ sinistre.police.devive.code|default:"" }}</span>
+                               <span class="info-box-number">{{ total_montant_recours_regle|money_field }} {{ sinistre.police.devive.code|default:"" }}</span>
                              </div>
                            </div>
                          </div>

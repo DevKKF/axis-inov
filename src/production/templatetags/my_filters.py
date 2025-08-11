@@ -9,10 +9,10 @@ from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 import math
 from django.utils.text import slugify
-
 from django import template
 from django.contrib.humanize.templatetags.humanize import intcomma
 from num2words import num2words
+import unicodedata
 
 register = template.Library()
 
@@ -258,3 +258,25 @@ def get_item(dictionary, key):
         return dictionary.get(key, "")
     return ""
 
+
+def normalize_text(s):
+    if s is None:
+        return ''
+    s = str(s)
+    # enlever les accents et normaliser en minuscule et trim
+    return ''.join(ch for ch in unicodedata.normalize('NFD', s)
+                   if unicodedata.category(ch) != 'Mn').strip().lower()
+
+
+@register.filter
+def get_item(d, key):
+    if isinstance(d, dict):
+        return {k2: v for (k1, k2), v in d.items() if k1 == key}
+    return None
+
+
+@register.filter
+def get_item2(d, key):
+    if isinstance(d, dict):
+        return d.get(key)
+    return None

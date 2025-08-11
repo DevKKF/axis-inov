@@ -51,7 +51,7 @@ class Sinistre(models.Model):
     client = models.ForeignKey(Client, null=True, related_name='sinistres', on_delete=models.RESTRICT)
     police = models.ForeignKey(Police, null=True, blank=True, on_delete=models.RESTRICT, related_name='sinistres')
     historique_police = models.ForeignKey(HistoriquePolice, null=True, blank=True, on_delete=models.RESTRICT, related_name='sinistres')
-    historique_aliment = models.ForeignKey(HistoriqueAliment, null=True, blank=True, on_delete=models.RESTRICT, related_name='sinistres')
+    aliment_police = models.ForeignKey(AlimentPolice, null=True, blank=True, on_delete=models.RESTRICT, related_name='sinistres')
     historique_sinistre = models.ForeignKey('HistoriqueSinistre', null=True, blank=True, on_delete=models.RESTRICT, related_name='sinistres')
     taux_responsabilite = models.ForeignKey(TauxResponsabilite, null=True, on_delete=models.RESTRICT, related_name='sinistres')
     type_sinistre = models.ForeignKey(TypeSinistre, null=True, on_delete=models.RESTRICT, related_name='sinistres')
@@ -122,7 +122,7 @@ class HistoriqueSinistre(models.Model):
     police = models.ForeignKey(Police, null=True, blank=True, on_delete=models.RESTRICT, related_name='historiques_sinistres')
     historique_police = models.ForeignKey(HistoriquePolice, null=True, blank=True, on_delete=models.RESTRICT, related_name='historiques_sinistres')
     sinistre = models.ForeignKey(Sinistre, null=True, blank=True, on_delete=models.RESTRICT, related_name='historiques')
-    historique_aliment = models.ForeignKey(HistoriqueAliment, null=True, blank=True, on_delete=models.RESTRICT, related_name='historiques_sinistres')
+    aliment_police = models.ForeignKey(AlimentPolice, null=True, blank=True, on_delete=models.RESTRICT, related_name='historiques_sinistres')
     taux_responsabilite = models.ForeignKey(TauxResponsabilite,null=True,  on_delete=models.RESTRICT, related_name='historiques_sinistres')
     type_sinistre = models.ForeignKey(TypeSinistre,null=True,  on_delete=models.RESTRICT, related_name='historiques_sinistres')
     circonstance = models.ForeignKey(Circonstance, null=True, blank=True, on_delete=models.RESTRICT, related_name='historiques_sinistres')
@@ -330,7 +330,6 @@ class ReglementSinistre(models.Model):
 
 class MouvementSinistre(models.Model):
     sinistre = models.ForeignKey(Sinistre, null=True, on_delete=models.RESTRICT)
-    police = models.ForeignKey(Police, null=True, on_delete=models.RESTRICT)
     mouvement = models.ForeignKey(Mouvement, null=True, on_delete=models.RESTRICT)
     motif = models.ForeignKey(Motif, null=True, on_delete=models.RESTRICT)
     historique_sinistre = models.ForeignKey(HistoriqueSinistre, null=True, on_delete=models.RESTRICT)

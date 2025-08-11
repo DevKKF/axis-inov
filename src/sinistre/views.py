@@ -5,6 +5,7 @@ from ast import literal_eval
 from collections import defaultdict
 from copy import deepcopy
 from datetime import datetime as datetimeJsdecode, timedelta
+from django.utils.timezone import now
 from decimal import Decimal
 from functools import reduce
 from pprint import pprint
@@ -31,6 +32,7 @@ from django.db.models.functions import Concat
 from django.http import JsonResponse, HttpResponse
 from django.shortcuts import get_object_or_404, render, redirect
 from django.template.loader import get_template
+from django.db import IntegrityError
 #
 from django.urls import reverse
 from django.utils import timezone
@@ -41,8 +43,10 @@ from django.views.decorators.cache import never_cache
 from django.views.generic import TemplateView, ListView
 from num2words import num2words
 from xhtml2pdf import pisa
+from django.core.exceptions import ObjectDoesNotExist
 import re
 from uuid import uuid4
+import uuid
 
 from configurations.helper_config import execute_query, create_query_background_task
 from configurations.models import Compagnie, User, Rubrique, \
@@ -53,7 +57,7 @@ from production.models import Statut, TypeDocument, Client
 from production.models import Police, HistoriquePolice, HistoriqueAliment, PoliceAssureur, Mouvement, Motif, AlimentPolice, Document, AutreRisque, Marchandise, \
     Vehicule
 from production.forms import DocumentForm
-from production.templatetags.my_filters import money_field, supprimer_espaces
+from production.templatetags.my_filters import money_field, supprimer_espaces, normalize_text
 from shared.enum import StatutPolice
 from shared.enum import StatutSinistre, StatutSinistreBordereau, StatutSinistrePrestation, StatutValidite, \
     StatutRemboursement, StatutRemboursementSinistre, DesignationRemboursementSinistre, SatutBordereauDossierSinistres, \
@@ -69,7 +73,7 @@ from sinistre.helper_sinistre import exportation_en_excel_avec_style, \
     requete_analyse_prime_compta_apporteur, get_retenue_selon_contexte
 # Create your views here.
 from sinistre.models import PaiementComptable, Sinistre, HistoriqueSinistre, Intervenant, SinistreIntervenant, SinistreGarantie, HistoriqueSinistreGarantie, DossierSinistre, MouvementSinistre, \
-    RemboursementSinistre, BordereauOrdonnancement, HistoriqueOrdonnancementSinistre
+    RemboursementSinistre, BordereauOrdonnancement, HistoriqueOrdonnancementSinistre, VentilationProvision
 
 from sinistre.forms import SinistreForm
 
@@ -461,6 +465,8 @@ def recuperer_intervenant_police(request):
         request.session['intervenants'] = intervenants_existant
         request.session.modified = True
 
+        print("🔁 Lancement du chargement des intervenants")
+
         return JsonResponse({
             'success': True,
             'message': "Ajout d'intervenant effectué avec succès !",
@@ -561,42 +567,66 @@ def get_garanties_by_circonstance(request):
     return JsonResponse({'garanties': list(garanties)})
 
 
+@login_required
+@transaction.atomic
 def save_session_garanties(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
-            garanties_existant = list(request.session.get('garanties', []))
+            garanties_existantes = request.session.get('garanties', [])
             today = timezone.now().date()
 
-            # Extraire les IDs existants pour vérifier les doublons
-            existing_ids = {g['garantie_id'] for g in garanties_existant}
+            print('garanties_existantes', garanties_existantes)
 
+            # Extraire les IDs existants pour vérifier les doublons
+            existing_ids = {g['garantie_id'] for g in garanties_existantes if g.get('garantie_id') is not None}
+
+            duplicates_count = 0
             for g in data.get('garanties', []):
                 garantie_id = g.get('id')
+                if not garantie_id:  # Ignorer si garantie_id est None ou vide
+                    continue
+
                 if garantie_id in existing_ids:
-                    continue  # ✅ Ignore les doublons
+                    duplicates_count += 1
+                    continue  # Ignorer les doublons
+
+                # Vérifier la présence des champs obligatoires
+                if not all(k in g for k in ['nom', 'franchise', 'capital']):
+                    continue  # Ignorer si les champs essentiels sont manquants
 
                 nouvelle_garantie = {
-                    'id': str(uuid4()),
-                    'garantie_id': garantie_id,
+                    'id': str(uuid.uuid4()),
+                    'sinistre_id': None,  # À remplir plus tard si nécessaire
+                    'garantie_id': f'{garantie_id}',
                     'nom': g.get('nom'),
                     'franchise': g.get('franchise'),
                     'capital': g.get('capital'),
                     'mouvement': "Ouverture Sinistre",
                     'date_ajout': today.isoformat(),
+                    'action_mouvement': "Ajout",
                 }
-                garanties_existant.append(nouvelle_garantie)
-                existing_ids.add(garantie_id)  # ✅ Ajout au set pour les prochains tours
+                garanties_existantes.append(nouvelle_garantie)
+                existing_ids.add(garantie_id)  # Ajout au set pour les prochains tours
 
-            request.session['garanties'] = garanties_existant
+            request.session['garanties'] = garanties_existantes
             request.session.modified = True
+
+            message = "Ajout de garantie effectué avec succès !"
+            if duplicates_count > 0:
+                message += f" {duplicates_count} doublon(s) ignoré(s)."
 
             return JsonResponse({
                 'success': True,
-                'message': "Ajout de garantie effectué avec succès !",
-                'data': garanties_existant
+                'message': message,
+                'data': garanties_existantes
             }, status=200)
 
+        except json.JSONDecodeError:
+            return JsonResponse({
+                'success': False,
+                'message': 'Erreur : Données JSON invalides.'
+            }, status=400)
         except Exception as e:
             return JsonResponse({
                 'success': False,
@@ -662,27 +692,14 @@ def recuperer_garanties_sinistre(request):
             "date_ajout": garantie.get('date_ajout', ''),
         })
 
+    print("Garanties récupérées :", formatted_garanties)
+
     return JsonResponse({"garanties": formatted_garanties})
 
 
-def afficher_provision_sinistre(request):
-    postedommages = PosteDommage.objects.filter(statut=1)
-    garanties = request.session.get("garanties", [])
-
-    postedommages_list = [{
-        "id": poste.id,
-        "libelle": poste.libelle,
-    } for poste in postedommages]
-
-    context = {
-        'postedommages': postedommages_list,
-        'garanties': garanties,
-    }
-
-    return render(request, 'sinistre_provision_table.html', context)
-
-
 #Save Sinistre by Gestionnaire
+@login_required
+@transaction.atomic
 def add_sinistre_gestionnaire(request):
 
     if request.method == 'POST':
@@ -727,21 +744,21 @@ def add_sinistre_gestionnaire(request):
                 tva_recuperee = None
 
             # Récupérer l'historique aliment
-            historique_aliment = ''
+            aliment_police = ''
             if autre_risque_id:
-                autre_risque = AutreRisque.objects.filter(id=autre_risque_id).first()
-                historique_aliment = autre_risque.autre_risque_dernier_historique.id if autre_risque.autre_risque_dernier_historique else None
+                autre_risque = AlimentPolice.objects.filter(autre_risque_id=autre_risque_id).first()
+                aliment_police = autre_risque.id if autre_risque else None
             if marchandise_id:
-                marchandise = Marchandise.objects.filter(id=marchandise_id).first()
-                historique_aliment = marchandise.marchandise_dernier_historique.id if marchandise.marchandise_dernier_historique else None
+                marchandise = AlimentPolice.objects.filter(marchandise_id=marchandise_id).first()
+                aliment_police = marchandise.id if marchandise else None
             if vehicule_id:
-                vehicule = Vehicule.objects.filter(id=vehicule_id).first()
-                historique_aliment = vehicule.vehicule_dernier_historique.id if vehicule.vehicule_dernier_historique else None
+                vehicule = AlimentPolice.objects.filter(vehicule_id=vehicule_id).first()
+                aliment_police = vehicule.id if vehicule else None
 
             sinistre_created = Sinistre(
                 client_id=client.id,
                 police_id=police.id,
-                historique_aliment_id=historique_aliment if historique_aliment else None,
+                aliment_police_id=aliment_police if aliment_police else None,
                 historique_police_id=police.police_dernier_historique.id if police else None,
                 compagnie_id=compagnie_id,
                 type_sinistre_id=type_sinistre_id,
@@ -767,8 +784,7 @@ def add_sinistre_gestionnaire(request):
             sinistre_created.save()
 
             code_bureau = request.user.bureau.code
-            sinistre_created.numero_provisoire = str(code_bureau) + 'S' + str(Date.today().year)[-2:] + str(
-                sinistre_created.pk).zfill(6)
+            sinistre_created.numero_provisoire = str(code_bureau) + 'S' + str(Date.today().year)[-2:] + str(sinistre_created.pk).zfill(6)
             if sinistre_created.numero == "":
                 sinistre_created.numero = sinistre_created.numero_provisoire
 
@@ -778,7 +794,7 @@ def add_sinistre_gestionnaire(request):
 
             historique_sinistre_created = HistoriqueSinistre(
                 sinistre=sinistre,
-                historique_aliment_id=historique_aliment if historique_aliment else None,
+                aliment_police_id=aliment_police if aliment_police else None,
                 client_id=sinistre.client_id,
                 police_id=sinistre.police_id,
                 historique_police_id=sinistre.police.police_dernier_historique.id if sinistre.police else None,
@@ -817,7 +833,6 @@ def add_sinistre_gestionnaire(request):
             # Créer une ligne de mouvement_sinistre avec le mouvement ouverture sinistre et le motif ouverture sinistre
             ms = MouvementSinistre()
             ms.sinistre = sinistre
-            ms.police = police
             ms.mouvement = Mouvement.objects.get(code=mouvement_id)
             ms.motif = Motif.objects.get(code=motif_mouvement_id)
             ms.date_effet = sinistre.date_ouverture
@@ -826,61 +841,76 @@ def add_sinistre_gestionnaire(request):
 
             # Récupérer les intervenants de la session
             intervenants = request.session.get('intervenants', [])
-            for intervenant in intervenants:
-                intervenant_created = Intervenant(
-                    type_intervenant_id=intervenant.get('type_intervenant_id'),
-                    pays_id=intervenant.get('pays_id'),
-                    nom=intervenant.get('nom'),
-                    prenoms=intervenant.get('prenoms'),
-                    portable=intervenant.get('portable'),
-                    telephone=intervenant.get('telephone'),
-                    fax=intervenant.get('fax'),
-                    email=intervenant.get('email'),
-                    code_postal=intervenant.get('code_postal'),
-                    boite_postale=intervenant.get('boite_postale'),
-                    ville=intervenant.get('ville'),
-                    created_by_id=request.user.id,
-                )
-                intervenant_created.save()
+            for intervenant_data in intervenants:
+                # Récupérer les champs de portable et téléphone
+                portable = intervenant_data.get('portable')
+                telephone = intervenant_data.get('telephone')
 
-                intervenant = Intervenant.objects.get(id=intervenant_created.pk)
+                # Vérifier si un intervenant existe déjà avec le même portable ou téléphone
+                intervenant = None
+                if portable:
+                    try:
+                        intervenant = Intervenant.objects.get(portable=portable)
+                    except ObjectDoesNotExist:
+                        pass
+                if not intervenant and telephone:
+                    try:
+                        intervenant = Intervenant.objects.get(telephone=telephone)
+                    except ObjectDoesNotExist:
+                        pass
 
-                intervenant_created = SinistreIntervenant(
+                # Si aucun intervenant n'existe, créer un nouvel intervenant
+                if not intervenant:
+                    intervenant_created = Intervenant(
+                        type_intervenant_id=intervenant_data.get('type_intervenant_id'),
+                        pays_id=intervenant_data.get('pays_id'),
+                        nom=intervenant_data.get('nom'),
+                        prenoms=intervenant_data.get('prenoms'),
+                        portable=portable,
+                        telephone=telephone,
+                        fax=intervenant_data.get('fax'),
+                        email=intervenant_data.get('email'),
+                        code_postal=intervenant_data.get('code_postal'),
+                        boite_postale=intervenant_data.get('boite_postale'),
+                        ville=intervenant_data.get('ville'),
+                        created_by_id=request.user.id,
+                    )
+                    intervenant_created.save()
+                    intervenant = intervenant_created
+
+                # Créer l'entrée dans SinistreIntervenant avec l'intervenant existant ou nouvellement créé
+                sinistre_intervenant = SinistreIntervenant(
                     sinistre=sinistre,
                     historique_sinistre=historique_sinistre,
                     intervenant=intervenant,
                     created_by_id=request.user.id,
                 )
-                intervenant_created.save()
-
+                sinistre_intervenant.save()
 
             # Récupérer les garanties de la session
             garanties_sinistre = request.session.get("garanties", [])
             for garantie_sinistre in garanties_sinistre:
-                garantie_sinistre_created = SinistreGarantie(
+                garantie_sinistre_created = SinistreGarantie.objects.create(
                     sinistre=sinistre,
                     garantie_id=garantie_sinistre.get('garantie_id'),
-                    franchise=supprimer_espaces(garantie_sinistre.get('franchise', 0)) if garantie_sinistre.get('franchise', 0) else None,
-                    capital=supprimer_espaces(garantie_sinistre.get('capital', 0)) if garantie_sinistre.get('capital', 0) else None,
-                    prime_nette=supprimer_espaces(garantie_sinistre.get('prime_net', 0)) if garantie_sinistre.get('prime_net', 0) else None,
-                    prime_ttc=supprimer_espaces(garantie_sinistre.get('prime_ttc', 0)) if garantie_sinistre.get('prime_ttc', 0) else None,
-                    created_by_id=request.user.id,
+                    franchise=supprimer_espaces(garantie_sinistre.get('franchise', 0)) or None,
+                    capital=supprimer_espaces(garantie_sinistre.get('capital', 0)) or None,
+                    prime_nette=supprimer_espaces(garantie_sinistre.get('prime_net', 0)) or None,
+                    prime_ttc=supprimer_espaces(garantie_sinistre.get('prime_ttc', 0)) or None,
+                    created_by=request.user,
                 )
-                garantie_sinistre_created.save()
-                garantie_sinistre = SinistreGarantie.objects.get(id=garantie_sinistre_created.pk)
 
-                historique_garantie_sinistre_created = HistoriqueSinistreGarantie(
-                    sinistre_garantie=garantie_sinistre,
+                historique_garantie_sinistre_created = HistoriqueSinistreGarantie.objects.create(
+                    sinistre_garantie=garantie_sinistre_created,
                     historique_sinistre=historique_sinistre,
                     mouvement=Mouvement.objects.get(code=mouvement_id),
                     date_mouvement=today,
-                    created_by_id=request.user.id,
+                    created_by=request.user,
                 )
-                historique_garantie_sinistre_created.save()
-                historique_garantie_sinistre = HistoriqueSinistreGarantie.objects.get(id=historique_garantie_sinistre_created.pk)
 
-                garantie_sinistre.historique_garantie_sinistre = historique_garantie_sinistre
-                garantie_sinistre.save()
+                # Associe directement l'objet sans refaire un .get()
+                garantie_sinistre_created.historique_sinistre_garantie = historique_garantie_sinistre_created
+                garantie_sinistre_created.save()
 
             response = {
                 'statut': 1,
@@ -1383,6 +1413,8 @@ class GEDDossierSinistreView(TemplateView):
         }
 
 
+@login_required
+@transaction.atomic
 def add_document_sinistre(request, sinistre_id):
     if request.method == "POST":
 
@@ -1395,6 +1427,7 @@ def add_document_sinistre(request, sinistre_id):
 
             document = form.save(commit=False)
             document.sinistre = sinistre
+            document.historique_sinistre_id = sinistre.historique_sinistre_id
             document.type_document = TypeDocument.objects.get(id=type_document_id)
             document.save()
 
@@ -1489,7 +1522,7 @@ class MouvementDossierSinistreView(TemplateView):
 
 
 def motifs_by_mouvement(request, mouvement_id):
-    motifs = Motif.objects.filter(mouvement_id=mouvement_id) #.exclude(code__in=["INCOR", "RETRAIT"])
+    motifs = Motif.objects.filter(mouvement_id=mouvement_id).order_by('libelle')
 
     motifs_serialize = serializers.serialize('json', motifs)
     return HttpResponse(motifs_serialize, content_type='application/json')
@@ -1498,6 +1531,17 @@ def motifs_by_mouvement(request, mouvement_id):
 @login_required
 def mouvement_sinistre(request, sinistre_id, motif_id):
     sinistre = Sinistre.objects.filter(id=sinistre_id).first()
+
+    intervenants = request.session.get('intervenants', None)
+    # Vider les intervenants enregistrés en session
+    if 'intervenants' in request.session:
+        del request.session['intervenants']
+
+    garanties = request.session.get('garanties', None)
+    # Vider les garanties enregistrées en session
+    if 'garanties' in request.session:
+        del request.session['garanties']
+
     if sinistre:
         motif = Motif.objects.filter(id=motif_id).first()
         if not motif:
@@ -1534,6 +1578,24 @@ def mouvement_sinistre(request, sinistre_id, motif_id):
             if user.is_sinistre:
                 gestionnaire_sinistres.append(user)
 
+        poste_dommages = PosteDommage.objects.filter(statut=1)
+        garantie_sinistres = SinistreGarantie.objects.filter(sinistre_id=sinistre.id, date_cloture=None)
+        ventilations_existantes = VentilationProvision.objects.filter(sinistre=sinistre).values('poste_dommage_id', 'garantie_id', 'montant_provision', 'montant_regle')
+
+        # On transforme en dictionnaire pour accès rapide dans le template
+        ventilations_dict = {
+            (v['poste_dommage_id'], v['garantie_id']): v
+            for v in ventilations_existantes
+        }
+
+        sommes = garantie_sinistres.aggregate(
+            total_provisions=Sum('montant_provision'),
+            total_provisions_regle=Sum('montant_provision_regle'),
+            total_recours=Sum('montant_recours'),
+            total_montant_recours_regle=Sum('montant_recours_regle'),
+            total_montant_garantie=Sum('montant_garantie'),
+        )
+
         context = {
             'sinistre': sinistre,
             'check_motif': motif,
@@ -1553,6 +1615,14 @@ def mouvement_sinistre(request, sinistre_id, motif_id):
             'mouvements': mouvements,
             'liste_motifs': liste_motifs,
             'gestionnaire_sinistres': gestionnaire_sinistres,
+            'poste_dommages': poste_dommages,
+            'garantie_sinistres': garantie_sinistres,
+            'ventilations_dict': ventilations_dict,
+            'total_provisions': sommes['total_provisions'],
+            'total_provisions_regle': sommes['total_provisions_regle'],
+            'total_recours': sommes['total_recours'],
+            'total_montant_recours_regle': sommes['total_montant_recours_regle'],
+            'total_montant_garantie': sommes['total_montant_garantie'],
         }
 
         return render(request, 'mouvement_sinistre.html', context)
@@ -1560,13 +1630,430 @@ def mouvement_sinistre(request, sinistre_id, motif_id):
     return redirect('dossiersinistre')
 
 
+def recuperer_intervenant_sinistre(request):
+    sinistre_id = request.GET.get('sinistre_id')
+
+    try:
+        sinistre_intervenants = SinistreIntervenant.objects.filter(sinistre_id=sinistre_id)
+        intervenants_existant = list(request.session.get('intervenants', []))
+
+        # Liste pour stocker les numéros de portable déjà présents
+        portables_existant = {intervenant['portable'] for intervenant in intervenants_existant if intervenant['portable']}
+
+        for sinistre_interv in sinistre_intervenants:
+            # Vérifier si le numéro de portable existe déjà
+            if sinistre_interv.intervenant.portable and sinistre_interv.intervenant.portable in portables_existant:
+                continue  # Ignorer l'ajout si le portable est déjà présent
+
+            nouveau_intervenant = {
+                'id': str(uuid4()),
+                'sinistre_id': sinistre_id,
+                'nom': sinistre_interv.intervenant.nom,
+                'prenoms': sinistre_interv.intervenant.prenoms,
+                'telephone': sinistre_interv.intervenant.telephone,
+                'fax': sinistre_interv.intervenant.fax,
+                'email': sinistre_interv.intervenant.email,
+                'portable': sinistre_interv.intervenant.portable,
+                'pays_id': sinistre_interv.intervenant.pays_id,
+                'type_intervenant_id': sinistre_interv.intervenant.type_intervenant.id,
+                'type_intervenant': sinistre_interv.intervenant.type_intervenant.libelle,
+                'boite_postale': sinistre_interv.intervenant.boite_postale,
+                'code_postal': sinistre_interv.intervenant.code_postal,
+                'ville': sinistre_interv.intervenant.ville,
+            }
+
+            intervenants_existant.append(nouveau_intervenant)
+            portables_existant.add(sinistre_interv.intervenant.portable)  # Ajouter le nouveau portable à la liste
+            request.session['intervenants'] = intervenants_existant
+            request.session.modified = True
+
+        intervenants_existants = list(request.session.get('intervenants', []))
+
+        return JsonResponse({
+            'success': True,
+            'message': "Ajout d'intervenant effectué avec succès !",
+            'data': intervenants_existants
+        }, status=200)
+
+    except SinistreIntervenant.DoesNotExist:
+        return JsonResponse({'error': 'Sinistre non trouvé.'}, status=404)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+def recuperer_garantie_sinistre(request):
+    sinistre_id = request.GET.get('sinistre_id')
+    try:
+        sinistre_garanties = SinistreGarantie.objects.filter(sinistre_id=sinistre_id, deleted_at=None)
+        garanties_existantes = list(request.session.get('garanties', []))
+
+        print('garanties_existantes', garanties_existantes)
+
+        for nouvelle_garan in sinistre_garanties:
+            nouvelle_garantie = {
+                'id': f'{nouvelle_garan.garantie_id}',
+                'sinistre_id': sinistre_id,
+                'garantie_id': f'{nouvelle_garan.garantie_id}',
+                'nom': nouvelle_garan.garantie.nom,
+                'franchise': money_field(nouvelle_garan.franchise),
+                'capital': money_field(nouvelle_garan.capital),
+                'mouvement': nouvelle_garan.sinistre_garantie_dernier_historique.mouvement.libelle,
+                'date_ajout': nouvelle_garan.created_at.strftime('%Y-%m-%d'),
+                'action_mouvement': "Aucun"
+            }
+
+            garanties_existantes.append(nouvelle_garantie)
+            request.session['garanties'] = garanties_existantes
+            request.session.modified = True
+
+        garanties_existantes = list(request.session.get('garanties', []))
+
+        return JsonResponse({
+            'success': True,
+            'message': "Ajout de garantie effectué avec succès !",
+            'data': garanties_existantes
+        }, status=200)
+
+    except SinistreGarantie.DoesNotExist:
+        return JsonResponse({'error': 'Sinistre non trouvé.'}, status=404)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+@csrf_exempt
+def cloture_garantie(request, garantie_id):
+    if request.method == 'POST':
+        garanties = request.session.get("garanties", [])
+
+        # Parcourir les garanties et modifier action_mouvement pour celle correspondant à garantie_id
+        modified = False
+        for g in garanties:
+            if str(g["garantie_id"]) == str(garantie_id):
+                g["action_mouvement"] = "Cloture"
+                modified = True
+                break
+
+        if modified:
+            request.session["garanties"] = garanties
+            request.session.modified = True
+            request.session.save()
+
+            return JsonResponse({"success": True})
+        else:
+            return JsonResponse({"success": False, "message": "Garantie non trouvée."}, status=404)
+
+    return JsonResponse({"success": False, "message": "Méthode non autorisée."}, status=405)
+
 
 @login_required
+@transaction.atomic
 def update_sinistre_gestionnaire(request, sinistre_id):
     sinistre = Sinistre.objects.filter(id=sinistre_id).first()
+    today = timezone.now().date()
     if sinistre:
         if request.method == 'POST':
-            pass
+            mouvement_id = request.POST.get('mouvement_id')
+            motif_mouvement_id = request.POST.get('motif_mouvement_id')
+            gestionnaire_sinistre_id = request.POST.get('gestionnaire_sinistre_id')
+            date_survenance = request.POST.get('date_survenance')
+            date_ouverture = request.POST.get('date_ouverture')
+            date_cloture = request.POST.get('date_cloture')
+            date_declaration = request.POST.get('date_declaration')
+            date_reouverture = request.POST.get('date_reouverture')
+            circonstance_id = request.POST.get('circonstance_id')
+            lieu_survenance = request.POST.get('lieu_survenance')
+            tva_recuperee_str = request.POST.get('tva_recuperee')
+            type_sinistre_id = request.POST.get('type_sinistre_id')
+            franchise = request.POST.get('franchise').replace(' ', '')
+            taux_responsabilite_id = request.POST.get('responsabilite_id')
+            fait_generateur = request.POST.get('fait_generateur')
+            point_de_choc = request.POST.get('point_de_choc')
+            commentaires = request.POST.get('commentaires')
+            risque_sinistre = request.POST.get('risque')
+            numero = request.POST.get('numero')
+
+            if tva_recuperee_str == "1":
+                tva_recuperee = True
+            elif tva_recuperee_str == "0":
+                tva_recuperee = False
+            else:
+                tva_recuperee = None
+
+            sinistre.type_sinistre_id = type_sinistre_id
+            sinistre.taux_responsabilite_id = taux_responsabilite_id
+            sinistre.circonstance_id = circonstance_id
+            sinistre.gestionnaire_sinistre_id = gestionnaire_sinistre_id
+            sinistre.operateur_de_saisie_id = request.user.id
+            sinistre.numero = numero
+            sinistre.risque_sinistre = risque_sinistre
+            sinistre.date_survenance = date_survenance if date_survenance else None
+            sinistre.date_declaration = date_declaration if date_declaration else None
+            sinistre.date_ouverture = date_ouverture if date_ouverture else None
+            sinistre.date_cloture = date_cloture if date_cloture else None
+            sinistre.date_reouverture = date_reouverture if date_reouverture else None
+            sinistre.lieu_survenance = lieu_survenance
+            sinistre.tva_recuperee = tva_recuperee if tva_recuperee else 0
+            sinistre.fait_generateur = fait_generateur
+            sinistre.point_de_choc = point_de_choc
+            sinistre.commentaires = commentaires
+            sinistre.franchise = supprimer_espaces(franchise) if franchise else 0
+            sinistre.updated_by = request.user
+            sinistre.save()
+
+            historique_sinistre_created = HistoriqueSinistre(
+                sinistre=sinistre,
+                aliment_police_id=sinistre.aliment_police_id,
+                client_id=sinistre.client_id,
+                police_id=sinistre.police_id,
+                historique_police_id=sinistre.police.police_dernier_historique.id if sinistre.police else None,
+                compagnie_id=sinistre.compagnie_id,
+                type_sinistre_id=sinistre.type_sinistre_id,
+                taux_responsabilite_id=sinistre.taux_responsabilite_id,
+                circonstance_id=sinistre.circonstance_id,
+                gestionnaire_sinistre_id=sinistre.gestionnaire_sinistre_id,
+                created_by_id=request.user.id,
+                operateur_de_saisie_id=request.user.id,
+                mouvement=Mouvement.objects.get(id=mouvement_id),
+                motif_mouvement=Motif.objects.get(id=motif_mouvement_id),
+
+                date_operation=today,
+                date_survenance=sinistre.date_survenance if sinistre.date_survenance else None,
+                date_declaration=sinistre.date_declaration if sinistre.date_declaration else None,
+                date_ouverture=sinistre.date_ouverture if sinistre.date_ouverture else None,
+                date_cloture=sinistre.date_cloture if sinistre.date_cloture else None,
+                date_reouverture=sinistre.date_reouverture if sinistre.date_reouverture else None,
+
+                lieu_survenance=sinistre.lieu_survenance,
+                tva_recuperee=sinistre.tva_recuperee if sinistre.tva_recuperee else 0,
+                fait_generateur=sinistre.fait_generateur,
+                point_de_choc=sinistre.point_de_choc,
+                commentaires=sinistre.commentaires,
+                risque_sinistre=sinistre.risque_sinistre,
+                franchise=sinistre.franchise if sinistre.franchise else 0,
+            )
+            historique_sinistre_created.save()
+
+            historique_sinistre = HistoriqueSinistre.objects.get(id=historique_sinistre_created.pk)
+
+            # Créer une ligne de mouvement_sinistre avec le mouvement ouverture sinistre et le motif ouverture sinistre
+            ms = MouvementSinistre()
+            ms.sinistre = sinistre
+            ms.historique_sinistre = historique_sinistre
+            ms.mouvement = Mouvement.objects.get(id=mouvement_id)
+            ms.motif = Motif.objects.get(id=motif_mouvement_id)
+            ms.date_effet = sinistre.date_ouverture
+            ms.created_by = request.user
+            ms.save()
+
+            # Précharger les garanties existantes avec des clés int pour éviter les problèmes de comparaison
+            garanties_existantes = {
+                int(g.garantie_id): g
+                for g in SinistreGarantie.objects.filter(sinistre=sinistre, deleted_at=None)
+            }
+
+            # Récupérer la liste depuis la session
+            garanties_sinistre = request.session.get("garanties", [])
+            print(garanties_sinistre)
+            try:
+                # Si mouvement_id est un id numérique :
+                mouvement_obj = Mouvement.objects.get(pk=mouvement_id)
+            except Mouvement.DoesNotExist:
+                mouvement_obj = None
+
+            for garantie_sinistre in garanties_sinistre:
+                raw_gid = garantie_sinistre.get('garantie_id')
+                raw_action_mouvement = garantie_sinistre.get('action_mouvement')
+
+                # Normaliser la clé en int (skip si invalide)
+                try:
+                    gid = int(raw_gid)
+                except (TypeError, ValueError):
+                    print(f"garantie_id invalide dans la session: {raw_gid!r} — on l'ignore")
+                    continue
+
+                # Nettoyage des champs (ex: supprimer espaces)
+                franchise = supprimer_espaces(garantie_sinistre.get('franchise', 0)) or None
+                capital = supprimer_espaces(garantie_sinistre.get('capital', 0)) or None
+                prime_nette = supprimer_espaces(garantie_sinistre.get('prime_net', 0)) or None
+                prime_ttc = supprimer_espaces(garantie_sinistre.get('prime_ttc', 0)) or None
+
+                if gid in garanties_existantes:
+                    # --- Mise à jour
+                    garantie_obj = garanties_existantes[gid]
+
+                    # Mettre à jour les champs uniquement si besoin (optionnel)
+                    changed = False
+                    if garantie_obj.franchise != franchise:
+                        garantie_obj.franchise = franchise
+                        changed = True
+                    if garantie_obj.capital != capital:
+                        garantie_obj.capital = capital
+                        changed = True
+                    if garantie_obj.prime_nette != prime_nette:
+                        garantie_obj.prime_nette = prime_nette
+                        changed = True
+                    if garantie_obj.prime_ttc != prime_ttc:
+                        garantie_obj.prime_ttc = prime_ttc
+                        changed = True
+
+                    # Normaliser l'action et gérer la clôture
+                    action_norm = normalize_text(raw_action_mouvement)
+                    if action_norm == 'cloture':
+                        garantie_obj.date_cloture = today
+                        garantie_obj.deleted_by = request.user
+                        garantie_obj.deleted_at = timezone.now()
+                        changed = True
+
+                    if changed:
+                        garantie_obj.save(update_fields=['franchise', 'capital', 'prime_nette', 'prime_ttc', 'date_cloture', 'deleted_by', 'deleted_at'])
+
+                    # Création historique si besoin
+                    if mouvement_obj:
+                        historique_garantie = HistoriqueSinistreGarantie.objects.create(
+                            sinistre_garantie=garantie_obj,
+                            historique_sinistre=historique_sinistre,
+                            mouvement=mouvement_obj,
+                            date_mouvement=today,
+                            created_by=request.user,
+                        )
+                        # Liaison (si le modèle a ce champ)
+                        garantie_obj.historique_sinistre_garantie = historique_garantie
+                        garantie_obj.save(update_fields=['historique_sinistre_garantie'])
+
+                else:
+                    # --- Création
+                    garantie_obj = SinistreGarantie.objects.create(
+                        sinistre=sinistre,
+                        garantie_id=gid,
+                        franchise=franchise,
+                        capital=capital,
+                        prime_nette=prime_nette,
+                        prime_ttc=prime_ttc,
+                        created_by=request.user,
+                    )
+
+                    # Ajouter au cache local pour éviter une recréation si la session contient des doublons
+                    garanties_existantes[gid] = garantie_obj
+
+                    if mouvement_obj:
+                        historique_garantie = HistoriqueSinistreGarantie.objects.create(
+                            sinistre_garantie=garantie_obj,
+                            historique_sinistre=historique_sinistre,
+                            mouvement=mouvement_obj,
+                            date_mouvement=today,
+                            created_by=request.user,
+                        )
+                        garantie_obj.historique_sinistre_garantie = historique_garantie
+                        garantie_obj.save(update_fields=['historique_sinistre_garantie'])
+
+            # Récupérer tous les intervenants existants indexés par portable ou téléphone
+            intervenants_existants = {
+                i.portable: i for i in Intervenant.objects.exclude(portable__isnull=True).exclude(portable__exact='')
+            }
+            intervenants_existants.update({
+                i.telephone: i for i in Intervenant.objects.exclude(telephone__isnull=True).exclude(telephone__exact='')
+            })
+
+            # Récupérer les intervenants de la session
+            intervenants_session = request.session.get('intervenants', [])
+
+            for data in intervenants_session:
+                portable = data.get('portable')
+                telephone = data.get('telephone')
+
+                intervenant = None
+
+                # Chercher par portable ou téléphone
+                if portable and portable in intervenants_existants:
+                    intervenant = intervenants_existants[portable]
+                elif telephone and telephone in intervenants_existants:
+                    intervenant = intervenants_existants[telephone]
+
+                # Si aucun intervenant trouvé → créer
+                if not intervenant:
+                    intervenant = Intervenant.objects.create(
+                        type_intervenant_id=data.get('type_intervenant_id'),
+                        pays_id=data.get('pays_id'),
+                        nom=data.get('nom'),
+                        prenoms=data.get('prenoms'),
+                        portable=portable,
+                        telephone=telephone,
+                        fax=data.get('fax'),
+                        email=data.get('email'),
+                        code_postal=data.get('code_postal'),
+                        boite_postale=data.get('boite_postale'),
+                        ville=data.get('ville'),
+                        created_by_id=request.user.id,
+                    )
+
+                    # Mettre à jour le cache local pour éviter de recréer si on le retrouve plus tard
+                    if portable:
+                        intervenants_existants[portable] = intervenant
+                    if telephone:
+                        intervenants_existants[telephone] = intervenant
+
+                # Lier à ce sinistre
+                SinistreIntervenant.objects.create(
+                    sinistre=sinistre,
+                    historique_sinistre=historique_sinistre,
+                    intervenant=intervenant,
+                    created_by_id=request.user.id,
+                )
+
+            ventilations_struct = {}
+            for key, value in request.POST.items():
+                if key.startswith('montant_ventilation_provisions['):
+                    try:
+                        parts = key.split('[')
+                        poste_id = parts[1].rstrip(']')
+                        garantie_id = parts[2].rstrip(']')
+                        champ = parts[3].rstrip(']')  # montant_provision, montant_regle, provisionne
+
+                        montant_nettoye = value.replace(' ', '') if value.strip() else '0'
+                        montant_valeur = float(montant_nettoye)
+
+                        if poste_id not in ventilations_struct:
+                            ventilations_struct[poste_id] = {}
+
+                        if garantie_id not in ventilations_struct[poste_id]:
+                            ventilations_struct[poste_id][garantie_id] = {}
+
+                        ventilations_struct[poste_id][garantie_id][champ] = montant_valeur
+
+                    except Exception as e:
+                        print(f"Erreur parsing {key}: {e}")
+
+            for poste_id, garanties in ventilations_struct.items():
+                for garantie_id, champs in garanties.items():
+                    montant_provision = champs.get('montant_provision', 0)
+                    montant_regle = champs.get('montant_regle', 0)
+
+                    # Seulement si montant_provision > 0
+                    if montant_provision != 0:
+                        obj, created = VentilationProvision.objects.update_or_create(
+                            sinistre=sinistre,
+                            poste_dommage_id=poste_id,
+                            garantie_id=garantie_id,
+                            defaults={
+                                'montant_provision': montant_provision,
+                                'montant_regle': montant_regle,
+                                'created_by': request.user
+                            }
+                        )
+
+            detail_url = reverse('mouvement_dossier_sinistre', args=[sinistre.id])
+
+            response = {
+                'statut': 1,
+                'message': "Sinistre modifié avec succès !",
+                'data': {
+                    'id': sinistre.pk,
+                    'numero': sinistre.numero,
+                    'retour_mouvement_url': detail_url,
+                }
+            }
+
+            return JsonResponse(response)
 
     return redirect('dossiersinistre')
 

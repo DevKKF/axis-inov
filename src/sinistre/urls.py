@@ -3,7 +3,8 @@ from django.urls import path
 
 from . import views
 from .views import SaisieSinistreView, DossierSinistresView, DossierSinistresTraitesView, DossiersSinistresPhysiquesGestionnairesView, \
-    DetailsDossierSinistreView, AnnulerSinistreGestionnairesView, GEDDossierSinistreView, IntervenantDossierSinistreView, MouvementDossierSinistreView
+    DetailsDossierSinistreView, AnnulerSinistreGestionnairesView, GEDDossierSinistreView, IntervenantDossierSinistreView, MouvementDossierSinistreView, \
+    DetailMouvementDossierSinistreView
 
 
 urlpatterns = [
@@ -19,6 +20,7 @@ urlpatterns = [
     path('dossier_sinistre/<int:sinistre_id>/intervenants', IntervenantDossierSinistreView.as_view(), name='intervenant_dossier_sinistre'),
     path('details_intervenant/<int:sinistre_intervenant_id>', views.details_intervenant, name='details_intervenant'),
     path('dossier_sinistre/<int:sinistre_id>/mouvements', MouvementDossierSinistreView.as_view(), name='mouvement_dossier_sinistre'),
+    path('dossier_sinistre/<int:sinistre_id>/<int:historique_sinistre_id>/historique-details', DetailMouvementDossierSinistreView.as_view(), name='sinistre.historique.details'),
     path('mouvement/<int:mouvement_id>/motifs',views.motifs_by_mouvement, name='mouvement_motifs'),
     path('mouvement_sinistre/<int:sinistre_id>/<int:motif_id>', views.mouvement_sinistre, name='mouvement_sinistre'),
 

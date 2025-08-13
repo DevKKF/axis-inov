@@ -565,44 +565,6 @@ class RegroupementActe(models.Model):
         verbose_name_plural = "Regroupements d'actes"
 
 
-class SousRegroupementActe(models.Model):
-    rubrique = models.ForeignKey(Rubrique, null=True, on_delete=models.RESTRICT)
-    libelle = models.CharField(max_length=255)
-    code = models.CharField(max_length=255, blank=True, default=None, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    status = models.BooleanField(default=True)
-
-    def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
-
-        if not self.code:
-            # Generate the code based on the inserted ID
-            self.code = f"SRA{slugify(self.libelle)[:4]}{str(self.pk).zfill(4)}".upper()
-
-        super().save(*args, **kwargs)
-
-
-    def __str__(self):
-        return self.libelle
-
-    class Meta:
-        db_table = 'sous_regroupement_acte'
-        verbose_name = "Sous-regroup. d'acte"
-        verbose_name_plural = "Sous-regroup. d'actes"
-
-
-class SousRubriqueRegroupementActe(models.Model):
-    sous_rubrique = models.ForeignKey(SousRubrique, null=True, on_delete=models.RESTRICT)
-    regroupement_acte = models.ForeignKey(RegroupementActe, null=True, on_delete=models.RESTRICT)
-    statut = models.BooleanField(default=True)
-
-    class Meta:
-        db_table = 'sous_rubrique_regroupement_acte'
-        verbose_name = "Contenu de la sous-rubrique"
-        verbose_name_plural = "Contenus de la sous-rubrique"
-
-
 class Acte(models.Model):
     rubrique = models.ForeignKey(Rubrique, null=True, on_delete=models.RESTRICT)
     regroupement_acte = models.ForeignKey(RegroupementActe, null=True, on_delete=models.RESTRICT)
@@ -636,35 +598,6 @@ class Acte(models.Model):
         current_user = get_current_authenticated_user()
         param_acte = ParamActe.objects.filter(acte=self, bureau=current_user.bureau).first()
         return param_acte.entente_prealable if param_acte else False
-
-
-class SousRegroupementActeActe(models.Model):
-    sous_regroupement_acte = models.ForeignKey(SousRegroupementActe, null=True, on_delete=models.RESTRICT)
-    acte = models.ForeignKey(Acte, null=True, on_delete=models.RESTRICT)
-    statut = models.BooleanField(default=True)
-
-    class Meta:
-        db_table = 'sous_regroupement_acte_acte'
-        verbose_name = "Contenu du sous-regroupement d'actes"
-        verbose_name_plural = "Contenus du sous-regroupement d'actes"
-
-
-class Medicament(models.Model):
-    rubrique = models.ForeignKey(Rubrique, null=True, on_delete=models.RESTRICT)
-    libelle = models.CharField(max_length=255)
-    code = models.CharField(max_length=255, blank=True, default=None, null=True)
-    accord_automatique = models.BooleanField(default=False)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    status = models.BooleanField(default=True)
-
-    def __str__(self):
-        return self.libelle
-
-    class Meta:
-        db_table = 'medicaments'
-        verbose_name = 'Medicament'
-        verbose_name_plural = 'Medicaments'
 
 
 class Civilite(models.Model):

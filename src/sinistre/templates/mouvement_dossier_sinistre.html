@@ -53,7 +53,7 @@
                       <td>{{ avenant.created_by|default_if_none:'' }}</td>
                       <td>
                         {% if avenant.historique_sinistre_id %}
-                            <a style="cursor:pointer;" href=""><span class="badge btn-sm btn-details rounded-pill"><i class="fa fa-eye"></i> Détails</span></a>
+                            <a style="cursor:pointer;" href="{% url 'sinistre.historique.details' avenant.sinistre_id avenant.historique_sinistre_id %}"><span class="badge btn-sm btn-details rounded-pill"><i class="fa fa-eye"></i> Détails</span></a>
                         {% endif %}
                       </td>
                     </tr>

@@ -27,7 +27,7 @@ from configurations.helper_config import verify_sql_query
 from configurations.models import ActionLog, Secteur, Bureau, BusinessUnit, Branche, Banque, Apporteur, Devise, User, AuthGroup,  Tarif, \
     Compagnie, Garantie, GarantieFormule, Groupe, ModeReglement
 from inov import settings
-from production.models import TarifPrestataireClient, Client, Aliment, Mouvement, Produit, PoliceAssureur, Police, HistoriquePolice, MouvementPolice
+from production.models import Client, Aliment, Mouvement, Produit, PoliceAssureur, Police, HistoriquePolice, MouvementPolice
 from analysecontrole.models import AnalysePortefeuille, ControleCommission
 from production.templatetags.my_filters import money_field, convertir_date_multiformat
 from shared.enum import PasswordType, Statut, StatutValidite, BaseCalculTM, StatutPaiementSinistre, TypePortefeuille

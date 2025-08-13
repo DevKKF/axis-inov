@@ -556,7 +556,7 @@ class Migration(migrations.Migration):
             name='TarifPrestataireClient',
             fields=[
                 ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('fichier_tarification', models.FileField(blank=True, default=None, null=True, upload_to=production.models.upload_location_tarifprestataireclient)),
+                #('fichier_tarification', models.FileField(blank=True, default=None, null=True, upload_to=production.models.upload_location_tarifprestataireclient)),
                 ('created_at', models.DateTimeField(auto_now_add=True)),
                 ('updated_at', models.DateTimeField(auto_now=True)),
                 ('statut', models.BooleanField(default=True)),

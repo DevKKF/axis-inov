@@ -4,7 +4,7 @@ from django.db.models import Q, Sum
 from django.utils import timezone
 
 
-from configurations.models import CompteTresorerie, Devise, Medicament, Compagnie, User, TypePriseencharge, Prestataire, Prescripteur, Acte, \
+from configurations.models import CompteTresorerie, Devise, Compagnie, User, TypePriseencharge, Prestataire, Prescripteur, Acte, \
     Rubrique, SousRubrique, RegroupementActe, TypePrefinancement, PeriodeComptable, ModeCreation, Bureau, Circonstance, TypeSinistre, TauxResponsabilite, TypeIntervenant, PosteDommage, Pays, \
     TypeRemboursement, ModeReglement, Banque, BordereauLettreCheque, Garantie
 from production.models import TypeDocument, Aliment, HistoriqueAliment, Police, HistoriquePolice, PeriodeCouverture, Bareme, Client, AlimentPolice, Mouvement, Motif
@@ -452,154 +452,6 @@ class DossierSinistre(models.Model):
             return sum(sinistre.total_part_compagnie for sinistre in sinistres_rejetes)
 
 
-    @property
-    def total_frais_reel_medicament(self):
-        #sinistres = self.sinistres.filter(type_sinistre="medicament").exclude(statut="REJETE")
-
-        #return sum(sinistre.total_frais_reel for sinistre in sinistres)
-
-        sinistres_accorde_ou_attente = self.sinistres.filter(
-            type_sinistre="medicament", statut__in=["ACCORDE", "EN ATTENTE"]
-        )
-
-        #si il y a des accorde ou en attente
-        if sinistres_accorde_ou_attente.exists():
-            return sum(sinistre.total_frais_reel for sinistre in sinistres_accorde_ou_attente)
-
-        else:
-            # Si tous les sinistres sont "REJETE", calcule leur somme
-            sinistres_rejetes = self.sinistres.filter(type_sinistre="medicament", statut="REJETE")
-            return sum(sinistre.total_frais_reel for sinistre in sinistres_rejetes)
-
-
-
-
-    @property
-    def total_part_assure_medicament(self):
-        #sinistres = self.sinistres.filter(type_sinistre="medicament").exclude(statut="REJETE")
-
-        #return sum(sinistre.total_part_assure for sinistre in sinistres)
-
-        sinistres_accorde_ou_attente = self.sinistres.filter(
-            type_sinistre="medicament", statut__in=["ACCORDE", "EN ATTENTE"]
-        )
-
-        #si il y a des accorde ou en attente
-        if sinistres_accorde_ou_attente.exists():
-            return sum(sinistre.total_part_assure for sinistre in sinistres_accorde_ou_attente)
-
-        else:
-            # Si tous les sinistres sont "REJETE", calcule leur somme
-            sinistres_rejetes = self.sinistres.filter(type_sinistre="medicament", statut="REJETE")
-            return sum(sinistre.total_part_assure for sinistre in sinistres_rejetes)
-
-
-
-
-    @property
-    def total_part_compagnie_medicament(self):
-        #sinistres = self.sinistres.filter(type_sinistre="medicament").exclude(statut="REJETE")
-
-        #return sum(sinistre.total_part_compagnie for sinistre in sinistres)
-
-        sinistres_accorde_ou_attente = self.sinistres.filter(
-            type_sinistre="medicament", statut__in=["ACCORDE", "EN ATTENTE"]
-        )
-
-        #si il y a des accorde ou en attente
-        if sinistres_accorde_ou_attente.exists():
-            return sum(sinistre.total_part_compagnie for sinistre in sinistres_accorde_ou_attente)
-
-        else:
-            # Si tous les sinistres sont "REJETE", calcule leur somme
-            sinistres_rejetes = self.sinistres.filter(type_sinistre="medicament", statut="REJETE")
-            return sum(sinistre.total_part_compagnie for sinistre in sinistres_rejetes)
-
-
-#
-
-    #Todo: Tenir compte du fait que sur le dossier_sinistre il peut avoir des sinistres préfinancés et d'autres non.
-    @property
-    def new_total_part_assure_medicament_gestionnaire(self):
-        sinistres_accorde_ou_attente = self.sinistres.filter(
-            type_sinistre="medicament", statut__in=["ACCORDE", "EN ATTENTE"]
-        )
-
-        #si il y a des accorde ou en attente
-        if sinistres_accorde_ou_attente.exists():
-            return sum(sinistre.total_part_assure for sinistre in sinistres_accorde_ou_attente)
-
-        else:
-            # Si tous les sinistres sont "REJETE", calcule leur somme
-            sinistres_rejetes = self.sinistres.filter(type_sinistre="medicament", statut="REJETE")
-            return sum(sinistre.total_part_assure for sinistre in sinistres_rejetes)
-
-
-    #Todo: Tenir compte du fait que sur le dossier_sinistre il peut avoir des sinistres préfinancés et d'autres non.
-    @property
-    def new_total_part_assure_medicament_prestataire(self):
-        sinistres_accorde_ou_attente = self.sinistres.filter(
-            type_sinistre="medicament", statut__in=["ACCORDE", "EN ATTENTE"]
-        )
-
-        #si il y a des accorde ou en attente
-        if sinistres_accorde_ou_attente.exists():
-            return sum(0 if sinistre.tm_prefinanced else sinistre.total_part_assure for sinistre in sinistres_accorde_ou_attente)
-
-        else:
-            # Si tous les sinistres sont "REJETE", calcule leur somme
-            sinistres_rejetes = self.sinistres.filter(type_sinistre="medicament", statut="REJETE")
-            return sum(0 if sinistre.tm_prefinanced else sinistre.total_part_assure for sinistre in sinistres_rejetes)
-
-
-    # Todo: Tenir compte du fait que sur le dossier_sinistre il peut avoir des sinistres préfinancés et d'autres non.
-    @property
-    def new_total_part_compagnie_medicament_gestionnaire(self):
-        sinistres_accorde_ou_attente = self.sinistres.filter(
-            type_sinistre="medicament", statut__in=["ACCORDE", "EN ATTENTE"]
-        )
-
-        #si il y a des accorde ou en attente
-        if sinistres_accorde_ou_attente.exists():
-            return sum(sinistre.total_part_compagnie for sinistre in sinistres_accorde_ou_attente)
-
-        else:
-            # Si tous les sinistres sont "REJETE", calcule leur somme
-            sinistres_rejetes = self.sinistres.filter(type_sinistre="medicament", statut="REJETE")
-            return sum(sinistre.total_part_compagnie for sinistre in sinistres_rejetes)
-
-
-    # Todo: Tenir compte du fait que sur le dossier_sinistre il peut avoir des sinistres préfinancés et d'autres non.
-    @property
-    def new_total_part_compagnie_medicament_prestataire(self):
-        sinistres_accorde_ou_attente = self.sinistres.filter(
-            type_sinistre="medicament", statut__in=["ACCORDE", "EN ATTENTE"]
-        )
-
-        #si il y a des accorde ou en attente
-        if sinistres_accorde_ou_attente.exists():
-            return sum(sinistre.total_frais_reel if sinistre.tm_prefinanced else sinistre.total_part_compagnie for sinistre in sinistres_accorde_ou_attente)
-
-        else:
-            # Si tous les sinistres sont "REJETE", calcule leur somme
-            sinistres_rejetes = self.sinistres.filter(type_sinistre="medicament", statut="REJETE")
-            return sum(sinistre.total_frais_reel if sinistre.tm_prefinanced else sinistre.total_part_compagnie for sinistre in sinistres_rejetes)
-
-#
-
-    @property
-    def total_frais_reel_general(self):
-        return (self.total_frais_reel + self.total_frais_reel_medicament)
-
-    @property
-    def total_part_assure_general(self):
-        return (self.total_part_assure + self.total_part_assure_medicament)
-
-    @property
-    def total_part_compagnie_general(self):
-        return (self.total_part_compagnie + self.total_part_compagnie_medicament)
-        
-
     #Todo: Tenir compte du fait que sur le dossier_sinistre il peut avoir des sinistres préfinancés et d'autres non.
     @property
     def new_total_frais_reel(self):
@@ -808,7 +660,6 @@ class BordereauOrdonnancement(models.Model):
     prestataire = models.ForeignKey(Prestataire, null=True, on_delete=models.RESTRICT)
     adherent_principal = models.ForeignKey(Aliment, null=True, on_delete=models.RESTRICT)
     assure = models.ForeignKey(Client, null=True, on_delete=models.RESTRICT)
-    periode_comptable = models.ForeignKey(PeriodeComptable, null=True, on_delete=models.RESTRICT)
     fichier = models.FileField(upload_to=upload_location_bordereauordonnancement, blank=True, default=None, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)

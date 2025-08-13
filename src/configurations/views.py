@@ -53,7 +53,7 @@ from sinistre.models import Sinistre, PaiementComptable, HistoriqueOrdonnancemen
 import json
 import io
 
-from production.models import Aliment, TarifPrestataireClient, Carte
+from production.models import Aliment, Carte
 
 from shared.helpers import generate_numero_famille_for_existing_aliment, generer_nombre_famille_du_mois_for_existing_aliment
 
@@ -1248,14 +1248,7 @@ class DetailsPrestatairesView(TemplateView):
 
             clients = Client.objects.all()
 
-            prescripteurs = ""
             utilisateurs = User.objects.filter(prestataire_id=prestataire.pk)
-
-            tarifs_prestataire_clients = TarifPrestataireClient.objects.filter(prestataire_id=prestataire.pk)
-
-            reseaux_soins_prestataire = ""
-
-            prestataire_reseausoin_ids = ""
 
             rubriques = Rubrique.objects.filter(status=True)
             regroupements_actes = RegroupementActe.objects.filter(status=True)
@@ -1264,9 +1257,6 @@ class DetailsPrestatairesView(TemplateView):
                 'clients': clients,
                 'prestataire': prestataire,
                 'utilisateurs': utilisateurs,
-                'prescripteurs': prescripteurs,
-                'reseaux_soins_prestataire': reseaux_soins_prestataire,
-                'tarifs_prestataire_clients': tarifs_prestataire_clients,
                 'rubriques': rubriques,
                 'regroupements_actes': regroupements_actes,
             }

@@ -112,9 +112,6 @@ msgstr "Etat des"
 msgid "Demandes_en_attente"
 msgstr "Demandes en attente"
 
-msgid "SERVIR_DES_MEDICAMENTS"
-msgstr "SERVIR DES MEDICAMENTS"
-
 msgid "CONSULTATION"
 msgstr "CONSULTATION"
 
@@ -905,9 +902,6 @@ msgstr "Restant à ajouter sur la caution"
 
 msgid "BORDEREAU_DE_PAIEMENT_EFFECTUE"
 msgstr "BORDEREAU DE PAIEMENT EFFECTUÉ"
-
-msgid "BORDEREAU_DE_PAIEMENT_COMPTABLE_NUMERO"
-msgstr "BORDEREAU DE PAIEMENT COMPTABLE NUMÉRO"
 
 msgid "Numero_paiement"
 msgstr "Numéro paiement"
@@ -4003,9 +3997,6 @@ msgstr "Valeur du TM"
 msgid "Depas"
 msgstr "Dépassement"
 
-msgid "Medicament"
-msgstr "Médicament"
-
 msgid "BORDEREAU_EMISSION_ORDRE_DE_PAIEMENT"
 msgstr "BORDEREAU ÉMISSION ORDRE DE PAIEMENT"
 
@@ -4219,17 +4210,8 @@ msgstr "Séance"
 msgid "seances"
 msgstr "Séances"
 
-msgid "LISTE_DES_MEDICAMENTS"
-msgstr "LISTE DES MÉDICAMENTS"
-
-msgid "Ajouter_un_medicament"
-msgstr "Ajouter un médicament"
-
 msgid "Cloturer_ce_bon"
 msgstr "Clôturer ce bon"
-
-msgid "Nom_du_medicament"
-msgstr "Nom du médicament"
 
 msgid "Qte"
 msgstr "Qté"
@@ -4252,17 +4234,11 @@ msgstr "DOCUMENTS JUSTIFICATIFS"
 msgid "Ajouter_document"
 msgstr "Ajouter document"
 
-msgid "AJOUTER_UN_MEDICAMENT"
-msgstr "AJOUTER UN MÉDICAMENT"
-
 msgid "Quantite"
 msgstr "Quantité"
 
 msgid "Prix_unitaire"
 msgstr "Prix unitaire"
-
-msgid "Ajouter_le_medicament"
-msgstr "Ajouter le médicament"
 
 msgid "MOTIF_DU_REJET"
 msgstr "MOTIF DU REJET"
@@ -4390,9 +4366,6 @@ msgstr "Part Assureur"
 msgid "Nbre_seances"
 msgstr "Nombre de séances"
 
-msgid "Medicaments"
-msgstr "Médicaments"
-
 msgid "Supprimer"
 msgstr "Supprimer"
 
@@ -4467,9 +4440,6 @@ msgstr "Assuré"
 
 msgid "LISTE_DES_FACTURES_TRAITEES_VALIDEES"
 msgstr "LISTE DES FACTURES TRAITÉES VALIDÉES"
-
-msgid "SAISIE_DES_MEDICAMENTS"
-msgstr "SAISIE DES MÉDICAMENTS"
 
 msgid "Date_survenance"
 msgstr "Date de survenance"
@@ -4619,17 +4589,11 @@ msgstr "Motif du refus"
 msgid "AJOUT_DE_DOCUMENTS_JUSTIFICATIFS"
 msgstr "AJOUT DE DOCUMENTS JUSTIFICATIFS"
 
-msgid "MEDICAMENT"
-msgstr "MÉDICAMENT"
-
 msgid "QUANTITE"
 msgstr "QUANTITÉ"
 
 msgid "PRIX_UNITAIRE"
 msgstr "PRIX UNITAIRE"
-
-msgid "MODIFICATION_D_UN_MEDICAMENT"
-msgstr "MODIFICATION D'UN MÉDICAMENT"
 
 msgid "Nombre_demande"
 msgstr "Nombre de demandes"

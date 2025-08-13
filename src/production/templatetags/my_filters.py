@@ -63,11 +63,6 @@ def addition(value, arg):
 
 
 @register.filter
-def with_user(total_part_compagnie_medicament, user):
-    return total_part_compagnie_medicament(user)
-
-
-@register.filter
 def truncate_last_word(value, max_length):
     """
     Truncate a string to a maximum length, keeping the last word intact.

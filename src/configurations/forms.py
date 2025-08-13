@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.models import Permission
-from .models import ActionLog, RegroupementActe, SousRubrique, StatExcelWsBoby, Tarif, Compagnie, Banque, SousRegroupementActe, \
+from .models import ActionLog, RegroupementActe, SousRubrique, StatExcelWsBoby, Tarif, Compagnie, Banque, \
     Branche, Garantie, GarantieBranche, Formule, GarantieFormule
 
 
@@ -23,11 +23,6 @@ class PermissionForm(forms.ModelForm):
 class RegroupementActeForm(forms.ModelForm):
     class Meta:
         model = RegroupementActe
-        exclude = ['code']  # Exclude the 'code' field from the form
-
-class SousRegroupementActeForm(forms.ModelForm):
-    class Meta:
-        model = SousRegroupementActe
         exclude = ['code']  # Exclude the 'code' field from the form
 
 

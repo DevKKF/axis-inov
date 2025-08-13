@@ -8,12 +8,6 @@ $(document).ready(function () {
     if (typeof $.fn.select2 === 'function') {
 
         $('.tags-multiple').select2();
-        $('.liste_medicament').select2({
-            placeholder: 'Sélectionner un médicament',
-            width: '100%',
-            dropdownAutoWidth: true
-        });
-
         $('.select2-container').css({
             'width': '100%'
         });
@@ -9179,7 +9173,7 @@ $(document).ready(function () {
 
     //******************** GLOBALS ********************//
 
-    //suppression de sinistre medicament
+    //suppression de sinistre
     $(document).on("click", ".btn_supprimer_sinistre", function (e) {
         let sinistre_id = $(this).data("sinistre_id");
         let href = $(this).data("href");

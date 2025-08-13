@@ -704,7 +704,6 @@ class Bareme(models.Model):
     plafond_rubrique = models.IntegerField(blank=True, null=True)
     plafond_sous_rubrique = models.IntegerField(blank=True, null=True)
     plafond_regroupement_acte = models.IntegerField(blank=True, null=True)
-    plafond_sous_regroupement_acte = models.IntegerField(blank=True, null=True)
     plafond_acte = models.IntegerField(blank=True, null=True)
     nombre_acte = models.IntegerField(blank=True, null=True)
     unite_frequence = models.IntegerField(blank=True, null=True)
@@ -984,16 +983,6 @@ class Aliment(models.Model):
         police = aliment_formule.formule.police
 
         return police
-
-
-class PhotoIdentite(models.Model):
-    aliment = models.ForeignKey(Aliment, on_delete=models.RESTRICT)
-    fichier = models.ImageField(max_length=255, blank=True, null=True)
-
-    class Meta:
-        db_table = 'photo'
-        verbose_name = "Photo"
-        verbose_name_plural = "Photos"
 
 
 class AlimentFormule(models.Model):
@@ -1613,30 +1602,6 @@ class Contact(models.Model):
         db_table = 'contacts'
         verbose_name = 'Contact'
         verbose_name_plural = 'Contacts'
-
-
-def upload_location_tarifprestataireclient(instance, filename):
-    filebase, extension = filename.rsplit('.', 1)
-    file_name = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
-    return 'clients/tarifs/%s.%s' % (file_name, extension)
-
-
-class TarifPrestataireClient(models.Model):
-    prestataire = models.ForeignKey(Prestataire, on_delete=models.RESTRICT, null=True)
-    client = models.ForeignKey(Client, on_delete=models.RESTRICT, null=True)
-    fichier_tarification = models.FileField(upload_to=upload_location_tarifprestataireclient, blank=True, default=None, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    statut = models.BooleanField(default=True)
-
-    class Meta:
-        db_table = 'tarif_prestataire_client'
-        verbose_name = 'Tarif prestataire-clients'
-        verbose_name_plural = 'Tarifs prestataire-clients'
-
-    @property
-    def fichier_tarifs(self):
-        return mark_safe('<a href="{0}" download>{1}</a>'.format(self.fichier_tarification.url, 'Télécharger')) if self.fichier_tarification else ""
 
 
 ## INOV API MOBILE

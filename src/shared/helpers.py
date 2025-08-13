@@ -25,9 +25,8 @@ from django_dump_die.middleware import dd
 from xhtml2pdf import pisa
 import secrets
 
-from configurations.models import Acte, Prestataire, Prescripteur, Tarif, \
-    SousRubriqueRegroupementActe, TypePrefinancement
-from production.models import Aliment, TarifPrestataireClient, Bareme, AlimentFormule, Carte
+from configurations.models import Acte, Prestataire, Prescripteur, Tarif, TypePrefinancement
+from production.models import Aliment, Bareme, AlimentFormule, Carte
 from shared.enum import StatutSinistre, Statut, StatutValidite, StatutRemboursement
 from sinistre.models import Sinistre
 from django.core.files.base import File
@@ -182,15 +181,7 @@ def respecte_conditions(date_survenance, bareme_srb, acte, aliment):
 
     #si une sous-rubrique est renseignée sur le barème, elle doit conternir le regroupement_acte de l'acte en cours
     if bareme_srb.sous_rubrique:
-        #récupère les regroupement_acte contenu dans la sous-rubrique
-        regroupements_actes = SousRubriqueRegroupementActe.objects.filter(sous_rubrique=bareme_srb.sous_rubrique)
-        for regroup in regroupements_actes:
-            if acte.regroupement_acte == regroup.regroupement_acte:
-                cdt_respectee = True
-                break  # Sort de la boucle dès que la condition est respectée
-            else :
-                cdt_respectee = False
-
+        None
 
     #si un regroupement_acte est renseigné sur le barème, il doit être celui de l'acte en cours
     if (bareme_srb.regroupement_acte and bareme_srb.regroupement_acte.id != acte.regroupement_acte.id):
@@ -655,10 +646,6 @@ def get_tarif_acte_from_bareme(type_priseencharge_code, date_survenance, acte_id
                     statut_validite=StatutValidite.VALIDE
                 ).aggregate(Sum('part_compagnie'))['part_compagnie__sum'] or 0
 
-            # les consommations par sous-rubrique pour chaque sous-rubrique auxquelles appartient l'acte
-            # rechercher les sous-rubriques dans lesquel le regroupement_acte de l'acte est présent
-            sous_rubriques = SousRubriqueRegroupementActe.objects.filter(regroupement_acte_id=acte.regroupement_acte_id)
-
             #
             consommation_rubrique = Sinistre.objects.filter(
                 periode_couverture_id=periode_couverture_encours.pk,
@@ -673,7 +660,6 @@ def get_tarif_acte_from_bareme(type_priseencharge_code, date_survenance, acte_id
             consommation_acte += 0
             consommation_regroupement_acte += 0
             consommation_rubrique += 0
-
 
 
             # convertir en float: à vérifier si pas d'impact négatif
@@ -848,79 +834,7 @@ def get_tarif_acte_from_bareme(type_priseencharge_code, date_survenance, acte_id
 
             # vérifier si la sous_rubrique est dans les spécificités
             if search_bareme_selon_sous_rubrique:
-                # rechercher les sous-rubriques dans lesquel le regroupement_acte de l'acte est présent
-                sous_rubriques = SousRubriqueRegroupementActe.objects.filter(regroupement_acte_id=acte.regroupement_acte_id)
-
-                # si l'acte appartient à des sous-rubriques
-                if sous_rubriques:
-
-                    # Récupérer toutes les sous-rubriques du baremes qui appartiennent à sous_rubriques
-                    baremes_sous_rubrique = Bareme.objects.filter(
-                        Q(statut=Statut.ACTIF,
-                          sous_rubrique_id__in=(sous_rubriques.values_list('sous_rubrique_id', flat=True).distinct().all()),
-                          regroupement_acte_id__isnull=True, acte_id__isnull=True) & criteres_dates)
-
-                    if baremes_sous_rubrique:
-                        # si une seule ligne
-                        if baremes_sous_rubrique.count() == 1:
-                            pprint("Une seule ligne du bareme (avec la sous-rubrique) trouvée")
-
-                            selected_bareme = baremes_sous_rubrique.first()
-
-                            ligne_bareme_specifique_choisie = selected_bareme
-                            bareme_id = selected_bareme.pk
-                            is_garanti = selected_bareme.is_garanti
-                            taux_franchise = selected_bareme.taux_tm
-                            # plafond_rubrique =
-                            plafond_sous_rubrique = selected_bareme.plafond_sous_rubrique
-                            plafond_regroupement_acte = 0
-                            plafond_acte = 0
-                            nombre_acte = 0
-                            unite_frequence = 0
-                            frequence = 0
-
-                            pprint("selected_bareme")
-                            debug(selected_bareme)
-
-
-                            search_bareme_selon_rubrique = False
-                            pprint("la seule ligne du bareme (avec la sous-rubrique) trouvé correspond aux critères")
-
-                        else:
-                            pprint("Plusieurs lignes du bareme (avec la sous-rubrique) trouvée")
-                            pprint("Filtrer sur le lien de parentée, puis sur l'age min et sur l'age max")
-                            # voir la possibilité de créer une fonction pour filtrer selon le lien de parentée, puis sur l'age min et sur l'age max
-
-                            selected_bareme = filtrer_selon_lien_parente_et_age(baremes_regroupement_acte, aliment)
-
-                            ligne_bareme_specifique_choisie = selected_bareme
-                            bareme_id = selected_bareme.pk
-                            is_garanti = selected_bareme.is_garanti
-                            taux_franchise = selected_bareme.taux_tm
-                            # plafond_rubrique =
-                            plafond_sous_rubrique = selected_bareme.plafond_sous_rubrique
-                            plafond_regroupement_acte = 0
-                            plafond_acte = 0
-                            nombre_acte = 0
-                            unite_frequence = 0
-                            frequence = 0
-
-                            pprint("selected_bareme")
-                            debug(selected_bareme)
-
-
-                    else:
-                        search_bareme_selon_rubrique = True
-                        pprint("Aucune ligne du bareme (avec la sous-rubrique) trouvée")
-                        pprint("Rechercher les baremes avec le rubrique")
-
-                else:
-                    search_bareme_selon_rubrique = True
-                    pprint("L'acte n'appartient à aucune sous-rubrique")
-                    pprint("Rechercher les baremes avec la rubrique")
-
-
-
+                none
 
             # Vérifier si la rubrique est dans les spécificités
             print("# Vérifier si la rubrique est dans les spécificités")
@@ -1086,41 +1000,6 @@ def get_tarif_acte_from_bareme(type_priseencharge_code, date_survenance, acte_id
                 # FIN GESTION CAS DE CONTROLE EN CONSULTATION
 
                 # IDENTIFIER LE TARIF A APPLIQUER
-
-                # 2- identifier le tarif à appliquer
-                tarif_prestataire_client = TarifPrestataireClient.objects.filter(formule_id=formule.id,
-                                                                                 prestataire_id=prestataire_id,
-                                                                                 statut=1).first()
-
-
-                # if tarif_prestataire_client and tarif_prestataire_client.fichier_tarification:
-                #     path_tarif_file = tarif_prestataire_client.fichier_tarification.path
-                #     colonne_cout_acte = "COUT ACTE"
-
-
-                #     pprint("Fichier tarif_client: " + path_tarif_file)
-
-                # elif prestataire.fichier_tarification:
-                #     path_tarif_file = prestataire.fichier_tarification.path
-                #     colonne_cout_acte = "COUT ACTE"
-
-                #     pprint("Fichier tarif_prestataire: " + path_tarif_file)
-
-
-                # else:
-                #     path_tarif_file = prestataire.bureau.tarfile.path
-                #     if prestataire.secteur.code == "PRIVE":
-                #         pprint("Fichier tarif_bureau: " + path_tarif_file)
-
-
-                #         if formule.type_tarif.code == "MUTUELLE":
-                #             colonne_cout_acte = "COUT MUTUELLE"
-                #         else:
-                #             colonne_cout_acte = "COUT CLASSIC"
-
-                #     else:
-                #         colonne_cout_acte = "COUT PUBLIC"
-
                 '''
                 # recuper le cout de l'acte depuis le fichier de tarif
                 if os.path.exists(path_tarif_file):
@@ -1272,14 +1151,6 @@ def get_tarif_acte_from_bareme(type_priseencharge_code, date_survenance, acte_id
                     montant_tm = tm
                     depassement = couverture_a_valider - plafond_acte
                     montant_couverture = plafond_acte
-                    pprint("plafond_acte > 0 and couverture_a_valider > plafond_acte")
-
-                pprint(plafond_acte)
-
-
-                #CONTROLE DES PLAFONDS DE CONSOMMATION
-                # rechercher les sous-rubriques dans lesquel le regroupement_acte de l'acte est présent
-                sous_rubriques = SousRubriqueRegroupementActe.objects.filter(regroupement_acte_id=acte.regroupement_acte_id)
 
                 #
                 nouvelle_conso_famille = consommation_famille + montant_couverture
@@ -1317,118 +1188,6 @@ def get_tarif_acte_from_bareme(type_priseencharge_code, date_survenance, acte_id
                     depassement_plafond = nouvelle_conso_regroupement_acte - plafond_regroupement_acte
                     depassement_plafond_regroupement_acte = nouvelle_conso_regroupement_acte - plafond_regroupement_acte
                     observation = "Plafond consommation par regroupement-acte atteint. Le regroupement d'acte " + acte.regroupement_acte.libelle + " a un plafond de " + str(as_money(plafond_regroupement_acte))
-
-
-
-
-                # Added on 25092023: pour un barème on aura une seule ligne de sous-rubrique qui concerne un regroupement d'acte donné. du coup on aura une seule ligne plus a chaque fois.
-                # Si plusieur, on prend le premier - by Marius
-                # Vérification des plafonds par sous-rubrique, pour chaque rubrique ou le regroupement de l'acte s'y trouve
-                # pprint("Vérification des plafonds par sous-rubrique, pour chaque rubrique ou le regroupement de l'acte s'y trouve")
-                # rechercher les sous-rubriques dans lesquel le regroupement_acte de l'acte est présent
-                # sous_rubriques = SousRubriqueRegroupementActe.objects.filter(regroupement_acte_id=acte.regroupement_acte_id)
-
-                # si l'acte appartient à des sous-rubriques
-                if sous_rubriques:
-
-                    # Récupérer toutes les sous-rubriques du baremes qui appartiennent à sous_rubriques
-                    pprint("Récupérer toutes les sous-rubriques du baremes qui appartiennent à sous_rubriques")
-                    baremes_sous_rubrique = Bareme.objects.filter(
-                        Q(statut=Statut.ACTIF,
-                          sous_rubrique_id__in=(sous_rubriques.values_list('sous_rubrique_id', flat=True).distinct().all()),
-                          regroupement_acte_id__isnull=True, acte_id__isnull=True) & criteres_dates)
-
-
-                    pprint("baremes_sous_rubrique")
-                    pprint(baremes_sous_rubrique)
-
-                    if baremes_sous_rubrique:
-                        # si une seule ligne
-                        if baremes_sous_rubrique.count() == 1:
-                            pprint("Une seule ligne du bareme (avec la sous-rubrique) trouvée")
-
-                            selected_bareme = baremes_sous_rubrique.first() #added on 18092023
-
-                            pprint(selected_bareme)
-
-                            sous_rubrique = selected_bareme.sous_rubrique
-                            plafond_sous_rubrique = selected_bareme.plafond_sous_rubrique
-                            libelle_sous_rubrique = selected_bareme.sous_rubrique.libelle
-
-                            #liste des regroupements de la sous-rubrique
-                            regroupements_of_sous_rubrique = SousRubriqueRegroupementActe.objects.filter(sous_rubrique_id=sous_rubrique.pk)
-                            pprint("regroupements_of_sous_rubrique")
-                            pprint(regroupements_of_sous_rubrique.values_list)
-
-                            #Contrôle du plafond par sous-rubrique
-                            #somme des consomations de cette sous-rubrique
-                            if acte.regroupement_acte:
-                                consommation_sous_rubrique = Sinistre.objects.filter(
-                                    periode_couverture_id=periode_couverture_encours.pk,
-                                    acte__regroupement_acte_id__in=(regroupements_of_sous_rubrique.values_list('regroupement_acte_id', flat=True).distinct().all()),
-                                    aliment_id=aliment.id,
-                                    statut=StatutSinistre.ACCORDE,
-                                    statut_remboursement__in=[StatutRemboursement.ATTENTE, StatutRemboursement.DEMANDE, StatutRemboursement.ACCEPTE, StatutRemboursement.ACCEPTE_PARTIELLEMENT],
-                                    statut_validite=StatutValidite.VALIDE
-                                ).aggregate(Sum('part_compagnie'))['part_compagnie__sum'] or 0
-
-                                consommation_sous_rubrique += 0
-
-                                nouvelle_conso_sous_rubrique = float(consommation_sous_rubrique) + montant_couverture
-
-                                if plafond_sous_rubrique and nouvelle_conso_sous_rubrique > plafond_sous_rubrique and plafond_sous_rubrique > 0:
-                                    depassement_plafond = nouvelle_conso_sous_rubrique - plafond_sous_rubrique
-                                    depassement_plafond_sous_rubrique = nouvelle_conso_sous_rubrique - plafond_sous_rubrique
-                                    observation = "Plafond consommation par sous-rubrique atteint. La sous-rubrique " + libelle_sous_rubrique + " a un plafond de " + str(as_money(plafond_sous_rubrique))
-
-                                    pprint("**** TODO 02 FEV 2024 ****")
-                                    pprint("observation")
-                                    pprint(depassement_plafond)
-                                    pprint("depassement_plafond = nouvelle_conso_sous_rubrique - plafond_sous_rubrique")
-                                    pprint(str(depassement_plafond) +"="+ str(nouvelle_conso_sous_rubrique) +"-"+ str(plafond_sous_rubrique))
-
-
-
-                        else:
-                            pprint("Plusieurs lignes du bareme (avec la sous-rubrique) trouvée")
-                            pprint("Filtrer sur le lien de parentée, puis sur l'age min et sur l'age max")
-                            # voir la possibilité de créer une fonction pour filtrer selon le lien de parentée, puis sur l'age min et sur l'age max
-
-                            selected_bareme = filtrer_selon_lien_parente_et_age(baremes_regroupement_acte, aliment)
-
-                            sous_rubrique = selected_bareme.sous_rubrique
-                            plafond_sous_rubrique = selected_bareme.plafond_sous_rubrique
-                            libelle_sous_rubrique = selected_bareme.sous_rubrique.libelle
-
-                            # liste des regroupements de la sous-rubrique
-                            regroupements_of_sous_rubrique = SousRubriqueRegroupementActe.objects.filter(sous_rubrique_id=sous_rubrique.pk)
-                            pprint("regroupements_of_sous_rubrique")
-                            pprint(regroupements_of_sous_rubrique.values_list)
-
-                            # Contrôle du plafond par sous-rubrique
-                            # somme des consomations de cette sous-rubrique
-                            if acte.regroupement_acte:
-                                consommation_sous_rubrique = Sinistre.objects.filter(
-                                    periode_couverture_id=periode_couverture_encours.pk,
-                                    acte__regroupement_acte_id__in=(regroupements_of_sous_rubrique.values_list('regroupement_acte_id', flat=True).distinct().all()),
-                                    aliment_id=aliment.id,
-                                    statut=StatutSinistre.ACCORDE,
-                                    statut_remboursement__in=[StatutRemboursement.ATTENTE, StatutRemboursement.DEMANDE, StatutRemboursement.ACCEPTE, StatutRemboursement.ACCEPTE_PARTIELLEMENT],
-                                    statut_validite=StatutValidite.VALIDE
-                                ).aggregate(Sum('part_compagnie'))['part_compagnie__sum'] or 0
-
-                                consommation_sous_rubrique += 0
-                                nouvelle_conso_sous_rubrique = float(consommation_sous_rubrique) + montant_couverture
-
-                                if plafond_sous_rubrique and nouvelle_conso_sous_rubrique > plafond_sous_rubrique and plafond_sous_rubrique > 0:
-                                    depassement_plafond = nouvelle_conso_sous_rubrique - plafond_sous_rubrique
-                                    depassement_plafond_sous_rubrique = nouvelle_conso_sous_rubrique - plafond_sous_rubrique
-                                    observation = "Plafond consommation par sous-rubrique atteint. La sous-rubrique " + libelle_sous_rubrique + " a un plafond de " + str(as_money(plafond_sous_rubrique))
-                                    # bloquer puisqu'on ne sais pas quel plafond considéré vu qu'il y a plusieurs sous rubriques dans lequel le regroupement acte de l'acte est
-                                    #pour faire passer en dépassement
-                                    #A BIEN VERIFIER
-
-
 
 
                 if plafond_rubrique and nouvelle_conso_rubrique > plafond_rubrique and plafond_rubrique > 0:

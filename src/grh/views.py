@@ -26,7 +26,7 @@ from sinistre.models import Sinistre
 User = get_user_model()
 
 from production.models import Aliment, AlimentFormule, Bareme, Document, Mouvement, \
-    MouvementPolice, Police, Quittance, Reglement, TarifPrestataireClient, TypeDocument, Client
+    MouvementPolice, Police, Quittance, Reglement, TypeDocument, Client
 from configurations.models import Civilite, Pays, Prestataire, User
 from shared.enum import Statut, StatutQuittance, Genre, StatutEnrolement, StatutValidite, StatutIncorporation, \
     StatutTraitement
@@ -875,15 +875,7 @@ class DetailsFormulePoliceView(TemplateView):
         formule_id = kwargs.get('formule_id')
 
         police = get_object_or_404(Police, id=police_id)
-        tarif_prestataire_clients = TarifPrestataireClient.objects.filter(formule=formule)
         reseau_soins = []
-
-        for tarif_prestataire_client in tarif_prestataire_clients:
-            prestataire_reseaux = ""
-            for prestataire_reseau in prestataire_reseaux:
-                reseau_soin = prestataire_reseau.reseau_soin
-                if reseau_soin not in reseau_soins:
-                    reseau_soins.append(reseau_soin)
 
         context['police'] = police
         context['reseau_soins'] = reseau_soins
@@ -919,16 +911,10 @@ class ReseauDeSoinView(TemplateView):
         context = super().get_context_data(**kwargs)
 
         police_id = kwargs.get('police_id')
-        formule_id = kwargs.get('formule_id')
-        reseau_soin_id = kwargs.get('reseau_soin_id')
 
         police = get_object_or_404(Police, id=police_id)
-        prestataires = Prestataire.objects.filter(tarifprestataireclient__formule_id=formule_id).distinct()
-        reseau_soin = ""
 
         context['police'] = police
-        context['prestataires'] = prestataires
-        context['reseau_soin'] =reseau_soin
 
         return context
 
@@ -1031,7 +1017,6 @@ class BeneficiairePoliceView(TemplateView):
         option_export_beneficiaire = export_beneficiaire
 
         context['police'] = police
-        context['formules'] = formules
         context['beneficiaires'] = beneficiaires
 
         context['option_export_beneficiaire'] = option_export_beneficiaire

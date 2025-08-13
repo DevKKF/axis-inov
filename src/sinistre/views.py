@@ -66,9 +66,7 @@ from sinistre.helper_sinistre import exportation_en_excel_avec_style, \
     extraction_demandes_accords_prealables_traitees_par_medecins_conseil, extraction_des_sinistres_traites_valides, \
     requete_demandes_accords_prealables_traitees_par_les_medecins_conseil, requete_liste_des_sp_client_par_filiale, \
     requete_liste_paiement_sinistre_sante_entre_deux_dates, \
-    requete_liste_sinistre_ordonnancee_par_period_par_beneficiaire, \
-    requete_liste_sinistre_ordonnancee_par_period_par_prestataire, \
-    requete_liste_sinistre_ordonnancee_par_period, requete_liste_sinistre_entre_2date, requete_analyse_prime_compta, \
+    requete_liste_sinistre_entre_2date, requete_analyse_prime_compta, \
     requete_liste_sinistre_saisies_entre_2date, requete_sinistres_traites_et_valides_par_les_gestionnaires, \
     requete_analyse_prime_compta_apporteur, get_retenue_selon_contexte
 # Create your views here.
@@ -183,9 +181,9 @@ def dossiersinistre_traites_datatable(request):
 
 
         if request.user.is_pharm:
-            total_frais_reel = c.total_frais_reel_medicament
-            total_part_compagnie = c.total_part_compagnie_medicament
-            total_part_assure = c.total_part_assure_medicament
+            total_frais_reel = ""
+            total_part_compagnie = ""
+            total_part_assure = ""
         elif request.user.is_prestataire:
             total_frais_reel = c.new_total_frais_reel
             total_part_compagnie = c.new_total_part_compagnie_prestataire
@@ -1095,9 +1093,9 @@ class AnnulerSinistreGestionnairesView(TemplateView):
             #si on a trouver le dossier on récupère infos liées y compris les sinistres qui le composent
             if dossier_sinistre:
                 sinistres = Sinistre.objects.filter(dossier_sinistre=dossier_sinistre).exclude(statut_validite=StatutValidite.SUPPRIME)
-                total_frais_reel = dossier_sinistre.total_frais_reel + dossier_sinistre.total_frais_reel_medicament
-                total_part_compagnie = dossier_sinistre.total_part_compagnie + dossier_sinistre.total_part_compagnie_medicament
-                total_part_assure = dossier_sinistre.total_part_assure + dossier_sinistre.total_part_assure_medicament
+                total_frais_reel = dossier_sinistre.total_frais_reel
+                total_part_compagnie = dossier_sinistre.total_part_compagnie
+                total_part_assure = dossier_sinistre.total_part_assure
                 cartes = dossier_sinistre.aliment.cartes.filter(statut=Statut.ACTIF) if dossier_sinistre.aliment else None
                 numero_carte = cartes.first().numero if cartes else None
                 has_sinistre_on_facture = sinistres.filter(facture_prestataire__isnull=False).exists()
@@ -1289,9 +1287,9 @@ def dossiersinistre_physique_gestionnaire_datatable(request):
 
 
         if request.user.is_pharm:
-            total_frais_reel = c.total_frais_reel_medicament
-            total_part_compagnie = c.total_part_compagnie_medicament
-            total_part_assure = c.total_part_assure_medicament
+            total_frais_reel = ""
+            total_part_compagnie = ""
+            total_part_assure = ""
         elif request.user.is_prestataire:
             total_frais_reel = c.new_total_frais_reel
             total_part_compagnie = c.new_total_part_compagnie_prestataire
@@ -1503,7 +1501,7 @@ class MouvementDossierSinistreView(TemplateView):
         except Sinistre.DoesNotExist:
             return redirect('/')
 
-        mouvements_sinistre = MouvementSinistre.objects.filter(sinistre_id=sinistre.id)
+        mouvements_sinistre = MouvementSinistre.objects.filter(sinistre_id=sinistre.id).order_by('id')
 
         mouvements = Mouvement.objects.filter(type_mouvement_id=2)
 
@@ -1512,6 +1510,50 @@ class MouvementDossierSinistreView(TemplateView):
         context['mouvements_sinistre'] = mouvements_sinistre
         context['mouvements'] = mouvements
         return self.render_to_response(context)
+
+    def get_context_data(self, **kwargs):
+        return {
+            **super().get_context_data(**kwargs),
+            **admin.site.each_context(self.request),
+            "opts": self.model._meta,
+        }
+
+
+@method_decorator(login_required, name='dispatch')
+class DetailMouvementDossierSinistreView(TemplateView):
+    template_name = 'historique_sinistre_detail.html'
+    model = HistoriqueSinistre
+
+    def get(self, request, *args, **kwargs):
+        context_original = self.get_context_data(**kwargs)
+
+        sinistre_id = kwargs['sinistre_id']
+        hist_sinistre_id = kwargs['historique_sinistre_id']
+        hist_sinistres = HistoriqueSinistre.objects.filter(id=hist_sinistre_id)
+        detail_sinistre = Sinistre.objects.filter(id=sinistre_id)
+
+        if hist_sinistres:
+            hist_sinistre = hist_sinistres.first()
+            sinistre = detail_sinistre.first()
+
+            intervenants = SinistreIntervenant.objects.filter(historique_sinistre_id=hist_sinistre_id)
+            documents = Document.objects.filter(historique_sinistre_id=hist_sinistre_id)
+            garanties = HistoriqueSinistreGarantie.objects.filter(historique_sinistre_id=hist_sinistre_id)
+
+            context_perso = {
+                'sinistre': sinistre,
+                'historiquesinistre': hist_sinistre,
+                'intervenants': intervenants,
+                'documents': documents,
+                'garanties': garanties,
+            }
+            context = {**context_original, **context_perso}
+
+            return self.render_to_response(context)
+
+        else:
+            # liste_dossiersinistre_url = reverse('dossiersinistre')
+            return redirect("dossiersinistre")
 
     def get_context_data(self, **kwargs):
         return {
@@ -2056,4 +2098,5 @@ def update_sinistre_gestionnaire(request, sinistre_id):
             return JsonResponse(response)
 
     return redirect('dossiersinistre')
+
 

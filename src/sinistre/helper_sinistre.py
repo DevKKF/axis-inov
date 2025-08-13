@@ -15,342 +15,6 @@ import os
 from django.db.models import Q, Sum
 
 
-def requete_liste_sinistre_ordonnancee_par_period(bureau_id, date_debut, date_fin, reference_facture):
-    print(date_debut)
-    print(date_fin)
-
-    requete = f"""
-    SELECT
-    CONCAT(COALESCE(clt.nom),' ', COALESCE(clt.prenoms, '')) 'CLIENT',
-    doss_sin.numero 'NUMERO_DOSSIER',
-    pl.numero 'NUMERO_POLICE',
-    cart.numero 'NUMERO_CARTE',
-    alm.nom 'NOM_PATIENT',
-    alm.prenoms 'PRENOM_PATIENT',
-    alm.matricule_employe 'MATRICULE',
-    alm.date_naissance 'DATE_NAISSANCE_PATIENT',
-    'ENTRÉ' as 'STATUT_PATIENT',
-    CONCAT(alm_adh.nom,' ',alm_adh.prenoms) 'ADHERENT_PRINCIPAL',
-    fg.libelle 'FORMULE',
-    sin.numero 'NUMERO_SINISTRE',
-    sin.date_survenance 'DATE_SINISTRE',
-    f_pres.created_at 'DATE_DE_RECEPTION_FACTURE',
-    sin.reference_facture 'REFERENCE_FACTURE',
-    act.libelle 'ACTE',
-    affect.libelle 'AFFECTION',
-    affect.code_cim_10 'CODE_AFFECTION',
-    CONCAT(prest.code,'|',prest.name) 'PRESTATAIRE',
-    rss.nom as 'RESEAU_SOIN',
-    tp_prest.name 'TYPE_PRESTATAIRE',
-    centre_prest.name 'CENTRE_PRESCRIPTEUR',
-    CONCAT(presteur.nom,' ',presteur.prenoms) 'MEDECIN_TRAITANT',
-    spte.name 'SPECIALITE_MEDECIN_TRAITANT',
-    CONCAT(presteur.nom,' ',presteur.prenoms) 'MEDECIN_PRESCRIPTEUR',
-    spte.name 'SPECIALITE_MEDECIN_PRESCRIPTEUR',
-    CASE  
-        WHEN (sin.acte_id IS NOT null) AND ((act.option_seance=1 or act.code='G66023CI01') and sin.nombre_demande IS NOT NULL and sin.nombre_demande > 0 and sin.statut='EN ATTENTE') THEN sin.nombre_demande * sin.frais_reel
-        WHEN (sin.medicament_id IS NOT null) and sin.nombre_demande > 0 THEN sin.nombre_demande * sin.frais_reel
-        ELSE sin.frais_reel
-    END 'FRAIS_REEL',
-    CASE 
-        WHEN (sin.acte_id IS NOT null) AND ((act.option_seance=1 or act.code='G66023CI01') and sin.nombre_demande IS NOT NULL and sin.nombre_demande > 0 and sin.statut='EN ATTENTE') AND ((sin.type_prefinancement_id IS NOT NULL) AND typ_pref.code = 'PREF_TOUT') THEN sin.nombre_demande * sin.frais_reel
-        WHEN (sin.medicament_id IS NOT null) and sin.nombre_demande > 0  AND ((sin.type_prefinancement_id IS NOT NULL) AND typ_pref.code = 'PREF_TOUT') THEN sin.nombre_demande * sin.frais_reel 
-        WHEN (sin.acte_id IS NOT null) AND ((act.option_seance=1 or act.code='G66023CI01') and sin.nombre_demande IS NOT NULL and sin.nombre_demande > 0 and sin.statut='EN ATTENTE') AND ((sin.type_prefinancement_id IS NULL) OR typ_pref.code <> 'PREF_TOUT') THEN sin.nombre_demande * sin.part_compagnie
-        WHEN (sin.medicament_id IS NOT null) and sin.nombre_demande > 0  AND ((sin.type_prefinancement_id IS NULL) OR typ_pref.code <> 'PREF_TOUT') THEN sin.nombre_demande * sin.part_compagnie 
-        ELSE sin.part_compagnie
-    END 'PART_INOV',
-    CASE 
-        WHEN (sin.acte_id IS NOT null) AND ((act.option_seance=1 or act.code='G66023CI01') and sin.nombre_demande IS NOT NULL and sin.nombre_demande > 0 and sin.statut='EN ATTENTE') AND ((sin.type_prefinancement_id IS NOT NULL) AND typ_pref.code = 'PREF_TOUT') THEN sin.nombre_demande * 0
-        WHEN (sin.medicament_id IS NOT null) and sin.nombre_demande > 0  AND ((sin.type_prefinancement_id IS NOT NULL) AND typ_pref.code = 'PREF_TOUT') THEN sin.nombre_demande * 0 
-        WHEN (sin.acte_id IS NOT null) AND ((act.option_seance=1 or act.code='G66023CI01') and sin.nombre_demande IS NOT NULL and sin.nombre_demande > 0 and sin.statut='EN ATTENTE') AND ((sin.type_prefinancement_id IS NULL) OR typ_pref.code <> 'PREF_TOUT') THEN sin.nombre_demande * sin.part_assure
-        WHEN (sin.medicament_id IS NOT null) and sin.nombre_demande > 0  AND ((sin.type_prefinancement_id IS NULL) OR typ_pref.code <> 'PREF_TOUT') THEN sin.nombre_demande * sin.part_assure 
-        ELSE sin.part_assure
-    END 'PART_ASSURE',
-    (select COALESCE(SUM(remb_sin.montant),0) FROM remboursement_sinistre remb_sin WHERE remb_sin.statut='TAXT' AND remb_sin.is_invalid=0 and remb_sin.sinistre_id=sin.id) 'TPS / AIB / BNC',
-    (select COALESCE(SUM(remb_sin.montant),0) FROM remboursement_sinistre remb_sin WHERE remb_sin.statut='TAXE FAR' AND remb_sin.is_invalid=0 and remb_sin.sinistre_id=sin.id) 'FAR',
-    sin.depassement 'DEPASSEMENT/EXCLUSION',
-    CASE 
-        WHEN (sin.acte_id IS NOT null) AND ((act.option_seance=1 or act.code='G66023CI01') and sin.nombre_demande IS NOT NULL and sin.nombre_demande > 0 and sin.statut='EN ATTENTE') AND ((sin.type_prefinancement_id IS NOT NULL) AND typ_pref.code = 'PREF_TOUT') THEN sin.nombre_demande * sin.part_assure
-        WHEN (sin.medicament_id IS NOT null) and sin.nombre_demande > 0  AND ((sin.type_prefinancement_id IS NOT NULL) AND typ_pref.code = 'PREF_TOUT') THEN sin.nombre_demande * sin.part_assure
-        WHEN (sin.acte_id IS NOT null) AND ((act.option_seance=1 or act.code='G66023CI01') and sin.nombre_demande IS NOT NULL and sin.nombre_demande > 0 and sin.statut='EN ATTENTE') AND ((sin.type_prefinancement_id IS NULL) OR typ_pref.code <> 'PREF_TOUT') THEN sin.nombre_demande * 0
-        WHEN (sin.medicament_id IS NOT null) and sin.nombre_demande > 0  AND ((sin.type_prefinancement_id IS NULL) OR typ_pref.code <> 'PREF_TOUT') THEN sin.nombre_demande * 0
-        ELSE 0
-    END 'TICKET PREFINANCE',
-    (select SUM(remb_sin.montant) FROM remboursement_sinistre remb_sin WHERE remb_sin.statut='ACCEPTE' AND remb_sin.is_invalid=0 and remb_sin.sinistre_id=sin.id) 'PART COMPAGNIE',
-    # (select SUM(remb_sin.montant) FROM remboursement_sinistre remb_sin WHERE remb_sin.statut='ACCEPTE' AND remb_sin.is_invalid=0 and remb_sin.sinistre_id=sin.id) 'NET_REGLE',
-    ((select SUM(remb_sin.montant) FROM remboursement_sinistre remb_sin WHERE remb_sin.statut='ACCEPTE' AND remb_sin.is_invalid=0 and remb_sin.sinistre_id=sin.id) + (select COALESCE(SUM(remb_sin.montant),0) FROM remboursement_sinistre remb_sin WHERE remb_sin.statut='TAXT' AND remb_sin.is_invalid=0 and remb_sin.sinistre_id=sin.id) + (select COALESCE(SUM(remb_sin.montant),0) FROM remboursement_sinistre remb_sin WHERE remb_sin.statut='TAXE FAR' AND remb_sin.is_invalid=0 and remb_sin.sinistre_id=sin.id)) 'NET_REGLE',
-    br_ord.created_at 'DATE_REG',
-    '' as 'NUMERO_LCHQ',
-    br_ord.numero 'NUMERO_BORDEREAU',
-    prest.code 'NUM_BENEFICIAIRE_DU_REMB',
-    CASE
-        WHEN prest.rb_ordre IS NULL THEN prest.name 
-        ELSE prest.rb_ordre 
-    END 'NOM_BENEFICIAIRE_DU_REMB',
-    cgni.nom 'COMPAGNIE',
-    b.code 'CODE_SOCIETE',
-    rg_act.libelle 'REGROUPEMENT_INOV',
-    qtbf.libelle 'TYPE_ASSURE'
-    
-    
-    FROM sinistres sin
-    LEFT JOIN aliments alm ON alm.id = sin.aliment_id
-    LEFT JOIN aliments alm_adh ON alm_adh.id=alm.adherent_principal_id
-    LEFT JOIN cartes cart on cart.aliment_id=alm.id AND cart.statut='ACTIF'
-    LEFT JOIN qualite_beneficiaire qtbf on qtbf.id = alm.qualite_beneficiaire_id
-    LEFT JOIN actes act on act.id = sin.acte_id
-    LEFT JOIN regroupement_acte rg_act on rg_act.id  = act.regroupement_acte_id
-    LEFT JOIN prescripteur presteur ON presteur.id = sin.prescripteur_id
-    LEFT JOIN specialite spte on spte.id = presteur.specialite_id
-    LEFT JOIN dossier_sinistre doss_sin on doss_sin.id = sin.dossier_sinistre_id
-    LEFT JOIN prestataires centre_prest on centre_prest.id = doss_sin.centre_prescripteur_id
-    LEFT JOIN polices pl on sin.police_id=pl.id
-    LEFT JOIN compagnies cgni on sin.compagnie_id=cgni.id
-    LEFT JOIN clients clt on clt.id=pl.client_id
-    LEFT JOIN factures_prestataires f_pres on f_pres.id = sin.facture_prestataire_id
-    LEFT JOIN affections affect on affect.id = sin.affection_id
-    LEFT JOIN prestataires prest on sin.prestataire_id=prest.id
-    LEFT JOIN bureau b on b.id=prest.bureau_id
-    LEFT JOIN type_prestataires tp_prest on tp_prest.id=prest.type_prestataire_id
-    LEFT JOIN bordereau_ordonnancement  br_ord on br_ord.id=sin.bordereau_ordonnancement_id
-    LEFT JOIN prestataires br_ord_prest on br_ord_prest.id=br_ord.prestataire_id
-    LEFT JOIN type_prefinancement typ_pref on typ_pref.id=sin.type_prefinancement_id
-    LEFT JOIN reseaux_soins rss on rss.id=fg.reseau_soin_id
-    WHERE sin.bordereau_ordonnancement_id IS NOT NULL 
-    AND sin.dossier_sinistre_id is not null
-    AND sin.statut_validite = 'VALIDE'
-    AND prest.bureau_id={bureau_id}
-    AND DATE(br_ord.created_at) BETWEEN '{date_debut}' AND '{date_fin}'
-    """
-
-    if reference_facture is not None and reference_facture != "":
-        return requete + f""" AND sin.reference_facture='{reference_facture}' """
-    else:
-        return requete 
-    
-def requete_liste_sinistre_ordonnancee_par_period_par_prestataire(bureau_id, date_debut, date_fin, prestataire_id, reference_facture):
-    
-    requete = f"""
-    SELECT
-    CONCAT(COALESCE(clt.nom),' ', COALESCE(clt.prenoms, '')) 'CLIENT',
-    doss_sin.numero 'NUMERO_DOSSIER',
-    pl.numero 'NUMERO_POLICE',
-    cart.numero 'NUMERO_CARTE',
-    alm.nom 'NOM_PATIENT',
-    alm.prenoms 'PRENOM_PATIENT',
-    alm.matricule_employe 'MATRICULE',
-    alm.date_naissance 'DATE_NAISSANCE_PATIENT',
-    'ENTRÉ' as 'STATUT_PATIENT',
-    CONCAT(alm_adh.nom,' ',alm_adh.prenoms) 'ADHERENT_PRINCIPAL',
-    fg.libelle 'FORMULE',
-    sin.numero 'NUMERO_SINISTRE',
-    sin.date_survenance 'DATE_SINISTRE',
-    f_pres.created_at 'DATE_DE_RECEPTION_FACTURE',
-    sin.reference_facture 'REFERENCE_FACTURE',
-    act.libelle 'ACTE',
-    affect.libelle 'AFFECTION',
-    affect.code_cim_10 'CODE_AFFECTION',
-    CONCAT(prest.code,'|',prest.name) 'PRESTATAIRE',
-    '' as 'RESEAU_SOIN',
-    tp_prest.name 'TYPE_PRESTATAIRE',
-    centre_prest.name 'CENTRE_PRESCRIPTEUR',
-    CONCAT(presteur.nom,' ',presteur.prenoms) 'MEDECIN_TRAITANT',
-    spte.name 'SPECIALITE_MEDECIN_TRAITANT',
-    CONCAT(presteur.nom,' ',presteur.prenoms) 'MEDECIN_PRESCRIPTEUR',
-    spte.name 'SPECIALITE_MEDECIN_PRESCRIPTEUR',
-    CASE  
-        WHEN (sin.acte_id IS NOT null) AND ((act.option_seance=1 or act.code='G66023CI01') and sin.nombre_demande IS NOT NULL and sin.nombre_demande > 0 and sin.statut='EN ATTENTE') THEN sin.nombre_demande * sin.frais_reel
-        WHEN (sin.medicament_id IS NOT null) and sin.nombre_demande > 0 THEN sin.nombre_demande * sin.frais_reel
-        ELSE sin.frais_reel
-    END 'FRAIS_REEL',
-    CASE 
-        WHEN (sin.acte_id IS NOT null) AND ((act.option_seance=1 or act.code='G66023CI01') and sin.nombre_demande IS NOT NULL and sin.nombre_demande > 0 and sin.statut='EN ATTENTE') AND ((sin.type_prefinancement_id IS NOT NULL) AND typ_pref.code = 'PREF_TOUT') THEN sin.nombre_demande * sin.frais_reel
-        WHEN (sin.medicament_id IS NOT null) and sin.nombre_demande > 0  AND ((sin.type_prefinancement_id IS NOT NULL) AND typ_pref.code = 'PREF_TOUT') THEN sin.nombre_demande * sin.frais_reel 
-        WHEN (sin.acte_id IS NOT null) AND ((act.option_seance=1 or act.code='G66023CI01') and sin.nombre_demande IS NOT NULL and sin.nombre_demande > 0 and sin.statut='EN ATTENTE') AND ((sin.type_prefinancement_id IS NULL) OR typ_pref.code <> 'PREF_TOUT') THEN sin.nombre_demande * sin.part_compagnie
-        WHEN (sin.medicament_id IS NOT null) and sin.nombre_demande > 0  AND ((sin.type_prefinancement_id IS NULL) OR typ_pref.code <> 'PREF_TOUT') THEN sin.nombre_demande * sin.part_compagnie 
-        ELSE sin.part_compagnie
-    END 'PART_INOV',
-    CASE 
-        WHEN (sin.acte_id IS NOT null) AND ((act.option_seance=1 or act.code='G66023CI01') and sin.nombre_demande IS NOT NULL and sin.nombre_demande > 0 and sin.statut='EN ATTENTE') AND ((sin.type_prefinancement_id IS NOT NULL) AND typ_pref.code = 'PREF_TOUT') THEN sin.nombre_demande * 0
-        WHEN (sin.medicament_id IS NOT null) and sin.nombre_demande > 0  AND ((sin.type_prefinancement_id IS NOT NULL) AND typ_pref.code = 'PREF_TOUT') THEN sin.nombre_demande * 0 
-        WHEN (sin.acte_id IS NOT null) AND ((act.option_seance=1 or act.code='G66023CI01') and sin.nombre_demande IS NOT NULL and sin.nombre_demande > 0 and sin.statut='EN ATTENTE') AND ((sin.type_prefinancement_id IS NULL) OR typ_pref.code <> 'PREF_TOUT') THEN sin.nombre_demande * sin.part_assure
-        WHEN (sin.medicament_id IS NOT null) and sin.nombre_demande > 0  AND ((sin.type_prefinancement_id IS NULL) OR typ_pref.code <> 'PREF_TOUT') THEN sin.nombre_demande * sin.part_assure 
-        ELSE sin.part_assure
-    END 'PART_ASSURE',
-    (select COALESCE(SUM(remb_sin.montant),0) FROM remboursement_sinistre remb_sin WHERE remb_sin.statut='TAXT' AND remb_sin.is_invalid=0 and remb_sin.sinistre_id=sin.id) 'TPS / AIB / BNC',
-    (select COALESCE(SUM(remb_sin.montant),0) FROM remboursement_sinistre remb_sin WHERE remb_sin.statut='TAXE FAR' AND remb_sin.is_invalid=0 and remb_sin.sinistre_id=sin.id) 'FAR',
-    sin.depassement 'DEPASSEMENT/EXCLUSION',
-    CASE 
-        WHEN (sin.acte_id IS NOT null) AND ((act.option_seance=1 or act.code='G66023CI01') and sin.nombre_demande IS NOT NULL and sin.nombre_demande > 0 and sin.statut='EN ATTENTE') AND ((sin.type_prefinancement_id IS NOT NULL) AND typ_pref.code = 'PREF_TOUT') THEN sin.nombre_demande * sin.part_assure
-        WHEN (sin.medicament_id IS NOT null) and sin.nombre_demande > 0  AND ((sin.type_prefinancement_id IS NOT NULL) AND typ_pref.code = 'PREF_TOUT') THEN sin.nombre_demande * sin.part_assure
-        WHEN (sin.acte_id IS NOT null) AND ((act.option_seance=1 or act.code='G66023CI01') and sin.nombre_demande IS NOT NULL and sin.nombre_demande > 0 and sin.statut='EN ATTENTE') AND ((sin.type_prefinancement_id IS NULL) OR typ_pref.code <> 'PREF_TOUT') THEN sin.nombre_demande * 0
-        WHEN (sin.medicament_id IS NOT null) and sin.nombre_demande > 0  AND ((sin.type_prefinancement_id IS NULL) OR typ_pref.code <> 'PREF_TOUT') THEN sin.nombre_demande * 0
-        ELSE 0
-    END 'TICKET PREFINANCE',
-    (select SUM(remb_sin.montant) FROM remboursement_sinistre remb_sin WHERE remb_sin.statut='ACCEPTE' AND remb_sin.is_invalid=0 and remb_sin.sinistre_id=sin.id) 'PART COMPAGNIE',
-    ((select SUM(remb_sin.montant) FROM remboursement_sinistre remb_sin WHERE remb_sin.statut='ACCEPTE' AND remb_sin.is_invalid=0 and remb_sin.sinistre_id=sin.id) + (select COALESCE(SUM(remb_sin.montant),0) FROM remboursement_sinistre remb_sin WHERE remb_sin.statut='TAXT' AND remb_sin.is_invalid=0 and remb_sin.sinistre_id=sin.id) + (select COALESCE(SUM(remb_sin.montant),0) FROM remboursement_sinistre remb_sin WHERE remb_sin.statut='TAXE FAR' AND remb_sin.is_invalid=0 and remb_sin.sinistre_id=sin.id)) 'NET_REGLE',
-    br_ord.created_at 'DATE_REG',
-    rss.nom as 'NUMERO_LCHQ',
-    br_ord.numero 'NUMERO_BORDEREAU',
-    prest.code 'NUM_BENEFICIAIRE_DU_REMB',
-    CASE
-        WHEN prest.rb_ordre IS NULL THEN prest.name 
-        ELSE prest.rb_ordre 
-    END 'NOM_BENEFICIAIRE_DU_REMB',
-    cgni.nom 'COMPAGNIE',
-    b.code 'CODE_SOCIETE',
-    rg_act.libelle 'REGROUPEMENT_INOV',
-    qtbf.libelle 'TYPE_ASSURE'
-
-
-    FROM sinistres sin
-    LEFT JOIN aliments alm ON alm.id = sin.aliment_id
-    LEFT JOIN aliments alm_adh ON alm_adh.id=alm.adherent_principal_id
-    LEFT JOIN cartes cart on cart.aliment_id=alm.id AND cart.statut='ACTIF'
-    LEFT JOIN qualite_beneficiaire qtbf on qtbf.id = alm.qualite_beneficiaire_id
-    LEFT JOIN actes act on act.id = sin.acte_id
-    LEFT JOIN regroupement_acte rg_act on rg_act.id  = act.regroupement_acte_id
-    LEFT JOIN prescripteur presteur ON presteur.id = sin.prescripteur_id
-    LEFT JOIN specialite spte on spte.id = presteur.specialite_id
-    LEFT JOIN dossier_sinistre doss_sin on doss_sin.id = sin.dossier_sinistre_id
-    LEFT JOIN prestataires centre_prest on centre_prest.id = doss_sin.centre_prescripteur_id
-    LEFT JOIN polices pl on sin.police_id=pl.id
-    LEFT JOIN compagnies cgni on sin.compagnie_id=cgni.id
-    LEFT JOIN clients clt on clt.id=pl.client_id
-    LEFT JOIN factures_prestataires f_pres on f_pres.id = sin.facture_prestataire_id
-    LEFT JOIN affections affect on affect.id = sin.affection_id
-    LEFT JOIN prestataires prest on sin.prestataire_id=prest.id
-    LEFT JOIN bureau b on b.id=prest.bureau_id
-    LEFT JOIN type_prestataires tp_prest on tp_prest.id=prest.type_prestataire_id
-    LEFT JOIN bordereau_ordonnancement  br_ord on br_ord.id=sin.bordereau_ordonnancement_id
-    LEFT JOIN prestataires br_ord_prest on br_ord_prest.id=br_ord.prestataire_id
-    LEFT JOIN type_prefinancement typ_pref on typ_pref.id=sin.type_prefinancement_id
-    LEFT JOIN reseaux_soins rss on rss.id=fg.reseau_soin_id
-    WHERE sin.bordereau_ordonnancement_id IS NOT NULL 
-    AND sin.dossier_sinistre_id is not null
-    AND sin.statut_validite = 'VALIDE'
-    AND prest.bureau_id={bureau_id}
-    AND DATE(br_ord.created_at) BETWEEN '{date_debut}' AND '{date_fin}'
-    AND prest.id={prestataire_id}
-    """
-    
-    if reference_facture is not None and reference_facture != "":
-        return requete + f""" AND sin.reference_facture='{reference_facture}' """
-    else:
-        return requete 
-
-def requete_liste_sinistre_ordonnancee_par_period_par_beneficiaire(bureau_id, date_debut, date_fin, beneficiaire_id, reference_facture):
-    
-    requete = f"""
-    SELECT
-    CONCAT(COALESCE(clt.nom),' ', COALESCE(clt.prenoms, '')) 'CLIENT',
-    doss_sin.numero 'NUMERO_DOSSIER',
-    pl.numero 'NUMERO_POLICE',
-    cart.numero 'NUMERO_CARTE',
-    alm.nom 'NOM_PATIENT',
-    alm.prenoms 'PRENOM_PATIENT',
-    alm.matricule_employe 'MATRICULE',
-    alm.date_naissance 'DATE_NAISSANCE_PATIENT',
-    'ENTRÉ' as 'STATUT_PATIENT',
-    CONCAT(alm_adh.nom,' ',alm_adh.prenoms) 'ADHERENT_PRINCIPAL',
-    fg.libelle 'FORMULE',
-    sin.numero 'NUMERO_SINISTRE',
-    sin.date_survenance 'DATE_SINISTRE',
-    f_pres.created_at 'DATE_DE_RECEPTION_FACTURE',
-    sin.reference_facture 'REFERENCE_FACTURE',
-    act.libelle 'ACTE',
-    affect.libelle 'AFFECTION',
-    affect.code_cim_10 'CODE_AFFECTION',
-    CONCAT(prest.code,'|',prest.name) 'PRESTATAIRE',
-    '' as 'RESEAU_SOIN',
-    tp_prest.name 'TYPE_PRESTATAIRE',
-    centre_prest.name 'CENTRE_PRESCRIPTEUR',
-    CONCAT(presteur.nom,' ',presteur.prenoms) 'MEDECIN_TRAITANT',
-    spte.name 'SPECIALITE_MEDECIN_TRAITANT',
-    CONCAT(presteur.nom,' ',presteur.prenoms) 'MEDECIN_PRESCRIPTEUR',
-    spte.name 'SPECIALITE_MEDECIN_PRESCRIPTEUR',
-    CASE  
-        WHEN (sin.acte_id IS NOT null) AND ((act.option_seance=1 or act.code='G66023CI01') and sin.nombre_demande IS NOT NULL and sin.nombre_demande > 0 and sin.statut='EN ATTENTE') THEN sin.nombre_demande * sin.frais_reel
-        WHEN (sin.medicament_id IS NOT null) and sin.nombre_demande > 0 THEN sin.nombre_demande * sin.frais_reel
-        ELSE sin.frais_reel
-    END 'FRAIS_REEL',
-    CASE 
-        WHEN (sin.acte_id IS NOT null) AND ((act.option_seance=1 or act.code='G66023CI01') and sin.nombre_demande IS NOT NULL and sin.nombre_demande > 0 and sin.statut='EN ATTENTE') AND ((sin.type_prefinancement_id IS NOT NULL) AND typ_pref.code = 'PREF_TOUT') THEN sin.nombre_demande * sin.frais_reel
-        WHEN (sin.medicament_id IS NOT null) and sin.nombre_demande > 0  AND ((sin.type_prefinancement_id IS NOT NULL) AND typ_pref.code = 'PREF_TOUT') THEN sin.nombre_demande * sin.frais_reel 
-        WHEN (sin.acte_id IS NOT null) AND ((act.option_seance=1 or act.code='G66023CI01') and sin.nombre_demande IS NOT NULL and sin.nombre_demande > 0 and sin.statut='EN ATTENTE') AND ((sin.type_prefinancement_id IS NULL) OR typ_pref.code <> 'PREF_TOUT') THEN sin.nombre_demande * sin.part_compagnie
-        WHEN (sin.medicament_id IS NOT null) and sin.nombre_demande > 0  AND ((sin.type_prefinancement_id IS NULL) OR typ_pref.code <> 'PREF_TOUT') THEN sin.nombre_demande * sin.part_compagnie 
-        ELSE sin.part_compagnie
-    END 'PART_INOV',
-    CASE 
-        WHEN (sin.acte_id IS NOT null) AND ((act.option_seance=1 or act.code='G66023CI01') and sin.nombre_demande IS NOT NULL and sin.nombre_demande > 0 and sin.statut='EN ATTENTE') AND ((sin.type_prefinancement_id IS NOT NULL) AND typ_pref.code = 'PREF_TOUT') THEN sin.nombre_demande * 0
-        WHEN (sin.medicament_id IS NOT null) and sin.nombre_demande > 0  AND ((sin.type_prefinancement_id IS NOT NULL) AND typ_pref.code = 'PREF_TOUT') THEN sin.nombre_demande * 0 
-        WHEN (sin.acte_id IS NOT null) AND ((act.option_seance=1 or act.code='G66023CI01') and sin.nombre_demande IS NOT NULL and sin.nombre_demande > 0 and sin.statut='EN ATTENTE') AND ((sin.type_prefinancement_id IS NULL) OR typ_pref.code <> 'PREF_TOUT') THEN sin.nombre_demande * sin.part_assure
-        WHEN (sin.medicament_id IS NOT null) and sin.nombre_demande > 0  AND ((sin.type_prefinancement_id IS NULL) OR typ_pref.code <> 'PREF_TOUT') THEN sin.nombre_demande * sin.part_assure 
-        ELSE sin.part_assure
-    END 'PART_ASSURE',
-    (select COALESCE(SUM(remb_sin.montant),0) FROM remboursement_sinistre remb_sin WHERE remb_sin.statut='TAXT' AND remb_sin.is_invalid=0 and remb_sin.sinistre_id=sin.id) 'TPS / AIB / BNC',
-    (select COALESCE(SUM(remb_sin.montant),0) FROM remboursement_sinistre remb_sin WHERE remb_sin.statut='TAXE FAR' AND remb_sin.is_invalid=0 and remb_sin.sinistre_id=sin.id) 'FAR',
-    sin.depassement 'DEPASSEMENT/EXCLUSION',
-    CASE 
-        WHEN (sin.acte_id IS NOT null) AND ((act.option_seance=1 or act.code='G66023CI01') and sin.nombre_demande IS NOT NULL and sin.nombre_demande > 0 and sin.statut='EN ATTENTE') AND ((sin.type_prefinancement_id IS NOT NULL) AND typ_pref.code = 'PREF_TOUT') THEN sin.nombre_demande * sin.part_assure
-        WHEN (sin.medicament_id IS NOT null) and sin.nombre_demande > 0  AND ((sin.type_prefinancement_id IS NOT NULL) AND typ_pref.code = 'PREF_TOUT') THEN sin.nombre_demande * sin.part_assure
-        WHEN (sin.acte_id IS NOT null) AND ((act.option_seance=1 or act.code='G66023CI01') and sin.nombre_demande IS NOT NULL and sin.nombre_demande > 0 and sin.statut='EN ATTENTE') AND ((sin.type_prefinancement_id IS NULL) OR typ_pref.code <> 'PREF_TOUT') THEN sin.nombre_demande * 0
-        WHEN (sin.medicament_id IS NOT null) and sin.nombre_demande > 0  AND ((sin.type_prefinancement_id IS NULL) OR typ_pref.code <> 'PREF_TOUT') THEN sin.nombre_demande * 0
-        ELSE 0
-    END 'TICKET PREFINANCE',
-    (select SUM(remb_sin.montant) FROM remboursement_sinistre remb_sin WHERE remb_sin.statut='ACCEPTE' AND remb_sin.is_invalid=0 and remb_sin.sinistre_id=sin.id) 'PART COMPAGNIE',
-    # (select SUM(remb_sin.montant) FROM remboursement_sinistre remb_sin WHERE remb_sin.statut='ACCEPTE' AND remb_sin.is_invalid=0 and remb_sin.sinistre_id=sin.id) 'NET_REGLE',
-    ((select SUM(remb_sin.montant) FROM remboursement_sinistre remb_sin WHERE remb_sin.statut='ACCEPTE' AND remb_sin.is_invalid=0 and remb_sin.sinistre_id=sin.id) + (select COALESCE(SUM(remb_sin.montant),0) FROM remboursement_sinistre remb_sin WHERE remb_sin.statut='TAXT' AND remb_sin.is_invalid=0 and remb_sin.sinistre_id=sin.id) + (select COALESCE(SUM(remb_sin.montant),0) FROM remboursement_sinistre remb_sin WHERE remb_sin.statut='TAXE FAR' AND remb_sin.is_invalid=0 and remb_sin.sinistre_id=sin.id)) 'NET_REGLE',
-    br_ord.created_at 'DATE_REG',
-    rss.nom as 'NUMERO_LCHQ',
-    br_ord.numero 'NUMERO_BORDEREAU',
-    prest.code 'NUM_BENEFICIAIRE_DU_REMB',
-    CASE
-        WHEN prest.rb_ordre IS NULL THEN prest.name 
-        ELSE prest.rb_ordre 
-    END 'NOM_BENEFICIAIRE_DU_REMB',
-    cgni.nom 'COMPAGNIE',
-    b.code 'CODE_SOCIETE',
-    rg_act.libelle 'REGROUPEMENT_INOV',
-    qtbf.libelle 'TYPE_ASSURE'
-
-
-    FROM sinistres sin
-    LEFT JOIN aliments alm ON alm.id = sin.aliment_id
-    LEFT JOIN aliments alm_adh ON alm_adh.id=alm.adherent_principal_id
-    LEFT JOIN cartes cart on cart.aliment_id=alm.id AND cart.statut='ACTIF'
-    LEFT JOIN qualite_beneficiaire qtbf on qtbf.id = alm.qualite_beneficiaire_id
-    LEFT JOIN actes act on act.id = sin.acte_id
-    LEFT JOIN regroupement_acte rg_act on rg_act.id  = act.regroupement_acte_id
-    LEFT JOIN prescripteur presteur ON presteur.id = sin.prescripteur_id
-    LEFT JOIN specialite spte on spte.id = presteur.specialite_id
-    LEFT JOIN dossier_sinistre doss_sin on doss_sin.id = sin.dossier_sinistre_id
-    LEFT JOIN prestataires centre_prest on centre_prest.id = doss_sin.centre_prescripteur_id
-    LEFT JOIN polices pl on sin.police_id=pl.id
-    LEFT JOIN compagnies cgni on sin.compagnie_id=cgni.id
-    LEFT JOIN clients clt on clt.id=pl.client_id
-    LEFT JOIN factures_prestataires f_pres on f_pres.id = sin.facture_prestataire_id
-    LEFT JOIN affections affect on affect.id = sin.affection_id
-    LEFT JOIN prestataires prest on sin.prestataire_id=prest.id
-    LEFT JOIN bureau b on b.id=prest.bureau_id
-    LEFT JOIN type_prestataires tp_prest on tp_prest.id=prest.type_prestataire_id
-    LEFT JOIN bordereau_ordonnancement  br_ord on br_ord.id=sin.bordereau_ordonnancement_id
-    LEFT JOIN prestataires br_ord_prest on br_ord_prest.id=br_ord.prestataire_id
-    LEFT JOIN type_prefinancement typ_pref on typ_pref.id=sin.type_prefinancement_id
-    LEFT JOIN reseaux_soins rss on rss.id=fg.reseau_soin_id
-    WHERE sin.bordereau_ordonnancement_id IS NOT NULL 
-    AND sin.dossier_sinistre_id is not null
-    AND sin.statut_validite = 'VALIDE'
-    AND prest.bureau_id={bureau_id}
-    AND DATE(br_ord.created_at) BETWEEN '{date_debut}' AND '{date_fin}'
-    AND alm_adh.id={beneficiaire_id}
-    """
-    
-    if reference_facture is not None and reference_facture != "":
-        return requete + f""" AND sin.reference_facture='{reference_facture}' """
-    else:
-        return requete 
-    
 def requete_demandes_accords_prealables_traitees_par_les_medecins_conseil(bureau_id, date_debut_survenance_demandes_accords_prealables_traitees, date_fin_survenance_demandes_accords_prealables_traitees):
     requete = f"""
     SELECT 
@@ -1144,7 +808,6 @@ def requete_analyse_prime_compta_apporteur(request):
 
 
 
-
 def exportation_en_excel_text_brute(title, header, queryset):
     # Exportation excel
     response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
@@ -1216,6 +879,7 @@ def exportation_en_excel_avec_style(title, header, queryset):
     workbook.save(response)
     return response
 
+
 def exportation_en_excel_avec_style_background_task(title, header, queryset):
     # Exportation excel
     # response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
@@ -1235,6 +899,7 @@ def exportation_en_excel_avec_style_background_task(title, header, queryset):
             cell.value = cell_value
 
     return workbook.save(f"{title}.xlsx")
+
 
 def requete_liste_des_sp_client_par_filiale(code_bureau, sp_a_la_date_du):
     return f"""
@@ -1309,57 +974,6 @@ def requete_liste_des_sp_client_par_filiale(code_bureau, sp_a_la_date_du):
     ) REQ
     """
 
-def load_backgroound_request_task():
-    tasks = BackgroundQueryTask.objects.filter(status="ENATT").all()
-    print("task")
-    print(tasks)
-    print(len(tasks))
-    for task in tasks:
-        try:
-            # mise a jour du status de la tache
-            task.status = "ENCOURS"
-            task.save()
-
-            queryset, header = execute_query(task.query)
-
-            print("queryset")
-            print(queryset)
-
-            print("header")
-            print(header)
-            themp_name = datetime.now().strftime("%Y%m%d%H%M%S")
-            fichier_excel = exportation_en_excel_avec_style_background_task(themp_name, header, queryset)
-
-            with open(f'{themp_name}.xlsx', 'rb') as f:
-                task.file.save("DONNEES_REQUETE_PLATEFORME_V2.xlsx", File(f), save=False)
-
-            #  Suppression du fichier excel thempo
-            if os.path.exists(f'{themp_name}.xlsx'):
-                os.remove(f'{themp_name}.xlsx')
-            # mise a jour du status de la tache
-            task.status = "TERMINEE"
-            task.error_message = ""
-            task.save()
-
-            send_notification_background_task_mail(task.created_by.email, task)
-
-            CronLog.objects.create(action="export", table="background_query_task",
-                                   description=f'requête {task.id} | {task.name} effectué avec succès pour {task.created_by.username}').save()
-
-            # self.stdout.write(self.style.SUCCESS(
-            #     f'requête {task.id} | {task.name} effectué avec succès pour {task.created_by.username}'))
-        except Exception as e:
-            print(e)
-            try:
-                # mise a jour du status de la tache
-                task.status = "ECHOUEE"
-                task.error_message = str(e)
-                task.save()
-            except Exception as e:
-                print(e)
-            send_notification_background_task_mail("a.tissi@inov.africa", task)
-
-    # self.stdout.write(self.style.SUCCESS('Executions requêtes terminé avec succès'))
 
 def requete_liste_paiement_sinistre_sante_entre_deux_dates(code_bureau, date_debut_paiment_sinisre, date_fin_paiment_sinisre, reference_facture, numero_police):
     requete = f"""
@@ -1449,6 +1063,8 @@ def requete_liste_paiement_sinistre_sante_entre_deux_dates(code_bureau, date_deb
 
 
 #
+
+
 def requete_liste_sinistre_saisies_entre_2date(bureau_id, date_debut, date_fin, reference_facture):
     print("requete_liste_sinistre_saisies_entre_2date @@@@@@@@@@@@@@@@@@@@@@@@@")
     print(bureau_id)
@@ -1553,7 +1169,6 @@ def requete_liste_sinistre_saisies_entre_2date(bureau_id, date_debut, date_fin, 
         return requete
 
 
-##
 def extraction_des_sinistres_traites_valides(bureau_id, date_debut, date_fin):
     print("requete_extraction_des_sinistres_traites_valides")
     print(bureau_id)

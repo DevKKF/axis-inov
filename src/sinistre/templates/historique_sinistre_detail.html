@@ -2,484 +2,477 @@
 {% load my_filters %}
 {% load i18n %}
 {% block extrastyle %}{% endblock %}
-
 {% block content_title %}
-    <div class="row mb-2">
-          <div class="col-sm-6">
-                <h1 class="m-0">Fiche historique sinistre</h1>
-          </div>
-          <div class="col-sm-6">
-                <ol class="breadcrumb float-sm-right">
-                      <li class="breadcrumb-item"><a href="{% url 'admin:index' %}">{% trans 'Home' %}</a></li>
-                      <li class="breadcrumb-item"><a href="{% url 'dossiersinistre' %}">Sinistres</a></li>
-                      <li class="breadcrumb-item"><a href="{% url 'mouvement_dossier_sinistre' sinistre.id %}">Mouvements</a></li>
-                      <li class="breadcrumb-item active">Fiche historique sinistre</li>
-                </ol>
-          </div>
-    </div>
-{% endblock %}
-
-{% block content %}
-<div class="col-12 col-md-12 order-2 order-md-1">
-  <div class="row">
-    <div class="col-12 col-md-6 col-md-12">
-      <h4></h4>
-      <div class="card shadow_">
-        <div class="card-header o-bg-primary">
-            <h3 class="card-title text-white"><a href="{% url 'mouvement_dossier_sinistre' sinistre.id %}" class="badge btn-sm btn-default btn-retour mr-2"><i class="fas fa-arrow-left"></i> Retour</a> DETAILS HISTORIQUE SINISTRE</h3>
-        </div>
-    </div>
-  </div>
+<div class="row mb-2">
+   <div class="col-sm-6">
+      <h1 class="m-0">Fiche historique sinistre</h1>
+   </div>
+   <div class="col-sm-6">
+      <ol class="breadcrumb float-sm-right">
+         <li class="breadcrumb-item"><a href="{% url 'admin:index' %}">{% trans 'Home' %}</a></li>
+         <li class="breadcrumb-item"><a href="{% url 'dossiersinistre' %}">Sinistres</a></li>
+         <li class="breadcrumb-item"><a href="{% url 'mouvement_dossier_sinistre' sinistre.id %}">Mouvements</a></li>
+         <li class="breadcrumb-item active">Fiche historique sinistre</li>
+      </ol>
+   </div>
 </div>
+{% endblock %}
+{% block content %}k
+<div class="col-12 col-md-12 order-2 order-md-1">
+   <div class="row">
+      <div class="col-12 col-md-6 col-md-12">
+         <h4></h4>
+         <div class="card shadow_">
+            <div class="card-header o-bg-primary">
+               <h3 class="card-title text-white"><a href="{% url 'mouvement_dossier_sinistre' sinistre.id %}" class="badge btn-sm btn-default btn-retour mr-2"><i class="fas fa-arrow-left"></i> Retour</a> DETAILS HISTORIQUE SINISTRE</h3>
+            </div>
+         </div>
+      </div>
+   </div>
 </div>
 <div class="col-md-12 mt-30">
-    <div class="card">
+   <div class="card">
       <ul class="nav nav-tabs" id="myTab" role="tablist">
-          <li class="nav-item"><a class="nav-link active" id="generalite-tab" data-toggle="tab" href="#generalite" role="tab" aria-controls="generalite" aria-selected="true">{{_("GENERALITE")}}</a></li>
-          <li class="nav-item"><a class="nav-link" id="garanties_sinistrees-tab" data-toggle="tab" href="#garanties_sinistrees" role="tab" aria-controls="garanties_sinistrees" aria-selected="false">{{_("GARANTIES SINISTREES")}}</a></li>
-          <li class="nav-item"><a class="nav-link" id="intervenants-tab" data-toggle="tab" href="#intervenants" role="tab" aria-controls="intervenants" aria-selected="false">{{_("INTERVENANTS")}}</a></li>
-          <li class="nav-item"><a class="nav-link" id="ged-tab" data-toggle="tab" href="#ged" role="tab" aria-controls="ged" aria-selected="false">{{_("GESTION ELECTRONIQUE DES DOCUMENTS")}}</a></li>
+         <li class="nav-item"><a class="nav-link active" id="generalite-tab" data-toggle="tab" href="#generalite" role="tab" aria-controls="generalite" aria-selected="true">{{_("GENERALITE")}}</a></li>
+         <li class="nav-item"><a class="nav-link" id="garanties_sinistrees-tab" data-toggle="tab" href="#garanties_sinistrees" role="tab" aria-controls="garanties_sinistrees" aria-selected="false">{{_("GARANTIES SINISTREES")}}</a></li>
+         <li class="nav-item"><a class="nav-link" id="intervenants-tab" data-toggle="tab" href="#intervenants" role="tab" aria-controls="intervenants" aria-selected="false">{{_("INTERVENANTS")}}</a></li>
+         <li class="nav-item"><a class="nav-link" id="ged-tab" data-toggle="tab" href="#ged" role="tab" aria-controls="ged" aria-selected="false">{{_("GESTION ELECTRONIQUE DES DOCUMENTS")}}</a></li>
       </ul>
       <div class="card-body">
-        <div class="tab-content" id="myTabContent">
-<div class="tab-pane fade mt-3 show active" id="generalite" role="tabpanel" aria-labelledby="generalite-tab">
-                <div class="row">
+         <div class="tab-content" id="myTabContent">
+            <div class="tab-pane fade mt-3 show active" id="generalite" role="tabpanel" aria-labelledby="generalite-tab">
+               <div class="row">
                   <div class="col-12 col-md-12 col-sm-12">
-                    <div class="row mb-3">
+                     <div class="row mb-3">
                         <div class="col-md-6">
-                            <div class="form-group row">
-                                <label class="col-sm-6 col-form-label">Numero sinistre</label>
-                                <div class="col-sm-6">
-                                    <span class="form-control" title="{{ historiquesinistre.sinistre.numero|default_if_none:'' }}">{{ historiquesinistre.sinistre.numero|default_if_none:"" }}</span>
-                                </div>
-                            </div>
-                            <div class="form-group row">
-                                <label class="col-sm-6 col-form-label">Police</label>
-                                <div class="col-sm-6">
-                                    <span class="form-control" title="{{ historiquesinistre.police.numero|default_if_none:'' }}">{{ historiquesinistre.police.numero|default_if_none:""|slice:":22" }}</span>
-                                </div>
-                            </div>
-                            <div class="form-group row">
-                                <label class="col-sm-6 col-form-label">Assureur</label>
-                                <div class="col-sm-6">
-                                    <span class="form-control" title="{{ historiquesinistre.compagnie.nom|default_if_none:'' }}">
-                                        {{ historiquesinistre.compagnie.nom|default_if_none:"" }}
-                                    </span>
-                                </div>
-                            </div>
-                            <div class="form-group row">
-                                <label class="col-sm-6 col-form-label">Opérateur de saisie</label>
-                                <div class="col-sm-6">
-                                    <span class="form-control" title="{{ historiquesinistre.created_by.first_name|default_if_none:'' }} {{ historiquesinistre.created_by.last_name|default_if_none:'' }}">
-                                        {{ historiquesinistre.created_by.first_name|default_if_none:"" }} {{ historiquesinistre.created_by.last_name|default_if_none:"" }}
-                                    </span>
-                                </div>
-                            </div>
-                            <div class="form-group row">
-                                <label class="col-sm-6 col-form-label">Gestionnaire sinistre</label>
-                                <div class="col-sm-6">
-                                    <span class="form-control" title="{{ historiquesinistre.gestionnaire_sinistre.first_name|default_if_none:'' }} {{ historiquesinistre.gestionnaire_sinistre.last_name|default_if_none:'' }}">
-                                        {{ historiquesinistre.gestionnaire_sinistre.first_name|default_if_none:"" }} {{ historiquesinistre.gestionnaire_sinistre.last_name|default_if_none:"" }}
-                                    </span>
-                                </div>
-                            </div>
+                           <div class="form-group row">
+                              <label class="col-sm-6 col-form-label">Numero sinistre</label>
+                              <div class="col-sm-6">
+                                 <span class="form-control" title="{{ historiquesinistre.sinistre.numero|default_if_none:'' }}">{{ historiquesinistre.sinistre.numero|default_if_none:"" }}</span>
+                              </div>
+                           </div>
+                           <div class="form-group row">
+                              <label class="col-sm-6 col-form-label">Police</label>
+                              <div class="col-sm-6">
+                                 <span class="form-control" title="{{ historiquesinistre.police.numero|default_if_none:'' }}">{{ historiquesinistre.police.numero|default_if_none:""|slice:":22" }}</span>
+                              </div>
+                           </div>
+                           <div class="form-group row">
+                              <label class="col-sm-6 col-form-label">Assureur</label>
+                              <div class="col-sm-6">
+                                 <span class="form-control" title="{{ historiquesinistre.compagnie.nom|default_if_none:'' }}">
+                                 {{ historiquesinistre.compagnie.nom|default_if_none:"" }}
+                                 </span>
+                              </div>
+                           </div>
+                           <div class="form-group row">
+                              <label class="col-sm-6 col-form-label">Opérateur de saisie</label>
+                              <div class="col-sm-6">
+                                 <span class="form-control" title="{{ historiquesinistre.created_by.first_name|default_if_none:'' }} {{ historiquesinistre.created_by.last_name|default_if_none:'' }}">
+                                 {{ historiquesinistre.created_by.first_name|default_if_none:"" }} {{ historiquesinistre.created_by.last_name|default_if_none:"" }}
+                                 </span>
+                              </div>
+                           </div>
+                           <div class="form-group row">
+                              <label class="col-sm-6 col-form-label">Gestionnaire sinistre</label>
+                              <div class="col-sm-6">
+                                 <span class="form-control" title="{{ historiquesinistre.gestionnaire_sinistre.first_name|default_if_none:'' }} {{ historiquesinistre.gestionnaire_sinistre.last_name|default_if_none:'' }}">
+                                 {{ historiquesinistre.gestionnaire_sinistre.first_name|default_if_none:"" }} {{ historiquesinistre.gestionnaire_sinistre.last_name|default_if_none:"" }}
+                                 </span>
+                              </div>
+                           </div>
                         </div>
                         <div class="vl"></div>
                         <div class="col-md-5">
-                            <div class="form-group row">
-                                <label class="col-sm-6 col-form-label">Client</label>
-                                <div class="col-sm-6">
-                                    <span class="form-control" title="{{ historiquesinistre.client.nom|default_if_none:'' }}  {{ historiquesinistre.client.prenoms|default_if_none:'' }}">{{ historiquesinistre.client.nom|default_if_none:"" }} {{ historiquesinistre.client.prenoms|default_if_none:"" }}</span>
-                                </div>
-                            </div>
-                            <div class="form-group row">
-                                <label class="col-sm-6 col-form-label">Type sinistre</label>
-                                <div class="col-sm-6">
-                                    <span class="form-control" title="{{ historiquesinistre.type_historiquesinistre.libelle|default_if_none:'' }}">{{ historiquesinistre.type_historiquesinistre.libelle|default_if_none:""|slice:":28" }}</span>
-                                </div>
-                            </div>
-                            <div class="form-group row">
-                                <label class="col-sm-6 col-form-label">Taux de responsabilité</label>
-                                <div class="col-sm-6">
-                                    <span class="form-control" title="{{ historiquesinistre.responsabilite.libelle|default_if_none:'' }}">
-                                        {{ historiquesinistre.taux_responsabilite.libelle|default_if_none:""|slice:":37" }}
-                                    </span>
-                                </div>
-                            </div>
-                            <div class="form-group row">
-                                <label class="col-sm-6 col-form-label">Date & Heure de création</label>
-                                <div class="col-sm-6">
-                                    <span class="form-control">
-                                        {{ historiquesinistre.created_at|date:'d/m/Y H:s:i' }}
-                                    </span>
-                                </div>
-                            </div>
-                            <div class="form-group row">
-                                <label class="col-sm-6 col-form-label">Dernière modification</label>
-                                <div class="col-sm-6">
-                                    <span class="form-control">
-                                        {{ historiquesinistre.updated_at|date:'d/m/Y H:s:i' }}
-                                    </span>
-                                </div>
-                            </div>
+                           <div class="form-group row">
+                              <label class="col-sm-6 col-form-label">Client</label>
+                              <div class="col-sm-6">
+                                 <span class="form-control" title="{{ historiquesinistre.client.nom|default_if_none:'' }}  {{ historiquesinistre.client.prenoms|default_if_none:'' }}">{{ historiquesinistre.client.nom|default_if_none:"" }} {{ historiquesinistre.client.prenoms|default_if_none:"" }}</span>
+                              </div>
+                           </div>
+                           <div class="form-group row">
+                              <label class="col-sm-6 col-form-label">Type sinistre</label>
+                              <div class="col-sm-6">
+                                 <span class="form-control" title="{{ historiquesinistre.type_historiquesinistre.libelle|default_if_none:'' }}">{{ historiquesinistre.type_historiquesinistre.libelle|default_if_none:""|slice:":28" }}</span>
+                              </div>
+                           </div>
+                           <div class="form-group row">
+                              <label class="col-sm-6 col-form-label">Taux de responsabilité</label>
+                              <div class="col-sm-6">
+                                 <span class="form-control" title="{{ historiquesinistre.responsabilite.libelle|default_if_none:'' }}">
+                                 {{ historiquesinistre.taux_responsabilite.libelle|default_if_none:""|slice:":37" }}
+                                 </span>
+                              </div>
+                           </div>
+                           <div class="form-group row">
+                              <label class="col-sm-6 col-form-label">Date & Heure de création</label>
+                              <div class="col-sm-6">
+                                 <span class="form-control">
+                                 {{ historiquesinistre.created_at|date:'d/m/Y H:s:i' }}
+                                 </span>
+                              </div>
+                           </div>
+                           <div class="form-group row">
+                              <label class="col-sm-6 col-form-label">Dernière modification</label>
+                              <div class="col-sm-6">
+                                 <span class="form-control">
+                                 {{ historiquesinistre.updated_at|date:'d/m/Y H:s:i' }}
+                                 </span>
+                              </div>
+                           </div>
                         </div>
-                    </div>
-                    <hr>
-                    <h6 class="o-primary">DATES & LIEU</h6>
-                    <hr>
-                    <div class="row mb-3">
+                     </div>
+                     <hr>
+                     <h6 class="o-primary">DATES & LIEU</h6>
+                     <hr>
+                     <div class="row mb-3">
                         <div class="col-md-6">
-                            <div class="form-group row">
-                                <label class="col-sm-6 col-form-label">Date survenance</label>
-                                <div class="col-sm-6">
-                                <span class="form-control">{{ historiquesinistre.date_survenance|date:'d/m/Y' }}</span>
-                                </div>
-                            </div>
-                            <div class="form-group row">
-                                <label class="col-sm-6 col-form-label">Date ouverture</label>
-                                <div class="col-sm-6">
-                                <span class="form-control">{{ historiquesinistre.date_ouverture|date:'d/m/Y' }}</span>
-                                </div>
-                            </div>
-                            <div class="form-group row">
-                                <label class="col-sm-6 col-form-label">Date clôture</label>
-                                <div class="col-sm-6">
-                                <span class="form-control">{{ historiquesinistre.date_cloture|date:'d/m/Y' }}</span>
-                                </div>
-                            </div>
+                           <div class="form-group row">
+                              <label class="col-sm-6 col-form-label">Date survenance</label>
+                              <div class="col-sm-6">
+                                 <span class="form-control">{{ historiquesinistre.date_survenance|date:'d/m/Y' }}</span>
+                              </div>
+                           </div>
+                           <div class="form-group row">
+                              <label class="col-sm-6 col-form-label">Date ouverture</label>
+                              <div class="col-sm-6">
+                                 <span class="form-control">{{ historiquesinistre.date_ouverture|date:'d/m/Y' }}</span>
+                              </div>
+                           </div>
+                           <div class="form-group row">
+                              <label class="col-sm-6 col-form-label">Date clôture</label>
+                              <div class="col-sm-6">
+                                 <span class="form-control">{{ historiquesinistre.date_cloture|date:'d/m/Y' }}</span>
+                              </div>
+                           </div>
                         </div>
                         <div class="vl"></div>
                         <div class="col-md-5">
-                            <div class="form-group row">
-                                <label class="col-sm-6 col-form-label">Date déclaration</label>
-                                <div class="col-sm-6">
-                                <span class="form-control">{{ historiquesinistre.date_declaration|date:'d/m/Y' }}</span>
-                                </div>
-                            </div>
-                            <div class="form-group row">
-                                <label class="col-sm-6 col-form-label">Date réouverture</label>
-                                <div class="col-sm-6">
-                                <span class="form-control">{{ historiquesinistre.date_reouverture|date:'d/m/Y' }}</span>
-                                </div>
-                            </div>
-                            <div class="form-group row">
-                                <label class="col-sm-6 col-form-label">Lieu de survenance</label>
-                                <div class="col-sm-6">
-                                <span class="form-control">{{ historiquesinistre.lieu_survenance|default_if_none:"" }}</span>
-                                </div>
-                            </div>
+                           <div class="form-group row">
+                              <label class="col-sm-6 col-form-label">Date déclaration</label>
+                              <div class="col-sm-6">
+                                 <span class="form-control">{{ historiquesinistre.date_declaration|date:'d/m/Y' }}</span>
+                              </div>
+                           </div>
+                           <div class="form-group row">
+                              <label class="col-sm-6 col-form-label">Date réouverture</label>
+                              <div class="col-sm-6">
+                                 <span class="form-control">{{ historiquesinistre.date_reouverture|date:'d/m/Y' }}</span>
+                              </div>
+                           </div>
+                           <div class="form-group row">
+                              <label class="col-sm-6 col-form-label">Lieu de survenance</label>
+                              <div class="col-sm-6">
+                                 <span class="form-control">{{ historiquesinistre.lieu_survenance|default_if_none:"" }}</span>
+                              </div>
+                           </div>
                         </div>
-                    </div>
-                    <hr>
-                    <h6 class="o-primary">CARACTERISTIQUES PRINCIPALES</h6>
-                    <hr>
-                    <div class="row mb-3">
+                     </div>
+                     <hr>
+                     <h6 class="o-primary">CARACTERISTIQUES PRINCIPALES</h6>
+                     <hr>
+                     <div class="row mb-3">
                         <div class="col-md-6">
-                            <div class="form-group row">
-                                <label class="col-sm-6 col-form-label">Risque</label>
-                                <div class="col-sm-6">
-                                <span class="form-control" title="{{historiquesinistre.risque_sinistre|default_if_none:''}}">{{historiquesinistre.risque_sinistre|default_if_none:""|slice:":36"}}</span>
-                                </div>
-                            </div>
-                            <div class="form-group row">
-                                <label class="col-sm-6 col-form-label">Franchise</label>
-                                <div class="col-sm-6">
-                                <span class="form-control">{{historiquesinistre.franchise|money_field}}</span>
-                                </div>
-                            </div>
+                           <div class="form-group row">
+                              <label class="col-sm-6 col-form-label">Risque</label>
+                              <div class="col-sm-6">
+                                 <span class="form-control" title="{{historiquesinistre.risque_sinistre|default_if_none:''}}">{{historiquesinistre.risque_sinistre|default_if_none:""|slice:":36"}}</span>
+                              </div>
+                           </div>
+                           <div class="form-group row">
+                              <label class="col-sm-6 col-form-label">Franchise</label>
+                              <div class="col-sm-6">
+                                 <span class="form-control">{{historiquesinistre.franchise|money_field}}</span>
+                              </div>
+                           </div>
                         </div>
                         <div class="vl"></div>
                         <div class="col-md-5">
-                            <div class="form-group row">
-                                <label class="col-sm-6 col-form-label">Lieu de survenance</label>
-                                <div class="col-sm-6">
-                                <span class="form-control">{{historiquesinistre.lieu_survenance|default_if_none:""}}</span>
-                                </div>
-                            </div>
-                            <div class="form-group row">
-                                <label class="col-sm-6 col-form-label">TVA récupérée</label>
-                                <div class="col-sm-6">
-                                <span class="form-control">
-                                    {% if historiquesinistre.tva_recuperee %}
-                                        OUI
-                                    {% else %}
-                                        NON
-                                    {% endif %}
-                                </span>
-                                </div>
-                            </div>
+                           <div class="form-group row">
+                              <label class="col-sm-6 col-form-label">Lieu de survenance</label>
+                              <div class="col-sm-6">
+                                 <span class="form-control">{{historiquesinistre.lieu_survenance|default_if_none:""}}</span>
+                              </div>
+                           </div>
+                           <div class="form-group row">
+                              <label class="col-sm-6 col-form-label">TVA récupérée</label>
+                              <div class="col-sm-6">
+                                 <span class="form-control">
+                                 {% if historiquesinistre.tva_recuperee %}
+                                 OUI
+                                 {% else %}
+                                 NON
+                                 {% endif %}
+                                 </span>
+                              </div>
+                           </div>
                         </div>
-                    </div>
-                    <hr style="display:none">
-                    <h6 class="o-primary" style="display:none">GARANTIES MISES EN CAUSE</h6>
-                    <hr style="display:none">
-                    <div class="row mb-3" style="display:none">
+                     </div>
+                     <hr style="display:none">
+                     <h6 class="o-primary" style="display:none">GARANTIES MISES EN CAUSE</h6>
+                     <hr style="display:none">
+                     <div class="row mb-3" style="display:none">
                         <div class="col-md-11  mb-3" style="padding-right:0px;">
-                            <table id="table_garanties_details_sinistre" class="table table-bordered table-striped dataTable customDataTable dtr-inline">
-                                <thead>
-                                    <tr>
-                                        <th style="padding:5px;">Garantie</th>
-                                        <th style="padding:5px;">Franchise</th>
-                                        <th style="width:20%;padding:5px;">Capital</th>
-                                        <th style="width:20%;padding:5px;">Prime Nette</th>
-                                        <th style="width:20%;padding:5px;">Prime TTC</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                {% for garantie_sinistre in garantie_sinistres %}
-                                    <tr>
-                                        <td style="padding:5px;">{{ garantie_historiquesinistre.garantie.nom|default_if_none:"" }}</td>
-                                        <td style="padding:5px;" class="text-right">{{ garantie_historiquesinistre.franchise|money_field }}</td>
-                                        <td style="padding:5px;padding-right:10px;" class="text-right">{{ garantie_historiquesinistre.capital|money_field }}</td>
-                                        <td style="padding:5px;padding-right:10px;" class="text-right">{{ garantie_historiquesinistre.prime_nette|money_field }} </td>
-                                        <td style="padding:5px;padding-right:10px;" class="text-right">{{ garantie_historiquesinistre.prime_ttc|money_field }}</td>
-                                    </tr>
-                                {% endfor %}
-                                </tbody>
-                            </table>
+                           <table id="table_garanties_details_sinistre" class="table table-bordered table-striped dataTable customDataTable dtr-inline">
+                              <thead>
+                                 <tr>
+                                    <th style="padding:5px;">Garantie</th>
+                                    <th style="padding:5px;">Franchise</th>
+                                    <th style="width:20%;padding:5px;">Capital</th>
+                                    <th style="width:20%;padding:5px;">Prime Nette</th>
+                                    <th style="width:20%;padding:5px;">Prime TTC</th>
+                                 </tr>
+                              </thead>
+                              <tbody>
+                                 {% for garantie_sinistre in garantie_sinistres %}
+                                 <tr>
+                                    <td style="padding:5px;">{{ garantie_historiquesinistre.garantie.nom|default_if_none:"" }}</td>
+                                    <td style="padding:5px;" class="text-right">{{ garantie_historiquesinistre.franchise|money_field }}</td>
+                                    <td style="padding:5px;padding-right:10px;" class="text-right">{{ garantie_historiquesinistre.capital|money_field }}</td>
+                                    <td style="padding:5px;padding-right:10px;" class="text-right">{{ garantie_historiquesinistre.prime_nette|money_field }} </td>
+                                    <td style="padding:5px;padding-right:10px;" class="text-right">{{ garantie_historiquesinistre.prime_ttc|money_field }}</td>
+                                 </tr>
+                                 {% endfor %}
+                              </tbody>
+                           </table>
                         </div>
-
                         <div class="col-md-2">
-                            <div class="form-group row">
-                                <div class="col-sm-12">
-                                    <label>Franchise</label>
-                                    <span class="form-control money_field" style="background: #f0dcc8; border: #f0dcc8">{{total_franchises|default_if_none:"0" }}</span>
-                                </div>
-                            </div>
+                           <div class="form-group row">
+                              <div class="col-sm-12">
+                                 <label>Franchise</label>
+                                 <span class="form-control money_field" style="background: #f0dcc8; border: #f0dcc8">{{total_franchises|default_if_none:"0" }}</span>
+                              </div>
+                           </div>
                         </div>
                         <div class="col-md-3">
-                            <div class="form-group row">
-                                <div class="col-sm-12">
-                                    <label>Capital</label>
-                                    <span class="form-control money_field" style="background: #f0dcc8; border: #f0dcc8">{{total_capitaux|default_if_none:"0" }}</span>
-                                </div>
-                            </div>
+                           <div class="form-group row">
+                              <div class="col-sm-12">
+                                 <label>Capital</label>
+                                 <span class="form-control money_field" style="background: #f0dcc8; border: #f0dcc8">{{total_capitaux|default_if_none:"0" }}</span>
+                              </div>
+                           </div>
                         </div>
                         <div class="col-md-3">
-                            <div class="form-group row">
-                                <div class="col-sm-12">
-                                    <label>Prime Nette</label>
-                                    <span class="form-control money_field" style="background: #f0dcc8; border: #f0dcc8">{{total_prime_nette|default_if_none:"0" }}</span>
-                                </div>
-                            </div>
+                           <div class="form-group row">
+                              <div class="col-sm-12">
+                                 <label>Prime Nette</label>
+                                 <span class="form-control money_field" style="background: #f0dcc8; border: #f0dcc8">{{total_prime_nette|default_if_none:"0" }}</span>
+                              </div>
+                           </div>
                         </div>
                         <div class="col-md-3">
-                            <div class="form-group row">
-                                <div class="col-sm-12">
-                                    <label>Prime TTC</label>
-                                    <span class="form-control money_field" style="background: #f0dcc8; border: #f0dcc8">{{total_prime_ttc|default_if_none:"0" }}</span>
-                                </div>
-                            </div>
+                           <div class="form-group row">
+                              <div class="col-sm-12">
+                                 <label>Prime TTC</label>
+                                 <span class="form-control money_field" style="background: #f0dcc8; border: #f0dcc8">{{total_prime_ttc|default_if_none:"0" }}</span>
+                              </div>
+                           </div>
                         </div>
-
-                    </div>
-                    <hr style="display:none">
-                    <h6 class="o-primary" style="display:none">INTERVENANTS</h6>
-                    <hr style="display:none">
-                    <div class="row mb-3" style="display:none">
+                     </div>
+                     <hr style="display:none">
+                     <h6 class="o-primary" style="display:none">INTERVENANTS</h6>
+                     <hr style="display:none">
+                     <div class="row mb-3" style="display:none">
                         <div class="col-md-11  mb-3" style="padding-right:0px;">
-                            <table id="table_intervenant_details_sinistre" class="table table-bordered table-striped dataTable customDataTable dtr-inline">
-                                <thead>
-                                    <tr>
-                                        <th>Nom & Prénoms</th>
-                                        <th>Catégorie</th>
-                                        <th>Portable</th>
-                                        <th>Email</th>
-                                        <th>Adresse</th>
-                                        <th>Ville</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for inter in intervenants %}
-                                        <tr>
-                                            <td>{{ inter.intervenant.nom|default_if_none:"" }} {{ inter.intervenant.prenoms|default_if_none:"" }}</td>
-                                            <td>{{ inter.intervenant.type_intervenant.libelle|default_if_none:"" }}</td>
-                                            <td>{{ inter.intervenant.portable|default_if_none:"" }}</td>
-                                            <td>{{ inter.intervenant.email|default_if_none:"" }}</td>
-                                            <td>{{ inter.intervenant.boite_postale|default_if_none:"" }}</td>
-                                            <td>{{ inter.intervenant.ville|default_if_none:"" }}</td>
-                                        </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
+                           <table id="table_intervenant_details_sinistre" class="table table-bordered table-striped dataTable customDataTable dtr-inline">
+                              <thead>
+                                 <tr>
+                                    <th>Nom & Prénoms</th>
+                                    <th>Catégorie</th>
+                                    <th>Portable</th>
+                                    <th>Email</th>
+                                    <th>Adresse</th>
+                                    <th>Ville</th>
+                                 </tr>
+                              </thead>
+                              <tbody>
+                                 {% for inter in intervenants %}
+                                 <tr>
+                                    <td>{{ inter.intervenant.nom|default_if_none:"" }} {{ inter.intervenant.prenoms|default_if_none:"" }}</td>
+                                    <td>{{ inter.intervenant.type_intervenant.libelle|default_if_none:"" }}</td>
+                                    <td>{{ inter.intervenant.portable|default_if_none:"" }}</td>
+                                    <td>{{ inter.intervenant.email|default_if_none:"" }}</td>
+                                    <td>{{ inter.intervenant.boite_postale|default_if_none:"" }}</td>
+                                    <td>{{ inter.intervenant.ville|default_if_none:"" }}</td>
+                                 </tr>
+                                 {% endfor %}
+                              </tbody>
+                           </table>
                         </div>
-                    </div>
-                    <hr>
-                    <h6 class="o-primary">DESCRIPTION DETAILLEE</h6>
-                    <hr>
-                    <div class="row mb-3">
+                     </div>
+                     <hr>
+                     <h6 class="o-primary">DESCRIPTION DETAILLEE</h6>
+                     <hr>
+                     <div class="row mb-3">
                         <div class="col-md-11">
-                            <div class="form-group row">
-                                <label class="col-sm-2 col-form-label">Fait générateur</label>
-                                <div class="col-sm-10">
-                                    <span class="form-control">{{historiquesinistre.fait_generateur|default_if_none:""}}</span>
-                                </div>
-                            </div>
-                            <div class="form-group row">
-                                <label class="col-sm-2 col-form-label">Point de choc</label>
-                                <div class="col-sm-10">
-                                    <textarea class="form-control" cols="3" rows="2">{{historiquesinistre.point_de_choc|default_if_none:""}}</textarea>
-                                </div>
-                            </div>
-                            <div class="form-group row">
-                                <label class="col-sm-2 col-form-label">Commentaires</label>
-                                <div class="col-sm-10">
-                                    <textarea class="form-control" cols="3" rows="2">{{historiquesinistre.commentaires|default_if_none:""}}</textarea>
-                                </div>
-                            </div>
+                           <div class="form-group row">
+                              <label class="col-sm-2 col-form-label">Fait générateur</label>
+                              <div class="col-sm-10">
+                                 <span class="form-control">{{historiquesinistre.fait_generateur|default_if_none:""}}</span>
+                              </div>
+                           </div>
+                           <div class="form-group row">
+                              <label class="col-sm-2 col-form-label">Point de choc</label>
+                              <div class="col-sm-10">
+                                 <textarea class="form-control" cols="3" rows="2">{{historiquesinistre.point_de_choc|default_if_none:""}}</textarea>
+                              </div>
+                           </div>
+                           <div class="form-group row">
+                              <label class="col-sm-2 col-form-label">Commentaires</label>
+                              <div class="col-sm-10">
+                                 <textarea class="form-control" cols="3" rows="2">{{historiquesinistre.commentaires|default_if_none:""}}</textarea>
+                              </div>
+                           </div>
                         </div>
-                    </div>
-                    <hr>
-                    <h6 class="o-primary">SITUATION SINISTRE</h6>
-                    <hr>
-                    <div class="row mb-3">
+                     </div>
+                     <hr>
+                     <h6 class="o-primary">SITUATION SINISTRE</h6>
+                     <hr>
+                     <div class="row mb-3">
                         <div class="col-md-6">
-                            <div class="form-group row">
-                                <label class="col-sm-6 col-form-label">Mouvement</label>
-                                <div class="col-sm-6">
-                                <span class="form-control">{{historiquesinistre.mouvement.libelle}}</span>
-                                </div>
-                            </div>
+                           <div class="form-group row">
+                              <label class="col-sm-6 col-form-label">Mouvement</label>
+                              <div class="col-sm-6">
+                                 <span class="form-control">{{historiquesinistre.mouvement.libelle}}</span>
+                              </div>
+                           </div>
                         </div>
                         <div class="vl"></div>
                         <div class="col-md-5">
-                            <div class="form-group row">
-                                <label class="col-sm-6 col-form-label">Motif</label>
-                                <div class="col-sm-6">
-                                <span class="form-control">{{historiquesinistre.motif_mouvement.libelle}}</span>
-                                </div>
-                            </div>
+                           <div class="form-group row">
+                              <label class="col-sm-6 col-form-label">Motif</label>
+                              <div class="col-sm-6">
+                                 <span class="form-control">{{historiquesinistre.motif_mouvement.libelle}}</span>
+                              </div>
+                           </div>
                         </div>
-                    </div>
-                    <hr>
+                     </div>
+                     <hr>
                   </div>
-                </div>
+               </div>
             </div>
-
             <div class="tab-pane fade mt-3" id="garanties_sinistrees" role="tabpanel" aria-labelledby="garanties_sinistrees-tab">
-                <div class="row">
-                    <div class="col-12 col-md-12 col-sm-12 table-responsive">
-                        <table class="table table-bordered table-striped dataTable dtr-inline" id="table_garanties_sinistrees">
-                          <thead>
-                            <tr role="row">
-                                <th class="sorting" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-label="Platform(s): activate to sort column ascending">
-                                    Garantie
-                                </th>
-                                <th class="sorting" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-label="Platform(s): activate to sort column ascending">
-                                    Mouvement
-                                </th>
-                                <th class="sorting" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-label="Platform(s): activate to sort column ascending">
-                                    Date mouvement
-                                </th>
-                                <th class="sorting" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-label="Platform(s): activate to sort column ascending">
-                                    Statut
-                                </th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {% for garant in garanties %}
-                              <tr>
-                                <td>{{ garant.sinistre_garantie.garantie.nom|default_if_none:"" }}</td>
-                                <td>{{ garant.mouvement.libelle|default_if_none:"" }}</td>
-                                <td>{{ garant.date_mouvement|date:'d/m/Y'|default_if_none:"" }}</td>
-                                <td>
-                                    {% if garant.sinistre_garantie.date_cloture %}
-                                        <span class="badge badge-danger">Clôturé</span>
-                                    {% else %}
-                                        <span class="badge badge-success">En cours</span>
-                                    {% endif %}
-                                </td>
-                              </tr>
-                            {% endfor %}
-                          </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <div class="tab-pane fade mt-3" id="intervenants" role="tabpanel" aria-labelledby="intervenants-tab">
-                <div class="row">
-                    <div class="col-12 col-md-12 col-sm-12 table-responsive">
-                        <table class="table table-bordered table-striped dataTable dtr-inline" id="table_quittances_impayees">
-                          <thead>
-                            <tr role="row">
-                                <th class="sorting" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-label="Platform(s): activate to sort column ascending">
-                                    Nom & Prénoms
-                                </th>
-                                <th class="sorting" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-label="Platform(s): activate to sort column ascending">
-                                    Type intervenant
-                                </th>
-                                <th class="sorting" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-label="Platform(s): activate to sort column ascending">
-                                    Portable
-                                </th>
-                                <th class="sorting" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-label="Platform(s): activate to sort column ascending">
-                                    Téléphone
-                                </th>
-                                <th class="sorting" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-label="Platform(s): activate to sort column ascending">
-                                    Date d'ajout
-                                </th>
-                                <th class="sorting" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-label="Platform(s): activate to sort column ascending">
-                                    Action
-                                </th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {% for interv in intervenants %}
-                                <tr class="odd">
-                                    <td class="dtr-control" tabindex="0">{{ interv.intervenant.nom }} {{ interv.intervenant.prenoms }}</td>
-                                    <td class="dtr-control" tabindex="0">{{ interv.intervenant.type_intervenant.libelle }}</td>
-                                    <td class="dtr-control" tabindex="0">{{ interv.intervenant.portable }}</td>
-                                    <td class="dtr-control" tabindex="0">{{ interv.intervenant.telephone }}</td>
-                                    <td class="dtr-control" tabindex="0">{{ interv.created_at|date:'d/m/Y'|default_if_none:"" }}</td>
-                                    <td class="text-center">
-                                        <span style="cursor:pointer;" class="btn_details_intervenant badge badge-info text-white rounded-pill text-center" data-intervenant_id="{interv.id}" data-model_name="details-intervenant" data-modal_title="INFORMATIONS" data-href="{% url 'details_intervenant' interv.id %}"><i class="fas fa-eye"></i> Détails</span>
-                                    </td>
-                                </tr>
-                            {% endfor %}
-                          </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-
-            <div class="tab-pane fade mt-3" id="ged" role="tabpanel" aria-labelledby="ged-tab">
-                <div class="row">
+               <div class="row">
                   <div class="col-12 col-md-12 col-sm-12 table-responsive">
-                      <table class="table table-bordered table-striped dataTable dtr-inline" id="table_honoraires">
-                          <thead>
-                            <tr role="row">
-                                <th class="sorting" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-label="Platform(s): activate to sort column ascending">
-                                    Nom du document
-                                </th>
-                                <th class="sorting" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-label="Platform(s): activate to sort column ascending">
-                                    Type de document
-                                </th>
-                                <th class="sorting" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-label="Platform(s): activate to sort column ascending">
-                                    Fichier
-                                </th>
-                                <th class="sorting" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-label="Platform(s): activate to sort column ascending">
-                                    Date de création
-                                </th>
-                            </tr>
-                          </thead>
-                          <tbody>
-                            {% for document in documents %}
-                                {% if not document.client_id or document.quittance_id or document.police_id %}
-                                    <tr class="odd">
-                                        <td class="dtr-control" tabindex="0">{{ document.nom }}</td>
-                                        <td class="">{{ document.type_document.libelle }}</td>
-                                        <td class="text-center"><a href="{{ document.fichier.url }}" target="_blank"><i class="fa fa-file" title="Aperçu"></i> Afficher</a></td>
-                                        <td class="dtr-control" tabindex="0">{{ document.created_at|date:'d/m/Y'|default_if_none:"" }}</td>
-                                    </tr>
-                                {% endif %}
-                            {% endfor %}
-                          </tbody>
-                      </table>
+                     <table class="table table-bordered table-striped dataTable dtr-inline" id="table_garanties_sinistrees">
+                        <thead>
+                           <tr role="row">
+                              <th class="sorting" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-label="Platform(s): activate to sort column ascending">
+                                 Garantie
+                              </th>
+                              <th class="sorting" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-label="Platform(s): activate to sort column ascending">
+                                 Mouvement
+                              </th>
+                              <th class="sorting" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-label="Platform(s): activate to sort column ascending">
+                                 Date mouvement
+                              </th>
+                              <th class="sorting" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-label="Platform(s): activate to sort column ascending">
+                                 Statut
+                              </th>
+                           </tr>
+                        </thead>
+                        <tbody>
+                           {% for garant in garanties %}
+                           <tr>
+                              <td>{{ garant.sinistre_garantie.garantie.nom|default_if_none:"" }}</td>
+                              <td>{{ garant.mouvement.libelle|default_if_none:"" }}</td>
+                              <td>{{ garant.date_mouvement|date:'d/m/Y'|default_if_none:"" }}</td>
+                              <td>
+                                 {% if garant.sinistre_garantie.date_cloture %}
+                                 <span class="badge badge-danger">Clôturé</span>
+                                 {% else %}
+                                 <span class="badge badge-success">En cours</span>
+                                 {% endif %}
+                              </td>
+                           </tr>
+                           {% endfor %}
+                        </tbody>
+                     </table>
                   </div>
-                </div>
+               </div>
             </div>
-        </div>
+            <div class="tab-pane fade mt-3" id="intervenants" role="tabpanel" aria-labelledby="intervenants-tab">
+               <div class="row">
+                  <div class="col-12 col-md-12 col-sm-12 table-responsive">
+                     <table class="table table-bordered table-striped dataTable dtr-inline" id="table_quittances_impayees">
+                        <thead>
+                           <tr role="row">
+                              <th class="sorting" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-label="Platform(s): activate to sort column ascending">
+                                 Nom & Prénoms
+                              </th>
+                              <th class="sorting" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-label="Platform(s): activate to sort column ascending">
+                                 Type intervenant
+                              </th>
+                              <th class="sorting" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-label="Platform(s): activate to sort column ascending">
+                                 Portable
+                              </th>
+                              <th class="sorting" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-label="Platform(s): activate to sort column ascending">
+                                 Téléphone
+                              </th>
+                              <th class="sorting" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-label="Platform(s): activate to sort column ascending">
+                                 Date d'ajout
+                              </th>
+                              <th class="sorting" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-label="Platform(s): activate to sort column ascending">
+                                 Action
+                              </th>
+                           </tr>
+                        </thead>
+                        <tbody>
+                           {% for interv in intervenants %}
+                           <tr class="odd">
+                              <td class="dtr-control" tabindex="0">{{ interv.intervenant.nom }} {{ interv.intervenant.prenoms }}</td>
+                              <td class="dtr-control" tabindex="0">{{ interv.intervenant.type_intervenant.libelle }}</td>
+                              <td class="dtr-control" tabindex="0">{{ interv.intervenant.portable }}</td>
+                              <td class="dtr-control" tabindex="0">{{ interv.intervenant.telephone }}</td>
+                              <td class="dtr-control" tabindex="0">{{ interv.created_at|date:'d/m/Y'|default_if_none:"" }}</td>
+                              <td class="text-center">
+                                 <span style="cursor:pointer;" class="btn_details_intervenant badge badge-info text-white rounded-pill text-center" data-intervenant_id="{interv.id}" data-model_name="details-intervenant" data-modal_title="INFORMATIONS" data-href="{% url 'details_intervenant' interv.id %}"><i class="fas fa-eye"></i> Détails</span>
+                              </td>
+                           </tr>
+                           {% endfor %}
+                        </tbody>
+                     </table>
+                  </div>
+               </div>
+            </div>
+            <div class="tab-pane fade mt-3" id="ged" role="tabpanel" aria-labelledby="ged-tab">
+               <div class="row">
+                  <div class="col-12 col-md-12 col-sm-12 table-responsive">
+                     <table class="table table-bordered table-striped dataTable dtr-inline" id="table_honoraires">
+                        <thead>
+                           <tr role="row">
+                              <th class="sorting" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-label="Platform(s): activate to sort column ascending">
+                                 Nom du document
+                              </th>
+                              <th class="sorting" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-label="Platform(s): activate to sort column ascending">
+                                 Type de document
+                              </th>
+                              <th class="sorting" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-label="Platform(s): activate to sort column ascending">
+                                 Fichier
+                              </th>
+                              <th class="sorting" tabindex="0" aria-controls="example1" rowspan="1" colspan="1" aria-label="Platform(s): activate to sort column ascending">
+                                 Date de création
+                              </th>
+                           </tr>
+                        </thead>
+                        <tbody>
+                           {% for document in documents %}
+                           {% if not document.client_id or document.quittance_id or document.police_id %}
+                           <tr class="odd">
+                              <td class="dtr-control" tabindex="0">{{ document.nom }}</td>
+                              <td class="">{{ document.type_document.libelle }}</td>
+                              <td class="text-center"><a href="{{ document.fichier.url }}" target="_blank"><i class="fa fa-file" title="Aperçu"></i> Afficher</a></td>
+                              <td class="dtr-control" tabindex="0">{{ document.created_at|date:'d/m/Y'|default_if_none:"" }}</td>
+                           </tr>
+                           {% endif %}
+                           {% endfor %}
+                        </tbody>
+                     </table>
+                  </div>
+               </div>
+            </div>
+         </div>
       </div>
-    </div>
+   </div>
 </div>
 {% endblock %}

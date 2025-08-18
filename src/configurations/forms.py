@@ -1,14 +1,6 @@
 from django import forms
 from django.contrib.auth.models import Permission
-from .models import ActionLog, RegroupementActe, SousRubrique, StatExcelWsBoby, Tarif, Compagnie, Banque, \
-    Branche, Garantie, GarantieBranche, Formule, GarantieFormule
-
-
-class ActionLogForm(forms.ModelForm):
-    class Meta:
-        model = ActionLog
-
-        fields = ('data_before',)
+from .models import Tarif, Compagnie, Banque, Branche, Garantie, GarantieBranche, Formule, GarantieFormule
 
 
 class PermissionForm(forms.ModelForm):
@@ -18,18 +10,6 @@ class PermissionForm(forms.ModelForm):
         widgets = {
             'permissions': forms.CheckboxSelectMultiple(),  # Utiliser le widget CheckboxSelectMultiple pour les cases à cocher
         }
-
-
-class RegroupementActeForm(forms.ModelForm):
-    class Meta:
-        model = RegroupementActe
-        exclude = ['code']  # Exclude the 'code' field from the form
-
-
-class SousRubriqueForm(forms.ModelForm):
-    class Meta:
-        model = SousRubrique
-        exclude = ['code']  # Exclude the 'code' field from the form
 
 
 class ActeAdminForm(forms.ModelForm):
@@ -53,12 +33,6 @@ class BanqueAdminForm(forms.ModelForm):
     class Meta:
         model = Banque
         exclude = ['bureau', 'created_by']  # Excluez le champ bureau du formulaire
-
-
-class StatExcelWsBobyForm(forms.ModelForm):
-    class Meta:
-        model = StatExcelWsBoby
-        exclude = ['updated_at']  # Exclude the 'code' field from the form
 
 
 class GarantieBrancheForm(forms.ModelForm):

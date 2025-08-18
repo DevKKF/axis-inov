@@ -2,7 +2,7 @@ from pprint import pprint
 
 from comptabilite.models import EncaissementCommission
 from configurations.helper_config import send_notification_background_task_mail, execute_query
-from configurations.models import ActionLog, CronLog, Prestataire, Retenue
+from configurations.models import Prestataire, Retenue
 from production.models import MouvementPolice, Reglement, Quittance, ApporteurPolice
 from shared.enum import StatutReversementCompagnie, StatutEncaissementCommission, StatutValidite
 import openpyxl
@@ -99,8 +99,6 @@ def requete_sinistres_traites_et_valides_par_les_gestionnaires(bureau_id, date_d
     s.statut AS statut_pec,
     s.statut_remboursement,
     s.montant_remboursement_accepte,
-    (select COALESCE(SUM(remb_sin.montant),0) FROM remboursement_sinistre remb_sin WHERE remb_sin.statut='TAXT' AND remb_sin.is_invalid=0 and remb_sin.sinistre_id=s.id) 'tps_aib_bnc',
-    (select COALESCE(SUM(remb_sin.montant),0) FROM remboursement_sinistre remb_sin WHERE remb_sin.statut='TAXE FAR' AND remb_sin.is_invalid=0 and remb_sin.sinistre_id=s.id) 'far',
     DATE_FORMAT(rsin.created_at, "%d/%m/%Y %H:%i") AS date_traitement,
     rsin.motif,
     s.statut_validite
@@ -110,7 +108,6 @@ def requete_sinistres_traites_et_valides_par_les_gestionnaires(bureau_id, date_d
     JOIN actes ON actes.id = s.acte_id
     JOIN affections aff ON aff.id = s.affection_id
     JOIN prestataires pr ON pr.id = s.prestataire_id
-    JOIN remboursement_sinistre rsin ON rsin.sinistre_id = s.id  AND rsin.is_invalid = 0 AND rsin.statut='ACCEPTE'
     JOIN polices po ON po.id = s.police_id
     JOIN clients cl ON cl.id = po.client_id
     JOIN compagnies cie ON cie.id = po.compagnie_id
@@ -193,13 +190,9 @@ def requete_liste_sinistre_entre_2date(bureau_id, date_debut, date_fin, referenc
     sin.frais_reel 'FRAIS_REEL',
     sin.part_compagnie 'PART_INOV',
     sin.part_assure 'PART_ASSURE',
-    (select COALESCE(SUM(remb_sin.montant),0) FROM remboursement_sinistre remb_sin WHERE remb_sin.statut='TAXT' AND remb_sin.is_invalid=0 and remb_sin.sinistre_id=sin.id) 'TPS / AIB / BNC',
-    (select COALESCE(SUM(remb_sin.montant),0) FROM remboursement_sinistre remb_sin WHERE remb_sin.statut='TAXE FAR' AND remb_sin.is_invalid=0 and remb_sin.sinistre_id=sin.id) 'FAR',
     sin.depassement 'DEPASSEMENT/EXCLUSION',
     CASE WHEN tpr.code = "PREF_TOUT" THEN sin.part_assure else 0 END 'TICKET_PREFINANCE',
     sin.part_compagnie 'PART_COMPAGNIE',
-    # CASE WHEN dataremb.date_reg IS NULL THEN NULL ELSE rsin.montant END 'NET_REGLE',
-    CASE WHEN dataremb.date_reg IS NULL THEN NULL ELSE ((select SUM(remb_sin.montant) FROM remboursement_sinistre remb_sin WHERE remb_sin.statut='ACCEPTE' AND remb_sin.is_invalid=0 and remb_sin.sinistre_id=sin.id) + (select COALESCE(SUM(remb_sin.montant),0) FROM remboursement_sinistre remb_sin WHERE remb_sin.statut='TAXT' AND remb_sin.is_invalid=0 and remb_sin.sinistre_id=sin.id) + (select COALESCE(SUM(remb_sin.montant),0) FROM remboursement_sinistre remb_sin WHERE remb_sin.statut='TAXE FAR' AND remb_sin.is_invalid=0 and remb_sin.sinistre_id=sin.id)) END 'NET_REGLE',
     dataremb.date_reg 'DATE_REGLEMENT',
     dataremb.numero_bordereau 'NUMERO_BORDEREAU',
     dataremb.Nom_Beneficiaire_du_remb 'BENEFICIAIRE_DU_REMB',
@@ -216,12 +209,10 @@ def requete_liste_sinistre_entre_2date(bureau_id, date_debut, date_fin, referenc
     JOIN aliments alm_adh ON alm_adh.id=alm.adherent_principal_id
     JOIN qualite_beneficiaire qtbf on qtbf.id = alm.qualite_beneficiaire_id
     JOIN actes act on act.id = sin.acte_id
-    JOIN regroupement_acte rg_act on rg_act.id  = act.regroupement_acte_id
     JOIN prestataires prest on sin.prestataire_id=prest.id
     JOIN compagnies cgni on sin.compagnie_id=cgni.id
     LEFT JOIN type_prefinancement tpr on tpr.id = sin.type_prefinancement_id
     LEFT JOIN affections affect on affect.id = sin.affection_id
-    LEFT JOIN remboursement_sinistre rsin ON rsin.sinistre_id = sin.id AND rsin.is_invalid = 0 AND rsin.statut = 'ACCEPTE' 
     LEFT JOIN dataremb on sin.id = dataremb.id
     WHERE prest.bureau_id={bureau_id}
     AND sin.dossier_sinistre_id is not null
@@ -235,20 +226,9 @@ def requete_liste_sinistre_entre_2date(bureau_id, date_debut, date_fin, referenc
 
 
 def requete_analyse_prime_compta(request):
-    ActionLog.objects.create(done_by=request.user, action="execution_requete_excel_compta",
-                             description="Extraction de la requete ANALYSE_PRIMES",
-                             table="",
-                             row=None, data_before=None,
-                             data_after=None)
-
-    # queryset = Sinistre.objects.filter(bordereau_ordonnancement__isnull=False).order_by('-id')
     queryset = Quittance.objects.select_related('police').filter(statut_validite=StatutValidite.VALIDE,
                                                                  bureau_id=request.user.bureau.id, import_stats=False).order_by('-id')
     default_taux_euro = 0
-    print(default_taux_euro)
-    # dd(queryset)
-    pprint(queryset.count())
-    # Exportation excel
     response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
     response['Content-Disposition'] = 'attachment; filename="ANALYSE_PRIMES_COMPTA.xlsx"'
 
@@ -506,13 +486,6 @@ def requete_analyse_prime_compta(request):
 
 
 def requete_analyse_prime_compta_apporteur(request):
-    ActionLog.objects.create(done_by=request.user, action="execution_requete_excel_compta",
-                             description="Extraction de la requete ANALYSE_PRIMES",
-                             table="",
-                             row=None, data_before=None,
-                             data_after=None)
-
-    # queryset = Sinistre.objects.filter(bordereau_ordonnancement__isnull=False).order_by('-id')
     queryset = Quittance.objects.select_related('police','compagnie').filter(statut_validite=StatutValidite.VALIDE,
                                                                  bureau_id=request.user.bureau.id, import_stats=False).order_by('-id')
     default_taux_euro = 0
@@ -921,7 +894,6 @@ def requete_liste_des_sp_client_par_filiale(code_bureau, sp_a_la_date_du):
                 round(coalesce(sum(rsin.montant),0),2)
                 FROM sinistres sinn
                 join polices on polices.id = sinn.police_id 
-                join remboursement_sinistre rsin ON rsin.sinistre_id = sinn.id 
                 AND rsin.statut = 'ACCEPTE' AND rsin.is_invalid = 0 
                 WHERE sinn.bordereau_ordonnancement_id is not NULL 
                 AND (sinn.date_survenance between B.dtmvt_pol and '{sp_a_la_date_du}')
@@ -1006,11 +978,8 @@ def requete_liste_paiement_sinistre_sante_entre_deux_dates(code_bureau, date_deb
         ,s.part_assure
         ,s.part_compagnie as part_inov
         ,s.part_compagnie
-        ,(select COALESCE(sum(montant),0) from remboursement_sinistre rs where rs.sinistre_id = s.id and rs.statut = 'TAXT' and  rsin.is_invalid = 0)  as tps_aib_bnc
-        ,(select COALESCE(sum(montant),0) from remboursement_sinistre rs where rs.sinistre_id = s.id and rs.statut = 'TAXE FAR' and  rsin.is_invalid = 0)  as far
         ,s.depassement as depassement_exclusion	
         ,(case tpr.id when 1 THEN s.part_assure ELSE NULL END) as ticket_prefinance	
-        ,(rsin.montant + (select COALESCE(sum(montant),0) from remboursement_sinistre rs where rs.sinistre_id = s.id and rs.statut = 'TAXT' and  rsin.is_invalid = 0) + (select COALESCE(sum(montant),0) from remboursement_sinistre rs where rs.sinistre_id = s.id and rs.statut = 'TAXE FAR' and  rsin.is_invalid = 0)) as net_regle
         ,DATE_FORMAT(rsin.created_at,"%d/%m/%Y") as date_ord
         ,DATE_FORMAT(pc.date_paiement,"%d/%m/%Y") as date_reg
         ,pc.numero as numero_bordereau
@@ -1033,7 +1002,6 @@ def requete_liste_paiement_sinistre_sante_entre_deux_dates(code_bureau, date_deb
     join dossier_sinistre ds on ds.id = s.dossier_sinistre_id
     left join type_prefinancement tpr on tpr.id = s.type_prefinancement_id 
     join prestataires pr on pr.id = s.prestataire_id
-    join remboursement_sinistre rsin ON rsin.sinistre_id = s.id AND rsin.statut = 'ACCEPTE' AND rsin.is_invalid = 0
     join polices po on po.id = s.police_id
     join clients cl on cl.id = po.client_id
     join compagnies cie on cie.id = po.compagnie_id
@@ -1126,13 +1094,10 @@ def requete_liste_sinistre_saisies_entre_2date(bureau_id, date_debut, date_fin, 
     sin.frais_reel 'FRAIS_REEL',
     sin.part_compagnie 'PART_INOV',
     sin.part_assure 'PART_ASSURE',
-    (select COALESCE(SUM(remb_sin.montant),0) FROM remboursement_sinistre remb_sin WHERE remb_sin.statut='TAXT' AND remb_sin.is_invalid=0 and remb_sin.sinistre_id=sin.id) 'TPS_AIB_BNC',
-    (select COALESCE(SUM(remb_sin.montant),0) FROM remboursement_sinistre remb_sin WHERE remb_sin.statut='TAXE FAR' AND remb_sin.is_invalid=0 and remb_sin.sinistre_id=sin.id) 'FAR',
     sin.depassement 'DEPASSEMENT/EXCLUSION',
     CASE WHEN tpr.code = "PREF_TOUT" THEN sin.part_assure else 0 END 'TICKET_PREFINANCE',
     sin.part_compagnie 'PART_COMPAGNIE',
     # CASE WHEN dataremb.date_reg IS NULL THEN NULL ELSE rsin.montant END 'NET_REGLE',
-    CASE WHEN dataremb.date_reg IS NULL THEN NULL ELSE ((select SUM(remb_sin.montant) FROM remboursement_sinistre remb_sin WHERE remb_sin.statut='ACCEPTE' AND remb_sin.is_invalid=0 and remb_sin.sinistre_id=sin.id) + (select COALESCE(SUM(remb_sin.montant),0) FROM remboursement_sinistre remb_sin WHERE remb_sin.statut='TAXT' AND remb_sin.is_invalid=0 and remb_sin.sinistre_id=sin.id) + (select COALESCE(SUM(remb_sin.montant),0) FROM remboursement_sinistre remb_sin WHERE remb_sin.statut='TAXE FAR' AND remb_sin.is_invalid=0 and remb_sin.sinistre_id=sin.id)) END 'NET_REGLE',
     dataremb.date_reg 'DATE_REGLEMENT',
     dataremb.numero_bordereau 'NUMERO_BORDEREAU',
     dataremb.Nom_Beneficiaire_du_remb 'BENEFICIAIRE_DU_REMB',
@@ -1149,13 +1114,11 @@ def requete_liste_sinistre_saisies_entre_2date(bureau_id, date_debut, date_fin, 
     JOIN aliments alm_adh ON alm_adh.id=alm.adherent_principal_id
     JOIN qualite_beneficiaire qtbf on qtbf.id = alm.qualite_beneficiaire_id
     JOIN actes act on act.id = sin.acte_id
-    JOIN regroupement_acte rg_act on rg_act.id  = act.regroupement_acte_id
     JOIN prestataires prest on sin.prestataire_id=prest.id
     JOIN compagnies cgni on sin.compagnie_id=cgni.id
     JOIN dossier_sinistre doss_sin on doss_sin.id = sin.dossier_sinistre_id
     LEFT JOIN type_prefinancement tpr on tpr.id = sin.type_prefinancement_id
     LEFT JOIN affections affect on affect.id = sin.affection_id
-    LEFT JOIN remboursement_sinistre rsin ON rsin.sinistre_id = sin.id AND rsin.is_invalid = 0 AND rsin.statut = 'ACCEPTE' 
     LEFT JOIN dataremb on sin.id = dataremb.id
     WHERE prest.bureau_id={bureau_id}
     AND sin.dossier_sinistre_id is not null
@@ -1198,8 +1161,6 @@ def extraction_des_sinistres_traites_valides(bureau_id, date_debut, date_fin):
             s.frais_reel,
             s.part_assure,
             s.part_compagnie AS part_inov,
-            (select COALESCE(SUM(remb_sin.montant),0) FROM remboursement_sinistre remb_sin WHERE remb_sin.statut='TAXT' AND remb_sin.is_invalid=0 and remb_sin.sinistre_id=s.id) as tps_aib_bnc,
-            (select COALESCE(SUM(remb_sin.montant),0) FROM remboursement_sinistre remb_sin WHERE remb_sin.statut='TAXE FAR' AND remb_sin.is_invalid=0 and remb_sin.sinistre_id=s.id) as far,
             cie.nom AS compagnie,
             -- br.code AS code_societe,
             CONCAT_WS(' ', COALESCE(cus.first_name, ''), COALESCE(cus.last_name, '')) AS gestionnaire
@@ -1209,7 +1170,6 @@ def extraction_des_sinistres_traites_valides(bureau_id, date_debut, date_fin):
         JOIN actes ON actes.id = s.acte_id
         LEFT JOIN affections aff ON aff.id = s.affection_id
         JOIN prestataires pr ON pr.id = s.prestataire_id
-        JOIN remboursement_sinistre rsin ON rsin.sinistre_id = s.id  AND rsin.is_invalid = 0 AND rsin.statut='ACCEPTE'
         JOIN polices po ON po.id = s.police_id
         JOIN clients cl ON cl.id = po.client_id
         JOIN compagnies cie ON cie.id = po.compagnie_id
@@ -1255,8 +1215,6 @@ def extraction_demandes_accords_prealables_traitees_par_medecins_conseil(bureau_
         s.frais_reel,
         s.part_assure,
         s.part_compagnie AS part_inov,
-        (select COALESCE(SUM(remb_sin.montant),0) FROM remboursement_sinistre remb_sin WHERE remb_sin.statut='TAXT' AND remb_sin.is_invalid=0 and remb_sin.sinistre_id=s.id) as tps_aib_bnc,
-        (select COALESCE(SUM(remb_sin.montant),0) FROM remboursement_sinistre remb_sin WHERE remb_sin.statut='TAXE FAR' AND remb_sin.is_invalid=0 and remb_sin.sinistre_id=s.id) as far,
         cie.nom AS compagnie,
         CONCAT_WS(' ', cus.first_name, cus.last_name) AS medecin_conseil,
         DATE_FORMAT(s.created_at, "%d/%m/%Y") AS date_demande,

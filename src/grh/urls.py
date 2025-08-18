@@ -13,7 +13,7 @@ from .views import LoginView, LogoutView, DashboardView, PolicesView, PoliceOver
     PasswordResetView, PasswordResetDoneView, PasswordResetConfirmView, PasswordResetCompleteView, \
     IncorporationsByGrhView, AjouterBeneficiaire, export_beneficiaire, set_client, PasswordResetOtpView, \
     PasswordResetFormView, beneficiaire_police_datatable, IncorporationsByGrhView, AjouterBeneficiaire, \
-    export_beneficiaire, DetailsCampagneAppmobileView
+    export_beneficiaire
 
 urlpatterns = [
 
@@ -38,9 +38,6 @@ urlpatterns = [
 
     # ONBOARDING
     path('onboarding/', OnBoardingView.as_view(), name='grh.onboarding'),
-    path('onboarding/details_compagne/<int:campagne_id>/', DetailsCampagneView.as_view(), name='grh.details_campagne'),
-    path('onboarding/details_compagne_appmobile/<int:campagneappmobile_id>/', DetailsCampagneAppmobileView.as_view(),
-         name='details_campagne_appmobile'),
     path('onboarding/details_compagne/<int:campagne_id>/incorporation_by_enrolement/<int:prospect_id>/',
          IncorporationByEnrolementView.as_view(), name='grh.incorporations_prospect'),
 

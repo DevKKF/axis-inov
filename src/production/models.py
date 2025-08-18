@@ -14,7 +14,7 @@ from configurations.models import Banque, Bureau, Civilite, Compagnie, Fractionn
     Regularisation, User, Langue, Pays, Produit, TypeClient, TypePersonne, TypeCompagnie, \
     Devise, Taxe, Apporteur, BaseCalcul, TypeQuittance, \
     NatureQuittance, TypeCarosserie, CategorieVehicule, NatureOperation, Prestataire, TypeTarif, Acte, \
-    Rubrique, RegroupementActe, SousRubrique, TypePrefinancement, CompteTresorerie, TypeMouvement, \
+    Rubrique, TypePrefinancement, CompteTresorerie, TypeMouvement, \
     Secteur, Carosserie, Formule, Usage, Carburant, BusinessUnit, Garantie, ConditionsAssurance, MoyensTransport, TypeCourrier, Groupe
 from shared.enum import Genre, Statut, StatutRelation, OptionYesNo, PlacementEtGestion, \
     ModeRenouvellement, TypeEncaissementCommission, TypeMajorationContrat, CalculTM, StatutContrat, StatutPolice, \
@@ -695,15 +695,11 @@ class Bareme(models.Model):
     created_by = models.ForeignKey(User, null=True, on_delete=models.RESTRICT)
     deleted_by = models.ForeignKey(User, related_name="deleted_by", null=True, on_delete=models.RESTRICT)
     rubrique = models.ForeignKey(Rubrique, on_delete=models.RESTRICT, null=True)
-    sous_rubrique = models.ForeignKey(SousRubrique, on_delete=models.RESTRICT, null=True)
-    regroupement_acte = models.ForeignKey(RegroupementActe, on_delete=models.RESTRICT, null=True)
     acte = models.ForeignKey(Acte, on_delete=models.RESTRICT, null=True)
     is_garanti = models.BooleanField(default=True)
     taux_tm = models.IntegerField(blank=True, null=True)
     taux_couverture = models.IntegerField(blank=True, null=True)
     plafond_rubrique = models.IntegerField(blank=True, null=True)
-    plafond_sous_rubrique = models.IntegerField(blank=True, null=True)
-    plafond_regroupement_acte = models.IntegerField(blank=True, null=True)
     plafond_acte = models.IntegerField(blank=True, null=True)
     nombre_acte = models.IntegerField(blank=True, null=True)
     unite_frequence = models.IntegerField(blank=True, null=True)
@@ -1602,23 +1598,6 @@ class Contact(models.Model):
         db_table = 'contacts'
         verbose_name = 'Contact'
         verbose_name_plural = 'Contacts'
-
-
-## INOV API MOBILE
-class CarteDigitalDematerialisee(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    has_digital_card = models.BooleanField(default=False)
-    digital_card_url = models.URLField(max_length=500, blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return f'Carte Digitale pour l\'Utilisateur : {self.user.username}'
-
-    class Meta:
-        db_table = 'cartes_digital_dematerialisees'
-        verbose_name = 'Carte Digital Dématérialisée'
-        verbose_name_plural = 'Cartes Digital Dématérialisées'
 
 
 class Courrier(models.Model):

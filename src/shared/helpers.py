@@ -179,14 +179,8 @@ def respecte_conditions(date_survenance, bareme_srb, acte, aliment):
         cdt_respectee = False
         pprint("date fin du barème plus grand que la date de survenance du sinistre")
 
-    #si une sous-rubrique est renseignée sur le barème, elle doit conternir le regroupement_acte de l'acte en cours
     if bareme_srb.sous_rubrique:
         None
-
-    #si un regroupement_acte est renseigné sur le barème, il doit être celui de l'acte en cours
-    if (bareme_srb.regroupement_acte and bareme_srb.regroupement_acte.id != acte.regroupement_acte.id):
-        cdt_respectee = False
-
 
     #si un acte est renseigné sur le barème, ça doit être celui en cours
     if (bareme_srb.acte and bareme_srb.acte.id != acte.id):
@@ -439,7 +433,7 @@ def get_plafond_rubrique(acte, aliment, formule, date_survenance):
     # Vérifier si la rubrique est dans les spécificités
     baremes_rubrique = Bareme.objects.filter(
         Q(statut=Statut.ACTIF, rubrique_id=acte.rubrique.id, sous_rubrique_id__isnull=True,
-          regroupement_acte_id__isnull=True, acte_id__isnull=True) & criteres_dates)
+          acte_id__isnull=True) & criteres_dates)
 
     if baremes_rubrique:
         # si une seule ligne
@@ -461,50 +455,6 @@ def get_plafond_rubrique(acte, aliment, formule, date_survenance):
         plafond_rubrique = 0 #ADD ON 18092023 - POUR LEVER LERREUR local variable 'plafond_rubrique' referenced before assignment - A VERIFIER -
 
     return plafond_rubrique
-
-
-
-def get_plafond_sous_rubrique(acte, aliment, date_survenance):
-    criteres_dates = Q(date_debut__lte=date_survenance) & (Q(date_fin__gte=date_survenance) | Q(date_fin__isnull=True))
-
-
-    return 0
-
-
-def get_plafond_regroupement_acte(acte, aliment, formule, date_survenance):
-    pprint("Récupérer le plafond du regroupement d'acte en recherchant une autre ligne de barème spécifique")
-
-    criteres_dates = Q(date_debut__lte=date_survenance) & (Q(date_fin__gte=date_survenance) | Q(date_fin__isnull=True))
-
-    plafond_regroupement_acte = 0
-
-
-    # vérifier si le regroupement_acte est dans les spécificités (SANS ACTE)
-    if acte.regroupement_acte:
-        baremes_regroupement_acte = Bareme.objects.filter(
-            Q(statut=Statut.ACTIF, regroupement_acte_id=acte.regroupement_acte_id,
-              acte_id__isnull=True) & criteres_dates)
-
-        if baremes_regroupement_acte:
-            # si une seule ligne
-            if baremes_regroupement_acte.count() == 1:
-                pprint("Une seule ligne du bareme (avec le regroupement_acte) trouvée")
-                bareme_regroupement_acte = baremes_regroupement_acte.first()
-
-                plafond_regroupement_acte = bareme_regroupement_acte.plafond_regroupement_acte
-
-            else:
-                pprint("Plusieurs lignes du bareme (avec le regroupement_acte) trouvée")
-                pprint("Filtrer sur le lien de parentée, puis sur l'age min et sur l'age max")
-
-                selected_bareme = filtrer_selon_lien_parente_et_age(baremes_regroupement_acte, aliment)
-
-                plafond_regroupement_acte = selected_bareme.plafond_regroupement_acte
-
-
-    return plafond_regroupement_acte
-
-
 
 
 def get_tarif_acte_from_bareme(type_priseencharge_code, date_survenance, acte_id, prestataire_id, prescripteur_id,
@@ -634,19 +584,6 @@ def get_tarif_acte_from_bareme(type_priseencharge_code, date_survenance, acte_id
             # les consommations de l'assuré
             consommation_acte = 0
 
-
-            consommation_regroupement_acte = 0
-            if acte.regroupement_acte:
-                consommation_regroupement_acte = Sinistre.objects.filter(
-                    periode_couverture_id=periode_couverture_encours.pk,
-                    acte__regroupement_acte_id=acte.regroupement_acte.pk,
-                    aliment_id=aliment.id,
-                    statut=StatutSinistre.ACCORDE,
-                    statut_remboursement__in=[StatutRemboursement.ATTENTE, StatutRemboursement.DEMANDE, StatutRemboursement.ACCEPTE, StatutRemboursement.ACCEPTE_PARTIELLEMENT],
-                    statut_validite=StatutValidite.VALIDE
-                ).aggregate(Sum('part_compagnie'))['part_compagnie__sum'] or 0
-
-            #
             consommation_rubrique = Sinistre.objects.filter(
                 periode_couverture_id=periode_couverture_encours.pk,
                 acte__rubrique_id=acte.rubrique.pk,
@@ -658,13 +595,11 @@ def get_tarif_acte_from_bareme(type_priseencharge_code, date_survenance, acte_id
 
             #additionner les consos déjà effectuées et les temporaires
             consommation_acte += 0
-            consommation_regroupement_acte += 0
             consommation_rubrique += 0
 
 
             # convertir en float: à vérifier si pas d'impact négatif
             consommation_acte = float(consommation_acte)
-            consommation_regroupement_acte = float(consommation_regroupement_acte)
             consommation_rubrique = float(consommation_rubrique)
 
             # RECCUPERER TOUS LES CRITERES A APPLIQUER
@@ -701,8 +636,6 @@ def get_tarif_acte_from_bareme(type_priseencharge_code, date_survenance, acte_id
             is_garanti = True
             taux_franchise = formule.taux_tm
             plafond_rubrique = 0
-            plafond_sous_rubrique = 0
-            plafond_regroupement_acte = 0
             plafond_acte = 0
             nombre_acte = 0
             unite_frequence = 0
@@ -711,8 +644,6 @@ def get_tarif_acte_from_bareme(type_priseencharge_code, date_survenance, acte_id
             take_formule_info = False
 
             # définir les variables qui indique sur quoi on doit faire une recherche sur les baremes
-            search_bareme_selon_acte = True
-            search_bareme_selon_regroupement_acte = False
             search_bareme_selon_sous_rubrique = False
             search_bareme_selon_rubrique = False
 
@@ -737,19 +668,16 @@ def get_tarif_acte_from_bareme(type_priseencharge_code, date_survenance, acte_id
                         is_garanti = bareme_acte.is_garanti
                         taux_franchise = bareme_acte.taux_tm
                         plafond_rubrique = get_plafond_rubrique(acte, aliment, formule, date_survenance)
-                        # plafond_sous_rubrique =
-                        plafond_regroupement_acte = get_plafond_regroupement_acte(acte, aliment, formule, date_survenance)
                         plafond_acte = bareme_acte.plafond_acte
                         nombre_acte = bareme_acte.nombre_acte
                         unite_frequence = bareme_acte.unite_frequence
                         frequence = bareme_acte.frequence
 
-                        search_bareme_selon_regroupement_acte = False
                         search_bareme_selon_sous_rubrique = False
                         search_bareme_selon_rubrique = False
 
                     else:
-                        search_bareme_selon_regroupement_acte = True
+                        pass
 
                 else:
 
@@ -759,134 +687,16 @@ def get_tarif_acte_from_bareme(type_priseencharge_code, date_survenance, acte_id
                     bareme_id = selected_bareme.pk
                     is_garanti = selected_bareme.is_garanti
                     taux_franchise = selected_bareme.taux_tm
-                    # plafond_rubrique =
-                    # plafond_sous_rubrique =
-                    plafond_regroupement_acte = selected_bareme.plafond_regroupement_acte
                     plafond_acte = selected_bareme.plafond_acte
                     nombre_acte = selected_bareme.nombre_acte
                     unite_frequence = selected_bareme.unite_frequence
                     frequence = selected_bareme.frequence
-
-
-                pprint("FIN DE LA RECHERCHE SELON L'ACTE")
-
-
             else:
-                search_bareme_selon_regroupement_acte = True
-
-            # vérifier si le regroupement_acte est dans les spécificités (SANS ACTE)
-            if search_bareme_selon_regroupement_acte and acte.regroupement_acte:
-                baremes_regroupement_acte = Bareme.objects.filter(
-                    Q(statut=Statut.ACTIF, regroupement_acte_id=acte.regroupement_acte_id,
-                      acte_id__isnull=True) & criteres_dates)
-
-                if baremes_regroupement_acte:
-                    # si une seule ligne
-                    if baremes_regroupement_acte.count() == 1:
-                        pprint("Une seule ligne du bareme (avec le regroupement_acte) trouvée")
-                        bareme_regroupement_acte = baremes_regroupement_acte.first()
-
-                        ligne_bareme_specifique_choisie = bareme_regroupement_acte
-                        bareme_id = bareme_regroupement_acte.pk
-                        is_garanti = bareme_regroupement_acte.is_garanti
-                        taux_franchise = bareme_regroupement_acte.taux_tm
-                        # plafond_rubrique =
-                        # plafond_sous_rubrique =
-                        plafond_regroupement_acte = bareme_regroupement_acte.plafond_regroupement_acte
-                        plafond_acte = 0
-                        nombre_acte = 0
-                        unite_frequence = 0
-                        frequence = 0
-
-                        search_bareme_selon_sous_rubrique = False
-                        search_bareme_selon_rubrique = False
-                        pprint("la seule ligne du bareme (avec le regroupement_acte) trouvé correspond aux critères")
-                        pprint("bareme_regroupement_acte")
-                        debug(bareme_regroupement_acte)
-
-                    else:
-                        pprint("Plusieurs lignes du bareme (avec le regroupement_acte) trouvée")
-                        pprint("Filtrer sur le lien de parentée, puis sur l'age min et sur l'age max")
-
-                        selected_bareme = filtrer_selon_lien_parente_et_age(baremes_regroupement_acte, aliment)
-
-                        ligne_bareme_specifique_choisie = selected_bareme
-                        bareme_id = selected_bareme.pk
-                        is_garanti = selected_bareme.is_garanti
-                        taux_franchise = selected_bareme.taux_tm
-                        # plafond_rubrique =
-                        # plafond_sous_rubrique =
-                        plafond_regroupement_acte = selected_bareme.plafond_regroupement_acte
-                        plafond_acte = 0
-                        nombre_acte = 0
-                        unite_frequence = 0
-                        frequence = 0
-
-                        pprint("selected_bareme")
-                        debug(selected_bareme)
-
-                else:
-                    search_bareme_selon_sous_rubrique = True
-                    pprint("Aucune ligne du bareme (avec le regroupement_acte) trouvée")
-                    pprint("Rechercher les baremes avec le sous_rubrique")
-
-
+                pass
 
             # vérifier si la sous_rubrique est dans les spécificités
             if search_bareme_selon_sous_rubrique:
-                none
-
-            # Vérifier si la rubrique est dans les spécificités
-            print("# Vérifier si la rubrique est dans les spécificités")
-            if search_bareme_selon_rubrique:
-                baremes_rubrique = Bareme.objects.filter(
-                    Q(statut=Statut.ACTIF, rubrique_id=acte.rubrique.id, sous_rubrique_id__isnull=True,
-                      regroupement_acte_id__isnull=True, acte_id__isnull=True) & criteres_dates)
-
-                pprint("baremes_rubrique")
-                pprint(baremes_rubrique)
-
-                if baremes_rubrique:
-                    # si une seule ligne
-                    if baremes_rubrique.count() == 1:
-                        pprint("Une seule ligne du bareme (avec la rubrique) trouvée")
-                        bareme_rubrique = baremes_rubrique.first()
-
-                        ligne_bareme_specifique_choisie = bareme_rubrique
-                        bareme_id = bareme_rubrique.pk
-                        is_garanti = bareme_rubrique.is_garanti
-                        taux_franchise = bareme_rubrique.taux_tm
-                        plafond_rubrique = bareme_rubrique.plafond_rubrique
-                        # plafond_sous_rubrique =
-                        plafond_regroupement_acte = 0
-                        plafond_acte = 0
-                        nombre_acte = 0
-                        unite_frequence = 0
-                        frequence = 0
-
-
-
-                        selected_bareme = filtrer_selon_lien_parente_et_age(baremes_rubrique, aliment)
-
-                        ligne_bareme_specifique_choisie = selected_bareme
-                        bareme_id = selected_bareme.pk
-                        is_garanti = selected_bareme.is_garanti
-                        taux_franchise = selected_bareme.taux_tm
-                        plafond_rubrique = selected_bareme.plafond_rubrique
-                        # plafond_sous_rubrique =
-                        plafond_regroupement_acte = 0
-                        plafond_acte = 0
-                        nombre_acte = 0
-                        unite_frequence = 0
-                        frequence = 0
-
-
-                else:
-                    take_formule_info = True
-
-
-            # take_formule_info = False #A remettre dans le else
-            pprint("FIN DE LA RECHERCHE DES DONNES DANS LE BAREME")
+                pass
 
             # si reccupérer les critères à partir de la formule
             if take_formule_info:
@@ -1156,7 +966,6 @@ def get_tarif_acte_from_bareme(type_priseencharge_code, date_survenance, acte_id
                 nouvelle_conso_famille = consommation_famille + montant_couverture
                 nouvelle_conso_individuelle = consommation_individuelle + montant_couverture
                 nouvelle_conso_rubrique = consommation_rubrique + montant_couverture
-                nouvelle_conso_regroupement_acte = consommation_regroupement_acte + montant_couverture
                 #nouvelle_conso_acte = montant_couverture
 
 
@@ -1164,11 +973,7 @@ def get_tarif_acte_from_bareme(type_priseencharge_code, date_survenance, acte_id
                 depassement_plafond = 0
                 observation = ""
 
-                #Added on 03022024 : revoir la détermination du depassement_plafond, revoir les conditions: utilisé des if sans des elif
-                #pour identifier chaque dépassement_plafond avant de choisir lequel appliqué, selon que l'un existe ou pas.
-                pprint("DETERMINATION DES DEPASSEMENTS DE PLAFOND (acte, regroupement_acte, sous-rubrique, rubrique, conso individuel, conso famille")
                 depassement_plafond_acte = 0
-                depassement_plafond_regroupement_acte = 0
                 depassement_plafond_sous_rubrique = 0
                 depassement_plafond_rubrique = 0
                 depassement_plafond_conso_individuelle = 0
@@ -1181,14 +986,6 @@ def get_tarif_acte_from_bareme(type_priseencharge_code, date_survenance, acte_id
                 if plafond_acte and montant_couverture > plafond_acte and plafond_acte > 0:
                     depassement_plafond = montant_couverture - plafond_acte
                     depassement_plafond_acte = montant_couverture - plafond_acte
-
-
-                #Added on 03022024: remove elif
-                if plafond_regroupement_acte and nouvelle_conso_regroupement_acte > plafond_regroupement_acte and plafond_regroupement_acte > 0:
-                    depassement_plafond = nouvelle_conso_regroupement_acte - plafond_regroupement_acte
-                    depassement_plafond_regroupement_acte = nouvelle_conso_regroupement_acte - plafond_regroupement_acte
-                    observation = "Plafond consommation par regroupement-acte atteint. Le regroupement d'acte " + acte.regroupement_acte.libelle + " a un plafond de " + str(as_money(plafond_regroupement_acte))
-
 
                 if plafond_rubrique and nouvelle_conso_rubrique > plafond_rubrique and plafond_rubrique > 0:
                     depassement_plafond = nouvelle_conso_rubrique - plafond_rubrique
@@ -1214,14 +1011,6 @@ def get_tarif_acte_from_bareme(type_priseencharge_code, date_survenance, acte_id
                     pprint("observation")
                     pprint(observation)
 
-                '''
-                depassement_plafond_acte
-                depassement_plafond_regroupement_acte
-                depassement_plafond_sous_rubrique
-                depassement_plafond_rubrique
-                depassement_plafond_conso_individuelle
-                depassement_plafond_conso_famille
-                '''
 
                 #Added on 03022024: Identifier le plafond_depassement à appliquer
                 pprint("Identifier le plafond_depassement à appliquer")
@@ -1229,50 +1018,22 @@ def get_tarif_acte_from_bareme(type_priseencharge_code, date_survenance, acte_id
                 if depassement_plafond_acte > 0:
                     depassement_plafond = depassement_plafond_acte
 
-                    pprint("depassement_plafond = depassement_plafond_acte")
-                    pprint(str(depassement_plafond) + '=' + str(depassement_plafond_acte))
-
-                elif depassement_plafond_regroupement_acte > 0:
-                    depassement_plafond = depassement_plafond_regroupement_acte
-
-                    pprint("depassement_plafond = depassement_plafond_regroupement_acte")
-                    pprint(str(depassement_plafond) + '=' + str(depassement_plafond_regroupement_acte))
-
                 elif depassement_plafond_sous_rubrique > 0:
                     depassement_plafond = depassement_plafond_sous_rubrique
-
-                    pprint("depassement_plafond = depassement_plafond_sous_rubrique")
-                    pprint(str(depassement_plafond) + '=' + str(depassement_plafond_sous_rubrique))
 
                 elif depassement_plafond_rubrique > 0:
                     depassement_plafond = depassement_plafond_rubrique
 
-                    pprint("depassement_plafond = depassement_plafond_rubrique")
-                    pprint(str(depassement_plafond) + '=' + str(depassement_plafond_rubrique))
-
                 elif depassement_plafond_conso_individuelle > 0:
                     depassement_plafond = depassement_plafond_conso_individuelle
 
-                    pprint("depassement_plafond = depassement_plafond_conso_individuelle")
-                    pprint(str(depassement_plafond) + '=' + str(depassement_plafond_conso_individuelle))
-
                 elif depassement_plafond_conso_famille > 0:
                     depassement_plafond = depassement_plafond_conso_famille
-
-                    pprint("depassement_plafond = depassement_plafond_conso_famille")
-                    pprint(str(depassement_plafond) + '=' + str(depassement_plafond_conso_famille))
-
-
-                #Added on 18092023: permettre de faire la prise en charge en ajoutant le surplus plafond au dépassement
-                pprint("permettre de faire la prise en charge en ajoutant le surplus plafond au dépassement")
 
                 part_assure = montant_tm + depassement + depassement_initial + depassement_plafond
                 part_compagnie = montant_couverture - depassement_plafond
                 if part_compagnie < 0: part_compagnie = 0 #pour éviter montant négatif
                 depassement = depassement + depassement_plafond
-
-
-                print("RESULTAT BAREME: {code:" + acte.libelle + ", part_compagnie: " + str(part_compagnie) + ", part_assure: " + str(part_assure) + "}")
 
                 taux_couverture = 100 - taux_franchise
 
@@ -1720,46 +1481,7 @@ def bool_plafond_atteint(dossier_sinistre):
 
 def get_ticket_moderateur_pharmacie(aliment_id, date_survenance):
     aliment = Aliment.objects.filter(id=aliment_id).first()
-
-    tc = 0
-
-    # vérifier si l'acte est dans les spécificités (et que c'est garanti)
-    criteres_regroupement_acte = Q(Q(regroupement_acte__isnull=True) | Q(regroupement_acte__code='RAPHAR0020'))#pharmacie usuelle
-    criteres_dates = Q(date_debut__lte=date_survenance) & (Q(date_fin__gte=date_survenance) | Q(date_fin__isnull=True))
-    baremes = Bareme.objects.filter(Q(statut=Statut.ACTIF,
-                                      rubrique__code='PHARMACIE',
-                                      acte_id__isnull=True,
-                                      is_garanti=True
-                                      )
-                                    &criteres_regroupement_acte
-                                    & criteres_dates)
-
-    #dd(baremes)
-
-    if baremes:
-
-        # Exclure ceux qui ne respectent pas les conditions (non applicable à l'aliment)
-        for b in baremes:
-            if not respecte_conditions_bareme_pharmacie(date_survenance, b, aliment):
-                baremes.exclude(id=b.id)
-                #pprint(f"-Barème #{b.id} exclu de la liste, car ne respectant pas les conditions: (barème non applicable à l'aliment)")
-
-
-        if baremes.count() == 1:
-            pprint("Un seul barème pharmacie trouvé, on le prend")
-        else:
-            pprint(f"{baremes.count()} barème(s) trouvé(s), on prend le premier barème applicable")
-
-        #on prend le premier
-        bareme = baremes.first()
-        tc = bareme.taux_couverture
-
-    else:
-        tc = 0
-
-
-    tm = 100 - tc
-    return tm
+    pass
 
 
 

@@ -17,7 +17,7 @@ from django.contrib.auth import get_user_model
 from django_dump_die.middleware import dd
 import openpyxl
 
-from grh.models import Campagne, CampagneProspect, Prospect, CampagneAppmobileProspect, CampagneAppmobile
+from grh.models import Campagne
 from production.helper_production import create_alimet_helper
 from shared.helpers import generate_numero_famille, generer_nombre_famille_du_mois
 from sinistre.models import Sinistre
@@ -403,18 +403,6 @@ class OnBoardingView(TemplateView):
                 etat_police = police.etat_police
                 context['etat_police'] = etat_police
 
-
-        campagnes = CampagneAppmobile.objects.all()
-
-        campagne_prospect = CampagneAppmobileProspect.objects.filter(
-            campagne_appmobile__in=campagnes,
-            statut_enrolement=StatutEnrolement.ATTENTE,
-            mouvement=7
-        ).select_related('prospect')
-
-        # Contexte pour la vue
-        context['campagne_prospect'] = campagne_prospect
-
         return context
 
     def post(self, request, *args, **kwargs):
@@ -474,68 +462,7 @@ class OnBoardingView(TemplateView):
         for email in destinataires:
             email = email.strip()
             if email:
-                try:
-                    # CASE EMAIL IN MODEL ALIMENT
-                    aliment = Aliment.objects.filter(email=email).first()
-                    if (aliment is not None):
-                        prospect = Prospect(
-                            nom=aliment.nom,
-                            prenoms=aliment.prenoms,
-                            email=aliment.email,
-                            police=police,
-                            bureau=aliment.bureau,
-                            aliment=aliment,
-                            aliment_adherent_principal=aliment,
-                        )
-                        prospect.save()
-
-                        prospect.adherent_principal = prospect  # Self
-                        prospect.save()
-
-                        uiid = generate_uiid(request)
-                        url = f'{base_url}/grh/enrolement/{campagne.pk}/{uiid}/{aliment.pk}/'
-                except Exception as e:
-                    print(f"Error: {e}")
-
-                    prospect = Prospect(
-                        email=email,
-                        police=police,
-                        bureau=bureau,
-                    )
-                    prospect.save()
-
-                    uiid = generate_uiid(request)
-                    url = f'{base_url}/grh/enrolement/{campagne.pk}/{uiid}/'
-
-                    cp = CampagneProspect(
-                        campagne=campagne,
-                        prospect=prospect,
-                        uiid=uiid,
-                        lien=url
-                    )
-                    cp.save()
-
-                else:
-                    # CASE EMAIL NOT IN MODEL ALIMENT
-                    prospect = Prospect(
-                        email=email,
-                        police=police,
-                        bureau=bureau,
-                    )
-                    prospect.save()
-
-                    uiid = generate_uiid(request)
-                    url = f'{base_url}/grh/enrolement/{campagne.pk}/{uiid}/'
-
-                    cp = CampagneProspect(
-                        campagne=campagne,
-                        prospect=prospect,
-                        uiid=uiid,
-                        lien=url
-                    )
-                    cp.save()
-
-                send_email(url, libelle_campagne, date_debut, date_fin, email, uiid, aliment)
+                pass
 
         return redirect('grh.onboarding')
 
@@ -550,67 +477,6 @@ class DetailsCampagneView(TemplateView):
         campagne = get_object_or_404(Campagne, id=campagne_id)
 
         admin_grh = self.request.user
-
-        campagne_prospects_soumis = CampagneProspect.objects.filter(campagne=campagne, campagne__created_by=admin_grh,
-                                                                    statut_enrolement=StatutEnrolement.SOUMIS)
-        prospects_soumis = [campagne_prospect.prospect for campagne_prospect in campagne_prospects_soumis]
-
-        campagne_prospects_en_attente = CampagneProspect.objects.filter(campagne=campagne,
-                                                                        campagne__created_by=admin_grh,
-                                                                        statut_enrolement=StatutEnrolement.ATTENTE)
-        prospects_en_attente = [campagne_prospect.prospect for campagne_prospect in campagne_prospects_en_attente]
-
-        campagne_prospects_encours = CampagneProspect.objects.filter(campagne=campagne, campagne__created_by=admin_grh,
-                                                                     statut_enrolement=StatutEnrolement.ENCOURS)
-        prospects_encours = [campagne_prospect.prospect for campagne_prospect in campagne_prospects_encours]
-
-        context['campagne'] = campagne
-
-        context['prospects_soumis'] = prospects_soumis
-        context['prospects_en_attente'] = prospects_en_attente
-        context['prospects_encours'] = prospects_encours
-
-        return context
-
-class DetailsCampagneAppmobileView(TemplateView):
-    template_name = "grh/details_campagne_appmobile.html"
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        campagne_appmobile_id = kwargs.get('campagneappmobile_id')
-        campagne_appmobile = get_object_or_404(CampagneAppmobile, id=campagne_appmobile_id)
-
-        admin_grh = self.request.user
-
-        campagne_prospects_soumis = CampagneAppmobileProspect.objects.filter(
-            campagne_appmobile=campagne_appmobile,
-            campagne_appmobile__created_by=campagne_appmobile.created_by,
-            statut_enrolement=StatutEnrolement.SOUMIS
-        ).select_related('prospect')
-
-        prospects_soumis = [campagne_prospect.prospect for campagne_prospect in campagne_prospects_soumis]
-
-        campagne_prospects_en_attente = CampagneAppmobileProspect.objects.filter(
-            campagne_appmobile=campagne_appmobile,
-            campagne_appmobile__created_by=campagne_appmobile.created_by,
-            statut_enrolement=StatutEnrolement.ATTENTE
-        ).select_related('prospect')
-
-        prospects_en_attente = [campagne_prospect.prospect for campagne_prospect in campagne_prospects_en_attente]
-        #dd(prospects_en_attente)
-
-        campagne_prospects_encours = CampagneAppmobileProspect.objects.filter(
-            campagne_appmobile=campagne_appmobile,
-            campagne_appmobile__created_by=campagne_appmobile.created_by,
-            statut_enrolement=StatutEnrolement.ENCOURS
-        ).select_related('prospect')
-
-        prospects_encours = [campagne_prospect.prospect for campagne_prospect in campagne_prospects_encours]
-
-        context['campagne_appmobile'] = campagne_appmobile
-        context['prospects_soumis'] = prospects_soumis
-        context['prospects_en_attente'] = prospects_en_attente
-        context['prospects_encours'] = prospects_encours
 
         return context
 
@@ -634,31 +500,11 @@ class IncorporationByEnrolementView(TemplateView):
         pprint("prospect_id")
         pprint(prospect_id)
 
-        # campagne_appmobile_id = kwargs.get('campagne_appmobile_id')
-
         campagne = get_object_or_404(Campagne, id=campagne_id)
-        prospect = get_object_or_404(Prospect, id=prospect_id)
-
-        # campagne_appmobile = get_object_or_404(Campagne, id=campagne_appmobile_id)
-
-        campagne_prospect = CampagneProspect.objects.filter(campagne=campagne, prospect=prospect).first()
-        # campagne_appmobile_prospect = CampagneAppmobileProspect.objects.filter(campagne=campagne, prospect=prospect).first()
-
-        uiid = campagne_prospect.uiid
         admin_grh = self.request.user
 
-        incorporations = CampagneProspect.objects.filter(campagne=campagne, uiid=uiid, campagne__created_by=admin_grh,
-                                                         statut_enrolement=StatutEnrolement.SOUMIS)
-
-        # incorporations_appmobile = CampagneAppmobileProspect.objects.filter(campagne_appmobile=campagne_appmobile, uiid=uiid, campagne_appmobile__created_by=admin_grh,
-        #                                                  statut_enrolement=StatutEnrolement.SOUMIS)
-
         context['campagne'] = campagne
-        context['prospect'] = prospect
-        context['incorporations'] = incorporations
         context['today'] = today
-        # context['campagne_appmobile'] = campagne_appmobile
-        # context['incorporations_appmobile'] = incorporations_appmobile
 
         return context
 
@@ -679,16 +525,8 @@ class IncorporationByEnrolementView(TemplateView):
         print(request.POST.get('date_affiliation'))
 
         opened_campagne = get_object_or_404(Campagne, id=opened_campagne_id)
-        opened_prospect = get_object_or_404(Prospect, id=opened_prospect_id)
-        campagne_prospect = CampagneProspect.objects.filter(campagne=opened_campagne, prospect=opened_prospect).first()
-        uiid = campagne_prospect.uiid
-
-        incorporations = CampagneProspect.objects.filter(campagne=opened_campagne, uiid=uiid,
-                                                         statut_enrolement=StatutEnrolement.SOUMIS)
-        campagne_prospect_ids = [incorporation.pk for incorporation in incorporations]
 
         prospect_id = None
-        action = None
 
         if valide_option.startswith('valider_'):
             action = 'valider'
@@ -697,95 +535,11 @@ class IncorporationByEnrolementView(TemplateView):
             action = 'rejeter'
             prospect_id = valide_option.split('_')[1]
 
-
-        print("@@@@@@@@@@@@@@ prospect_id")
-        print(prospect_id)
-
-        print("@@@@@@@@@@@@@@ action")
-        print(action)
-
-        print("@@@@@@@@@@@@@@")
-        print(request.POST)
-
         if valide_option == 'valider_tous':
-
-            # enregistrement ADHERENT PRINCIPAL
-            campagne_prospect_adh = CampagneProspect.objects.filter(id__in=campagne_prospect_ids,
-                                                                    campagne=opened_campagne, uiid=uiid,
-                                                                    prospect__qualite_beneficiaire__code="AD").first()
-
-            if campagne_prospect_adh:
-                prospect = campagne_prospect.prospect
-                prospect.statut_enrolement = StatutEnrolement.ENCOURS
-                prospect.save()
-
-                campagne_prospect.statut_enrolement = StatutEnrolement.ENCOURS
-                campagne_prospect.save()
-                # CREATION DE L'ALIMENT
-                alm, cart = create_alimet_helper(prospect, request)
-                print(alm)
-                print(cart)
-
-                campagne_prospect_ids.remove(campagne_prospect_adh.id)
-
-            #ENREGISTREMENT BENEFICIARE
-            for id in campagne_prospect_ids:
-
-                campagne_prospect = CampagneProspect.objects.filter(id=id, campagne=opened_campagne, uiid=uiid).first()
-
-                if campagne_prospect:
-                    prospect = campagne_prospect.prospect
-                    prospect.statut_enrolement = StatutEnrolement.ENCOURS
-                    prospect.save()
-
-                    campagne_prospect.statut_enrolement = StatutEnrolement.ENCOURS
-                    campagne_prospect.save()
-                    # CREATION DE L'ALIMENT
-                    alm, cart = create_alimet_helper(prospect, request, date_affiliation)
-                    print(alm)
-                    print(cart)
+            pass
 
         elif prospect_id:
-
-            campagne_prospect = CampagneProspect.objects.filter(prospect_id=prospect_id).first()
-
-            if campagne_prospect:
-
-                if action == 'valider':
-
-                    related_prospect = campagne_prospect.prospect
-                    related_prospect.statut_enrolement = StatutEnrolement.ENCOURS
-                    related_prospect.save()
-                    campagne_prospect.statut_enrolement = StatutEnrolement.ENCOURS
-                    campagne_prospect.save()
-                    # CREATION DE L'ALIMENT
-                    alm, cart = create_alimet_helper(related_prospect, request, date_affiliation)
-                    print(alm)
-                    print(cart)
-
-                elif action == 'rejeter':
-
-                    if campagne_prospect.prospect and campagne_prospect.prospect.qualite_beneficiaire.code == 'AD':
-                        related_campagne_prospects = CampagneProspect.objects.filter(campagne=opened_campagne,
-                                                                                     uiid=uiid,
-                                                                                     statut_enrolement=StatutEnrolement.SOUMIS).exclude(
-                            id=campagne_prospect.pk)
-
-                        for related_campagne_prospect in related_campagne_prospects:
-                            related_prospect = related_campagne_prospect.prospect
-                            related_prospect.statut_enrolement = StatutEnrolement.REJETE
-                            related_prospect.save()
-
-                            related_campagne_prospect.statut_enrolement = StatutEnrolement.REJETE
-                            related_campagne_prospect.prospect.statut_enrolement = StatutEnrolement.REJETE
-                            related_campagne_prospect.save()
-
-                    prospect = campagne_prospect.prospect
-                    prospect.statut_enrolement = StatutEnrolement.REJETE
-                    prospect.save()
-                    campagne_prospect.statut_enrolement = StatutEnrolement.REJETE
-                    campagne_prospect.save()
-
+            pass
         context = self.get_context_data(**kwargs)
 
         return self.render_to_response(context)
@@ -1748,16 +1502,6 @@ class Enrolement(TemplateView):
 
         campagne = get_object_or_404(Campagne, id=campagne_id)
 
-        if request.method == 'POST':
-            campagne_prospects = CampagneProspect.objects.filter(campagne=campagne, uiid=uiid).all()
-            for cp in campagne_prospects:
-                cp.statut_enrolement = StatutEnrolement.SOUMIS
-                cp.save()
-
-                prospect = cp.prospect
-                prospect.statut_enrolement = StatutEnrolement.SOUMIS
-                prospect.save()
-
         if aliment_id:
             aliment = get_object_or_404(Aliment, id=aliment_id)
             return redirect(reverse('grh.enrolement_by_aliment', args=[campagne.id, uiid, aliment.id]))
@@ -1777,7 +1521,6 @@ class Enrolement(TemplateView):
             context['aliment'] = aliment
 
         campagne = get_object_or_404(Campagne, id=campagne_id)
-        prospects = CampagneProspect.objects.filter(campagne=campagne, uiid=uiid).all()
 
         duration = campagne.date_fin - timezone.now()
 
@@ -1793,12 +1536,8 @@ class Enrolement(TemplateView):
             'seconds': seconds,
         }
 
-        dossier_soumis = any(prospect.statut_enrolement != 'EN ATTENTE' for prospect in prospects)
-
         context['campagne'] = campagne
-        context['prospects'] = prospects
         context['duree_expiration_lien'] = duree_expiration_lien
-        context['dossier_soumis'] = dossier_soumis
 
         return context
 
@@ -1822,17 +1561,6 @@ class FormulaireEnrolement(TemplateView):
 
         country_code = campagne.created_by.utilisateur_grh.bureau.pays.code
 
-        adherent_principal = CampagneProspect.objects.filter(
-            campagne=campagne,
-            uiid=uiid,
-            prospect__qualite_beneficiaire__code='AD').first()
-        context['adherent_principal'] = adherent_principal
-
-        if prospect_id is not None:
-            campagne_prospect = get_object_or_404(CampagneProspect, uiid=uiid, campagne__id=campagne_id, prospect__id=prospect_id)
-        else:
-            campagne_prospect = None
-
         civilites_list = Civilite.objects.exclude(code='STE')  # CIVILITES
         masculin = Genre.MASCULIN
         feminin = Genre.FEMININ
@@ -1843,8 +1571,6 @@ class FormulaireEnrolement(TemplateView):
         context['civilites_list'] = civilites_list
         context['M'] = masculin
         context['F'] = feminin
-
-        context['campagne_prospect'] = campagne_prospect
 
         return context
 
@@ -1919,47 +1645,6 @@ class FormulaireEnrolement(TemplateView):
                 file_name = os.path.join('prospects', photo.name)
                 default_storage.save(file_name, ContentFile(photo.read()))
                 prospect_data['photo'] = file_name
-
-            elif not photo and 'prospect_id' in kwargs:
-                prospect = Prospect.objects.get(id=kwargs['prospect_id'])
-                prospect_data['photo'] = prospect.photo.name
-
-            adherent_principal = CampagneProspect.objects.filter(campagne=campagne, uiid=uiid, prospect__qualite_beneficiaire__code='AD').first()
-
-            if 'prospect_id' in kwargs:
-
-                prospect = Prospect.objects.get(id=kwargs['prospect_id'])
-
-                for key, value in prospect_data.items():
-                    setattr(prospect, key, value)
-                prospect.adherent_principal = adherent_principal.prospect  # Self
-                prospect.police = adherent_principal.prospect.police
-                prospect.save()
-
-            else:
-                new_prospect = Prospect.objects.create(**prospect_data)
-
-                if aliment_id:
-                    aliment = get_object_or_404(Aliment, id=aliment_id)
-                    if aliment:
-                        aliment_prospect = Prospect.objects.filter(email=aliment.email, campagneprospect__isnull=True).first()
-                        if aliment_prospect:
-                            new_prospect.adherent_principal = aliment_prospect.adherent_principal  # Member - Aliment
-                            new_prospect.bureau = aliment_prospect.bureau
-                            new_prospect.police = aliment_prospect.police
-                else:
-                    new_prospect.adherent_principal = adherent_principal.prospect  # Member - Prospect
-                    new_prospect.bureau = adherent_principal.prospect.bureau
-                    new_prospect.police = adherent_principal.prospect.police
-
-                new_prospect.save()
-
-                new_cp = CampagneProspect(
-                    campagne=campagne,
-                    prospect=new_prospect,
-                    uiid=kwargs['uiid']
-                )
-                new_cp.save()
 
         if aliment_id:
             return redirect(reverse('grh.enrolement_by_aliment', args=[campagne.id, uiid, aliment.id]))

@@ -1032,9 +1032,6 @@ msgstr "PARAMÉTRAGE DE L'ACTE"
 msgid "TARIF"
 msgstr "TARIF"
 
-msgid "Regroupement_acte"
-msgstr "Regroupement acte"
-
 msgid "Type_acte"
 msgstr "Type acte"
 
@@ -1700,9 +1697,6 @@ msgstr "SPÉCIFICITÉS DU BARÈME"
 
 msgid "Sous_rubrique"
 msgstr "Sous-rubrique"
-
-msgid "Regroupement_Acte"
-msgstr "Regroupement d'acte"
 
 msgid "Lien_Parente"
 msgstr "Lien de parenté"
@@ -3222,9 +3216,6 @@ msgstr "Plafond rubrique d'acte"
 
 msgid "Plafond_sous_rubrique "
 msgstr "Plafond sous-rubrique"
-
-msgid "Plafond_regroupement_acte"
-msgstr "Plafond regroupement acte"
 
 msgid "Plafond_sous_regroupement"
 msgstr "Plafond sous-regroupement"

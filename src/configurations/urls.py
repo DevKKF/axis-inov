@@ -4,8 +4,7 @@ from shared.helpers import openai_complete
 from . import views
 from .views import (
     PrestatairesView, DetailsPrestatairesView, GroupePermissionsView,
-    TarifsView, WsBobyView,
-    WsBobyCreateView, WsBobyEditeView, ActesView, ConnectedUsersView, 
+    TarifsView, ActesView, ConnectedUsersView,
     BusinessUnitView, BrancheView, BanquesView,
     ApporteurView, ViewCourrier,
     CompagnieView, CarosseriesView, CategorieVehiculeView, CiviliteView, 
@@ -26,7 +25,6 @@ urlpatterns = [
     path('set_bureau/', views.set_bureau, name='set_bureau'),
     path('clearcache/', views.clear_cache, name='clear_cache'),
     path('verify-code/', views.verify_code, name='verify_code'),
-    path('download-background-query-result/<int:query_id>', views.download_background_query_result, name='download_background_query_result'),
 
     # Prestataires
     path('prestataires/', PrestatairesView.as_view(), name='prestataires'),
@@ -43,11 +41,6 @@ urlpatterns = [
     path('tarifs/', TarifsView.as_view(), name='tarifs'),
     path('tarifs/generate_modele_tarifs_bureau/', views.generate_modele_tarifs_bureau, name='generate_modele_tarifs_bureau'),
     path('tarifs/import_tarifs_bureau/', views.import_tarifs_bureau, name='import_tarifs_bureau'),
-
-    # WS Boby
-    path('wsboby/', WsBobyView.as_view(), name='wsboby'),
-    path('wsboby/create/', WsBobyCreateView.as_view(), name='wsboby_create'),
-    path('wsboby/<int:wsboby_id>/edit/', WsBobyEditeView.as_view(), name='wsboby_edit'),
 
     # Actes
     path('actes/', ActesView.as_view(), name='actes'),

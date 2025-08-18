@@ -511,63 +511,8 @@ class Rubrique(models.Model):
         verbose_name_plural = 'Rubriques'
 
 
-class SousRubrique(models.Model):
-    rubrique = models.ForeignKey(Rubrique, null=True, on_delete=models.RESTRICT, )
-    libelle = models.CharField(max_length=255)
-    code = models.CharField(max_length=255, blank=True, default=None, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    status = models.BooleanField(default=True)
-
-    def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
-
-        if not self.code:
-            # Generate the code based on the inserted ID
-            rubrique_name = self.rubrique.libelle if self.rubrique else ''
-            self.code = f"SR{slugify(rubrique_name)[:3]}{str(self.pk).zfill(4)}".upper()
-
-        super().save(*args, **kwargs)
-
-    def __str__(self):
-        return self.libelle
-
-    class Meta:
-        db_table = 'sous_rubriques'
-        verbose_name = 'Sous-rubrique'
-        verbose_name_plural = 'Sous-rubriques'
-
-
-class RegroupementActe(models.Model):
-    rubrique = models.ForeignKey(Rubrique, null=True, on_delete=models.RESTRICT)
-    libelle = models.CharField(max_length=255)
-    code = models.CharField(max_length=255, blank=True, default=None, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    status = models.BooleanField(default=True)
-
-    def save(self, *args, **kwargs):
-        super().save(*args, **kwargs)
-
-        if not self.code:
-            # Generate the code based on the inserted ID
-            self.code = f"RA{slugify(self.libelle)[:4]}{str(self.pk).zfill(4)}".upper()
-
-        super().save(*args, **kwargs)
-
-
-    def __str__(self):
-        return self.libelle
-
-    class Meta:
-        db_table = 'regroupement_acte'
-        verbose_name = "Regroupement d'acte"
-        verbose_name_plural = "Regroupements d'actes"
-
-
 class Acte(models.Model):
     rubrique = models.ForeignKey(Rubrique, null=True, on_delete=models.RESTRICT)
-    regroupement_acte = models.ForeignKey(RegroupementActe, null=True, on_delete=models.RESTRICT)
     libelle = models.CharField(max_length=255)
     code = models.CharField(max_length=255, unique=True, blank=True, default=None, null=True)
     lettre_cle = models.CharField(max_length=5, blank=True, null=True)
@@ -1232,168 +1177,6 @@ class Tarif(models.Model):
         verbose_name_plural = 'Tarifs'
 
 
-class TarifExcel(models.Model):
-    CODE_REGROUPEMENT_OLEA = models.CharField(max_length=100, null=True)
-    LIBELLE_ACTE = models.CharField(max_length=100, null=True)
-    CODE_ACTE = models.CharField(max_length=100, null=True)
-    REGROUPEMENT_ACTE = models.CharField(max_length=100, null=True)
-
-    LETTRE_CLE_CLASSIQUE = models.CharField(max_length=100, null=True)
-    COEF_CLASSIQUE = models.CharField(max_length=100, null=True)
-    PU_CLASSIQUE = models.CharField(max_length=100, null=True)
-    COUT_CLASSIQUE = models.CharField(max_length=100, null=True)
-
-    LETTRE_CLE_MUTUELLE = models.CharField(max_length=100, null=True)
-    COEF_MUTUELLE = models.CharField(max_length=100, null=True)
-    PU_MUTUELLE = models.CharField(max_length=100, null=True)
-    COUT_MUTUELLE = models.CharField(max_length=100, null=True)
-
-    LETTRE_CLE_PUBLIC_HG = models.CharField(max_length=100, null=True)
-    COEF_PUBLIC_HG = models.CharField(max_length=100, null=True)
-    PU_PUBLIC_HG = models.CharField(max_length=100, null=True)
-    COUT_PUBLIC_HG = models.CharField(max_length=100, null=True)
-
-    LETTRE_CLE_PUBLIC_CHU = models.CharField(max_length=100, null=True)
-    COEF_PUBLIC_CHU = models.CharField(max_length=100, null=True)
-    PU_PUBLIC_CHU = models.CharField(max_length=100, null=True)
-    COUT_PUBLIC_CHU = models.CharField(max_length=100, null=True)
-
-    LETTRE_CLE_PUBLIC_ICA = models.CharField(max_length=100, null=True)
-    COEF_PUBLIC_ICA = models.CharField(max_length=100, null=True)
-    PU_PUBLIC_ICA = models.CharField(max_length=100, null=True)
-    COUT_PUBLIC_ICA = models.CharField(max_length=100, null=True)
-
-
-
-    class Meta:
-        db_table = 'tarif_excels'
-
-
-class ActionLog(models.Model):
-    done_by = models.ForeignKey(User, null=True, on_delete=models.RESTRICT)
-    action = models.CharField(max_length=100, blank=True, null=True)
-    description = models.CharField(max_length=255, blank=True, null=True)
-    table = models.CharField(max_length=100, blank=True, null=True)
-    row = models.IntegerField(blank=True, null=True)
-    data_before = models.JSONField(blank=True, null=True)
-    data_after = models.JSONField(blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return f"{self.action} data into {self.table} on {self.created_at}"
-
-    class Meta:
-        db_table = 'actionlog'
-        verbose_name = 'action log'
-        verbose_name_plural = 'action logs'
-
-
-class CronLog(models.Model):
-    action = models.CharField(max_length=100, blank=True, null=True)
-    description = models.CharField(max_length=255, blank=True, null=True)
-    table = models.CharField(max_length=100, blank=True, null=True)
-    row = models.IntegerField(blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return f"{self.action} data into {self.table} on {self.created_at}"
-
-    class Meta:
-        db_table = 'cronlog'
-        verbose_name = 'cron error log'
-        verbose_name_plural = 'cron error logs'
-
-
-class KeyValueData(models.Model):
-    key = models.CharField(max_length=100, blank=False, null=True)
-    description = models.CharField(max_length=255, blank=True, null=True)
-    statut = models.BooleanField(default=True)
-    data = models.JSONField(null=True, blank=True)
-    created_at = models.DateTimeField(verbose_name='Date de creation', auto_now_add=True)
-    updated_at = models.DateTimeField(verbose_name='Date mise à jour', auto_now=True)
-
-    def __str__(self):
-        return self.key
-
-    class Meta:
-        db_table = 'keyvaluedata'
-        verbose_name = 'Configuration'
-        verbose_name_plural = 'Configurations'
-
-
-class WsBoby(models.Model):
-    name = models.CharField(max_length=100, blank=True, null=True, unique=True)
-    request = models.TextField(blank=True, null=True)
-    status = models.BooleanField(default=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return self.name
-
-    class Meta:
-        db_table = 'ws_boby'
-        verbose_name = 'WS Boby'
-        verbose_name_plural = 'WS Boby'
-
-
-class ParamWsBoby(models.Model):
-    ws_boby = models.ForeignKey(WsBoby, null=True, on_delete=models.RESTRICT)
-    name = models.CharField(max_length=100, blank=True, null=True)
-    value = models.TextField(blank=True, null=True)
-    status = models.BooleanField(default=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return self.name
-
-    class Meta:
-        db_table = 'param_ws_boby'
-        verbose_name = 'Param WS Boby'
-        verbose_name_plural = 'Param WS Boby'
-
-
-class BackgroundQueryTask(models.Model):
-    STATUS = (
-        ('ENATT', 'EN ATTENTE'),
-        ('ENCOURS', 'EN COURS'),
-        ('ECHOUEE', 'ECHOUEE'),
-        ('ANNULLEE', 'ANNULLEE'),
-        ('TERMINEE', 'TERMINEE'),
-    )
-    name = models.CharField(verbose_name='Libellé requête', max_length=255, blank=True, null=True)
-    query = models.TextField(verbose_name='Requête', blank=True, null=True)
-    file = models.FileField(verbose_name='Fichier excel', upload_to='background_query', blank=True, null=True)
-    status = models.CharField(verbose_name='Statut', choices=STATUS, default='ENATT', max_length=15, null=True)
-    error_message = models.TextField(verbose_name="Message d'erreur",blank=True, null=True)
-    created_by = models.ForeignKey(User, null=True, on_delete=models.RESTRICT)
-    created_at = models.DateTimeField(verbose_name='Date de creation', auto_now_add=True)
-    updated_at = models.DateTimeField(verbose_name='Date de modification', auto_now=True)
-
-    @property
-    def fichier_excel(self):
-        if self.file:
-            download_url = reverse('download_background_query_result', args=[self.id])
-            return mark_safe('<a href="##" data-url="{}" class="download_background_query_result"><span class="badge btn-sm btn-details rounded-pill"><i class="fa fa-download"></i> Télécharger</span></a>'.format(download_url))
-        return ""
-
-    @property
-    def statut(self):
-        badge = 'success' if self.status == 'TERMINEE' else 'danger' if self.status == 'ECHOUEE' else 'info' if self.status == 'ENCOURS' else 'warning' if self.status == 'ENATT' else 'secondary'
-        return mark_safe(f'<span class="badge badge-{badge}">{self.get_status_display()}</span>')
-
-    def __str__(self):
-        return self.name
-
-    class Meta:
-        db_table = 'background_query_task'
-        verbose_name = 'Requête en arrière-plan'
-        verbose_name_plural = 'Requête en arrière-plan'
-
-
 class AdminGroupeBureau(models.Model):
     bureau = models.ForeignKey(Bureau, null=True, on_delete=models.RESTRICT)
     user = models.ForeignKey(User, null=True, on_delete=models.RESTRICT)
@@ -1408,34 +1191,6 @@ class AdminGroupeBureau(models.Model):
         db_table = 'admin_groupe_permission'
         verbose_name = 'Admin Groupe Bureau'
         verbose_name_plural = 'Admin Groupes Bureaux'
-
-
-class MailingList(models.Model):
-    bureau = models.ForeignKey(Bureau, on_delete=models.RESTRICT, null=True)
-    mail_de_diffusion = models.CharField(max_length=100, blank=False, null=True)
-    nombre_alerte = models.IntegerField(null=True, blank=True, validators=[MinValueValidator(0)])
-    type_alerte = models.fields.CharField(choices=TypeAlerte.choices,max_length=15, null=True)
-    statut = models.BooleanField(default=False) # On envoie le mail ou non
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    created_by = models.ForeignKey(User, null=True, blank=True, related_name="ml_created_by", on_delete=models.RESTRICT)
-    updated_by = models.ForeignKey(User, null=True, blank=True, related_name="ml_updated_by", on_delete=models.RESTRICT)
-
-    def __str__(self):
-        return self.mail_de_diffusion
-
-    @classmethod
-    def par_bureau(cls, bureau):
-        return cls.objects.filter(bureau=bureau)
-    
-    @classmethod # sera utile pour la tâche cron / alerte activé
-    def actifs(cls, bureau):
-        return cls.objects.filter(status=True)
-
-    class Meta:
-        db_table = 'mailing_lists'
-        verbose_name = 'Liste de diffusion'
-        verbose_name_plural = 'Liste de diffusion'
 
 
 class ModelLettreCheque(models.Model):
@@ -1483,24 +1238,6 @@ class BordereauLettreCheque(models.Model):
         db_table = 'bordereau_lettre_cheque'
         verbose_name = 'Historique des lettres Chèques'
         verbose_name_plural = 'Historique des lettres Chèques'
-
-
-class StatExcelWsBoby(models.Model):
-    libelle_fr = models.CharField(max_length=255, blank=True, null=True, unique=True)
-    libelle_en = models.CharField(max_length=255, blank=True, null=True, unique=True)
-    libelle_pt = models.CharField(max_length=255, blank=True, null=True, unique=True)
-    code_ws = models.CharField(max_length=100, blank=True, null=True, unique=True)
-    status = models.BooleanField(default=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    def __str__(self):
-        return self.libelle_fr
-
-    class Meta:
-        db_table = 'stat_excel_ws_boby'
-        verbose_name = 'Stat Excel Ws Boby'
-        verbose_name_plural = 'Stats Excel Ws Boby' 
 
 
 class BusinessUnit(models.Model):
@@ -1623,21 +1360,6 @@ class TypeCourrier(models.Model):
         db_table = 'type_courrier'
         verbose_name = 'Type de courrier'
         verbose_name_plural = 'Type de courrier'
-
-
-class TypeFichier(models.Model):
-    libelle = models.CharField(max_length=100, blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    statut = models.BooleanField(default=True)
-
-    def __str__(self):
-        return self.libelle
-
-    class Meta:
-        db_table = 'type_fichier'
-        verbose_name = 'Type de fichier'
-        verbose_name_plural = 'Type de fichier'
 
 
 class Groupe(models.Model):

@@ -39,11 +39,11 @@ from django_dump_die.middleware import dd
 from django.db import transaction
 
 from comptabilite.models import BordereauOrdonnance, CompteComptable, EncaissementCommission, Journal, ReglementReverseCompagnie, ReglementReverseApporteur
-from configurations.helper_config import create_query_background_task, execute_query
-from configurations.models import Bureau, Compagnie, MailingList, NatureOperation, Devise, ModeReglement, Banque, PeriodeComptable, \
-    CompteTresorerie, ActionLog, TypeRemboursement
+from configurations.helper_config import execute_query
+from configurations.models import Bureau, Compagnie, NatureOperation, Devise, ModeReglement, Banque, PeriodeComptable, \
+    CompteTresorerie, TypeRemboursement
 from configurations.models import Compagnie, Apporteur, NatureOperation, Devise, ModeReglement, Banque, PeriodeComptable, \
-    CompteTresorerie, ActionLog, TypeRemboursement, ModelLettreCheque, \
+    CompteTresorerie, TypeRemboursement, ModelLettreCheque, \
     BordereauLettreCheque, BusinessUnit
 from production.models import Aliment, Reglement, Police, Quittance, Operation, OperationReglement, MouvementPolice, \
     Client, PoliceAssureur, HistoriquePolice, ApporteurPolice
@@ -4150,8 +4150,6 @@ class ExecutionRequeteExcelComptaView(TemplateView):
 
             query = requete_liste_paiement_sinistre_sante_entre_deux_dates(request.user.bureau.code, date_debut_paiment_sinisre, date_fin_paiment_sinisre, reference_facture, numero_police)
 
-            # creation de tache background
-            create_query_background_task(name=f'PAIEMENT_SINISTRE_ENTRE_DEUX_DATES {date_debut_paiment_sinisre} _ {date_fin_paiment_sinisre}', query=query, request=request)
             queryset, header = execute_query(query)
 
             pprint("query")
@@ -4171,87 +4169,6 @@ class ExecutionRequeteExcelComptaView(TemplateView):
             **admin.site.each_context(self.request),
             "opts": self.model._meta,
         }
-
-
-def alert_consumption():
-    try:
-        bureaux = Bureau.objects.filter(mailinglist__statut=True).distinct()
-    except Exception as e:
-        print(f"Erreur lors de la récupération des bureaux : {e}")
-        return False
-
-    holding_mail = None
-    try:
-        holding_mail = MailingList.objects.filter(type_alerte=TypeAlerte.HOLDING).first()
-    except Exception as e:
-        print(f"Erreur lors de la récupération des e-mails de holding : {e}")
-
-    for bureau in bureaux:
-        garants = Compagnie.par_bureau(bureau=bureau)
-        alert_list = []
-        dest_mail = []
-
-        for compagnie in garants:
-            try:
-                dispo = 0
-                
-                montant_regle_non_reclame = Sinistre.objects.filter(
-                    statut_paiement=StatutPaiementSinistre.PAYE,
-                    statut_validite=StatutValidite.VALIDE,
-                    dossier_sinistre_id__isnull=False,
-                    facture_compagnie_id__isnull=True,
-                    compagnie=compagnie,
-                ).aggregate(total_paye=Sum('montant_remboursement_accepte'))['total_paye'] or 0
-
-                montant_reclame_non_regle_par_la_compagnie = FactureCompagnie.objects.filter(
-                    compagnie=compagnie,
-                    statut=StatutFacture.NON_SOLDE
-                ).aggregate(total_montant_restant=Sum('montant_restant'))['total_montant_restant'] or 0
-                
-                consommation = dispo
-
-                if consommation >= 60:  # Si la consommation atteint ou dépasse 60%
-                    alert_list.append({
-                        'compagnie': compagnie.nom,
-                        'consommation': consommation,  # Conserver comme nombre pour faciliter la comparaison
-                        'bureau': bureau.nom,
-                    })
-            except Exception as e:
-                print(f"Erreur lors du traitement de la compagnie {compagnie.nom} pour le bureau {bureau.nom} : {e}")
-
-        if alert_list:
-            subject = "Alerte : Niveau de consommation des garants"
-            message = "Bonjour,\n\nVoici la liste des garants dont le niveau de consommation a atteint la limite :\n\n"
-            
-            for alert in alert_list:
-                message += f"- Compagnie: {alert['compagnie']}, Bureau: {alert['bureau']}, Consommation: {alert['consommation']}%\n"
-            
-            message += "\nCordialement,\nL'application Santé V2"
-            
-            # Ajouter l'adresse e-mail du PDG si consommation dépasse 90%
-            if any(alert['consommation'] >= 90 for alert in alert_list):
-                if holding_mail and holding_mail.mail_de_diffusion:
-                    if holding_mail.mail_de_diffusion not in dest_mail:
-                        dest_mail.append(holding_mail.mail_de_diffusion)
-            
-            # Ajouter l'adresse e-mail générale pour les alertes de consommation >= 60%
-            if settings.DEFAULT_ALERT_EMAIL and settings.DEFAULT_ALERT_EMAIL not in dest_mail:
-                dest_mail.append(settings.DEFAULT_ALERT_EMAIL)
-
-            # Envoyer l'e-mail si des adresses sont définies
-            if dest_mail:
-                try:
-                    send_mail(
-                        subject,
-                        message,
-                        settings.DEFAULT_FROM_EMAIL,
-                        dest_mail,
-                        fail_silently=False,
-                    )
-                except Exception as e:
-                    print(f"Erreur lors de l'envoi de l'e-mail : {e}")
-
-    return True
 
 
 def create_periode_comptable(request):

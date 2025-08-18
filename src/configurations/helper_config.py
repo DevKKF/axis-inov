@@ -4,7 +4,6 @@ from django.core.files.base import File
 from django.http import HttpResponse
 
 from django.core.mail import send_mail
-from configurations.models import BackgroundQueryTask, CronLog
 from django.conf import settings
 import pyotp
 import datetime
@@ -45,19 +44,6 @@ def execute_query_with_params(query, params=None):
         data = cursor.fetchall()
         columns = [col[0] for col in cursor.description]
     return data, columns
-
-def create_query_background_task(name,query,request):
-    try:
-        task = BackgroundQueryTask(
-            name=name,
-            query=query,
-            created_by=request.user)
-        task.save()
-        request.session['task_id'] = task.id
-        return task.id
-    except Exception as e:
-        print(e)
-        return None
 
 
 def send_notification_background_task_mail(email, task):

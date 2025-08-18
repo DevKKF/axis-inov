@@ -3,13 +3,10 @@ from rest_framework.serializers import ModelSerializer
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 from api.models import InfoActe
-from configurations.models import KeyValueData, User, Prestataire, Acte, Bureau, ModeReglement, \
+from configurations.models import User, Prestataire, Acte, Bureau, ModeReglement, \
     Civilite, Pays
-from production.models import Aliment, Carte, Client, Bareme, CarteDigitalDematerialisee
+from production.models import Aliment, Carte, Client, Bareme
 from sinistre.models import Sinistre
-
-from grh.models import Prospect
-
 
 
 class InfoActeSerialiser(ModelSerializer):
@@ -33,28 +30,16 @@ class PaysSerializer(ModelSerializer):
         managed = False
 
 
-# APPLICATION MOBILE SANTE API REST SERIALIZER
-class KeyValueDataSerializer(ModelSerializer):
-    class Meta:
-        model = KeyValueData
-        fields = "__all__"
-        managed = False
-
-
 class CarteSerializer(ModelSerializer):
     class Meta:
         model = Carte
         fields = "__all__"
-        # depth = 3
-        # extra_kwargs = {'user_extranet': {'write_only': True}}
 
 
 class ClientSerializer(ModelSerializer):
     class Meta:
         model = Client
         fields = "__all__"
-        # depth = 3
-        # extra_kwargs = {'user_extranet': {'write_only': True}}
 
 
 class BarremeSerializer(ModelSerializer):
@@ -62,7 +47,6 @@ class BarremeSerializer(ModelSerializer):
         model = Bareme
         fields = "__all__"
         depth = 1
-        # extra_kwargs = {'user_extranet': {'write_only': True}}
 
 
 class PrestataireSerializer(ModelSerializer):
@@ -141,7 +125,6 @@ class AlimentSerializer(ModelSerializer):
                   "photo",
                   ]
         depth = 1
-        # extra_kwargs = {'user_extranet': {'write_only': True}}
 
     def get_carte(self, obj):
         try:
@@ -226,25 +209,19 @@ class SinisteSerializer(ModelSerializer):
         model = Sinistre
         fields = "__all__"
         depth = 1
-        # extra_kwargs = {'user_extranet': {'write_only': True}}
 
 
 class ActeSerializer(ModelSerializer):
     class Meta:
         model = Acte
         fields = "__all__"
-        # exclude = ['rubrique','regroupement_acte','type_acte',]
-        # depth = 1
-        # extra_kwargs = {'user_extranet': {'write_only': True}}
 
 
 class BureauSerializer(ModelSerializer):
     class Meta:
         model = Bureau
         fields = "__all__"
-        # exclude = ['rubrique','regroupement_acte','type_acte',]
-        # depth = 1
-        # extra_kwargs = {'user_extranet': {'write_only': True}}
+
 
 class ModeRemboursementSerializer(ModelSerializer):
     class Meta:
@@ -255,24 +232,3 @@ class DemandeRemboursementSerializer(ModelSerializer):
     class Meta:
         model = ""
         fields = "__all__"
-
-class ProspectSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Prospect
-        fields = '__all__'
-
-
-class CarteDigitalDematerialiseeSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = CarteDigitalDematerialisee
-        fields = ['id', 'user', 'has_digital_card', 'digital_card_url', 'created_at', 'updated_at']
-        read_only_fields = ['created_at', 'updated_at']
-        extra_kwargs = {
-            'user': {'required': True},
-            'digital_card_url': {'required': True}
-        }
-
-    def create(self, validated_data):
-        user = validated_data.pop('user', None)
-        digital_card = CarteDigitalDematerialisee.objects.create(user=user, **validated_data)
-        return digital_card

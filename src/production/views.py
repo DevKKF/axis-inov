@@ -47,8 +47,7 @@ from configurations.models import Compagnie, Pays, Civilite, Produit, Formule, G
     Regularisation, Bureau, BusinessUnit, TypeCompagnie, Groupe, PosteDommage, TypeSinistre, TypeIntervenant, TauxResponsabilite, Circonstance, \
     Devise, Taxe, BureauTaxe, Apporteur, BaseCalcul, TypeQuittance, NatureQuittance, TypeClient, TypePersonne, Langue, \
     Branche, ParamProduitCompagnie, CategorieVehicule, Banque, Carburant, Usage, Carosserie, GarantieCirconstance, \
-    NatureOperation, TypeTarif, Rubrique, AuthGroup, ActionLog, SousRubrique, TypePrefinancement, CompteTresorerie, \
-    TypeFichier
+    NatureOperation, TypeTarif, Rubrique, AuthGroup, TypePrefinancement, CompteTresorerie
 
 from inov import settings
 from production.forms import ContactForm, FilialeForm, AcompteForm, DocumentForm, PoliceForm, PhotoUploadForm
@@ -6238,7 +6237,7 @@ def exporter_quittance(request, client_id, police_id):
 
         if int(type_fichier_id) in [1, 2, 3, 4]:
 
-            typefichier = TypeFichier.objects.filter(id=type_fichier_id).first()
+            typefichier = ""
             pdf_url = reverse('generer_exportation_quittance', args=[typefichier.pk])
             pdf_url += (f""f"?de={date_exportation}"f"&pd={periode_debut}"f"&pf={periode_fin}"f"&cl={client.id}"f"&po={police.id}")
 
@@ -6265,16 +6264,15 @@ def exporter_quittance(request, client_id, police_id):
 
     else:
 
-        typefichiers = TypeFichier.objects.all().order_by('-libelle').exclude(statut=0)
         today = datetime.now(tz=timezone.utc)
 
         return render(request, 'police/modal_exporter_quittance.html',
-                      {'client': client, 'police':police, 'typefichiers': typefichiers, 'today':today})
+                      {'client': client, 'police':police, 'today':today})
 
 
 # Générer le fichier d'exportation
 def generer_exportation_quittance(request, typefichier_id):
-    typefichier = TypeFichier.objects.filter(id=typefichier_id).first()
+    typefichier = ""
 
     # Récupérer les paramètres GET
     client = Client.objects.filter(id=request.GET.get('cl')).first()

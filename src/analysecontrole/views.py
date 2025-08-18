@@ -24,7 +24,7 @@ from openpyxl.utils import get_column_letter
 from django.db.models import Subquery, OuterRef
 
 from configurations.helper_config import verify_sql_query
-from configurations.models import ActionLog, Secteur, Bureau, BusinessUnit, Branche, Banque, Apporteur, Devise, User, AuthGroup,  Tarif, \
+from configurations.models import Secteur, Bureau, BusinessUnit, Branche, Banque, Apporteur, Devise, User, AuthGroup,  Tarif, \
     Compagnie, Garantie, GarantieFormule, Groupe, ModeReglement
 from inov import settings
 from production.models import Client, Aliment, Mouvement, Produit, PoliceAssureur, Police, HistoriquePolice, MouvementPolice

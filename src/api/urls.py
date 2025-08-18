@@ -35,19 +35,9 @@ url_v2 = [
     path('prestataire', PrestataireView.as_view(), name='prestataire_register'),
     path('test-num-carte', TestNumCartView.as_view(), name='test-num-carte'),
 
-    # API BOBY
-    path('boBy/list', WsBobyView.as_view(), name='boby_list'),
-
     # Remboursements et ayants droit
     path('mode-remboursement', ModeRemboursementListView.as_view(), name='mode-remboursement'),
     path('demande-remboursements', DemandeRemboursementView.as_view(), name='demande-remboursements'),
-    path('ajout_ayant_droit', AddAyantDroitView.as_view(), name='ajout_ayant_droit'),
-    path('liste_prospect', ListProspectsView.as_view(), name='liste_prospect'),
-
-    # Carte digitale
-    path('digital-card/fetch', FetchDigitalCard.as_view(), name='fetch_digital_card'),
-    path('digital-card/create', CreateDigitalCard.as_view(), name='create_digital_card'),
-    path('digital-card/update/<int:digital_card_id>', UpdateDigitalCard.as_view(), name='update_digital_card'),
 
     # Prise en charge
     path('prise-en-charge', PriseEnChargeView.as_view(), name='prise_en_charge'),

@@ -8,7 +8,7 @@ from django_json_widget.widgets import JSONEditorWidget
 from import_export.admin import ImportExportModelAdmin
 from django import forms
 from admin_custom.admin import custom_admin_site
-from configurations.forms import ActionLogForm, PermissionForm, SousRubriqueForm, TarifForm, \
+from configurations.forms import PermissionForm, TarifForm, \
     CompagnieAdminForm, BanqueAdminForm, GarantieBrancheForm, \
     GarantieFormuleForm
 from configurations.models import *
@@ -45,28 +45,6 @@ class BureauTaxeAdmin(admin.ModelAdmin):
     list_display = ('bureau_id', 'taxe_id', 'taux', 'montant')
     list_filter = ('bureau_id', 'taxe_id', 'taux', 'montant')
     search_fields = ('bureau_id', 'taxe_id', 'taux', 'montant')
-    list_per_page = 10
-
-
-class TarifAdmin(admin.ModelAdmin):
-    form: TarifForm
-
-    list_per_page = 30
-    list_display = (
-    'acte', 'lettre_cle_classique', 'coef_classique', 'pu_classique', 'cout_classique', 'pu_mutuelle', 'cout_mutuelle',
-    'pu_public_hg', 'cout_public_hg', 'pu_public_chu', 'cout_public_chu', 'pu_public_ica', 'cout_public_ica')
-    list_filter = ('acte',)  # Vous pouvez ajouter d'autres champs de filtrage si nécessaire
-    search_fields = ('acte',)  # Vous pouvez ajouter d'autres champs de recherche si nécessaire
-
-
-class TarifExcelAdmin(ImportExportModelAdmin):
-    list_display = (
-    'CODE_REGROUPEMENT_INOV', 'LIBELLE_ACTE', 'CODE_ACTE', 'LETTRE_CLE_CLASSIQUE', 'COEF_CLASSIQUE', 'PU_CLASSIQUE',
-    'COUT_CLASSIQUE', 'PU_MUTUELLE', 'COUT_MUTUELLE', 'PU_PUBLIC_HG', 'COUT_PUBLIC_HG')
-    list_filter = ('CODE_REGROUPEMENT_INOV', 'LIBELLE_ACTE',
-                   'CODE_ACTE')  # Vous pouvez ajouter d'autres champs de filtrage si nécessaire
-    search_fields = ('CODE_REGROUPEMENT_INOV', 'LIBELLE_ACTE',
-                     'CODE_ACTE')  # Vous pouvez ajouter d'autres champs de recherche si nécessaire
     list_per_page = 10
 
 
@@ -378,16 +356,6 @@ class CustomUserAdmin(UserAdmin):
         super().save_model(request, obj, form, change)
 
 
-@admin.register(ActionLog)
-class ActionLogAdmin(admin.ModelAdmin):
-    form = ActionLogForm
-    list_per_page = 30
-    list_display = ('data_before', 'data_after',)
-    # list_display = ('done_by', 'table', 'row', 'action', 'description', 'data_before', 'data_after',)
-    # search_fields = ('action',)
-    # list_filter = ('action',)
-
-
 # class TypeRemboursementAdmin(admin.ModelAdmin):
 #     list_display = ('libelle', 'code')
 #     list_filter = ('libelle', 'code')
@@ -410,92 +378,12 @@ class PeriodeComptableAdmin(ImportExportModelAdmin):
     list_per_page = 10
 
 
-class KeyValueDataAdmin(ImportExportModelAdmin):
-    list_display = ('key', 'description', 'statut')
-    list_filter = ('key', 'statut')
-    search_field = ('key', 'description', 'data')
-    list_per_page = 10
-    formfield_overrides = {
-        # fields.JSONField: {'widget': JSONEditorWidget}, # if django < 3.1
-        models.JSONField: {'widget': JSONEditorWidget(height='500px', width='100%', mode='tree')},
-    }
-
-
 class ModeCreationAdmin(admin.ModelAdmin):
     list_display = ('code', 'libelle',)
 
 
 class NatureOperationAdmin(admin.ModelAdmin):
     list_display = ('code', 'libelle',)
-
-
-class BackgroundQueryTaskAdmin(admin.ModelAdmin):
-    list_display = ('name', 'auteur', 'created_at', 'updated_at', 'fichier_excel', 'statut',)
-    list_filter = (
-    'status', 'created_at', ('created_by__bureau', admin.RelatedOnlyFieldListFilter), 'created_by__username')
-    search_field = ('name', 'status', 'created_by__username')
-    readonly_fields = ('created_at', 'updated_at', 'error_message', 'name', 'created_by', 'fichier_excel', 'statut')
-    list_per_page = 10
-
-    superuser_fieldsets = (
-        ('Général', {
-            'fields': ('name', 'query', 'file', 'status')
-        }),
-        ('Meta Donnée', {
-            'fields': (
-                'created_at', 'updated_at', 'error_message', 'created_by')
-        }),
-    )
-
-    staff_fieldsets = (
-        ('Général', {
-            'fields': ('name', 'file', 'status')
-        }),
-        ('Meta Donnée', {
-            'fields': (
-                'created_at', 'updated_at', 'error_message', 'created_by')
-        }),
-    )
-
-    add_fieldsets = (
-        ('Général', {
-            'fields': ('name', 'query', 'status')
-        }),
-    )
-
-    def get_fieldsets(self, request, obj=None):
-        if not obj:
-            return self.add_fieldsets
-        if request.user.is_superuser:
-            return self.superuser_fieldsets
-        else:
-            return self.staff_fieldsets
-
-    def get_queryset(self, request):
-        queryset = super().get_queryset(request)
-        if not request.user.is_superuser:
-            queryset = queryset.filter(created_by=request.user, status__in=['ENATT', 'ENCOURS', 'TERMINEE', 'ECHOUEE'])
-        return queryset
-
-    def auteur(self, obj):
-        return obj.created_by.username
-
-    auteur.short_description = 'Exécuté par'
-
-    def has_add_permission(self, request):
-        return False
-
-    def has_delete_permission(self, request, obj=None):
-        return False
-
-    def has_change_permission(self, request, obj=None):
-        return False
-
-    def has_update_permission(self, request, obj=None):
-        return False
-
-    class Media:
-        js = ("configurations/js/custom.js",)
 
 
 class ModelLettreChequeAdmin(admin.ModelAdmin):
@@ -597,43 +485,6 @@ class BordereauLettreChequeAdmin(admin.ModelAdmin):
 
     def has_update_permission(self, request, obj=None):
         return False
-
-    # class Media:
-    #     js = ("configurations/js/custom.js",)
-
-
-class MailingListAdminForm(forms.ModelForm):
-    class Meta:
-        model = MailingList
-        fields = '__all__'
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        if self.instance and self.instance.pk:
-            # Si l'instance existe déjà, ne pas modifier created_by
-            self.fields['created_by'].required = False
-            self.fields['updated_by'].required = False
-        else:
-            # Si l'instance n'existe pas (donc nouvelle), définir created_by à l'utilisateur connecté
-            user = self.initial.get('user')
-            if user:
-                self.fields['created_by'].initial = user
-                self.fields['updated_by'].initial = user
-
-
-class MailingListAdmin(admin.ModelAdmin):
-    form = MailingListAdminForm
-
-    def get_form(self, request, obj=None, **kwargs):
-        form = super().get_form(request, obj, **kwargs)
-        form.user = request.user  # Passe l'utilisateur connecté au formulaire
-        return form
-
-    def save_model(self, request, obj, form, change):
-        if not change:  # Si l'objet est nouveau (création)
-            obj.created_by = request.user
-        obj.updated_by = request.user
-        super().save_model(request, obj, form, change)
 
 
 class BusinessUnitAdmin(admin.ModelAdmin):
@@ -766,7 +617,6 @@ admin.site.register(Taxe, TaxeAdmin)
 admin.site.register(TypeQuittance, TypeQuittanceAdmin)
 admin.site.register(TypeApporteur)
 admin.site.register(CompteTresorerie)
-admin.site.register(BackgroundQueryTask, BackgroundQueryTaskAdmin)
 admin.site.register(BordereauLettreCheque, BordereauLettreChequeAdmin)
 admin.site.register(BusinessUnit, BusinessUnitAdmin)
 admin.site.register(TypeProduit)

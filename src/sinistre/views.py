@@ -48,10 +48,10 @@ import re
 from uuid import uuid4
 import uuid
 
-from configurations.helper_config import execute_query, create_query_background_task
+from configurations.helper_config import execute_query
 from configurations.models import Compagnie, User, Rubrique, \
     TypePriseencharge, Pays, TypeIntervenant, TauxResponsabilite, TypeSinistre, Circonstance, Garantie, GarantieCirconstance, PosteDommage, \
-    ActionLog, PeriodeComptable, TypeRemboursement, ModeCreation, TypePrefinancement
+    PeriodeComptable, TypeRemboursement, ModeCreation, TypePrefinancement
 from production.models import Statut, TypeDocument, Client
 #
 from production.models import Police, HistoriquePolice, HistoriqueAliment, PoliceAssureur, Mouvement, Motif, AlimentPolice, Document, AutreRisque, Marchandise, \

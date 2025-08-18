@@ -28,20 +28,15 @@ from rest_framework import status
 
 from api.api_helper import send_otp_mail, send_demande_rembours_mail
 from api.paginations import SmartResultsSetPagination
-from api.serializers import KeyValueDataSerializer, UserSerializer, AlimentSerializer, CreateUserSerializer, \
+from api.serializers import UserSerializer, AlimentSerializer, CreateUserSerializer, \
     ResetPasswordUserSerializer, UserDataSerializer, BarremeSerializer, SinisteSerializer, \
     ModeRemboursementSerializer, DemandeRemboursementSerializer, PrestataireSerializer, \
-    PrestataireDataSerializer, ActeSerializer, BureauSerializer, \
-    ProspectSerializer, CarteDigitalDematerialiseeSerializer, CiviliteSerializer, \
+    PrestataireDataSerializer, ActeSerializer, BureauSerializer, CiviliteSerializer, \
     PaysSerializer
 from configurations.helper_config import verify_sql_query, execute_query
-from configurations.models import Acte, Prescripteur, Prestataire, \
-    KeyValueData, WsBoby, Bureau, Civilite, Pays
-from configurations.models import User, ModeReglement
+from configurations.models import Acte, Prescripteur, Prestataire, Bureau, Civilite, Pays, User, ModeReglement
 from grh.helper import generate_uiid
-from grh.models import CampagneAppmobile, CampagneAppmobileProspect
-from production.models import Aliment, AlimentFormule, Bareme, Carte, CarteDigitalDematerialisee, \
-    TypeDocument, Police
+from production.models import Aliment, AlimentFormule, Bareme, Carte, TypeDocument, Police
 from shared.enum import EtatPolice, Statut, StatutSinistre, StatutEnrolement
 from shared.enum import StatutRemboursement
 from shared.helpers import get_tarif_acte_from_bareme, generate_numero_carte
@@ -550,25 +545,7 @@ class LoginUserView(views.APIView):
         # print(request.data)
         user = authenticate(username=request.data["uid"], password=request.data["passwd"])
         if user is not None:
-            # print(user.aliments.all())
-            # print(user.aliment)
-            if user.aliment is not None:
-                config = KeyValueData.objects.filter(key='SANTE_MOBILE_BUREAU_V2').first()
-                if user.aliment.bureau.code in config.data['bureau_v2']:
-                    refresh = RefreshToken.for_user(user)
-
-                    return Response(data={
-                        'refresh': str(refresh),
-                        'access': str(refresh.access_token),
-                    })
-                else:
-                    return Response(data={
-                        'detail': "Cette carte n'est pas active sur la v2",
-                    }, status=status.HTTP_501_NOT_IMPLEMENTED)
-            else:
-                return Response(data={
-                    'detail': "Aucun compte actif n'a été trouvé avec les identifiants fournis",
-                }, status=status.HTTP_401_UNAUTHORIZED)
+            pass
         else:
             return Response(data={
                 'detail': "Aucun compte actif n'a été trouvé avec les identifiants fournis",
@@ -586,18 +563,7 @@ class LoginPrestataireView(views.APIView):
             # print(user.aliments.all())
             # print(user.aliment)
             if user.prestataire is not None:
-                config = KeyValueData.objects.filter(key='SANTE_MOBILE_BUREAU_V2').first()
-                if user.prestataire.bureau.code in config.data['bureau_v2']:
-                    refresh = RefreshToken.for_user(user)
-
-                    return Response(data={
-                        'refresh': str(refresh),
-                        'access': str(refresh.access_token),
-                    })
-                else:
-                    return Response(data={
-                        'detail': "Cette carte n'est pas active sur la v2",
-                    }, status=status.HTTP_501_NOT_IMPLEMENTED)
+                pass
             else:
                 return Response(data={
                     'detail': "Aucun compte prestataire actif n'a été trouvé avec les identifiants fournis",
@@ -633,26 +599,9 @@ class ConfigurationView(views.APIView):
     permission_classes = [AllowAny]
     parser_classes = [JSONParser]
 
-    def get(self, request, key):
-        keyValueData = get_object_or_404(KeyValueData, key=key, statut=True)
-        serializer = KeyValueDataSerializer(keyValueData)
-        return Response(serializer.data)
-
 class ConfigurationBureauView(views.APIView):
     permission_classes = [AllowAny]
     parser_classes = [JSONParser]
-
-    def get(self, request, key):
-        key_value_data = get_object_or_404(KeyValueData, key=key, statut=True)
-        data = key_value_data.data
-
-        if 'bureau_v2' in data:
-            bureau_codes = data['bureau_v2']
-            bureaux = Bureau.objects.filter(code__in=bureau_codes)
-            bureau_serializer = BureauSerializer(bureaux, many=True)
-            return Response(bureau_serializer.data)
-
-        return Response([])
 
 
 class ModeRemboursementListView(views.APIView):
@@ -747,82 +696,10 @@ class RegisterUserView(views.APIView):
     permission_classes = [AllowAny]
     parser_classes = [JSONParser]
 
-    def post(self, request):
-        try:
-            serializer = CreateUserSerializer(data=request.data)
-            if serializer.is_valid():
-                carte = Carte.objects.filter(numero=request.data['username']).first()
-                config = KeyValueData.objects.filter(key='SANTE_MOBILE_BUREAU_V2').first()
-                print(config.data)
-                if carte is not None:
-                    if carte.statut == Statut.ACTIF:
-
-                        aliment = carte.aliment
-                        if aliment.bureau.code in config.data['bureau_v2']:
-                            user_instance = serializer.save()
-
-                            user_instance.first_name = aliment.prenoms
-                            user_instance.last_name = aliment.nom
-                            user_instance.bureau = aliment.bureau
-                            user_instance.save()
-
-                            user_object = User.objects.get(id=user_instance.id)
-                            aliment.user_extranet = user_object
-                            aliment.save()
-
-                            serializer_aliment = AlimentSerializer(aliment)
-                            return Response(serializer_aliment.data)
-                        else:
-                            return Response({'detail': 'Cette carte n\'est pas active sur la v2'},
-                                            status=status.HTTP_501_NOT_IMPLEMENTED)
-                    else:
-                        return Response({'detail': 'Cette carte n\'est plus active'},
-                                        status=status.HTTP_400_BAD_REQUEST)
-                else:
-                    return Response({'detail': 'Aucun assuré trouvé avec ce numéro de carte'},
-                                    status=status.HTTP_400_BAD_REQUEST)
-            else:
-                return Response(serializer.errors)
-        except Exception as e:
-            print(e)
-            return Response({'detail': 'Un compte existe déjà avec ce numéro de carte'},
-                            status=status.HTTP_400_BAD_REQUEST)
-
 
 class RequestResetPasswordView(views.APIView):
     permission_classes = [AllowAny]
     parser_classes = [JSONParser]
-
-    def post(self, request):
-        try:
-            if not request.data.get('username', None):
-                return Response({"username": ["Ce champ est obligatoire."]}, status=status.HTTP_400_BAD_REQUEST)
-
-            carte = Carte.objects.filter(numero=request.data['username']).first()
-            config = KeyValueData.objects.filter(key='SANTE_MOBILE_BUREAU_V2').first()
-            if carte is not None:
-                if carte.statut == Statut.ACTIF:
-                    aliment = carte.aliment
-                    if aliment.bureau.code in config.data['bureau_v2']:
-                        if aliment.user_extranet is not None:
-                            serializer = UserDataSerializer(aliment.user_extranet)
-                            return Response(serializer.data)
-                        else:
-                            return Response({
-                                'detail': 'Aucun compte n\'a été trouvé avec ce numéro de carte. Veuillez creer un compte.'},
-                                status=status.HTTP_400_BAD_REQUEST)
-                    else:
-                        return Response({'detail': 'Cette carte n\'est pas active sur la v2'},
-                                        status=status.HTTP_501_NOT_IMPLEMENTED)
-                else:
-                    return Response({'detail': 'Cette carte n\'est plus active'}, status=status.HTTP_400_BAD_REQUEST)
-            else:
-                return Response({'detail': 'Aucun assuré trouvé avec ce numéro de carte'},
-                                status=status.HTTP_400_BAD_REQUEST)
-        except Exception as e:
-            print(e)
-            return Response({'detail': 'Une erreur est survenue lors de la réinitialisation du mot de passe'},
-                            status=status.HTTP_400_BAD_REQUEST)
 
 
 class ResetPasswordView(views.APIView):
@@ -1123,7 +1000,6 @@ class ActeDataView(views.APIView, SmartResultsSetPagination):
                 Q(libelle__icontains=search) |
                 Q(code__icontains=search) |
                 Q(rubrique__libelle__icontains=search) |
-                Q(regroupement_acte__libelle__icontains=search) |
                 Q(type_acte__libelle__icontains=search)
             )
 
@@ -1135,119 +1011,6 @@ class ActeDataView(views.APIView, SmartResultsSetPagination):
         return self.get_paginated_response(serializer.data)
 
 
-class WsBobyView(views.APIView):
-    permission_classes = [IsAuthenticated]
-    parser_classes = [JSONParser]
-
-    def post(self, request):
-        resp = {
-            "statusCode": 0,
-            "statusMessage": None,
-            "responses": [
-                {
-                    "name": "",
-                    "statusCode": 0,
-                    "statusMessage": None,
-                    "totalCount": None,
-                    "beans": []
-                }
-            ]
-        }
-        try:
-            # recuperation des donnees de la requete
-            req_data = request.data.get('requests', None)
-            # verification de la presence des donnees
-            if req_data is None:
-                resp["statusCode"] = 400
-                resp["statusMessage"] = "Bad Request"
-                resp["responses"] = []
-                return Response(data=resp, status=status.HTTP_400_BAD_REQUEST)
-            # recuperation des donnees de la requete a partie du nom de la transaction
-            ws_boby = WsBoby.objects.filter(status=True, name=req_data[0]["name"]).first()
-            print("@@@@@@@@ hello bug @@@@@@@@@@@")
-            print(req_data[0]["name"])
-            print(ws_boby)
-            if ws_boby is not None:
-                # recuperation des parametres de la transaction
-                boby_params = req_data[0]["params"]
-                try:
-                    # verification du contenu de la requete sql si les tags sont presents
-                    db_query = ws_boby.request
-                    verify_sql_query(db_query)
-                    # print(db_query)
-
-                    # verification de la presence des donnees avec la bonne clé params
-                    boby_param_keys = list(boby_params.keys())
-                    db_query_param = ws_boby.paramwsboby_set.all()
-                    # verification de la fourniture de toutes les cles
-                    for db_param in db_query_param:
-                        if db_param.name not in boby_param_keys:
-                            resp["responses"][0]["name"] = req_data[0]["name"]
-                            resp["responses"][0]["statusCode"] = 1
-                            resp["responses"][0]["statusMessage"] = f"Le paramètre ({db_param.name}) est inexistant"
-                            return Response(data=resp, status=status.HTTP_200_OK)
-
-                    # match des parametres de la requete avec les parametres de la transaction
-                    # print(db_query)
-                    for param in boby_param_keys:
-                        print(param)
-                        print(str(boby_params[param]))
-                        db_query = db_query.replace(f'[:{param}]', f"'{boby_params[param]}'")
-
-                    print(db_query)
-
-                    # execution de la requete
-                    data, columns = execute_query(db_query)
-                    print(columns)
-                    print(data)
-                    # formatage des donnees
-                    final_data = []
-                    for row in data:
-                        # matching des colonnes avec les donnees
-                        final_data.append(dict(zip(columns, row)))
-
-                    if len(final_data) == 0:
-                        boby_name = req_data[0]["name"]
-                        resp["responses"][0]["name"] = req_data[0]["name"]
-                        resp["responses"][0]["statusCode"] = 5
-                        resp["responses"][0]["statusMessage"] = f"Aucun élément trouvé ({boby_name})"
-                        return Response(data=resp, status=status.HTTP_200_OK)
-
-                    print(data)
-                    print(columns)
-                    resp["responses"][0]["name"] = req_data[0]["name"]
-                    resp["responses"][0]["statusCode"] = 0
-                    resp["responses"][0]["totalCount"] = len(final_data)
-                    resp["responses"][0]["beans"] = final_data
-                    return Response(data=resp, status=status.HTTP_200_OK)
-
-                except Exception as e:
-                    resp["responses"][0]["name"] = req_data[0]["name"]
-                    resp["responses"][0]["statusCode"] = 1
-                    resp["responses"][0]["statusMessage"] = "Erreur : " + str(e)
-                    return Response(data=resp, status=status.HTTP_200_OK)
-            else:
-                print("@@@@@@@@ hello bug @@@@@@@@@@@")
-                # si la transaction n'existe pas
-                boby_name = req_data[0]["name"]
-                # verification de la presence des donnees avec la bonne clé params
-                boby_params = req_data[0]["params"]
-                resp["responses"][0]["name"] = req_data[0]["name"]
-                resp["responses"][0]["statusCode"] = 1
-                resp["responses"][0]["statusMessage"] = f"Le nom de la transaction ({boby_name}) est inexistant"
-                return Response(data=resp, status=status.HTTP_200_OK)
-
-        except Exception as e:
-            print(e)
-            resp["statusCode"] = 400
-            resp["statusMessage"] = "Bad Request : " + str(e)
-            resp["responses"] = []
-            return Response(data=resp, status=status.HTTP_400_BAD_REQUEST)
-
-
-        # return Response(data=resp, status=status.HTTP_200_OK)
-
-
 class TestNumCartView(views.APIView):
     permission_classes = [IsAuthenticated]
     parser_classes = [JSONParser]
@@ -1256,163 +1019,6 @@ class TestNumCartView(views.APIView):
         user = self.request.user
         numer_cart = generate_numero_carte(user.aliment)
         return Response(data={"numero_carte": numer_cart})
-
-
-class AddAyantDroitView(views.APIView):
-    permission_classes = [IsAuthenticated]
-    parser_classes = [JSONParser]
-
-    def post(self, request, *args, **kwargs):
-        user = self.request.user
-        aliment = user.aliment
-        polices = formules.police
-
-        pprint('Hello Joseph')
-
-        # Step 1 : Vérifier ou créer une campagne pour l'utilisateur connecté
-        campagne = CampagneAppmobile.objects.filter(created_by=user).first()
-        if not campagne:
-            campagne = CampagneAppmobile.objects.create(
-                created_by=user,
-                police=polices,
-                statut=StatutEnrolement.VALIDE
-            )
-
-        # Step 2 : Préparer les données du Prospect
-
-        data = request.data
-        bureau = user.bureau
-        police = polices
-        aliment_adherent_principal = user.aliment.adherent_principal
-
-        data['bureau'] = bureau.id
-        data['police'] = police.id
-        data['aliment_adherent_principal'] = aliment_adherent_principal.id
-        data['statut_enrolement'] = StatutEnrolement.SOUMIS
-        # VERIFI IF date_affiliation EXIST IN DATA
-        try:
-            data['date_affiliation'] = data['date_affiliation']
-        except Exception as e:
-            data['date_affiliation'] = datetime.datetime.now().date()
-
-
-
-        # Step 3 : Sérialisation et validation des données du Prospect
-        serializer = ProspectSerializer(data=data)
-        if serializer.is_valid():
-            prospect = serializer.save()
-            # uiid = generate_uiid(request)
-            # Step 4 : Créer une entrée dans CampagneAppmobileProspect
-            CampagneAppmobileProspect.objects.create(
-                campagne_appmobile=campagne,
-                prospect=prospect,
-                statut_enrolement=StatutEnrolement.SOUMIS,
-                # iuid=uiid,
-                # lien=url,
-                mouvement_id=7
-            )
-
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-class ListProspectsView(views.APIView):
-    permission_classes = [IsAuthenticated]
-    parser_classes = [JSONParser]
-
-    def get(self, request, *args, **kwargs):
-        user = request.user
-
-        # Step 1 : Récupérer la CampagneAppmobile associée à l'utilisateur connecté
-        campagne = CampagneAppmobile.objects.filter(created_by=user).first()
-        if not campagne:
-            return Response({'error': 'No campaign found for the user'}, status=status.HTTP_404_NOT_FOUND)
-
-        # Step 2 : Récupérer les Prospects avec les statuts 'VALIDE' et 'ATTENTE'
-        prospects = CampagneAppmobileProspect.objects.filter(
-            campagne_appmobile=campagne,
-            statut_enrolement__in=[StatutEnrolement.VALIDE, StatutEnrolement.ATTENTE, StatutEnrolement.SOUMIS]
-        ).select_related('prospect')
-
-        # Sérialiser les données des prospects
-        serialized_prospects = []
-        for liste in prospects:
-            data = ProspectSerializer(liste.prospect).data
-            data['statut_enrolement'] = liste.statut_enrolement
-            data['mouvement'] = liste.mouvement_id
-            serialized_prospects.append(data)
-
-        return Response(serialized_prospects, status=status.HTTP_200_OK)
-
-
-## INOV API MOBILE
-
-class FetchDigitalCard(views.APIView):
-    permission_classes = [IsAuthenticated]
-    parser_classes = [JSONParser]
-
-    # @method_decorator(csrf_exempt)
-    def get(self, request, format=None):
-        if not request.user.is_authenticated:
-            return Response({'error': 'User is not authenticated.'}, status=status.HTTP_401_UNAUTHORIZED)
-
-        user_id = request.user.id
-        try:
-            digital_card = CarteDigitalDematerialisee.objects.filter(user__id=user_id).order_by('-id')[0]
-            serializer = CarteDigitalDematerialiseeSerializer(digital_card)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-
-        except CarteDigitalDematerialisee.DoesNotExist:
-            return Response({'error': 'Carte digitale introuvable pour cet utilisateur.'},
-                            status=status.HTTP_404_NOT_FOUND)
-
-
-class CreateDigitalCard(views.APIView):
-    permission_classes = [IsAuthenticated]
-    parser_classes = [JSONParser]
-
-    # @method_decorator(csrf_exempt)
-    def post(self, request, format=None):
-        user_id = request.user.id
-        existing_card = CarteDigitalDematerialisee.objects.filter(
-            user__id=user_id).first()
-        if existing_card:
-            return Response({'error': 'Une carte digital existe déjà pour cet utilisateur.'},
-                            status=status.HTTP_400_BAD_REQUEST)
-
-        request.data['user'] = user_id
-        serializer = CarteDigitalDematerialiseeSerializer(data=request.data)
-        if serializer.is_valid():
-            digital_card = serializer.save()
-            # print(digital_card)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-class UpdateDigitalCard(views.APIView):
-    permission_classes = [IsAuthenticated]
-
-    # @method_decorator(csrf_exempt)
-    def put(self, request, digital_card_id, format=None):
-        try:
-            digital_card = CarteDigitalDematerialisee.objects.get(id=digital_card_id, user=request.user)
-        except CarteDigitalDematerialisee.DoesNotExist:
-            return Response({'error': 'Carte digitale introuvable pour cet utilisateur.'},
-                            status=status.HTTP_404_NOT_FOUND)
-
-        update_data = {
-            'has_digital_card': request.data.get('has_digital_card'),
-            'digital_card_url': request.data.get('digital_card_url')
-        }
-        update_data = {k: v for k, v in update_data.items() if v is not None}
-        serializer = CarteDigitalDematerialiseeSerializer(digital_card, data=update_data, partial=True)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
-
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 # TODO: API PRISE EN CHARGE APP MOBILE

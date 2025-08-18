@@ -35,11 +35,11 @@ from openpyxl.styles import Font, PatternFill
 from datetime import datetime, timezone
 from django.db.models import Sum, Q, ExpressionWrapper, F, DurationField, Max
 from configurations.helper_config import verify_sql_query
-from configurations.models import ActionLog, Secteur, \
-    Bureau ,BusinessUnit, Branche, Banque, Apporteur, Devise, User, AuthGroup,Tarif, Rubrique,  BackgroundQueryTask, ParamProduitCompagnie, Compagnie, \
+from configurations.models import Secteur, \
+    Bureau ,BusinessUnit, Branche, Banque, Apporteur, Devise, User, AuthGroup,Tarif, Rubrique, ParamProduitCompagnie, Compagnie, \
     TypeApporteur, TypePersonne, Pays, TypeCompagnie, TypeGarant, TauxCommission, Carosserie, \
     CategorieVehicule, Civilite, CompteTresorerie, ConditionsAssurance, Carburant, Formule, Fractionnement, Garantie, GarantieFormule, \
-    Groupe, ModeReglement, Circonstance, TauxResponsabilite, TypeIntervenant, TypeMouvement, TypeSinistre, PosteDommage, GarantieCirconstance, RegroupementActe, Prescripteur, Prestataire, Acte, WsBoby, ParamWsBoby, ParamActe
+    Groupe, ModeReglement, Circonstance, TauxResponsabilite, TypeIntervenant, TypeMouvement, TypeSinistre, PosteDommage, GarantieCirconstance, Prescripteur, Prestataire, Acte, ParamActe
 from inov import settings
 from production.models import Client, Mouvement, \
     Quittance, Reglement, Courrier, Produit, SecteurActivite, TypeDocument, Mouvement, Motif
@@ -360,13 +360,11 @@ class TarifsView(PermissionRequiredMixin, TemplateView):
         context_original = self.get_context_data(**kwargs)
 
         rubriques = Rubrique.objects.filter(status=True)
-        regroupements_actes = RegroupementActe.objects.filter(status=True)
         #
         tarifs_exists = Tarif.objects.filter(bureau=self.request.user.bureau).exists()
 
         context_perso = {
             'rubriques': rubriques,
-            'regroupements_actes': regroupements_actes,
             'tarifs_exists': tarifs_exists,
         }
 
@@ -418,12 +416,11 @@ def tarifs_datatable(request):
         1: 'acte__libelle',
         2: 'acte__lettre_cle',
         3: 'acte__rubrique__libelle',
-        4: 'acte__regroupement_acte__libelle',
-        5: 'cout_classique',
-        6: 'cout_mutuelle',
-        7: 'cout_public_hg',
-        8: 'cout_public_chu',
-        9: 'cout_public_ica',
+        4: 'cout_classique',
+        5: 'cout_mutuelle',
+        6: 'cout_public_hg',
+        7: 'cout_public_chu',
+        8: 'cout_public_ica',
         # Add more columns as needed
     }
 
@@ -453,7 +450,7 @@ def tarifs_datatable(request):
             "libelle_acte": p.acte.libelle,
             "lettre_cle_acte": p.acte.lettre_cle,
             "rubrique": p.acte.rubrique.libelle if p.acte.rubrique else "",
-            "regroupement": p.acte.regroupement_acte.libelle if p.acte.regroupement_acte else "",
+            "regroupement": "",
             "cout_classique": f'<span style="text-align:right;">' + money_field(p.cout_classique) + '</span>',
             "cout_mutuelle": f'<span style="text-align:right;">' + money_field(p.cout_mutuelle) + '</span>',
             "cout_public_hg": f'<span style="text-align:right;">' + money_field(p.cout_public_hg) + '</span>',
@@ -570,8 +567,7 @@ def tarifs_prestataire_datatable(request, prestataire_id):
         queryset = queryset.filter(
             Q(acte__libelle__icontains=search) |
             Q(acte__code__icontains=search) |
-            Q(acte__rubrique__libelle__icontains=search) |
-            Q(acte__regroupement_acte__libelle__icontains=search)
+            Q(acte__rubrique__libelle__icontains=search)
         )
 
     # Map column index to corresponding model field for sorting
@@ -579,7 +575,6 @@ def tarifs_prestataire_datatable(request, prestataire_id):
         0: 'acte__code',
         1: 'acte__libelle',
         2: 'acte__rubrique__libelle',
-        3: 'acte__regroupement_acte__libelle',
         4: 'cout_classique',
         5: 'cout_mutuelle',
         6: 'cout_public_hg',
@@ -617,7 +612,7 @@ def tarifs_prestataire_datatable(request, prestataire_id):
             "libelle_acte": p.acte.libelle,
             "lettre_cle_acte": p.acte.lettre_cle,
             "rubrique": p.acte.rubrique.libelle if p.acte.rubrique else "",
-            "regroupement": p.acte.regroupement_acte.libelle if p.acte.regroupement_acte else "",
+            "regroupement": "",
             "cout_classique": f'<span style="text-align:right;">' + money_field(p.cout_classique) + '</span>',
             "cout_mutuelle": f'<span style="text-align:right;">' + money_field(p.cout_mutuelle) + '</span>',
             "cout_public_hg": f'<span style="text-align:right;">' + money_field(p.cout_public_hg) + '</span>',
@@ -636,110 +631,6 @@ def tarifs_prestataire_datatable(request, prestataire_id):
         "recordsFiltered": paginator.count,
         "draw": int(request.GET.get('draw', 1)),
     })
-
-
-# Génère un fichier model avec les actes déjà en base pour que le gestionnaire puisse renseigner les coûts des actes
-def generate_modele_tarifs_excel(request, prestataire_id):
-    prestataire = Prestataire.objects.get(id=prestataire_id)
-
-    # Données à inclure dans le DataFrame
-    actes = Acte.objects.filter(type_acte__code="acte", status=True).order_by('rubrique_id')
-
-    # Créer un Workbook et accéder à la première feuille
-    wb = Workbook()
-    ws = wb.active
-
-    # Données à inclure dans le DataFrame
-    data = {
-        'CODE_RUBRIQUE': [],
-        'LIBELLE_ACTE': [],
-        'CODE_ACTE': [],
-        'LETTRE_CLE': [],
-        # 'LETTRE_CLE_CLASSIQUE': [],
-        'COEF_CLASSIQUE': [],
-        'PRIX_UNIT_CLASSIQUE': [],
-        'TARIF_CLASSIQUE': [],
-        # 'LETTRE_CLE_MUTUELLE': [],
-        'COEF_MUTUELLE': [],
-        'PRIX_UNIT_MUTUELLE': [],
-        'TARIF_MUTUELLE': [],
-        # 'LETTRE_CLE_HG': [],
-        'COEF_HG': [],
-        'PRIX_UNIT_HG': [],
-        'TARIF_HG': [],
-        # 'LETTRE_CLE_CHU': [],
-        'COEF_CHU': [],
-        'PRIX_UNIT_CHU': [],
-        'TARIF_CHU': [],
-        # 'LETTRE_CLE_ICA': [],
-        'COEF_ICA': [],
-        'PRIX_UNIT_ICA': [],
-        'TARIF_ICA': [],
-        # 'LETTRE_CLE_PRESTATAIRE': [],
-        'COEF_PRESTATAIRE': [],
-        'PRIX_UNIT_PRESTATAIRE': [],
-        'TARIF_PRESTATAIRE': [],
-    }
-
-    # Ajouter les actes au DataFrame
-    for acte in actes:
-        # renseigner avec le tarif existant de ce prestataire --
-        tarif_existant = Tarif.objects.filter(acte__code=acte.code, bureau=request.user.bureau,
-                                              statut=Statut.ACTIF).first()
-        tarif_existant_prestataire = Tarif.objects.filter(acte__code=acte.code, bureau=request.user.bureau,
-                                                          prestataire=prestataire, statut=Statut.ACTIF).first()
-
-        data['CODE_RUBRIQUE'].append(acte.rubrique.libelle)
-        data['LIBELLE_ACTE'].append(acte.libelle)
-        data['CODE_ACTE'].append(acte.code)
-        data['LETTRE_CLE'].append(acte.lettre_cle)
-
-        # data['LETTRE_CLE_CLASSIQUE'].append(tarif_existant.lettre_cle_classique)
-        data['COEF_CLASSIQUE'].append(tarif_existant.coef_classique if tarif_existant else 1)
-        data['PRIX_UNIT_CLASSIQUE'].append(tarif_existant.pu_classique if tarif_existant else 0)
-        data['TARIF_CLASSIQUE'].append(tarif_existant.cout_classique if tarif_existant else 0)
-
-        # data['LETTRE_CLE_MUTUELLE'].append(tarif_existant.lettre_cle_classique)
-        data['COEF_MUTUELLE'].append(tarif_existant.coef_mutuelle if tarif_existant else 1)
-        data['PRIX_UNIT_MUTUELLE'].append(tarif_existant.pu_mutuelle if tarif_existant else 0)
-        data['TARIF_MUTUELLE'].append(tarif_existant.cout_mutuelle if tarif_existant else 0)
-
-        # data['LETTRE_CLE_HG'].append(tarif_existant.lettre_cle_public_hg if tarif_existant else 0)
-        data['COEF_HG'].append(tarif_existant.coef_public_hg if tarif_existant else 0)
-        data['PRIX_UNIT_HG'].append(tarif_existant.pu_public_hg if tarif_existant else 0)
-        data['TARIF_HG'].append(tarif_existant.cout_public_hg if tarif_existant else 0)
-
-        # data['LETTRE_CLE_CHU'].append(tarif_existant.lettre_cle_public_chu if tarif_existant else 0)
-        data['COEF_CHU'].append(tarif_existant.coef_public_chu if tarif_existant else 0)
-        data['PRIX_UNIT_CHU'].append(tarif_existant.pu_public_chu if tarif_existant else 0)
-        data['TARIF_CHU'].append(tarif_existant.cout_public_chu if tarif_existant else 0)
-
-        # data['LETTRE_CLE_ICA'].append(tarif_existant.lettre_cle_public_ica if tarif_existant else 0)
-        data['COEF_ICA'].append(tarif_existant.coef_public_ica if tarif_existant else 0)
-        data['PRIX_UNIT_ICA'].append(tarif_existant.pu_public_ica if tarif_existant else 0)
-        data['TARIF_ICA'].append(tarif_existant.cout_public_ica if tarif_existant else 0)
-
-        # data['LETTRE_CLE_PRESTATAIRE'].append('')
-        data['COEF_PRESTATAIRE'].append(
-            tarif_existant_prestataire.coef_prestataire if tarif_existant_prestataire else 1)
-        data['PRIX_UNIT_PRESTATAIRE'].append(
-            tarif_existant_prestataire.pu_prestataire if tarif_existant_prestataire else 0)
-        data['TARIF_PRESTATAIRE'].append(
-            tarif_existant_prestataire.cout_prestataire if tarif_existant_prestataire else 0)
-
-    # Créer un DataFrame avec Pandas
-    df = pd.DataFrame(data)
-
-    filename = 'INOV_V1-TARIF_DU_PRESTATAIRE_' + slugify(str(prestataire.name)).upper() + '.xlsx'
-
-    # Créer une réponse HTTP avec le type MIME approprié
-    response = HttpResponse(content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-    response['Content-Disposition'] = 'attachment; filename=' + filename
-
-    # Enregistrer le DataFrame dans le fichier Excel
-    df.to_excel(response, index=False, engine='openpyxl')
-
-    return response
 
 
 # une que le gestionnaire à renseigner les coûts des actes, on l'importe
@@ -1251,14 +1142,12 @@ class DetailsPrestatairesView(TemplateView):
             utilisateurs = User.objects.filter(prestataire_id=prestataire.pk)
 
             rubriques = Rubrique.objects.filter(status=True)
-            regroupements_actes = RegroupementActe.objects.filter(status=True)
 
             context_perso = {
                 'clients': clients,
                 'prestataire': prestataire,
                 'utilisateurs': utilisateurs,
                 'rubriques': rubriques,
-                'regroupements_actes': regroupements_actes,
             }
 
             context = {**context_original, **context_perso}
@@ -1533,22 +1422,6 @@ def change_prestataire_status(request, prestataire_id):
 
         else:
             prestataire.status = True
-        prestataire.save()
-        # gardons des traces
-        if prestataire.status == False:
-            ActionLog.objects.create(done_by=request.user, action="update",
-                                     description="Désactivation d'un prestataire", table="prestataire",
-                                     row=prestataire.pk,
-                                     # data_before=json.dumps(model_to_dict(formule_before)),
-                                     # data_after=json.dumps(model_to_dict(formule))
-                                     )
-        else:
-            ActionLog.objects.create(done_by=request.user, action="update",
-                                     description="Activation d'un prestataire", table="prestataire",
-                                     row=prestataire.pk,
-                                     # data_before=json.dumps(model_to_dict(formule_before)),
-                                     # data_after=json.dumps(model_to_dict(formule))
-                                     )
 
         response = {
             'statut': 1,
@@ -1559,222 +1432,6 @@ def change_prestataire_status(request, prestataire_id):
         print(prestataire.status)
 
     return JsonResponse(response)
-
-
-class WsBobyView(TemplateView):
-    # permission_required = "configurations.view_prestataire"
-    template_name = 'ws_bobys/bobys.html'
-    model = WsBoby
-
-    def get_context_data(self, **kwargs):
-        return {
-            **super().get_context_data(**kwargs),
-            **admin.site.each_context(self.request),
-            "opts": self.model._meta,
-        }
-
-    def get(self, request, *args, **kwargs):
-        context_original = self.get_context_data(**kwargs)
-        try:
-            del request.session['name']
-            del request.session['query']
-            del request.session['params']
-            del request.session['value_params']
-        except:
-            pass
-        context = {**context_original}
-        return self.render_to_response(context)
-
-
-def ws_boby_datatable(request):
-    items_per_page = 10
-    page_number = request.GET.get('page')
-    start = int(request.GET.get('start', 0))
-    length = int(request.GET.get('length', items_per_page))
-    sort_column_index = int(request.GET.get('order[0][column]'))
-    sort_direction = request.GET.get('order[0][dir]')
-    search = request.GET.get('search[value]', '')
-    print('search')
-    print(search)
-
-    queryset = WsBoby.objects.all()
-
-    if search:
-        queryset = queryset.filter(
-            Q(name__icontains=search) |
-            Q(request__icontains=search)
-        )
-
-    # Map column index to corresponding model field for sorting
-    sort_columns = {
-        0: 'id',
-        1: 'name',
-        2: 'status',
-        # Add more columns as needed
-    }
-
-    # Default sorting by 'id' if column index is not found
-    sort_column = sort_columns.get(sort_column_index, 'id')
-
-    if sort_direction == 'desc':
-        sort_column = '-' + sort_column  # For descending order
-
-    # Apply sorting
-    queryset = queryset.order_by(sort_column)
-
-    paginator = Paginator(queryset, length)
-    page_obj = paginator.get_page(page_number)
-
-    # Prepare the data in the expected format
-    data = []
-    for ws_boby in page_obj:
-        update_url = reverse('ws_boby_edite', args=[ws_boby.id])  # URL to the detail view
-
-        actions_html = f'<a style="cursor:pointer;" class="badge btn-sm btn-modifier rounded-pill" href="{update_url}"><i class="fa fa-edit"></i> Modifier</a>'
-
-        data.append({
-            "id": ws_boby.id,
-            "name": ws_boby.name,
-            "status": '<span class="badge badge-actif">Actif</span>' if ws_boby.status else '<span class="badge badge-inactif">Inactif</span>',
-            "actions": actions_html,
-        })
-
-    return JsonResponse({
-        "data": data,
-        "recordsTotal": queryset.count(),
-        "recordsFiltered": paginator.count,
-        "draw": int(request.GET.get('draw', 1)),
-    })
-
-
-class WsBobyCreateView(TemplateView):
-    # permission_required = "configurations.view_prestataire"
-    template_name = 'ws_bobys/add_boby.html'
-    model = WsBoby
-
-    def get_context_data(self, **kwargs):
-        return {
-            **super().get_context_data(**kwargs),
-            **admin.site.each_context(self.request),
-            "opts": self.model._meta,
-        }
-
-    def post(self, request, *args, **kwargs):
-        print(request.POST)
-        query_data = request.POST
-        name = query_data.get('name', '')
-        query = query_data.get('query', '')
-        params = []
-        params = query_data.getlist('params[]', [])
-        value_params = query_data.getlist('value_params[]', [])
-
-        print('params')
-        print(params)
-
-        request.session['name'] = name if name else ""
-        request.session['query'] = query if query else ""
-        request.session['params'] = params if params else []
-        request.session['value_params'] = value_params if value_params else []
-        with transaction.atomic():
-            try:
-                verify_sql_query(query)
-
-                ws_boby = WsBoby.objects.create(name=name, request=query, status=True)
-                ws_boby.save()
-
-                for i in range(len(params)):
-                    param_ws_boby = ParamWsBoby.objects.create(ws_boby=ws_boby, name=params[i], value=value_params[i])
-                    param_ws_boby.save()
-
-                # request.session['message'] = "Bobys ajouté avec succès !"
-                del request.session['name']
-                del request.session['query']
-                del request.session['params']
-                del request.session['value_params']
-                messages.success(request, "Boby ajouté avec succès !")
-                return redirect('ws_bobys')
-
-            except Exception as e:
-                print(e)
-                # request.session['message'] =
-                messages.error(request, "ERREUR: " + str(e))
-                return redirect('ws_boby_create')
-
-
-class WsBobyEditeView(TemplateView):
-    # permission_required = "configurations.view_prestataire"
-    template_name = 'ws_bobys/edite_boby.html'
-    model = WsBoby
-
-    def get(self, request, ws_boby_id, *args, **kwargs):
-        context_original = self.get_context_data(**kwargs)
-
-        ws_boby = WsBoby.objects.get(id=ws_boby_id)
-
-        context_perso = {
-            'ws_boby': ws_boby
-        }
-
-        context = {**context_original, **context_perso}
-
-        return self.render_to_response(context)
-
-    def post(self, request, ws_boby_id, *args, **kwargs):
-        print(request.POST)
-        query_data = request.POST
-        name = query_data.get('name', '')
-        query = query_data.get('query', '')
-        status = query_data.get('status', False)
-        params = query_data.getlist('params[]', [])
-        value_params = query_data.getlist('value_params[]', [])
-
-        print('params')
-        print(params)
-
-        request.session['name'] = name if name else ""
-        request.session['query'] = query if query else ""
-        request.session['params'] = params if params else []
-        request.session['value_params'] = value_params if value_params else []
-        request.session['status'] = status
-        with transaction.atomic():
-            try:
-                verify_sql_query(query)
-
-                ws_boby = WsBoby.objects.get(id=ws_boby_id)
-                ws_boby.name = name
-                ws_boby.request = query
-                ws_boby.status = status
-                ws_boby.save()
-
-                for j in ws_boby.paramwsboby_set.all():
-                    j.delete()
-
-                for i in range(len(params)):
-                    param_ws_boby = ParamWsBoby.objects.create(ws_boby=ws_boby, name=params[i], value=value_params[i])
-                    param_ws_boby.save()
-
-                # request.session['message'] = "Bobys ajouté avec succès !"
-                del request.session['name']
-                del request.session['query']
-                del request.session['params']
-                del request.session['value_params']
-                del request.session['status']
-
-                messages.success(request, "Boby modifié avec succès !")
-                return redirect('ws_bobys')
-
-            except Exception as e:
-                print(e)
-                # request.session['message'] =
-                messages.error(request, "ERREUR: " + str(e))
-                return redirect('ws_boby_edite', ws_boby_id)
-
-    def get_context_data(self, **kwargs):
-        return {
-            **super().get_context_data(**kwargs),
-            **admin.site.each_context(self.request),
-            "opts": self.model._meta,
-        }
 
 
 # ACTE
@@ -1847,14 +1504,13 @@ def actes_datatable(request):
         0: 'code',
         1: 'libelle',
         2: 'rubrique__libelle',
-        3: 'regroupement_acte__libelle',
-        4: 'lettre_cle',
-        5: 'base_calcul_tm',
-        7: 'delais_controle',
-        8: 'entente_prealable',
-        9: 'option_seance',
-        10: 'specialiste_uniquement',
-        11: 'status',
+        3: 'lettre_cle',
+        4: 'base_calcul_tm',
+        5: 'delais_controle',
+        6: 'entente_prealable',
+        7: 'option_seance',
+        8: 'specialiste_uniquement',
+        9: 'status',
         # Add more columns as needed
     }
 
@@ -1887,7 +1543,7 @@ def actes_datatable(request):
             "libelle": acte.libelle,
             "type": acte.type_acte.libelle if acte.type_acte else "",
             "rubrique": acte.rubrique.libelle if acte.rubrique else "",
-            "regroupement": acte.regroupement_acte.libelle if acte.regroupement_acte else "",
+            "regroupement": "",
             "lettre_cle": acte.lettre_cle,
             "base_calcul_tm": acte.base_calcul_tm,
             "delais_controle": parametre.delais_controle if parametre else 0,
@@ -1921,8 +1577,6 @@ def add_acte(request):
 
             rubrique_id = request.POST.get('rubrique_id')
             rubrique = Rubrique.objects.get(id=rubrique_id)
-            regroupement_acte_id = request.POST.get('regroupement_acte_id')
-            regroupement_acte = RegroupementActe.objects.get(id=regroupement_acte_id)
             type_acte_id = request.POST.get('type_acte')
             libelle = request.POST.get('libelle', None)
 
@@ -1951,7 +1605,6 @@ def add_acte(request):
 
             nouveau_acte = Acte.objects.create(
                 rubrique=rubrique,
-                regroupement_acte=regroupement_acte,
                 libelle=libelle,
                 code=code,
                 lettre_cle=lettre_cle,
@@ -2073,13 +1726,8 @@ def modifier_acte(request, acte_id):
 
     selected_rubrique_id = acte.rubrique.id if acte.rubrique else None
 
-    rubrique_regroupement_actes = []
-    selected_regroupement_acte_id = None
-
     if selected_rubrique_id:
         selected_rubrique = Rubrique.objects.get(id=selected_rubrique_id)
-        rubrique_regroupement_actes = RegroupementActe.objects.filter(rubrique=selected_rubrique)
-        selected_regroupement_acte_id = acte.regroupement_acte.id if acte.regroupement_acte else None
 
     base_calcul_tm_choices = BaseCalculTM.choices
     selected_base_calcul_tm = acte.base_calcul_tm
@@ -2093,8 +1741,6 @@ def modifier_acte(request, acte_id):
         'tarif': tarif,
         'rubriques': rubriques,
         'selected_rubrique_id': selected_rubrique_id,
-        'rubrique_regroupement_actes': rubrique_regroupement_actes,
-        'selected_regroupement_acte_id': selected_regroupement_acte_id,
         'base_calcul_tm_choices': base_calcul_tm_choices,
         'selected_base_calcul_tm': selected_base_calcul_tm,
         'related_tarifs': related_tarifs,
@@ -2113,9 +1759,6 @@ def supprimer_acte(request, acte_id):
 
             rubrique_id = request.POST.get('rubrique_id')
             acte.rubrique = Rubrique.objects.get(id=rubrique_id)
-
-            regroupement_acte_id = request.POST.get('regroupement_acte_id')
-            acte.regroupement_acte = RegroupementActe.objects.get(id=regroupement_acte_id)
 
             acte.libelle = request.POST.get('libelle', None)
 
@@ -2166,60 +1809,6 @@ def supprimer_acte(request, acte_id):
                 param_acte.save()
 
                 data_after = model_to_dict(param_acte)
-
-                ActionLog.objects.create(
-                    done_by=request.user, action="update",
-                    description="Modification du paramétrage d'un acte", table="param_acte",
-                    row=param_acte.pk,
-                    data_before=json.dumps(data_before),
-                    data_after=json.dumps(data_after)
-                )
-
-        '''
-        if tarif:
-            # update related tarif
-            coef_classique = request.POST.get('coef_classique', None)
-            pu_classique = request.POST.get('pu_classique', None)
-            cout_classique = request.POST.get('cout_classique', None)
-            #
-            tarif.coef_classique = int(coef_classique.replace(' ', '')) if coef_classique else None
-            tarif.pu_classique = int(pu_classique.replace(' ', '')) if pu_classique else None
-            tarif.cout_classique = int(cout_classique.replace(' ', '')) if cout_classique else None
-
-            coef_mutuelle = request.POST.get('coef_mutuelle', None)
-            pu_mutuelle = request.POST.get('pu_mutuelle', None)
-            cout_mutuelle = request.POST.get('cout_mutuelle', None)
-            #
-            tarif.coef_mutuelle = int(coef_mutuelle.replace(' ', '')) if coef_mutuelle else None
-            tarif.pu_mutuelle = int(pu_mutuelle.replace(' ', '')) if pu_mutuelle else None
-            tarif.cout_mutuelle = int(cout_mutuelle.replace(' ', '')) if cout_mutuelle else None
-
-            coef_hg = request.POST.get('coef_hg', None)
-            pu_hg = request.POST.get('pu_hg', None)
-            cout_hg = request.POST.get('cout_hg', None)
-            #
-            tarif.coef_public_hg = int(coef_hg.replace(' ', '')) if coef_hg else None
-            tarif.pu_public_hg = int(pu_hg.replace(' ', '')) if pu_hg else None
-            tarif.cout_public_hg = int(cout_hg.replace(' ', '')) if cout_hg else None
-
-            coef_chu = request.POST.get('coef_chu', None)
-            pu_chu = request.POST.get('pu_chu', None)
-            cout_chu = request.POST.get('cout_chu', None)
-            #
-            tarif.coef_public_chu = int(coef_chu.replace(' ', '')) if coef_chu else None
-            tarif.pu_public_chu = int(pu_chu.replace(' ', '')) if pu_chu else None
-            tarif.cout_public_chu = int(cout_chu.replace(' ', '')) if cout_chu else None
-
-            coef_ica = request.POST.get('coef_ica', None)
-            pu_ica = request.POST.get('pu_ica', None)
-            cout_ica = request.POST.get('cout_ica', None)
-            #
-            tarif.coef_public_ica = int(coef_ica.replace(' ', '')) if coef_ica else None
-            tarif.pu_public_ica = int(pu_ica.replace(' ', '')) if pu_ica else None
-            tarif.cout_public_ica = int(cout_ica.replace(' ', '')) if cout_ica else None
-
-            tarif.save()
-        '''
 
         response = {
             'statut': 1,
@@ -2399,21 +1988,6 @@ def verify_code(request):
             messages.error(request, 'Invalid verification code. Please try again.')
 
     return render(request, '2fa/verify_code.html')
-
-
-@login_required
-def download_background_query_result(request, query_id):
-    try:
-        query = BackgroundQueryTask.objects.get(id=query_id)
-        url = query.file.url
-        query.delete()
-        return redirect(url)
-    except Exception as e:
-        return redirect(reverse('admin:configurations_backgroundquerytask_changelist'))
-
-
-
-    return JsonResponse(response)
 
 
 def generate_modele_tarifs_bureau(request):
@@ -2834,12 +2408,6 @@ class DbSuperAdminQueryView(TemplateView):
                         sinistre.facture_prestataire.statut = SatutBordereauDossierSinistres.ORDONNANCE
                         sinistre.facture_prestataire.save()
 
-                # enregistrer dans les log
-                ActionLog.objects.create(done_by=request.user, action="annulation_bordereau_paiement",
-                                             description="Annulation d'un bordereau de paiement",
-                                             table="paiement_comptable",
-                                             row=paiement_comptable.pk)
-
                 return JsonResponse({
                     "message": f"Succès : Le bordereau de paiement {abrp_numero} a été annulé avec succès."
                 }, status=200)
@@ -2893,12 +2461,6 @@ class DbSuperAdminQueryView(TemplateView):
                                                                         sinistre=sinistre,
                                                                         montant_ordonnance=sinistre.montant_remb_accepte,
                                                                         observation=observation)
-
-                # enregistrer dans les log
-                ActionLog.objects.create(done_by=request.user, action="annulation_bordereau_ordonnancement",
-                                         description="Annulation d'un bordereau d'ordonnancement",
-                                         table="bordereau_ordonnancement",
-                                         row=bordereau_ordonnancement.pk)
 
                 return JsonResponse({
                     "message": f"Succès : Le bordereau d'ordonnancement {abro_numero} a été annulé avec succès."
@@ -6864,15 +6426,6 @@ def modifier_courrier(request, courrier_id):
 
         # Sauvegarder les modifications
         courrier.save()
-
-        # Log d'action (si nécessaire)
-        ActionLog.objects.create(
-            done_by=request.user,
-            action="update",
-            description="Modification d'un courrier",
-            table="courrier",
-            row=courrier.pk,
-        )
 
         # Retourner une réponse JSON pour AJAX
         return JsonResponse({

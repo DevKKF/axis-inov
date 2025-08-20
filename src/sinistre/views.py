@@ -574,8 +574,6 @@ def save_session_garanties(request):
             garanties_existantes = request.session.get('garanties', [])
             today = timezone.now().date()
 
-            print('garanties_existantes', garanties_existantes)
-
             # Extraire les IDs existants pour vérifier les doublons
             existing_ids = {g['garantie_id'] for g in garanties_existantes if g.get('garantie_id') is not None}
 
@@ -1218,17 +1216,7 @@ def dossiersinistre_physique_gestionnaire_datatable(request):
     search_date_survenance = request.GET.get('date_prestation', '')
     prestataire = request.GET.get('prestataire', '')
 
-    pprint("search_numero_assure")
-    pprint(search_numero_assure)
-
-    pprint("search_numero_dossier_sinistre")
-    pprint(search_numero_dossier_sinistre)
-
-    pprint("search_date_survenance")
-    pprint(search_date_survenance)
-
     queryset = DossierSinistre.objects.filter(bureau=request.user.bureau, statut_validite=StatutValidite.VALIDE, of_gestionnaire=1).order_by('id')
-    # dd(queryset)
 
     if prestataire:
          queryset = queryset.filter(prestataire_id=prestataire)
@@ -1501,7 +1489,7 @@ class MouvementDossierSinistreView(TemplateView):
         except Sinistre.DoesNotExist:
             return redirect('/')
 
-        mouvements_sinistre = MouvementSinistre.objects.filter(sinistre_id=sinistre.id).order_by('id')
+        mouvements_sinistre = MouvementSinistre.objects.filter(sinistre_id=sinistre.id).order_by('-id')
 
         mouvements = Mouvement.objects.filter(type_mouvement_id=2)
 
@@ -1729,8 +1717,6 @@ def recuperer_garantie_sinistre(request):
         sinistre_garanties = SinistreGarantie.objects.filter(sinistre_id=sinistre_id, deleted_at=None)
         garanties_existantes = list(request.session.get('garanties', []))
 
-        print('garanties_existantes', garanties_existantes)
-
         for nouvelle_garan in sinistre_garanties:
             nouvelle_garantie = {
                 'id': f'{nouvelle_garan.garantie_id}',
@@ -1749,7 +1735,7 @@ def recuperer_garantie_sinistre(request):
             request.session.modified = True
 
         garanties_existantes = list(request.session.get('garanties', []))
-
+        print(garanties_existantes)
         return JsonResponse({
             'success': True,
             'message': "Ajout de garantie effectué avec succès !",
@@ -1765,12 +1751,13 @@ def recuperer_garantie_sinistre(request):
 @csrf_exempt
 def cloture_garantie(request, garantie_id):
     if request.method == 'POST':
-        garanties = request.session.get("garanties", [])
-
+        garanties = list(request.session.get('garanties', []))
+        print(garanties)
+        print(f'{garantie_id}')
         # Parcourir les garanties et modifier action_mouvement pour celle correspondant à garantie_id
         modified = False
         for g in garanties:
-            if str(g["garantie_id"]) == str(garantie_id):
+            if str(g["garantie_id"]) == f'{garantie_id}':
                 g["action_mouvement"] = "Cloture"
                 modified = True
                 break
@@ -1877,10 +1864,19 @@ def update_sinistre_gestionnaire(request, sinistre_id):
 
             historique_sinistre = HistoriqueSinistre.objects.get(id=historique_sinistre_created.pk)
 
+            # Mise à jour de l'ancien mouvement sinistre
+            mouvement_sinistre = MouvementSinistre.objects.filter(sinistre_id=sinistre.id, historique_sinistre_id=None).first()
+            print(mouvement_sinistre)
+            mouvement_sinistre.historique_sinistre_id = historique_sinistre.id if historique_sinistre else None
+            mouvement_sinistre.save()
+
+            # Mettre à jour l'historique du sinistre
+            sinistre.historique_sinistre = historique_sinistre
+            sinistre.save()
+
             # Créer une ligne de mouvement_sinistre avec le mouvement ouverture sinistre et le motif ouverture sinistre
             ms = MouvementSinistre()
             ms.sinistre = sinistre
-            ms.historique_sinistre = historique_sinistre
             ms.mouvement = Mouvement.objects.get(id=mouvement_id)
             ms.motif = Motif.objects.get(id=motif_mouvement_id)
             ms.date_effet = sinistre.date_ouverture
@@ -2083,7 +2079,10 @@ def update_sinistre_gestionnaire(request, sinistre_id):
                             }
                         )
 
-            detail_url = reverse('mouvement_dossier_sinistre', args=[sinistre.id])
+                        # Mise à jour du montant_provision de la garantie concernée par la ventilation provision
+                        garantie = SinistreGarantie.objects.filter(garantie_id=garantie_id, sinistre_id=sinistre.id).first()
+                        garantie.montant_provision = montant_provision if montant_provision > 0 else None
+                        garantie.save()
 
             response = {
                 'statut': 1,
@@ -2091,7 +2090,6 @@ def update_sinistre_gestionnaire(request, sinistre_id):
                 'data': {
                     'id': sinistre.pk,
                     'numero': sinistre.numero,
-                    'retour_mouvement_url': detail_url,
                 }
             }
 

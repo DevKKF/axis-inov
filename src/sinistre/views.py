@@ -1594,7 +1594,7 @@ def mouvement_sinistre(request, sinistre_id, motif_id):
         typedocuments = TypeDocument.objects.filter(is_sinistre=1).order_by('libelle')
         responsabilites = TauxResponsabilite.objects.filter(statut=1)
         circonstances = Circonstance.objects.filter(statut=1, branche_id=police.produit.branche_id).order_by('libelle')
-
+        intervenant_sinistres = SinistreIntervenant.objects.filter(sinistre_id=sinistre.id)
         pays = Pays.objects.all().order_by('nom')
 
         mouvements = Mouvement.objects.filter(id=motif.mouvement_id, type_mouvement_id=2)
@@ -1631,8 +1631,6 @@ def mouvement_sinistre(request, sinistre_id, motif_id):
             'check_motif': motif,
             'police': police,
             'client': client,
-            'dossiers_sinistres': None,
-            'sinistres': None,
             'dernier_historique': dernier_historique,
             'assureur_police': assureur_police,
             'today': today,
@@ -1648,6 +1646,7 @@ def mouvement_sinistre(request, sinistre_id, motif_id):
             'poste_dommages': poste_dommages,
             'garantie_sinistres': garantie_sinistres,
             'ventilations_dict': ventilations_dict,
+            'intervenant_sinistres': intervenant_sinistres,
             'total_provisions': sommes['total_provisions'],
             'total_provisions_regle': sommes['total_provisions_regle'],
             'total_recours': sommes['total_recours'],
@@ -1752,8 +1751,7 @@ def recuperer_garantie_sinistre(request):
 def cloture_garantie(request, garantie_id):
     if request.method == 'POST':
         garanties = list(request.session.get('garanties', []))
-        print(garanties)
-        print(f'{garantie_id}')
+
         # Parcourir les garanties et modifier action_mouvement pour celle correspondant à garantie_id
         modified = False
         for g in garanties:

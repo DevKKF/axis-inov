@@ -2,22 +2,42 @@
 {% load my_filters %}
 <style>
    #table_montant_reglements_sinistre input[type="text"] {
-   min-width: 120px;
-   max-width: 140px;
-   height: 30px;
-   width: 130px;
-   box-sizing: border-box;
+       min-width: 120px;
+       max-width: 160px;
+       height: 30px;
+       width: 160px;
+       box-sizing: border-box;
+       margin: auto;
    }
    .champ_grise{
-   background:#fff !important;
+    background:#fff !important;
    }
    .border_total{
-   background:#fff !important;
-   border: 2px solid #FFA500;
-   font-weight:bold;
+       background:#fff !important;
+       border: 2px solid #FFA500;
+       font-weight:bold;
    }
 </style>
 <div style="overflow-x: auto;">
+    <div class="row" style="background:#F0F8FF; padding:10px; margin-bottom:10px; border-radius:5px;">
+        <div class="col-md-6">
+            <div class="form-group">
+                <label>Intervenants <span class="required">*</span></label>
+               <select class="form-control" name="circonstance_id" id="circonstance_id" required>
+                  <option value="">Choisir</option>
+                  {% for interv in intervenant_sinistres %}
+                     <option value="{{ circonstance.id }}">{{ interv.intervenant.nom }} {{ interv.intervenant.prenoms }}</option>
+                  {% endfor %}
+               </select>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="form-group">
+                <label>Date règlement</label>
+               <input type="date" class="form-control" name="date_reglement" id="date_reglement" autocomplete="off" value="{{ today|date:'Y-m-d' }}" readonly>
+            </div>
+        </div>
+    </div>
    <table id="table_montant_reglements_sinistre" style="width:100%;" class="table table-bordered table-striped dtr-inline">
       <thead>
          <tr>

@@ -1,119 +1,143 @@
 {% extends "admin/base_site.html" %}
 {% load my_filters %}
 {% load i18n static jazzmin admin_urls %}
-
 {% block content_title %}
 <div class="row mb-2">
-  <div class="col-sm-6">
-    <h1 class="m-0">{% trans 'Dashboard' %}</h1>
-  </div>
-  <div class="col-sm-6">
-    <ol class="breadcrumb float-sm-right">
-      <li class="breadcrumb-item"><a href="{% url 'admin:index' %}">{% trans 'Home' %}</a></li>
-      <li class="breadcrumb-item active">{% trans 'Dashboard' %}</li>
-    </ol>
-  </div>
+   <div class="col-sm-6">
+      <h1 class="m-0">{% trans 'Dashboard' %}</h1>
+   </div>
+   <div class="col-sm-6">
+      <ol class="breadcrumb float-sm-right">
+         <li class="breadcrumb-item"><a href="{% url 'admin:index' %}">{% trans 'Home' %}</a></li>
+         <li class="breadcrumb-item active">{% trans 'Dashboard' %}</li>
+      </ol>
+   </div>
 </div>
 {% endblock %}
-
 {% block content %}
-  <div class="container-fluid">
-
-    <div class="callout">
+<div class="container-fluid">
+   <div class="callout">
       <form method="get" id="search-form">
-          <div class="row">
-              <div class="col-md-10 position-relative">
-                  <input id="search_all" class="form-control" type="text" name="numero" placeholder="Rechercher un numéro de police...">
-                  <small id="search-error" class="text-danger d-none"></small>
-                  <div id="suggestions" class="list-group position-absolute w-100 d-none"></div>
-              </div>
-              <div class="col-md-2">
-                  <button type="submit" id="rechercher_police" class="btn btn-complement-rouge btn-block">{{_('Rechercher')}}</button>
-              </div>
-          </div>
+         <div class="row">
+            <div class="col-md-10 position-relative">
+               <input id="search_all" class="form-control" type="text" name="numero" placeholder="Rechercher un numéro de police...">
+               <small id="search-error" class="text-danger d-none"></small>
+               <div id="suggestions" class="list-group position-absolute w-100 d-none"></div>
+            </div>
+            <div class="col-md-2">
+               <button type="submit" id="rechercher_police" class="btn btn-complement-rouge btn-block">{{_('Rechercher')}}</button>
+            </div>
+         </div>
       </form>
-    </div>
-  </div>
-
-  <div class="container-fluid">
-      <div class="row">
-        <div class="col-lg-4 col-3">
-          <!-- small box -->
-          <div class="small-box bg-inov-variation">
+   </div>
+</div>
+<div class="container-fluid">
+   <div class="row">
+      <div class="col-lg-4 col-3">
+         <div class="small-box bg-inov-variation">
             <div class="inner">
-              <h3>{{ count_polices_en_cours }}</h3>
-
-              <p>Liste des polices en cours</p>
+               <h3>{{ count_polices_en_cours }}</h3>
+               <p>Liste des polices en cours</p>
             </div>
             <div class="icon">
-              <i class="ion ion-bag"></i>
+               <i class="ion ion-bag"></i>
             </div>
             <a href="{% url 'polices_en_cours' %}" class="small-box-footer text-white">Plus d'information <i class="fas fa-arrow-circle-right"></i></a>
-          </div>
-        </div>
-        <div class="col-lg-4 col-3">
-          <!-- small box -->
-          <div class="small-box bg-inov-elegante">
+         </div>
+      </div>
+      <div class="col-lg-4 col-3">
+         <div class="small-box bg-inov-elegante">
             <div class="inner">
-              <h3>{{ count_polices_a_echeance }}</h3>
-
-              <p>Polices : échéance à 90 jours</p>
+               <h3>{{ count_polices_a_echeance }}</h3>
+               <p>Polices : échéance à 90 jours</p>
             </div>
             <div class="icon">
-              <i class="ion ion-person-add"></i>
+               <i class="ion ion-person-add"></i>
             </div>
             <a href="{% url 'polices_arrivant_echeance' %}" class="small-box-footer text-white">Plus d'information <i class="fas fa-arrow-circle-right"></i></a>
-          </div>
-        </div>
-        <div class="col-lg-4 col-3">
-          <!-- small box -->
-          <div class="small-box bg-inov-vive">
+         </div>
+      </div>
+      <div class="col-lg-4 col-3">
+         <div class="small-box bg-inov-vive">
             <div class="inner">
-              <h3>{{ count_polices_non_renouvelees_resilies }}</h3>
-
-              <p>Polices non renouvellées et non résiliées</p>
+               <h3>{{ count_polices_non_renouvelees_resilies }}</h3>
+               <p>Polices non renouvellées et non résiliées</p>
             </div>
             <div class="icon">
-              <i class="ion ion-person-add"></i>
+               <i class="ion ion-person-add"></i>
             </div>
             <a href="{% url 'polices_non_renouvellees_resiliees' %}" class="small-box-footer text-white">Plus d'information <i class="fas fa-arrow-circle-right"></i></a>
-          </div>
-        </div>
+         </div>
       </div>
-  </div>
+      {% if request.user.is_sinistre %}
+          <div class="col-lg-4 col-3">
+             <div class="small-box" style="background-color: #629EBC; color: white;">
+                <div class="inner">
+                   <h3>{{ count_liste_sinistre }}</h3>
+                   <p>Liste des sinistre</p>
+                </div>
+                <div class="icon">
+                   <i class="ion ion-bag"></i>
+                </div>
+                <a href="{% url 'dossiersinistre' %}" class="small-box-footer text-white">Plus d'information <i class="fas fa-arrow-circle-right"></i></a>
+             </div>
+          </div>
+          <div class="col-lg-4 col-3">
+             <div class="small-box" style="background-color: #B1ED31; color: white;">
+                <div class="inner">
+                   <h3>0</h3>
+                   <p>Sinistres clôturés</p>
+                </div>
+                <div class="icon">
+                   <i class="ion ion-person-add"></i>
+                </div>
+                <a href="" class="small-box-footer text-white">Plus d'information <i class="fas fa-arrow-circle-right"></i></a>
+             </div>
+          </div>
+          <div class="col-lg-4 col-3">
+         <div class="small-box" style="background-color: #DA4471; color: white;">
+            <div class="inner">
+               <h3>0</h3>
+               <p>Sinistres en recours</p>
+            </div>
+            <div class="icon">
+               <i class="ion ion-person-add"></i>
+            </div>
+            <a href="" class="small-box-footer text-white">Plus d'information <i class="fas fa-arrow-circle-right"></i></a>
+         </div>
+      </div>
+      {% endif %}
+   </div>
+</div>
 {% endblock %}
-
 {% block extrajs %}
 <script>
-    $(document).ready(function() {
-        $('#garantie').removeClass('o-bg-primary');
-        $('#garantie').addClass('o-active');
+   $(document).ready(function() {
+       $('#garantie').removeClass('o-bg-primary');
+       $('#garantie').addClass('o-active');
 
-        {% if request.user.is_ges %}
+       {% if request.user.is_ges %}
 
-        //Si un gestionnaire sinistre, cacher l'item liste-des-prises-en-charge
-        //$('.nav-item_liste-des-prises-en-charge').hide();
+       //Si un gestionnaire sinistre, cacher l'item liste-des-prises-en-charge
+       //$('.nav-item_liste-des-prises-en-charge').hide();
 
-        {% endif %}
+       {% endif %}
 
-    });
+   });
 </script>
-
 {% if request.user.is_pharm %}
 {% include 'modal_pharmacie_search.html' %}
 {% endif %}
-
 {% if request.user.is_pres %}
 {% include 'modal_sinistre_soins_ambulatoires.html' %}
 {% include 'modal_sinistre_hospitalisation.html' %}
 {% include 'modal_sinistre_consultation.html' %}
 {% include 'modal_sinistre_consultation_ls.html' %}
 {% endif %}
-
 {% if request.user.is_labo or request.user.is_imag or request.user.is_optic or request.user.is_dentaire %}
-  {% if request.user.is_dentaire %}
-  {% include 'modal_sinistre_consultation_ls.html' %}
-  {% endif %}
+{% if request.user.is_dentaire %}
+{% include 'modal_sinistre_consultation_ls.html' %}
+{% endif %}
 {% include 'modal_sinistre_optique.html' %}
 {% endif %}
 {% endblock %}

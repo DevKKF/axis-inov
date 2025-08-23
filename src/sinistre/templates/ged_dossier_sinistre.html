@@ -27,7 +27,7 @@
 
             <div class="card-tools">
                  <div class="button-link pull-right mb-2">
-                    {% if request.user.is_sinistre and sinistre.etat_sinistre == "En cours" or sinistre.etat_sinistre == "En attente" %}
+                    {% if request.user.is_sinistre %}
                         <a class="btn btn-sm btn-primary mb-1 " data-toggle="modal" data-target="#modal-document"><i class="fas fa-plus-circle"></i> Ajouter un document</a>
                     {% endif %}
                 </div>

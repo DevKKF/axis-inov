@@ -10,7 +10,7 @@ from configurations.models import Rubrique, User, Bureau, TypeRemboursement, Adm
 from production.models import Police, HistoriquePolice, MouvementPolice
 from shared.enum import StatutSinistre, Statut, StatutValidite
 # Register your models here.
-from sinistre.models import DossierSinistre
+from sinistre.models import DossierSinistre, Sinistre
 import pandas as pd
 
 
@@ -77,11 +77,14 @@ class CustomAdminSite(admin.AdminSite):
             else:
                 nombre_resilie_annule += 1
 
+        count_liste_sinistre = Sinistre.objects.count()
+
         # Ajout au contexte
         extra_context['count_polices_en_cours'] = nombre_police_en_cours
         extra_context['count_polices_a_echeance'] = nombre_arrivant_echeance
         extra_context['count_polices_non_renouvelees_resilies'] = nombre_a_echeance
         extra_context['count_polices_annulees_resilies_suspendues'] = nombre_resilie_annule
+        extra_context['count_liste_sinistre'] = count_liste_sinistre
 
         return super(CustomAdminSite, self).index(request, extra_context)
 

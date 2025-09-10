@@ -1571,6 +1571,7 @@ def modifier_police(request, police_id):
                 # Créer une ligne dans période de couverture
                 periode_couverture = PeriodeCouverture.objects.create(
                     police_id=police_old.id,
+                    created_by = request.user,
                     date_debut_effet=date_debut_effet if date_debut_effet else None,
                     date_fin_effet=date_fin_effet if date_fin_effet else (date_fin_police if date_fin_police else None),
                 ).save()
@@ -1642,6 +1643,14 @@ def modifier_police(request, police_id):
                                         updated_by_id=request.user.id,
                                     ).save()
 
+            else:
+                periode_couverture = PeriodeCouverture.objects.filter(police_id=police_old.id).order_by('-created_at').first()
+
+                periode_couverture.date_debut_effet = date_debut_effet if date_debut_effet else None
+                periode_couverture.date_fin_effet = date_fin_effet if date_fin_effet else (date_fin_police if date_fin_police else None)
+                periode_couverture.updated_at = datetime.now()
+                periode_couverture.updated_by = request.user
+                periode_couverture.save()
 
         # Créer l'historique avant la mise à jour
         histtorique_police = HistoriquePolice.objects.create(

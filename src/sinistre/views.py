@@ -4,7 +4,7 @@ import os
 from ast import literal_eval
 from collections import defaultdict
 from copy import deepcopy
-from datetime import datetime as datetimeJsdecode, timedelta
+from datetime import datetime, timedelta
 from django.utils.timezone import now
 from decimal import Decimal
 from functools import reduce
@@ -54,7 +54,7 @@ from configurations.models import Compagnie, User, Rubrique, \
     PeriodeComptable, TypeRemboursement, ModeCreation, TypePrefinancement
 from production.models import Statut, TypeDocument, Client
 #
-from production.models import Police, HistoriquePolice, HistoriqueAliment, PoliceAssureur, Mouvement, Motif, AlimentPolice, Document, AutreRisque, Marchandise, \
+from production.models import Police, HistoriquePolice, HistoriqueAliment, PoliceAssureur, PeriodeCouverture, Mouvement, Motif, AlimentPolice, Document, AutreRisque, Marchandise, \
     Vehicule
 from production.forms import DocumentForm
 from production.templatetags.my_filters import money_field, supprimer_espaces, normalize_text
@@ -705,7 +705,6 @@ def add_sinistre_gestionnaire(request):
         today = timezone.now().date()
 
         if form.is_valid():
-
             police = Police.objects.get(id=request.POST.get('police_id'))
             client = Client.objects.get(id=police.client_id)
             vehicule_id = request.POST.get('vehicule_id')
@@ -751,7 +750,73 @@ def add_sinistre_gestionnaire(request):
                 vehicule = AlimentPolice.objects.filter(vehicule_id=vehicule_id).first()
                 aliment_police = vehicule.id if vehicule else None
 
-            sinistre_created = Sinistre(
+            dernier_historique = HistoriquePolice.objects.filter(police_id=police.id).order_by('-date_du_jour').first()
+
+            if not date_survenance:
+                return JsonResponse({
+                    'statut': 0,
+                    'message': "Veuillez renseigner la date de survenance du sinistre !",
+                })
+            date_survenance_str = datetime.strptime(date_survenance, "%Y-%m-%d")
+
+            try:
+                fractionnement_code = dernier_historique.fractionnement.code
+            except AttributeError:
+                JsonResponse({
+                    'statut': 0,
+                    'message': "Impossible de déterminer le code de fractionnement de la police.",
+                })
+
+            # Définir l'intervalle de temps en fonction du fractionnement
+            intervalle = None
+            if fractionnement_code == "ANNUEL":
+                print('ANNUEL')
+                intervalle = timedelta(days=4 * 365)  # 4 ans
+            elif fractionnement_code == "SEMESTRIEL":
+                print('SEMESTRIEL')
+                intervalle = timedelta(days=2 * 365)  # 2 ans
+            elif fractionnement_code == "TRIMESTRIEL":
+                print('TRIMESTRIEL')
+                intervalle = timedelta(days=1 * 365)  # 1 an
+            elif fractionnement_code == "MENSUEL":
+                print('MENSUEL')
+                intervalle = timedelta(days=4 * 30)  # 4 mois
+            else:
+                print('RAS')
+                # Gérer les cas où le code de fractionnement n'est pas reconnu
+                JsonResponse({
+                    'statut': 0,
+                    'message': "Le code de fractionnement de la police n'est pas valide.",
+                })
+
+            # Calculer la date de début de l'intervalle de recherche
+            date_recherche_debut = date_survenance_str - intervalle
+
+            print('date_survenance_str : ', date_survenance_str)
+            print('date_recherche_debut : ', date_recherche_debut)
+
+            # Créer une requête pour vérifier si la date de survenance est dans une période valide
+            q_filter = Q(
+                police_id=police.id,
+                date_debut_effet__gte=date_recherche_debut,
+                date_fin_effet__lte=date_survenance_str
+            )
+            periode_valide = PeriodeCouverture.objects.filter(q_filter).first()
+
+            if periode_valide:
+                print('Sinistre déclaré avec succès.')
+                JsonResponse({
+                    'statut': 1,
+                    'message': "Sinistre enregistré avec succès !",
+                })
+            else:
+                print('Sinistre non déclaré.')
+                JsonResponse({
+                    'statut': 0,
+                    'message': "La date de survenance n'est pas comprise dans une période de couverture valide.",
+                })
+
+            """sinistre_created = Sinistre(
                 client_id=client.id,
                 police_id=police.id,
                 aliment_police_id=aliment_police if aliment_police else None,
@@ -907,33 +972,24 @@ def add_sinistre_gestionnaire(request):
                 # Associe directement l'objet sans refaire un .get()
                 garantie_sinistre_created.historique_sinistre_garantie = historique_garantie_sinistre_created
                 garantie_sinistre_created.save()
+            """
 
-            response = {
+            JsonResponse({
                 'statut': 1,
                 'message': "Sinistre enregistré avec succès !",
-                'data': {
-                    'id': sinistre.pk,
-                    'numero': sinistre.numero,
-                }
-            }
-
-            return JsonResponse(response)
+            })
 
         else:
-            response = {
+            JsonResponse({
                 'statut': 0,
                 'message': "Veuillez renseigner correctement le formulaire",
                 'errors': form.errors,
-            }
-
-            return JsonResponse(response)
+            })
     else:
-        response = {
+        JsonResponse({
             'statut': 0,
             'message': "Cette méthode n'est pas reconnue !",
-        }
-
-        return JsonResponse(response)
+        })
 
 
 @method_decorator(login_required, name='dispatch')

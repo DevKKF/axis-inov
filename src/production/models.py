@@ -562,6 +562,7 @@ class AlimentPolice(models.Model):
 
 class PeriodeCouverture(models.Model):
     created_by = models.ForeignKey(User, null=True, on_delete=models.RESTRICT)
+    updated_by = models.ForeignKey(User, related_name="periode_couverture_updated_by", null=True, on_delete=models.RESTRICT)
     police = models.ForeignKey(Police, on_delete=models.RESTRICT)
     date_debut_effet = models.DateTimeField(blank=True, null=True)
     date_fin_effet = models.DateTimeField(blank=True, null=True)

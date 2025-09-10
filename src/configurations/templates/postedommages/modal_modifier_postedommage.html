@@ -21,7 +21,13 @@
 							<div class="row">
 								<div class="col-md-6">
                                     <div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_('Libelle')}} <span class="required">*</span></label>
+										<label class="col-sm-5 col-form-label">Numéro ordre <span class="required">*</span></label>
+										<div class="col-sm-7">
+											<input type="number" class="form-control" name="numero_ordre" id="numero_ordre" value="{{ postedommage.numero_ordre|default_if_none:'' }}" autocomplete="off" required/>
+										</div>
+									</div>
+                                    <div class="form-group row">
+										<label class="col-sm-5 col-form-label">Libelle <span class="required">*</span></label>
 										<div class="col-sm-7">
 											<input type="text" class="form-control" name="libelle" id="libelle" value="{{ postedommage.libelle|default_if_none:'' }}" autocomplete="off" required/>
 										</div>
@@ -30,10 +36,20 @@
 								<div class="vl"></div>
 								<div class="col-md-5">
                                     <div class="form-group row">
-										<label class="col-sm-5 col-form-label">{{_('Statut')}} <span class="required">*</span></label>
+										<label class="col-sm-5 col-form-label">Sens <span class="required">*</span></label>
+										<div class="col-sm-7">
+											<select class="form-control" name="sens"  autocomplete="off" required>
+												<option value="">Choisir</option>
+												<option value="{{sens_poste_dommage.NEGATIF}}" {% if sens_poste_dommage.NEGATIF == postedommage.sens %} selected {% endif %}>{{sens_poste_dommage.NEGATIF}}</option>
+												<option value="{{sens_poste_dommage.POSITIF}}" {% if sens_poste_dommage.POSITIF == postedommage.sens %} selected {% endif %}>{{sens_poste_dommage.POSITIF}}</option>
+											</select>
+										</div>
+									</div>
+                                    <div class="form-group row">
+										<label class="col-sm-5 col-form-label">Statut <span class="required">*</span></label>
 										<div class="col-sm-7">
 											<select class="form-control" name="statut"  autocomplete="off" required>
-												<option value="">{{_('Choisir')}}</option>
+												<option value="">Choisir</option>
 												<option value="1" {% if 1 == postedommage.statut %} selected {% endif %}>ACTIF</option>
 												<option value="0" {% if 0 == postedommage.statut %} selected {% endif %}>INACTIF</option>
 											</select>
@@ -45,8 +61,8 @@
 					</div>
 				</div>
                     <div class="modal-footer justify-content-between">
-                        <button type="button" class="btn btn-danger" data-dismiss="modal"><i class="fa fa-remove"></i> {{_('Retour')}}</button>
-                        <button type="button" id="btn_update_postedommage" class="btn btn-info"><i class="fa fa-check-circle"></i> {{_('Enregistrer')}}</button>
+                        <button type="button" class="btn btn-danger" data-dismiss="modal"><i class="fa fa-remove"></i> Retour</button>
+                        <button type="button" id="btn_update_postedommage" class="btn btn-info"><i class="fa fa-check-circle"></i> Enregistrer</button>
                     </div>
                 </div>
             </form>

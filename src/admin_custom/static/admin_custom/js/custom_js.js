@@ -8072,30 +8072,10 @@ $(document).ready(function () {
                 formData.append(key, valeur);
             });
 
-            // Message de confirmation enrichi
-            let texte_confirmation = "";
-
-            if (date_du_jour > date_fin_effet) {
-                texte_confirmation =
-                    '<div class="text-left">' +
-                    '<div class="mb-2"><i class="fa fa-exclamation-triangle text-danger"></i> <strong>Attention</strong></div>' +
-                    'La date du jour (<strong>' + $('#date_du_jour').val() + '</strong>) est <span class="text-danger">postérieure</span> à la date de fin d’effet du contrat (<strong>' + $('#date_fin_effet').val() + '</strong>).<br><br>' +
-                    'Cela signifie que le contrat est <span class="text-danger font-weight-bold">échu</span> et qu’il pourrait ne plus couvrir ce sinistre.<br><br>' +
-                    'Souhaitez-vous <strong>malgré tout</strong> enregistrer ce sinistre ?' +
-                    '</div>';
-            } else if (date_du_jour === date_fin_effet) {
-                texte_confirmation =
-                    '<div class="text-left">' +
-                    'La date du jour (<strong>' + $('#date_du_jour').val() + '</strong>) est <strong>égale</strong> à la date de fin d’effet (<strong>' + $('#date_fin_effet').val() + '</strong>).<br><br>' +
-                    'Veuillez confirmer l’enregistrement du sinistre.' +
-                    '</div>';
-            }else {
-                texte_confirmation = "Voulez-vous vraiment enregistrer ce sinistre 2025 ?";
-            }
 
             // Affichage du noty de confirmation
             noty({
-                text: texte_confirmation,
+                text: "Voulez-vous vraiment enregistrer ce sinistre ?",
                 type: 'warning',
                 dismissQueue: true,
                 layout: 'center',
@@ -18068,7 +18048,13 @@ $(document).ready(function () {
                                             location.reload();
                                         });
 
-                                    } else {
+                                    }
+                                    if (response.statut == 0) {
+                                        notifyWarning(response.message, function () {
+                                            //location.reload();
+                                        });
+                                    }
+                                    else {
 
                                         let errors = JSON.parse(JSON.stringify(response.errors));
                                         let errors_list_to_display = '';
@@ -18089,24 +18075,17 @@ $(document).ready(function () {
 
                                     notifyWarning("Erreur lors de l'enregistrement");
                                 }
-
                             });
-
-                            //fin confirmation obtenue
-
                         }
                     },
                     {
                         addClass: 'btn btn-danger', text: 'Annuler', onClick: function ($noty) {
                             //confirmation refusée
                             $noty.close();
-
                         }
                     }
                 ]
             });
-            //fin demande confirmation
-
 
         } else {
 
@@ -18119,10 +18098,8 @@ $(document).ready(function () {
                 console.log('Id: ' + index + ' Message: ' + value);
 
             });
-
             notifyWarning('Veuillez renseigner correctement le forumulaire');
         }
-
     });
 
     //Modification du poste de dommage
@@ -18169,9 +18146,6 @@ $(document).ready(function () {
                             {
                                 addClass: 'btn btn-primary', text: 'OUI', onClick: function ($noty) {
                                     $noty.close();
-
-                                    //confirmation obtenu
-
                                     let data_serialized = formulaire.serialize();
                                     $.each(data_serialized.split('&'), function (index, elem) {
                                         let vals = elem.split('=');
@@ -18190,14 +18164,17 @@ $(document).ready(function () {
                                         processData: false,
                                         contentType: false,
                                         success: function (response) {
-
                                             if (response.statut == 1) {
-
                                                 notifySuccess(response.message, function () {
                                                     location.reload();
                                                 });
-
-                                            } else {
+                                            }
+                                            if (response.statut == 0) {
+                                                notifyWarning(response.message, function () {
+                                                    //location.reload();
+                                                });
+                                            }
+                                            else {
 
                                                 let errors = JSON.parse(JSON.stringify(response.errors));
                                                 let errors_list_to_display = '';
@@ -18210,26 +18187,17 @@ $(document).ready(function () {
                                                 $('#modal-modification_postedommage .alert ').fadeTo(2000, 500).slideUp(500, function () {
                                                     $(this).slideUp(500);
                                                 }).removeClass('alert-success').addClass('alert-warning');
-
                                             }
-
                                         },
                                         error: function (request, status, error) {
-
                                             notifyWarning("Erreur lors de l'enregistrement");
                                         }
-
                                     });
-
-                                    //fin confirmation obtenue
-
                                 }
                             },
                             {
                                 addClass: 'btn btn-danger', text: 'Annuler', onClick: function ($noty) {
-                                    //confirmation refusée
                                     $noty.close();
-
                                 }
                             }
                         ]
@@ -18246,14 +18214,10 @@ $(document).ready(function () {
                         console.log('Id: ' + index + ' Message: ' + value);
 
                     });
-
                     notifyWarning('Veuillez renseigner tous les champs obligatoires');
                 }
-
             });
-
         });
-
     });
 
     //Suppression du poste de dommage
@@ -18277,11 +18241,15 @@ $(document).ready(function () {
                             type: 'post',
                             data: { postedommage_id: postedommage_id },
                             success: function (response) {
-
-                                notifySuccess(response.message, function () {
-                                    location.reload();
-                                });
-
+                                if (response.statut == 1) {
+                                    notifySuccess(response.message, function () {
+                                        location.reload();
+                                    });
+                                } else {
+                                    notifyWarning(response.message, function () {
+                                        //location.reload();
+                                    });
+                                }
                             },
                             error: function () {
                                 notifyWarning('Erreur lors de la suppression');

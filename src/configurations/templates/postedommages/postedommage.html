@@ -19,11 +19,11 @@
 <div class="col-12 col-md-12 order-2 order-md-1">
     <div class="card">
     <div class="card-header">
-        <h3 class="card-title text-white">{{_("Postes de dommages")}}</h3>
+        <h3 class="card-title text-white">Postes de dommages</h3>
     </div>
     <div class="card-body">
         <div class="button-link pull-right mb-2">
-          <a class="btn btn-sm btn-primary mb-1" data-toggle="modal"  data-target="#modal-postedommage"><i class="fas fa-plus-circle"></i> {{_("Ajouter un poste de dommage")}}</a>
+          <a class="btn btn-sm btn-primary mb-1" data-toggle="modal"  data-target="#modal-postedommage"><i class="fas fa-plus-circle"></i> Ajouter un poste de dommage</a>
         </div>
 
       <div id="example1_wrapper" class="dataTables_wrapper dt-bootstrap4">
@@ -34,11 +34,13 @@
                   <thead>
                     <tr>
                       <th class="d-none"></th>
-                      <th scope="col">{{_('Code')}}</th>
-                      <th scope="col">{{_('Libelle')}}</th>
-                      <th scope="col">{{_("Date de création")}}</th>
-                      <th scope="col">{{_('Statut')}}</th>
-                      <th scope="col" class="text-center">{{_('Actions')}}</th>
+                      <th scope="col">Code</th>
+                      <th scope="col">Numéro ordre</th>
+                      <th scope="col">Libelle</th>
+                      <th scope="col">Sens</th>
+                      <th scope="col">Date de création</th>
+                      <th scope="col">Statut</th>
+                      <th scope="col" class="text-center">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -46,7 +48,9 @@
                     <tr>
                          <td class="d-none"></td>
                          <td>{{ postedommage.code|default_if_none:"" }}</td>
+                         <td>{{ postedommage.numero_ordre|default_if_none:"" }}</td>
                          <td>{{ postedommage.libelle|default_if_none:"" }}</td>
+                         <td>{{ postedommage.sens|default_if_none:"" }}</td>
                          <td>{{ postedommage.created_at|date:"d/m/Y" }}</td>
                         <td>
                             {% if postedommage.statut %}
@@ -56,7 +60,7 @@
                             {% endif %}
                         </td>
                          <td class="text-center">
-                             <span style="cursor:pointer;" class="btn_modifier_postedommage badge btn-sm btn-modifier rounded-pill text-center" data-postedommage_id="{postedommage.id}" data-model_name="postedommage" data-modal_title="MODIFICATION D'UN postedommage" data-href="{% url 'modifier_postedommage' postedommage.id %}"><i class="fas fa-edit"></i> {{_('Modifier')}}</span>
+                             <span style="cursor:pointer;" class="btn_modifier_postedommage badge btn-sm btn-modifier rounded-pill text-center" data-postedommage_id="{postedommage.id}" data-model_name="postedommage" data-modal_title="MODIFICATION D'UN postedommage" data-href="{% url 'modifier_postedommage' postedommage.id %}"><i class="fas fa-edit"></i> Modifier</span>
                              <span class="badge badge-danger btn_supprimer_postedommage" data-postedommage_id="{{postedommage.id}}" data-href="{% url 'supprimer_postedommage' postedommage.id %}" style="cursor:pointer;"><i class="fa fa-trash"></i></span>&nbsp;
                         </td>
                     </tr>

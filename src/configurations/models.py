@@ -12,7 +12,7 @@ from django_currentuser.middleware import (get_current_user, get_current_authent
 from django.core.exceptions import ValidationError
 
 from shared.enum import StatutReversementCompagnie, StatutEncaissementCommission, BaseCalculTM, Statut, PasswordType, \
-    StatutValidite, TypeAlerte, TypeBonConsultation, TypeEtape, StatutReversementApporteur, StatutQuittance
+    StatutValidite, TypeAlerte, TypeBonConsultation, TypeEtape, StatutReversementApporteur, StatutQuittance, SensPosteDommage
 
 
 class FloatRangeField(models.FloatField):
@@ -704,6 +704,7 @@ class Langue(models.Model):
 
 
 class Fractionnement(models.Model):
+    code = models.CharField(max_length=100, blank=True, null=True, unique=True)
     libelle = models.CharField(max_length=100, blank=True, null=True)
     duree_en_mois = models.IntegerField(null=True)
     status = models.BooleanField(default=True)
@@ -1460,8 +1461,10 @@ class Circonstance(models.Model):
 
 
 class PosteDommage(models.Model):
-    code = models.CharField(max_length=100, blank=True, null=True)
+    code = models.CharField(max_length=100, unique=True, blank=True, null=True)
+    numero_ordre = models.CharField(max_length=100, unique=True, blank=True, null=True)
     libelle = models.CharField(max_length=100, blank=True, null=True)
+    sens = models.fields.CharField(choices=SensPosteDommage.choices, default=None, max_length=15, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     statut = models.BooleanField(default=True)

@@ -422,8 +422,6 @@ def filtrer_selon_lien_parente_et_age(baremes, aliment):
     return selected_bareme
 
 
-
-
 def get_plafond_rubrique(acte, aliment, formule, date_survenance):
     pprint("Récupérer le plafond rubrique en recherchant une autre ligne de barème spécifique")
 
@@ -1100,9 +1098,6 @@ def get_tarif_acte_from_bareme(type_priseencharge_code, date_survenance, acte_id
         return response
 
 
-
-
-
 # file_pah : to string => correspond au l'adresse absolue du fichier
 # sheet_name : to string => correspond au nom de la feuille
 # search_colum : to string => correspond au nom de la colonne de recherche
@@ -1155,6 +1150,7 @@ def _render_pdf_(template_src, context_dict={}):
         return None
     return response
 
+
 def render_pdf(template_path, context):
     template = get_template(template_path)
     html = template.render(context)
@@ -1187,25 +1183,6 @@ def get_file_as_base64(file_url):
         print(f"An error occurred: {e}")
         return None
 
-
-# def render_pdf2(bytesIO):
-#     print("@@@@@@@@@@ render_pdf_view @@@@@@@")
-#     template_path = template_src
-#     context = context_dict
-#     # Create a Django response object, and specify content_type as pdf
-#     response = BytesIO()
-#     # find the template and render it.
-#     template = get_template(template_path)
-#     html = template.render(context)
-#
-#     # create a pdf
-#     pisa_status = pisa.CreatePDF(
-#         html, dest=bytesIO, link_callback=link_callback)
-#     print(pisa_status)
-#     # if error then show some funny view
-#     if pisa_status.err:
-#         return None
-#     return response
 
 def fetch_resources(uri, rel):
     if uri.startswith('http') or uri.startswith('https'):
@@ -1279,13 +1256,6 @@ def link_callback(uri, rel):
         )
     return path
 
-def fetch_resources(uri, rel):
-    if uri.startswith('http') or uri.startswith('https'):
-        response = requests.get(uri, stream=True)
-        if response.status_code == 200:
-            # Renvoie les données de l'image si l'URL est correcte
-            return response.content
-    return None
 
 def api_send_sms(message, destinataires):
     uri = "https://app.nerhysms.com/api/send"
@@ -1321,7 +1291,6 @@ def generer_qrcode_carte(numero_carte):
     img.save(image_bytes, format='PNG')
     image_bytes.seek(0)
     return File(image_bytes)
-
 
 
 def generate_numero_famille():
@@ -1478,11 +1447,9 @@ def bool_plafond_atteint(dossier_sinistre):
     return plafond_atteint
 
 
-
 def get_ticket_moderateur_pharmacie(aliment_id, date_survenance):
     aliment = Aliment.objects.filter(id=aliment_id).first()
     pass
-
 
 
 def respecte_conditions_bareme_pharmacie(date_survenance, bareme_srb, aliment):
@@ -1527,9 +1494,6 @@ def respecte_conditions_bareme_pharmacie(date_survenance, bareme_srb, aliment):
     return cdt_respectee
 
 
-
-
-
 def generate_random_string(length=12):
     """
     Generate a random string of specified length using secure random choice.
@@ -1551,6 +1515,20 @@ def custom_model_to_dict(instance, fields=None, exclude=None):
 
 def openai_complete():
     pprint("openai_complete")
+
+
+def relation_entre_table(obj):
+    """
+    Vérifie si un objet est référencé dans une autre table
+    (via ForeignKey ou ManyToMany).
+    """
+    for rel in obj._meta.related_objects:
+        accessor_name = rel.get_accessor_name()
+        related_manager = getattr(obj, accessor_name)
+
+        if related_manager.exists():
+            return True
+    return False
 
 
 

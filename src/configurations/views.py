@@ -1,4 +1,3 @@
-# Create your views here.
 import datetime
 import os
 from ast import literal_eval
@@ -24,7 +23,7 @@ from django.http import HttpResponse, JsonResponse, HttpResponseRedirect
 from django.shortcuts import redirect, render, get_object_or_404
 from django.template.backends.django import Template
 from django.urls import reverse
-from django.utils import timezone
+from django.db import IntegrityError
 from django.utils.decorators import method_decorator
 from django.utils.text import slugify
 from django.utils.translation import gettext as _
@@ -32,7 +31,8 @@ from django.views.generic import TemplateView
 from django_dump_die.middleware import dd
 from openpyxl import Workbook
 from openpyxl.styles import Font, PatternFill
-from datetime import datetime, timezone
+from datetime import datetime
+from django.utils import timezone
 from django.db.models import Sum, Q, ExpressionWrapper, F, DurationField, Max
 from configurations.helper_config import verify_sql_query
 from configurations.models import Secteur, \
@@ -45,7 +45,8 @@ from production.models import Client, Mouvement, \
     Quittance, Reglement, Courrier, Produit, SecteurActivite, TypeDocument, Mouvement, Motif
 from production.templatetags.my_filters import money_field
 from shared.enum import PasswordType, Statut, StatutValidite, BaseCalculTM, StatutPaiementSinistre, \
-    SatutBordereauDossierSinistres, StatutSinistre
+    SatutBordereauDossierSinistres, StatutSinistre, SensPosteDommage
+from shared.helpers import relation_entre_table
 from django.contrib import messages
 from django.db import transaction
 
@@ -6214,8 +6215,9 @@ class PosteDommageView(PermissionRequiredMixin,TemplateView):
         context_original = self.get_context_data(**kwargs)
 
         postedommages = PosteDommage.objects.all().order_by('-id')
+        sens_poste_dommage = SensPosteDommage
 
-        context_perso = {'postedommages': postedommages}
+        context_perso = {'postedommages': postedommages, 'sens_poste_dommage': sens_poste_dommage}
 
         context = {**context_original, **context_perso}
 
@@ -6252,57 +6254,82 @@ def generate_postedommage_code():
     return new_code
 
 
+def _numero_ordre_taken(numero_ordre, exclude_id=None):
+    """Renvoie True si numero_ordre existe déjà (optionnellement en excluant un id)."""
+    qs = PosteDommage.objects.filter(numero_ordre=numero_ordre)
+    if exclude_id is not None:
+        qs = qs.exclude(id=exclude_id)
+    return qs.exists()
+
+
 @login_required
+@transaction.atomic
 def add_postedommage(request):
 
     if request.method == 'POST':
 
-        # Créer une nouveau poste de dommage
+        numero_ordre = request.POST.get('numero_ordre')
+
+        # Vérification unicité
+        if PosteDommage.objects.filter(numero_ordre=numero_ordre).exists():
+            return JsonResponse({
+                'statut': 0,
+                'message': f"Le numéro d'ordre '{numero_ordre}' est déjà utilisé."
+            })
+
         postedommage_created = PosteDommage.objects.create(
-            libelle=request.POST.get('libelle'),
             code=generate_postedommage_code(),
+            libelle=request.POST.get('libelle', '').strip(),
+            sens=request.POST.get('sens'),
+            numero_ordre=numero_ordre,
             statut=request.POST.get('statut'),
-            created_at=datetime.now(),
+            created_at=timezone.now(),
         )
 
-        response = {
+        JsonResponse({
             'statut': 1,
             'message': "Enregistrement effectué avec succès !",
-            'data': {
-                'id': postedommage_created.pk,
-                'libelle': postedommage_created.libelle,
-            }
-        }
-
-        return JsonResponse(response)
+        })
 
 
 @login_required
+@transaction.atomic
 def modifier_postedommage(request, postedommage_id):
 
-    postedommage = PosteDommage.objects.get(id=postedommage_id)
+    postedommage = get_object_or_404(PosteDommage, id=postedommage_id)
 
     if request.method == 'POST':
-        user = User.objects.get(id=request.user.id)
 
-        PosteDommage.objects.filter(id=postedommage_id).update(
-            libelle=request.POST.get('libelle'),
-            statut=request.POST.get('statut'),
-            updated_at=datetime.now(),
-        )
-        response = {
+        numero_ordre = request.POST.get('numero_ordre')
+
+        # Vérification unicité (exclure l'objet en cours)
+        if PosteDommage.objects.filter(numero_ordre=numero_ordre).exclude(id=postedommage_id).exists():
+            return JsonResponse({
+                'statut': 0,
+                'message': f"Le numéro d'ordre '{numero_ordre}' est déjà utilisé par un autre poste."
+            })
+
+        postedommage.numero_ordre = numero_ordre
+        postedommage.sens = request.POST.get('sens')
+        postedommage.libelle = request.POST.get('libelle')
+        postedommage.statut = request.POST.get('statut')
+        postedommage.updated_at = timezone.now()
+        postedommage.save()
+
+        return JsonResponse({
             'statut': 1,
             'message': "Modification effectuée avec succès !",
-            'data': {
-                'id': postedommage.pk,
-                'libelle': postedommage.libelle,
-            }
-        }
-
-        return JsonResponse(response)
+        })
 
     else:
-        return render(request, 'postedommages/modal_modifier_postedommage.html', {'postedommage': postedommage})
+        sens_poste_dommage = SensPosteDommage
+
+        context = {
+            'postedommage': postedommage,
+            'sens_poste_dommage': sens_poste_dommage
+        }
+
+        return render(request, 'postedommages/modal_modifier_postedommage.html', context)
 
 
 @login_required
@@ -6313,6 +6340,12 @@ def supprimer_postedommage(request, postedommage_id):
         print("postedommage id : ", postedommage_id)
         postedommage = PosteDommage.objects.get(id=postedommage_id)
         if postedommage.pk is not None:
+
+            if relation_entre_table(postedommage):
+                return JsonResponse({
+                    'statut': 0,
+                    'message': "Impossible de supprimer : ce poste dommage est encore utilisé dans une autre table.",
+                })
 
             postedommage.delete()
 

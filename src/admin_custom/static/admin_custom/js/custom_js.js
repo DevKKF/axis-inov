@@ -8118,7 +8118,13 @@ $(document).ready(function () {
                     notifySuccess(response.message, function () {
                         location.reload();
                     });
-                } else {
+                }
+                if (response.statut == 0) {
+                    notifyWarning(response.message, function () {
+                        //location.reload();
+                    });
+                }
+                else {
                     let errors = response.errors;
                     let errors_list_to_display = '';
                     for (field in errors) {
@@ -21334,333 +21340,438 @@ $(document).ready(function () {
 
     });
 
-    // Calcul des provisions de sinistre ou recours
-    // Fonction pour formater le montant avec des espaces comme séparateur de milliers
-    function formatMontant(input) {
-        let value = input.value.replace(/[^0-9-]/g, '');
-        let formattedValue = '';
-        let isNegative = false;
+    // ----------- UTILITAIRES -----------
 
-        if (value.startsWith('-')) {
-            isNegative = true;
-            value = value.substring(1);
-        }
-
-        if (value.length > 0) {
-            formattedValue = parseInt(value).toLocaleString('fr-FR');
-        }
-
-        if (isNegative) {
-            formattedValue = '-' + formattedValue;
-        }
-
-        input.value = formattedValue;
+    // Convertit une chaîne en nombre
+    function parseNumber(str) {
+        if (!str) return 0;
+        return parseFloat(str.replace(/\s/g, '').replace(',', '.')) || 0;
     }
 
-    // Fonction principale pour calculer et mettre à jour tous les totaux pour chaque garantie
+    // Formate un nombre avec séparateurs FR et signe
+    function formatValue(value) {
+        const absVal = Math.abs(value);
+        let formatted = absVal.toLocaleString('fr-FR');
+        return value < 0 ? `-${formatted}` : formatted;
+    }
+
+    // Formate et met à jour l'input
+    function formatMontant(input) {
+        let value = parseNumber(input.value);
+        input.value = formatValue(value);
+        return value;
+    }
+
+    // Vérifie si la ligne est un poste négatif
+    function isNegativePoste(ligne) {
+        const cell = ligne.find('td[data-sens]');
+        return cell.length && cell.data('sens').toLowerCase().includes('negatif');
+    }
+
     function calculerTotauxParGarantie() {
-        const garanties = $('.garantie-header');
-
-        garanties.each(function() {
+        $('.garantie-header').each(function () {
             const garantieId = $(this).data('garantie-id');
-            let totalEstimation = 0;
-            let totalRegle = 0;
+            let totalEstimation = 0, totalRegle = 0;
 
-            const lignesPosteDommage = $('#table_provision_sinistre tbody tr:not(:last-child)');
-
-            lignesPosteDommage.each(function() {
+            $('#table_provision_sinistre tbody tr:not(:last-child)').each(function () {
                 const ligne = $(this);
-                const posteDommageCell = ligne.find('td[data-poste-dommage]');
-                if (!posteDommageCell.length) return;
+                if (!ligne.find('td[data-sens]').length) return;
 
-                const posteDommageLibelle = posteDommageCell.data('poste-dommage').toLowerCase();
-                const estFranchise = posteDommageLibelle.includes('franchise');
+                const negatif = isNegativePoste(ligne);
 
-                const inputEstimation = ligne.find(`input[id^="montant_provision_"][id$="_${garantieId}"]`);
-                const inputRegle = ligne.find(`input[id^="montant_regle_"][id$="_${garantieId}"]`);
-                const inputProvision = ligne.find(`input[id^="provisionne_"][id$="_${garantieId}"]`);
+                const estimation = parseNumber(
+                    ligne.find(`input[id^="montant_provision_"][id$="_${garantieId}"]`).val()
+                );
+                const regle = parseNumber(
+                    ligne.find(`input[id^="montant_regle_"][id$="_${garantieId}"]`).val()
+                );
 
-                let estimation = parseFloat(inputEstimation.val().replace(/\s/g, '')) || 0;
-                let regle = parseFloat(inputRegle.val().replace(/\s/g, '')) || 0;
+                let valEstimation = estimation;
+                let valRegle = regle;
 
-                if (estFranchise) {
-                    estimation = -Math.abs(estimation);
-                    regle = -Math.abs(regle);
+                if (negatif) {
+                    valEstimation = -Math.abs(estimation);
+                    valRegle = -Math.abs(regle);
                 }
 
-                const provision = estimation - regle;
-                if (inputProvision.length) {
-                    inputProvision.val(provision.toLocaleString('fr-FR'));
-                }
+                const provision = valEstimation - valRegle;
+                ligne.find(`input[id^="provisionne_"][id$="_${garantieId}"]`).val(formatValue(provision));
 
-                totalEstimation += estimation;
-                totalRegle += regle;
+                totalEstimation += valEstimation;
+                totalRegle += valRegle;
             });
 
             const totalProvisionne = totalEstimation - totalRegle;
 
-            $(`#total_montant_provision_${garantieId}`).val(totalEstimation.toLocaleString('fr-FR'));
-            $(`#total_montant_regle_${garantieId}`).val(totalRegle.toLocaleString('fr-FR'));
-            $(`#total_provisionne_${garantieId}`).val(totalProvisionne.toLocaleString('fr-FR'));
+            $(`#total_montant_provision_${garantieId}`).val(formatValue(totalEstimation));
+            $(`#total_montant_regle_${garantieId}`).val(formatValue(totalRegle));
+            $(`#total_provisionne_${garantieId}`).val(formatValue(totalProvisionne));
         });
     }
 
-    // Fonction pour autoriser uniquement les chiffres et le signe moins
-    function isInputNumber(evt) {
-        const charCode = (evt.which) ? evt.which : evt.keyCode;
-        if (charCode > 31 && (charCode < 48 || charCode > 57) && charCode !== 45) {
-            evt.preventDefault();
+    function validerRegle(input, ligne, valeur) {
+        const garantieId = input.attr('id').split('_').pop();
+        const estimation = parseNumber(
+            ligne.find(`input[id^="montant_provision_"][id$="_${garantieId}"]`).val()
+        );
+
+        if (valeur > estimation) {
+            input.val('0').addClass('is-invalid');
+            return false;
+        } else {
+            input.removeClass('is-invalid');
+            return true;
         }
     }
 
-    // Événements
-    $('.calculs_montant_garantie_sinistre').on('input', function() {
-        formatMontant(this);
-        calculerTotauxParGarantie();
-    });
-
-    $('.calculs_montant_garantie_sinistre').on('keypress', function(evt) {
-        isInputNumber(evt);
-    });
-
-    $('.calculs_montant_garantie_sinistre').on('blur', function() {
-        const input = $(this);
-        const ligne = input.closest('tr');
-        const posteDommageCell = ligne.find('td[data-poste-dommage]');
-        if (!posteDommageCell.length) return;
-
-        const estFranchise = posteDommageCell.data('poste-dommage').toLowerCase().includes('franchise');
-        const isRegleField = input.data('type') === 'montant_regle';
-
-        let valeur = parseFloat(input.val().replace(/\s/g, '')) || 0;
-
-        // Gérer la validation pour le champ "Déjà réglé"
-        if (isRegleField && !estFranchise) {
-            const garantieId = input.attr('id').split('_').pop();
-            const inputEstimation = ligne.find(`input[id^="montant_provision_"][id$="_${garantieId}"]`);
-            const estimation = parseFloat(inputEstimation.val().replace(/\s/g, '')) || 0;
-
-            if (valeur > estimation) {
-                console.log("Validation échouée : Déjà réglé > Estimation. Le champ est réinitialisé et une bordure rouge est ajoutée.");
-                input.val('0');
-                input.addClass('is-invalid');
-                // Vous pouvez ajouter ici un élément pour afficher un message d'erreur si vous le souhaitez
-            } else {
-                input.removeClass('is-invalid');
+    $('.calculs_montant_garantie_sinistre')
+        .on('input', function () {
+            formatMontant(this);
+            calculerTotauxParGarantie();
+        })
+        .on('keypress', function (evt) {
+            const charCode = evt.which || evt.keyCode;
+            if (charCode > 31 && (charCode < 48 || charCode > 57) && charCode !== 45) {
+                evt.preventDefault(); // Autorise seulement chiffres et "-"
             }
-        }
+        })
+        .on('blur', function () {
+            const input = $(this);
+            const ligne = input.closest('tr');
+            let valeur = formatMontant(this); // récupère la valeur numérique
 
-        // Gérer la logique pour la franchise
-        if (estFranchise && valeur > 0) {
-            valeur = -valeur;
-            input.val(valeur.toLocaleString('fr-FR'));
-        }
+            // Validation du champ "Déjà réglé"
+            if (input.data('type') === 'montant_regle' && !isNegativePoste(ligne)) {
+                if (!validerRegle(input, ligne, valeur)) return;
+            }
 
-        // On déclenche le calcul des totaux à la fin
-        calculerTotauxParGarantie();
-    });
+            // Franchise → toujours négatif
+            if (isNegativePoste(ligne) && valeur > 0) {
+                valeur = -valeur;
+                input.val(formatValue(valeur));
+            }
 
-    // Appel initial pour les valeurs au chargement de la page
+            calculerTotauxParGarantie();
+        });
+
     calculerTotauxParGarantie();
 
 
-    // Fonction principale pour calculer et mettre à jour tous les totaux pour chaque garantie recours
-    function calculerTotauxParGarantieRecours() {
-        const garanties = $('.garantie-header');
-
-        garanties.each(function() {
+    function calculerTotauxRecoursParGarantie() {
+        $('.garantie-header').each(function () {
             const garantieId = $(this).data('garantie-id');
-            let totalEstimation = 0;
-            let totalRegle = 0;
+            let totalEstimation = 0, totalRegle = 0;
 
-            const lignesPosteDommage = $('#table_recours_sinistre tbody tr:not(:last-child)');
-
-            lignesPosteDommage.each(function() {
+            $('#table_recours_sinistre tbody tr:not(:last-child)').each(function () {
                 const ligne = $(this);
-                const posteDommageCell = ligne.find('td[data-poste-dommage]');
-                if (!posteDommageCell.length) return;
+                if (!ligne.find('td[data-sens]').length) return;
 
-                const posteDommageLibelle = posteDommageCell.data('poste-dommage').toLowerCase();
-                const estFranchise = posteDommageLibelle.includes('franchise');
+                const negatif = isNegativePoste(ligne);
 
-                const inputEstimation = ligne.find(`input[id^="montant_recours_"][id$="_${garantieId}"]`);
-                const inputRegle = ligne.find(`input[id^="montant_regle_recours_"][id$="_${garantieId}"]`);
-                const inputRecours = ligne.find(`input[id^="recours_"][id$="_${garantieId}"]`);
+                const estimation = parseNumber(
+                    ligne.find(`input[id^="montant_recours_"][id$="_${garantieId}"]`).val()
+                );
+                const regle = parseNumber(
+                    ligne.find(`input[id^="montant_regle_recours_"][id$="_${garantieId}"]`).val()
+                );
 
-                let estimation = parseFloat(inputEstimation.val().replace(/\s/g, '')) || 0;
-                let regle = parseFloat(inputRegle.val().replace(/\s/g, '')) || 0;
+                let valEstimation = estimation;
+                let valRegle = regle;
 
-                if (estFranchise) {
-                    estimation = -Math.abs(estimation);
-                    regle = -Math.abs(regle);
+                if (negatif) {
+                    valEstimation = -Math.abs(estimation);
+                    valRegle = -Math.abs(regle);
                 }
 
-                const recours = estimation - regle;
-                if (inputRecours.length) {
-                    inputRecours.val(recours.toLocaleString('fr-FR'));
-                }
+                const provision = valEstimation - valRegle;
+                ligne.find(`input[id^="recours_"][id$="_${garantieId}"]`).val(formatValue(provision));
 
-                totalEstimation += estimation;
-                totalRegle += regle;
+                totalEstimation += valEstimation;
+                totalRegle += valRegle;
             });
 
             const totalRecours = totalEstimation - totalRegle;
 
-            $(`#total_montant_recours_${garantieId}`).val(totalEstimation.toLocaleString('fr-FR'));
-            $(`#total_montant_regle_recours_${garantieId}`).val(totalRegle.toLocaleString('fr-FR'));
-            $(`#total_recours_${garantieId}`).val(totalRecours.toLocaleString('fr-FR'));
+            $(`#total_montant_recours_${garantieId}`).val(formatValue(totalEstimation));
+            $(`#total_montant_regle_recours_${garantieId}`).val(formatValue(totalRegle));
+            $(`#total_recours_${garantieId}`).val(formatValue(totalRecours));
         });
     }
 
-    // Fonction pour autoriser uniquement les chiffres et le signe moins
-    function isInputNumber(evt) {
-        const charCode = (evt.which) ? evt.which : evt.keyCode;
-        if (charCode > 31 && (charCode < 48 || charCode > 57) && charCode !== 45) {
-            evt.preventDefault();
+    function validerRegle(input, ligne, valeur) {
+        const garantieId = input.attr('id').split('_').pop();
+        const estimation = parseNumber(
+            ligne.find(`input[id^="montant_recours_"][id$="_${garantieId}"]`).val()
+        );
+
+        if (valeur > estimation) {
+            input.val('0').addClass('is-invalid');
+            return false;
+        } else {
+            input.removeClass('is-invalid');
+            return true;
         }
     }
 
-    // Événements
-    $('.calculs_montant_recours_garantie_sinistre').on('input', function() {
-        formatMontant(this);
-        calculerTotauxParGarantieRecours();
-    });
-
-    $('.calculs_montant_recours_garantie_sinistre').on('keypress', function(evt) {
-        isInputNumber(evt);
-    });
-
-    $('.calculs_montant_recours_garantie_sinistre').on('blur', function() {
-        const input = $(this);
-        const ligne = input.closest('tr');
-        const posteDommageCell = ligne.find('td[data-poste-dommage]');
-        if (!posteDommageCell.length) return;
-
-        const estFranchise = posteDommageCell.data('poste-dommage').toLowerCase().includes('franchise');
-        const isRegleField = input.data('type') === 'montant_regle_recours';
-
-        let valeur = parseFloat(input.val().replace(/\s/g, '')) || 0;
-
-        // Gérer la validation pour le champ "Déjà réglé"
-        if (isRegleField && !estFranchise) {
-            const garantieId = input.attr('id').split('_').pop();
-            const inputEstimation = ligne.find(`input[id^="montant_recours_"][id$="_${garantieId}"]`);
-            const estimation = parseFloat(inputEstimation.val().replace(/\s/g, '')) || 0;
-
-            if (valeur > estimation) {
-                console.log("Validation échouée : Déjà réglé > Estimation. Le champ est réinitialisé et une bordure rouge est ajoutée.");
-                input.val('0');
-                input.addClass('is-invalid');
-                // Vous pouvez ajouter ici un élément pour afficher un message d'erreur si vous le souhaitez
-            } else {
-                input.removeClass('is-invalid');
+    $('.calculs_montant_recours_garantie_sinistre')
+        .on('input', function () {
+            formatMontant(this);
+            calculerTotauxRecoursParGarantie();
+        })
+        .on('keypress', function (evt) {
+            const charCode = evt.which || evt.keyCode;
+            if (charCode > 31 && (charCode < 48 || charCode > 57) && charCode !== 45) {
+                evt.preventDefault(); // Autorise seulement chiffres et "-"
             }
-        }
+        })
+        .on('blur', function () {
+            const input = $(this);
+            const ligne = input.closest('tr');
+            let valeur = formatMontant(this); // récupère la valeur numérique
 
-        // Gérer la logique pour la franchise
-        if (estFranchise && valeur > 0) {
-            valeur = -valeur;
-            input.val(valeur.toLocaleString('fr-FR'));
-        }
+            // Validation du champ "Déjà réglé"
+            if (input.data('type') === 'montant_regle_recours' && !isNegativePoste(ligne)) {
+                if (!validerRegle(input, ligne, valeur)) return;
+            }
 
-        // On déclenche le calcul des totaux à la fin
-        calculerTotauxParGarantieRecours();
-    });
+            // Franchise → toujours négatif
+            if (isNegativePoste(ligne) && valeur > 0) {
+                valeur = -valeur;
+                input.val(formatValue(valeur));
+            }
 
-    // Appel initial pour les valeurs au chargement de la page
-    calculerTotauxParGarantieRecours();
+            calculerTotauxRecoursParGarantie();
+        });
+
+    calculerTotauxRecoursParGarantie();
 
 
-    // Fonction principale pour calculer et mettre à jour tous les totaux pour chaque garantie recours
-    function calculerTotauxReglement() {
-        const garanties = $('.garantie-header');
-
-        garanties.each(function() {
+    function calculerTotauxReglementParGarantie() {
+        $('.garantie-header').each(function () {
             const garantieId = $(this).data('garantie-id');
             let totalEstimation = 0;
 
-            const lignesPosteDommage = $('#table_montant_reglements_sinistre tbody tr:not(:last-child)');
-
-            lignesPosteDommage.each(function() {
+            $('#table_montant_reglements_sinistre tbody tr:not(:last-child)').each(function () {
                 const ligne = $(this);
-                const posteDommageCell = ligne.find('td[data-poste-dommage]');
-                if (!posteDommageCell.length) return;
+                if (!ligne.find('td[data-sens]').length) return;
 
-                const posteDommageLibelle = posteDommageCell.data('poste-dommage').toLowerCase();
-                const estFranchise = posteDommageLibelle.includes('franchise');
+                const negatif = isNegativePoste(ligne);
 
-                const inputEstimation = ligne.find(`input[id^="montant_reglement_"][id$="_${garantieId}"]`);
+                const estimation = parseNumber(
+                    ligne.find(`input[id^="montant_reglement_"][id$="_${garantieId}"]`).val()
+                );
 
-                let estimation = parseFloat(inputEstimation.val().replace(/\s/g, '')) || 0;
+                let valEstimation = estimation;
 
-                if (estFranchise) {
-                    estimation = -Math.abs(estimation);
+                if (negatif) {
+                    valEstimation = -Math.abs(estimation);
                 }
 
-                totalEstimation += estimation;
+                totalEstimation += valEstimation;
             });
 
-            const totalRecours = totalEstimation;
-
-            $(`#total_montant_reglement_${garantieId}`).val(totalEstimation.toLocaleString('fr-FR'));
+            $(`#total_montant_reglement_${garantieId}`).val(formatValue(totalEstimation));
         });
     }
 
-    // Fonction pour autoriser uniquement les chiffres et le signe moins
-    function isInputNumber(evt) {
-        const charCode = (evt.which) ? evt.which : evt.keyCode;
-        if (charCode > 31 && (charCode < 48 || charCode > 57) && charCode !== 45) {
-            evt.preventDefault();
+    function validerRegle(input, ligne, valeur) {
+        const garantieId = input.attr('id').split('_').pop();
+        const estimation = parseNumber(
+            ligne.find(`input[id^="montant_reglement_"][id$="_${garantieId}"]`).val()
+        );
+
+        if (valeur > estimation) {
+            input.val('0').addClass('is-invalid');
+            return false;
+        } else {
+            input.removeClass('is-invalid');
+            return true;
         }
     }
 
-    // Événements
-    $('.calculs_montant_reglement').on('input', function() {
-        formatMontant(this);
-        calculerTotauxReglement();
-    });
-
-    $('.calculs_montant_reglement').on('keypress', function(evt) {
-        isInputNumber(evt);
-    });
-
-    $('.calculs_montant_reglement').on('blur', function() {
-        const input = $(this);
-        const ligne = input.closest('tr');
-        const posteDommageCell = ligne.find('td[data-poste-dommage]');
-        if (!posteDommageCell.length) return;
-
-        const estFranchise = posteDommageCell.data('poste-dommage').toLowerCase().includes('franchise');
-        const isRegleField = input.data('type') === 'montant_reglement';
-
-        let valeur = parseFloat(input.val().replace(/\s/g, '')) || 0;
-
-        // Gérer la validation pour le champ "montant_reglement"
-        if (isRegleField && !estFranchise) {
-            const garantieId = input.attr('id').split('_').pop();
-            const inputEstimation = ligne.find(`input[id^="montant_reglement_"][id$="_${garantieId}"]`);
-            const estimation = parseFloat(inputEstimation.val().replace(/\s/g, '')) || 0;
-
-            if (valeur > estimation) {
-                input.val('0');
-                input.addClass('is-invalid');
-            } else {
-                input.removeClass('is-invalid');
+    $('.calculs_montant_reglement_garantie_sinistre')
+        .on('input', function () {
+            formatMontant(this);
+            calculerTotauxReglementParGarantie();
+        })
+        .on('keypress', function (evt) {
+            const charCode = evt.which || evt.keyCode;
+            if (charCode > 31 && (charCode < 48 || charCode > 57) && charCode !== 45) {
+                evt.preventDefault(); // Autorise seulement chiffres et "-"
             }
+        })
+        .on('blur', function () {
+            const input = $(this);
+            const ligne = input.closest('tr');
+            let valeur = formatMontant(this); // récupère la valeur numérique
+
+            // Validation du champ "Déjà réglé"
+            if (input.data('type') === 'montant_regle_recours' && !isNegativePoste(ligne)) {
+                if (!validerRegle(input, ligne, valeur)) return;
+            }
+
+            // Franchise → toujours négatif
+            if (isNegativePoste(ligne) && valeur > 0) {
+                valeur = -valeur;
+                input.val(formatValue(valeur));
+            }
+
+            calculerTotauxReglementParGarantie();
+        });
+
+    calculerTotauxReglementParGarantie();
+
+
+    function calculerTotauxReglementParGarantie() {
+        $('.garantie-header').each(function () {
+            const garantieId = $(this).data('garantie-id');
+            let totalEstimation = 0;
+
+            $('#table_montant_reglements_sinistre tbody tr:not(:last-child)').each(function () {
+                const ligne = $(this);
+                if (!ligne.find('td[data-sens]').length) return;
+
+                const negatif = isNegativePoste(ligne);
+
+                const estimation = parseNumber(
+                    ligne.find(`input[id^="montant_reglement_"][id$="_${garantieId}"]`).val()
+                );
+
+                let valEstimation = estimation;
+
+                if (negatif) {
+                    valEstimation = -Math.abs(estimation);
+                }
+
+                totalEstimation += valEstimation;
+            });
+
+            $(`#total_montant_reglement_${garantieId}`).val(formatValue(totalEstimation));
+        });
+    }
+
+    function validerRegle(input, ligne, valeur) {
+        const garantieId = input.attr('id').split('_').pop();
+        const estimation = parseNumber(
+            ligne.find(`input[id^="montant_reglement_"][id$="_${garantieId}"]`).val()
+        );
+
+        if (valeur > estimation) {
+            input.val('0').addClass('is-invalid');
+            return false;
+        } else {
+            input.removeClass('is-invalid');
+            return true;
         }
+    }
 
-        // Gérer la logique pour la franchise
-        if (estFranchise && valeur > 0) {
-            valeur = -valeur;
-            input.val(valeur.toLocaleString('fr-FR'));
+    $('.calculs_montant_reglement')
+        .on('input', function () {
+            formatMontant(this);
+            calculerTotauxReglementParGarantie();
+        })
+        .on('keypress', function (evt) {
+            const charCode = evt.which || evt.keyCode;
+            if (charCode > 31 && (charCode < 48 || charCode > 57) && charCode !== 45) {
+                evt.preventDefault(); // Autorise seulement chiffres et "-"
+            }
+        })
+        .on('blur', function () {
+            const input = $(this);
+            const ligne = input.closest('tr');
+            let valeur = formatMontant(this); // récupère la valeur numérique
+
+            // Validation du champ "Déjà réglé"
+            if (input.data('type') === 'montant_regle_recours' && !isNegativePoste(ligne)) {
+                if (!validerRegle(input, ligne, valeur)) return;
+            }
+
+            // Franchise → toujours négatif
+            if (isNegativePoste(ligne) && valeur > 0) {
+                valeur = -valeur;
+                input.val(formatValue(valeur));
+            }
+
+            calculerTotauxReglementParGarantie();
+        });
+
+    calculerTotauxReglementParGarantie();
+
+
+    function calculerTotauxReglementParGarantie() {
+        $('.garantie-header').each(function () {
+            const garantieId = $(this).data('garantie-id');
+            let totalEstimation = 0;
+
+            $('#table_montant_encaissement_recours_sinistre tbody tr:not(:last-child)').each(function () {
+                const ligne = $(this);
+                if (!ligne.find('td[data-sens]').length) return;
+
+                const negatif = isNegativePoste(ligne);
+
+                const estimation = parseNumber(
+                    ligne.find(`input[id^="montant_encaissement_recour_"][id$="_${garantieId}"]`).val()
+                );
+
+                let valEstimation = estimation;
+
+                if (negatif) {
+                    valEstimation = -Math.abs(estimation);
+                }
+
+                totalEstimation += valEstimation;
+            });
+
+            $(`#total_montant_encaissement_recour_${garantieId}`).val(formatValue(totalEstimation));
+        });
+    }
+
+    function validerRegle(input, ligne, valeur) {
+        const garantieId = input.attr('id').split('_').pop();
+        const estimation = parseNumber(
+            ligne.find(`input[id^="montant_encaissement_recour_"][id$="_${garantieId}"]`).val()
+        );
+
+        if (valeur > estimation) {
+            input.val('0').addClass('is-invalid');
+            return false;
+        } else {
+            input.removeClass('is-invalid');
+            return true;
         }
+    }
 
-        // On déclenche le calcul des totaux à la fin
-        calculerTotauxReglement();
-    });
+    $('.calculs_montant_encaissement_recour')
+        .on('input', function () {
+            formatMontant(this);
+            calculerTotauxReglementParGarantie();
+        })
+        .on('keypress', function (evt) {
+            const charCode = evt.which || evt.keyCode;
+            if (charCode > 31 && (charCode < 48 || charCode > 57) && charCode !== 45) {
+                evt.preventDefault(); // Autorise seulement chiffres et "-"
+            }
+        })
+        .on('blur', function () {
+            const input = $(this);
+            const ligne = input.closest('tr');
+            let valeur = formatMontant(this); // récupère la valeur numérique
 
-    // Appel initial pour les valeurs au chargement de la page
-    calculerTotauxReglement();
+            // Validation du champ "Déjà réglé"
+            if (input.data('type') === 'montant_regle_recours' && !isNegativePoste(ligne)) {
+                if (!validerRegle(input, ligne, valeur)) return;
+            }
+
+            // Franchise → toujours négatif
+            if (isNegativePoste(ligne) && valeur > 0) {
+                valeur = -valeur;
+                input.val(formatValue(valeur));
+            }
+
+            calculerTotauxReglementParGarantie();
+        });
+
+    calculerTotauxReglementParGarantie();
 
 });
 

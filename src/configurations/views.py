@@ -50,7 +50,7 @@ from shared.helpers import relation_entre_table
 from django.contrib import messages
 from django.db import transaction
 
-from sinistre.models import Sinistre, PaiementComptable, HistoriqueOrdonnancementSinistre, BordereauOrdonnancement
+from sinistre.models import Sinistre, PaiementComptable, BordereauOrdonnancement
 import json
 import io
 
@@ -2455,13 +2455,6 @@ class DbSuperAdminQueryView(TemplateView):
                         # mettre la facture à traitée:: faire sortir de la boucle lorsque les factures seront directement liées aux bordereau d'ordonnancement
                         sinistre.facture_prestataire.statut = SatutBordereauDossierSinistres.VALIDE
                         sinistre.facture_prestataire.save()
-
-                        # historiser les lignes qui étaient sur le bordereau
-                        HistoriqueOrdonnancementSinistre.objects.create(created_by=request.user,
-                                                                        bordereau_ordonnancement=bordereau_ordonnancement,
-                                                                        sinistre=sinistre,
-                                                                        montant_ordonnance=sinistre.montant_remb_accepte,
-                                                                        observation=observation)
 
                 return JsonResponse({
                     "message": f"Succès : Le bordereau d'ordonnancement {abro_numero} a été annulé avec succès."

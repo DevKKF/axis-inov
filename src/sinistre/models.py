@@ -43,6 +43,7 @@ class Sinistre(models.Model):
     risque_sinistre = models.CharField(max_length=255, null=True, blank=True)
 
     tva_recuperee = models.BooleanField(null=True, blank=True)
+    recours_possible = models.BooleanField(null=True, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True, null=True)
     updated_at = models.DateTimeField(null=True)
@@ -64,10 +65,6 @@ class Sinistre(models.Model):
     updated_by = models.ForeignKey(User, related_name="sinistre_updated_by", null=True, on_delete=models.RESTRICT)
     deleted_by = models.ForeignKey(User, related_name="sinistre_deleted_by", null=True, on_delete=models.RESTRICT)
 
-    created_at = models.DateTimeField(auto_now_add=True, null=True)
-    updated_at = models.DateTimeField(null=True)
-    deleted_at = models.DateTimeField(null=True)
-
     @property
     def sinistre_dernier_historique(self):
         sinistre = HistoriqueSinistre.objects.filter(sinistre_id=self.id).order_by('-created_at').first()
@@ -82,7 +79,18 @@ class Sinistre(models.Model):
         if mouvement:
             return mouvement.motif.etat_sinistre
         else:
-            return "En attente"
+            return "En cours"
+
+    @property
+    def etat_actu_sinistre(self):
+        today = timezone.now().date()
+
+        mouvement = MouvementSinistre.objects.filter(sinistre_id=self.id, date_effet__lte=today, statut_validite=StatutValidite.VALIDE).order_by('-id').first()
+
+        if mouvement:
+            return mouvement.motif.libelle
+        else:
+            return "Ouverture sinistre"
 
     class Meta:
         db_table = 'sinistres'
@@ -204,8 +212,10 @@ class SinistreGarantie(models.Model):
 
     montant_provision = models.DecimalField(max_digits=20, decimal_places=2, default=Decimal("0"), null=True, blank=True)
     montant_provision_regle = models.DecimalField(max_digits=20, decimal_places=2, default=Decimal("0"), null=True, blank=True)
+
     montant_recours = models.DecimalField(max_digits=20, decimal_places=2, default=Decimal("0"), null=True, blank=True)
     montant_recours_regle = models.DecimalField(max_digits=20, decimal_places=2, default=Decimal("0"), null=True, blank=True)
+
     montant_garantie = models.DecimalField(max_digits=20, decimal_places=2, default=Decimal("0"), null=True, blank=True)
 
     date_cloture = models.DateField(null=True, blank=True)
@@ -826,19 +836,3 @@ class RemboursementSinistre(models.Model):
         if self.statut == StatutRemboursementSinistre.REFUSE:
             return True
         return False
-
-
-#historique des sinistres sur un bordereau d'ordonnancment au cas ou on doit annuler un bordereau d'ordonnancement on concerve l'historique
-class HistoriqueOrdonnancementSinistre(models.Model):
-    created_by = models.ForeignKey(User, null=True, on_delete=models.RESTRICT)
-    bordereau_ordonnancement = models.ForeignKey(BordereauOrdonnancement, on_delete=models.RESTRICT)
-    sinistre = models.ForeignKey(Sinistre, on_delete=models.RESTRICT)
-    montant_ordonnance = models.DecimalField(max_digits=50, decimal_places=16, null=True)
-    observation = models.CharField(max_length=255, blank=True, null=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        db_table = 'historique_ordonnancement_sinistre'
-        verbose_name = 'Historique ordonnancement sinistre'
-        verbose_name_plural = 'Historique ordonnancement sinistre'

@@ -275,3 +275,17 @@ def get_item2(d, key):
     if isinstance(d, dict):
         return d.get(key)
     return None
+
+
+@register.filter
+def color_by_index(index):
+    colors = [
+        "#d4edda", "#fff3cd", "#d1ecf1", "#f8d7da", "#D2C74B",
+        "#9AD24B", "#D534EA", "#EA3449", "#743FDE", "#C6F628",
+        "#32CDEC", "#448FDA", "#F4822A", "#7CA297", "#24A89F",
+        "#7C87A2", "#CA7B53", "#E0E33B", "#6DF529", "#A643DB",
+        "#3615B7", "#6A2F4A", "#D3BA9C", "#7772FD", "#F6C479",
+    ]
+    if 0 <= index < len(colors):
+        return colors[index]
+    return "#e2e3e5"

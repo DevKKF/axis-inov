@@ -190,7 +190,7 @@ input:checked {
 
 }
 
-.bg-olea{
+.bg-axis_inov{
     /*background-color:#a75033 !important;*/
     background-color:#FEFEFE !important;
 }
@@ -252,12 +252,10 @@ table.table_v_middle th, table.table_v_middle td{
     padding-bottom:5px;
 }
 
-
 :root {
-  --couleur_olea: #F16623;
+  --couleur_axis_inov: #F16623;
   --colorPrimary: #F16623;
   --colorInov: orange;
-  --colorJauneOlea: #EFBF77;
   --colorAccent: gray;
 }
 
@@ -452,7 +450,7 @@ article .shimmer{
 }
 
 
-.card-header, .card-header0, .bg_rouge_olea
+.card-header, .card-header0, .bg_rouge_axis_inov
 {
     background-color: var(--colorInov)!important;
     color: #fff;

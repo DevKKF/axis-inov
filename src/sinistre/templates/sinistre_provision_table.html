@@ -23,7 +23,7 @@
          <tr>
             <th rowspan="2">Postes dommages</th>
             {% for garantie_sin in garantie_sinistres %}
-               <th colspan="3" class="garantie-header text-center" data-garantie-id="{{ garantie_sin.garantie_id }}">{{ garantie_sin.garantie.nom }}</th>
+               <th colspan="3" class="garantie-header text-center" data-garantie-id="{{ garantie_sin.garantie_id }}" style="background-color: {{ forloop.counter0|color_by_index }};">{{ garantie_sin.garantie.nom }}</th>
             {% endfor %}
          </tr>
          <tr>
@@ -37,9 +37,9 @@
       <tbody>
          {% for postedommage in poste_dommages %}
             <tr>
-               <td style="width:200px !important;" data-poste-dommage="{{ postedommage.libelle|lower }}">{{ postedommage.libelle|default_if_none:"" }}</td>
+               <td style="width:200px !important;" data-sens="{{ postedommage.sens|lower }}">{{ postedommage.libelle|default_if_none:"" }}</td>
                {% for garantie_sin in garantie_sinistres %}
-                  {% with vp=ventilations_dict|get_item:postedommage.id|get_item2:garantie_sin.garantie_id %}
+                  {% with vp=ventilations_dict_provision|get_item:postedommage.id|get_item2:garantie_sin.garantie_id %}
                      <td>
                         <input type="text" id="montant_provision_{{ postedommage.id }}_{{ garantie_sin.garantie_id }}"
                            name="montant_ventilation_provisions[{{  postedommage.id }}][{{ garantie_sin.garantie_id }}][montant_provision]" class="form-control form-control-sm money_field calculs_montant_garantie_sinistre"

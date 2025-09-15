@@ -4,16 +4,16 @@
 {% block extrastyle %}
    <style>
       .fnt-10{
-      font-size: 10px !important;
+        font-size: 10px !important;
       }
       .fnt-15{
-      font-size: 15px !important;
+        font-size: 15px !important;
       }
       .fnt-20{
-      font-size: 20px !important;
+        font-size: 20px !important;
       }
       .fnt-30{
-      font-size: 30px !important;
+        font-size: 30px !important;
       }
    </style>
 {% endblock %}
@@ -157,8 +157,13 @@
                <li class="nav-item"><a class="nav-link" id="garantie_sinistres-tab" data-toggle="tab" href="#garantie_sinistres" role="tab" aria-controls="garantie_sinistres" aria-selected="false">{{_("GARANTIES SINISTRES")}}</a></li>
                <li class="nav-item"><a class="nav-link" id="intervenants-tab" data-toggle="tab" href="#intervenants" role="tab" aria-controls="intervenants" aria-selected="false">{{_("INTERVENANTS")}}</a></li>
                <li class="nav-item"><a class="nav-link" id="provisions-tab" data-toggle="tab" href="#provisions" role="tab" aria-controls="provisions" aria-selected="false">{{_("PROVISIONS")}}</a></li>
-               <li class="nav-item"><a class="nav-link" id="recours-tab" data-toggle="tab" href="#recours" role="tab" aria-controls="recours" aria-selected="false">{{_("RECOURS")}}</a></li>
+               {% if sinistre.taux_responsabilite.libelle == "100%" and sinistre.recours_possible == True %}
+                    <li class="nav-item"><a class="nav-link" id="recours-tab" data-toggle="tab" href="#recours" role="tab" aria-controls="recours" aria-selected="false">{{_("RECOURS")}}</a></li>
+               {% endif %}
                <li class="nav-item"><a class="nav-link" id="reglements-tab" data-toggle="tab" href="#reglements" role="tab" aria-controls="reglements" aria-selected="false">{{_("REGLEMENTS")}}</a></li>
+               {% if sinistre.taux_responsabilite.libelle == "100%" and sinistre.recours_possible == True %}
+                    <li class="nav-item"><a class="nav-link" id="encaissement_recours-tab" data-toggle="tab" href="#encaissement_recours" role="tab" aria-controls="encaissement_recours" aria-selected="false">{{_("ENCAISEMENTS RECOURS")}}</a></li>
+               {% endif %}
                <li class="nav-item"><a class="nav-link" id="synthese-tab" data-toggle="tab" href="#synthese" role="tab" aria-controls="synthese" aria-selected="false">{{_("SYNTHESE")}}</a></li>
             </ul>
             <div class="card-body">
@@ -175,11 +180,11 @@
                                     <label class="col-sm-5 col-form-label">Recherche risque <span class="required">*</span></label>
                                     <div class="col-sm-7">
                                        {% if sinistre.police.produit.code == '10001' or sinistre.police.produit.code == '10002' %}
-                                       <input type="text" class="form-control" value="{{sinistre.aliment_police.vehicule.numero_immatriculation}}" readonly>
+                                            <input type="text" class="form-control" value="{{sinistre.aliment_police.vehicule.numero_immatriculation}}" readonly>
                                        {% elif sinistre.police.produit.code == '50001' or sinistre.police.produit.code == '50002' %}
-                                       <input type="text" class="form-control" value="{{ sinistre.aliment_police.marchandise.num_certificat }}" readonly>
+                                            <input type="text" class="form-control" value="{{ sinistre.aliment_police.marchandise.num_certificat }}" readonly>
                                        {% else %}
-                                       <input type="text" class="form-control" value="{{ aliment.autre_risque.libelle }}" readonly>
+                                            <input type="text" class="form-control" value="{{ aliment.autre_risque.libelle }}" readonly>
                                        {% endif %}
                                     </div>
                                  </div>
@@ -236,13 +241,8 @@
                                  <div class="form-group row">
                                     <label class="col-sm-5 col-form-label">Circonstance <span class="required">*</span></label>
                                     <div class="col-sm-7">
-                                       <input type="hidden" name="circonstance_id" id="second_circonstance_id" value="{{ sinistre.circonstance_id }}">
-                                       <select class="form-control" name="circonstance_id" id="circonstance_id" required disabled>
-                                          <option value="">Choisir</option>
-                                          {% for circonstance in circonstances %}
-                                             <option value="{{ circonstance.id }}" {% if sinistre.circonstance_id == circonstance.id %} selected {% endif %} data-circonstance_id="{{ circonstance.id }}">{{ circonstance.libelle|default_if_none:"" }}</option>
-                                          {% endfor %}
-                                       </select>
+                                       <input type="hidden" name="circonstance_id" id="circonstance_id" value="{{ sinistre.circonstance_id }}">
+                                       <input type="text" class="form-control" value="{{ sinistre.circonstance.libelle|default_if_none:'' }}" readonly>
                                     </div>
                                  </div>
                                  <div class="form-group row">
@@ -258,6 +258,16 @@
                                           <option value="">Choisir</option>
                                           <option value="1" {% if sinistre.tva_recuperee == 1 %} selected {% endif %}>OUI</option>
                                           <option value="0" {% if sinistre.tva_recuperee == 0 %} selected {% endif %}>NON</option>
+                                       </select>
+                                    </div>
+                                 </div>
+                                 <div class="form-group row">
+                                    <label class="col-sm-5 col-form-label">Recours possible</label>
+                                    <div class="col-sm-7">
+                                       <select class="form-control" name="recours_possible" id="recours_possible">
+                                          <option value="">Choisir</option>
+                                          <option value="1" {% if sinistre.recours_possible == 1 %} selected {% endif %}>OUI</option>
+                                          <option value="0" {% if sinistre.recours_possible == 0 %} selected {% endif %}>NON</option>
                                        </select>
                                     </div>
                                  </div>
@@ -372,20 +382,55 @@
                   <div class="tab-pane fade mt-3" id="recours" role="tabpanel" aria-labelledby="recours-tab">
                      <div class="row">
                         <div class="col-12 col-md-12 col-sm-12 table-responsive">
-                           {% include 'sinistre_recours_table.html' %}
+                            {% include 'sinistre_recours_table.html' %}
                         </div>
                      </div>
                   </div>
                   <div class="tab-pane fade mt-3" id="reglements" role="tabpanel" aria-labelledby="reglements-tab">
                      <div class="row">
                         <div class="col-12 col-md-12 col-sm-12 table-responsive">
-                           {% include 'sinistre_reglement_table.html' %}
+                            {% include 'sinistre_reglement_table.html' %}
+                        </div>
+                     </div>
+                  </div>
+                  <div class="tab-pane fade mt-3" id="encaissement_recours" role="tabpanel" aria-labelledby="encaissement_recours-tab">
+                     <div class="row">
+                        <div class="col-12 col-md-12 col-sm-12 table-responsive">
+                            {% include 'sinistre_encaissement_recours_table.html' %}
                         </div>
                      </div>
                   </div>
                   <div class="tab-pane fade mt-3" id="synthese" role="tabpanel" aria-labelledby="synthese-tab">
                      <div class="row">
                         <div class="col-12 col-md-12 col-sm-12 table-responsive">
+                            <h2 class="text-center">Intervenants</h2>
+                           <table id="table_intervenants_sinistre" style="width: 100%;" class="table table-bordered table-striped dataTable_ dtr-inline">
+                              <thead>
+                                 <tr>
+                                    <th>Nom & Prénoms</th>
+                                    <th>Type intervenant</th>
+                                    <th>Mont. recours</th>
+                                    <th>Règlements encaissés</th>
+                                    <th>Recours encaissés</th>
+                                    <th width="15%">Coût total</th>
+                                 </tr>
+                              </thead>
+                              <tbody>
+                                 {% for interv in intervenant_sinistres %}
+                                    <tr>
+                                       <td>{{ interv.intervenant.nom }} {{ interv.intervenant.prenoms }}</td>
+                                       <td>{{ interv.intervenant.type_intervenant.libelle }}</td>
+                                       <td>{{ interv.montant_recours|money_field }}</td>
+                                       <td>{{ interv.montant_provision_regle|money_field }}</td>
+                                       <td>{{ interv.montant_recours_regle|money_field }}</td>
+                                       <td>{{ interv.montant_garantie|money_field }}</td>
+                                    </tr>
+                                 {% endfor %}
+                              </tbody>
+                           </table>
+                        </div>
+                        <div class="col-12 col-md-12 col-sm-12 table-responsive">
+                            <h2 class="text-center">Garanties sinistrées</h2>
                            <table id="table_synthese_sinistre" style="width: 100%;" class="table table-bordered table-striped dataTable_ dtr-inline">
                               <thead>
                                  <tr>
@@ -411,9 +456,8 @@
                               </tbody>
                            </table>
                         </div>
-                        <br>
-                         <div class="col-md-4 col-sm-6 col-12">
-                           <div class="info-box shadow">
+                         <div class="col-md-4 col-sm-6 col-12 mt-5">
+                           <div class="info-box shadow-lg">
                              <span class="info-box-icon bg-success"><i class="fa fa-money"></i></span>
                              <div class="info-box-content">
                                <span class="info-box-text f-bold green">COÛT TOTAL DU SINISTRE</span>
@@ -421,7 +465,7 @@
                              </div>
                            </div>
                          </div>
-                         <div class="col-md-4 col-sm-6 col-12">
+                         <div class="col-md-4 col-sm-6 col-12 mt-5">
                            <div class="info-box shadow-lg">
                              <span class="info-box-icon bg-info"><i class="fas fa-piggy-bank"></i></span>
                              <div class="info-box-content">
@@ -430,7 +474,7 @@
                              </div>
                            </div>
                          </div>
-                         <div class="col-md-4 col-sm-6 col-12">
+                         <div class="col-md-4 col-sm-6 col-12 mt-5">
                            <div class="info-box shadow-lg">
                              <span class="info-box-icon bg-warning"><i class="fas fa-hand-holding-usd"></i></span>
                              <div class="info-box-content">

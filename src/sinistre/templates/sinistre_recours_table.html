@@ -22,12 +22,12 @@
       <thead>
          <tr>
             <th rowspan="2">Postes dommages</th>
-            {% for garantie_sin in garantie_sinistres %}
-               <th colspan="3" class="garantie-header text-center" data-garantie-id="{{ garantie_sin.garantie_id }}">{{ garantie_sin.garantie.nom }}</th>
+            {% for garantie_sin in garantie_recours %}
+               <th colspan="3" class="garantie-header text-center" data-garantie-id="{{ garantie_sin.garantie_id }}" style="background-color: {{ forloop.counter0|color_by_index }};">{{ garantie_sin.garantie.nom }}</th>
             {% endfor %}
          </tr>
          <tr>
-            {% for garantie_sin in garantie_sinistres %}
+            {% for garantie_sin in garantie_recours %}
                <th style="width: 100px;">Estimation</th>
                <th style="width: 100px;">Déjà réglé</th>
                <th style="width: 100px;">Recours</th>
@@ -37,19 +37,19 @@
       <tbody>
          {% for postedommage in poste_dommages %}
             <tr>
-               <td style="width:200px !important;" data-poste-dommage="{{ postedommage.libelle|lower }}">{{ postedommage.libelle|default_if_none:"" }}</td>
-               {% for garantie_sin in garantie_sinistres %}
-                  {% with vp=ventilations_dict|get_item:postedommage.id|get_item2:garantie_sin.garantie_id %}
+               <td style="width:200px !important;" data-sens="{{ postedommage.sens|lower }}">{{ postedommage.libelle|default_if_none:"" }}</td>
+               {% for garantie_sin in garantie_recours %}
+                  {% with vp=ventilations_dict_recours|get_item:postedommage.id|get_item2:garantie_sin.garantie_id %}
                      <td>
                         <input type="text" id="montant_recours_{{ postedommage.id }}_{{ garantie_sin.garantie_id }}"
                            name="montant_ventilation_recours[{{  postedommage.id }}][{{ garantie_sin.garantie_id }}][montant_recours]" class="form-control form-control-sm money_field calculs_montant_recours_garantie_sinistre"
-                           data-type="montant_recours" value=""
+                           data-type="montant_recours" value="{{ vp.montant_recours|default_if_none:'' }}"
                            onkeypress="isInputNumber(event)" oninput="formatMontant(this)">
                      </td>
                      <td>
                         <input type="text" id="montant_regle_recours_{{ postedommage.id }}_{{ garantie_sin.garantie_id }}"
                             name="montant_ventilation_recours[{{ postedommage.id }}][{{ garantie_sin.garantie_id }}][montant_regle_recours]" class="form-control form-control-sm money_field calculs_montant_recours_garantie_sinistre"
-                           data-type="montant_regle_recours" value=""
+                           data-type="montant_regle_recours" value="{{ vp.montant_regle|default_if_none:'' }}"
                            onkeypress="isInputNumber(event)" oninput="formatMontant(this)">
                      </td>
                      <td>
@@ -64,7 +64,7 @@
          {% endfor %}
          <tr style="background:#17A2B8; text-align:center; font-weight:bold; color:#fff">
             <td>Totaux</td>
-            {% for garantie_sin in garantie_sinistres %}
+            {% for garantie_sin in garantie_recours %}
                <td><input type="text" id="total_montant_recours_{{ garantie_sin.garantie_id }}" class="form-control form-control-sm money_field total_montant_recour border_total" value="" readonly></td>
                <td><input type="text" id="total_montant_regle_recours_{{ garantie_sin.garantie_id }}" class="form-control form-control-sm money_field total_montant_regle_recours border_total" value="" readonly></td>
                <td><input type="text" id="total_recours_{{ garantie_sin.garantie_id }}" class="form-control form-control-sm money_field total_recour border_total" value="" readonly></td>

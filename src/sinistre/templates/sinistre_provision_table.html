@@ -42,7 +42,7 @@
                   {% with vp=ventilations_dict_provision|get_item:postedommage.id|get_item2:garantie_sin.garantie_id %}
                      <td>
                         <input type="text" id="montant_provision_{{ postedommage.id }}_{{ garantie_sin.garantie_id }}"
-                           name="montant_ventilation_provisions[{{  postedommage.id }}][{{ garantie_sin.garantie_id }}][montant_provision]" class="form-control form-control-sm money_field calculs_montant_garantie_sinistre"
+                           name="montant_ventilation_provisions[{{  postedommage.id }}][{{ garantie_sin.garantie_id }}][montant_provision]" class="form-control form-control-sm money_field calculs_montant_garantie_sinistre {% if vp.total_reglement_provisions > 0 %} champ_grise {% endif %}"
                            data-type="montant_provision" value="{{ vp.montant_provision|default_if_none:'' }}"
                            onkeypress="isInputNumber(event)" oninput="formatMontant(this)">
                      </td>

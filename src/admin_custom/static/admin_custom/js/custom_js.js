@@ -21089,7 +21089,8 @@ $(document).ready(function () {
                        }
                    },
                    error: function (xhr, status, error) {
-                       console.error("Erreur AJAX (intervenants) :", error);
+                       console.log("Erreur AJAX (Intervenants) :");
+                       console.error(error);
                    }
                });
 
@@ -21115,11 +21116,21 @@ $(document).ready(function () {
 
                         // Afficher le bouton btn-cloture-garantie uniquement si row.sinistre_id existe
                         if (row.sinistre_id) {
-                            clotureButton = `
-                                <button class="btn btn-info btn-sm btn-cloture-garantie" type="button">
-                                    <i class="fas fa-archive"></i>
-                                </button>
-                            `;
+                            let montant = parseFloat(String(row.montant).replace(/\s/g, '').replace(',', '.')) || 0;
+
+                            if (montant > 0) {
+                                clotureButton = `
+                                    <button class="btn btn-info btn-sm btn-cloture-garantie" type="button" disabled>
+                                        <i class="fas fa-archive"></i>
+                                    </button>
+                                `;
+                            }else{
+                                clotureButton = `
+                                    <button class="btn btn-info btn-sm btn-cloture-garantie" type="button">
+                                        <i class="fas fa-archive"></i>
+                                    </button>
+                                `;
+                            }
                             // Ne pas afficher le bouton delete si sinistre_id existe
                             deleteButton = '';
                         }
@@ -21155,7 +21166,8 @@ $(document).ready(function () {
                         }
                     },
                     error: function (xhr, status, error) {
-                        console.error("Erreur AJAX (intervenants) :", error);
+                        console.log("Erreur AJAX (Garanties)");
+                        console.error(error);
                     }
                 });
 

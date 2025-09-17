@@ -19,8 +19,8 @@
    }
 </style>
 <div style="overflow-x: auto;">
-    <div class="row" style="background:#F2EFED; padding:10px; margin-bottom:15px; border-radius:25px; border:1px solid orange;">
-        <div class="col-md-6">
+    <div class="row" style="background:; padding:10px; margin-bottom:15px; border-radius:25px; border:1px solid orange;">
+        <div class="col-md-4">
             <div class="form-group">
                 <label>Intervenants <span class="required">*</span></label>
                <select class="form-control" name="encaiss_intervenant_id" id="encaiss_intervenant_id">
@@ -31,7 +31,18 @@
                </select>
             </div>
         </div>
-        <div class="col-md-6">
+        <div class="col-md-4">
+            <div class="form-group">
+                <label>Mode de règlement <span class="required">*</span></label>
+               <select class="form-control" name="mode_reglement_id" id="mode_reglement_id">
+                  <option value="">Choisir</option>
+                  {% for modereg in mode_reglements %}
+                     <option value="{{ modereg.id }}">{{ modereg.libelle }}</option>
+                  {% endfor %}
+               </select>
+            </div>
+        </div>
+        <div class="col-md-4">
             <div class="form-group">
                 <label>Date encaissement recours</label>
                <input type="date" class="form-control" name="date_encaissement_recours" id="date_encaissement_recours" autocomplete="off" value="{{ today|date:'Y-m-d' }}" max="{{ today|date:'Y-m-d' }}">

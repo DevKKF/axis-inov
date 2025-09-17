@@ -237,6 +237,15 @@ class SinistreGarantie(models.Model):
         sinistre_garantie = HistoriqueSinistreGarantie.objects.filter(sinistre_garantie_id=self.id).order_by('-created_at').first()
         return sinistre_garantie
 
+    @property
+    def sinistre_garantie_premier_historique(self):
+        return (
+            HistoriqueSinistreGarantie.objects
+            .filter(sinistre_garantie_id=self.id)
+            .order_by('created_at')  # ordre croissant
+            .first()
+        )
+
     class Meta:
         db_table = 'sinistre_garanties'
         verbose_name = 'Garantie liée à un sinistre'
@@ -250,6 +259,7 @@ class HistoriqueSinistreGarantie(models.Model):
     sinistre_garantie = models.ForeignKey(SinistreGarantie, on_delete=models.CASCADE, null=True)
     historique_sinistre = models.ForeignKey(HistoriqueSinistre, on_delete=models.CASCADE, null=True)
     mouvement = models.ForeignKey(Mouvement, on_delete=models.RESTRICT, null=True)
+    motif = models.ForeignKey(Motif, on_delete=models.RESTRICT, null=True)
 
     date_mouvement = models.DateField(null=True, blank=True)
 
@@ -270,31 +280,6 @@ class HistoriqueSinistreGarantie(models.Model):
         return f"{self.sinistre_garantie}"
 
 
-class VentilationRecour(models.Model):
-    montant_recours = models.DecimalField(max_digits=20, decimal_places=2, default=Decimal("0"), null=True, blank=True)
-    montant_regle = models.DecimalField(max_digits=20, decimal_places=2, default=Decimal("0"), null=True, blank=True)
-
-    sinistre = models.ForeignKey(Sinistre, null=True, blank=True, on_delete=models.RESTRICT, related_name='ventilation_recours')
-    garantie = models.ForeignKey(Garantie, null=True, blank=True, on_delete=models.RESTRICT, related_name='ventilation_recours')
-    poste_dommage = models.ForeignKey(PosteDommage, null=True, blank=True, on_delete=models.RESTRICT, related_name='ventilation_recours')
-
-    created_by = models.ForeignKey(User, related_name="ventilation_recour_created_by", null=True, on_delete=models.RESTRICT)
-    updated_by = models.ForeignKey(User, related_name="ventilation_recour_updated_by", null=True, on_delete=models.RESTRICT)
-    deleted_by = models.ForeignKey(User, related_name="ventilation_recour_deleted_by", null=True, on_delete=models.RESTRICT)
-
-    created_at = models.DateTimeField(auto_now_add=True, null=True)
-    updated_at = models.DateTimeField(null=True)
-    deleted_at = models.DateTimeField(null=True)
-
-    class Meta:
-        db_table = 'ventilation_recours'
-        verbose_name = 'Ventilation de recours'
-        verbose_name_plural = 'Ventilations de recours'
-
-    def __str__(self):
-        return f"Recours {self.montant_recours} / {self.sinistre}"
-
-
 class VentilationProvision(models.Model):
     montant_provision = models.DecimalField(max_digits=20, decimal_places=2, default=Decimal("0"), null=True, blank=True)
     montant_regle = models.DecimalField(max_digits=20, decimal_places=2, default=Decimal("0"), null=True, blank=True)
@@ -311,6 +296,10 @@ class VentilationProvision(models.Model):
     updated_at = models.DateTimeField(null=True)
     deleted_at = models.DateTimeField(null=True)
 
+    @property
+    def total_reglement_provisions(self):
+        return self.reglement_provisions.aggregate(total=Sum("montant_regle"))["total"] or 0
+
     class Meta:
         db_table = 'ventilation_provisions'
         verbose_name = 'Ventilation de provision'
@@ -322,7 +311,7 @@ class VentilationProvision(models.Model):
 
 class ReglementSinistre(models.Model):
     sinistre = models.ForeignKey(Sinistre, null=True, on_delete=models.RESTRICT)
-    ventilation_provision = models.ForeignKey(VentilationRecour, null=True, on_delete=models.RESTRICT)
+    ventilation_provision = models.ForeignKey(VentilationProvision, null=True, on_delete=models.RESTRICT, related_name="reglement_provisions")
     sinistre_intervenant = models.ForeignKey(SinistreIntervenant, null=True, on_delete=models.RESTRICT)
     mode_reglement = models.ForeignKey(ModeReglement, null=True, on_delete=models.RESTRICT)
     devise = models.ForeignKey(Devise, null=True, on_delete=models.CASCADE)
@@ -336,6 +325,53 @@ class ReglementSinistre(models.Model):
         db_table = 'reglement_sinistres'
         verbose_name = 'Règlement du sinistre'
         verbose_name_plural = 'Règlement du sinistre'
+
+
+class VentilationRecour(models.Model):
+    montant_recours = models.DecimalField(max_digits=20, decimal_places=2, default=Decimal("0"), null=True, blank=True)
+    montant_regle = models.DecimalField(max_digits=20, decimal_places=2, default=Decimal("0"), null=True, blank=True)
+
+    sinistre = models.ForeignKey(Sinistre, null=True, blank=True, on_delete=models.RESTRICT, related_name='ventilation_recours')
+    garantie = models.ForeignKey(Garantie, null=True, blank=True, on_delete=models.RESTRICT, related_name='ventilation_recours')
+    poste_dommage = models.ForeignKey(PosteDommage, null=True, blank=True, on_delete=models.RESTRICT, related_name='ventilation_recours')
+
+    created_by = models.ForeignKey(User, related_name="ventilation_recour_created_by", null=True, on_delete=models.RESTRICT)
+    updated_by = models.ForeignKey(User, related_name="ventilation_recour_updated_by", null=True, on_delete=models.RESTRICT)
+    deleted_by = models.ForeignKey(User, related_name="ventilation_recour_deleted_by", null=True, on_delete=models.RESTRICT)
+
+    created_at = models.DateTimeField(auto_now_add=True, null=True)
+    updated_at = models.DateTimeField(null=True)
+    deleted_at = models.DateTimeField(null=True)
+
+    @property
+    def total_reglement_recours(self):
+        return self.reglement_recours.aggregate(total=Sum("montant_regle"))["total"] or 0
+
+    class Meta:
+        db_table = 'ventilation_recours'
+        verbose_name = 'Ventilation de recours'
+        verbose_name_plural = 'Ventilations de recours'
+
+    def __str__(self):
+        return f"Recours {self.montant_recours} / {self.sinistre}"
+
+
+class EncaissementRecours(models.Model):
+    sinistre = models.ForeignKey(Sinistre, null=True, on_delete=models.RESTRICT)
+    ventilation_recours = models.ForeignKey(VentilationRecour, null=True, on_delete=models.RESTRICT, related_name="reglement_recours")
+    sinistre_intervenant = models.ForeignKey(SinistreIntervenant, null=True, on_delete=models.RESTRICT)
+    mode_reglement = models.ForeignKey(ModeReglement, null=True, on_delete=models.RESTRICT)
+    devise = models.ForeignKey(Devise, null=True, on_delete=models.CASCADE)
+    montant_regle = models.BigIntegerField(null=True)
+    date_reglement = models.DateTimeField(null=True)
+    created_by = models.ForeignKey(User, null=True, on_delete=models.RESTRICT)
+    updated_at = models.DateTimeField(auto_now=True)
+    deleted_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'encaissement_recours'
+        verbose_name = 'Encaissements recours'
+        verbose_name_plural = 'Encaissements recours'
 
 
 class MouvementSinistre(models.Model):

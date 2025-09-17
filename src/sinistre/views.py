@@ -49,7 +49,7 @@ from uuid import uuid4
 import uuid
 
 from configurations.helper_config import execute_query
-from configurations.models import Compagnie, User, Rubrique, \
+from configurations.models import Compagnie, User, Rubrique, ModeReglement, \
     TypePriseencharge, Pays, TypeIntervenant, TauxResponsabilite, TypeSinistre, Circonstance, Garantie, GarantieCirconstance, PosteDommage, \
     PeriodeComptable, TypeRemboursement, ModeCreation, TypePrefinancement
 from production.models import Statut, TypeDocument, Client
@@ -945,6 +945,7 @@ def add_sinistre_gestionnaire(request):
                         sinistre_garantie=garantie_sinistre_created,
                         historique_sinistre=historique_sinistre,
                         mouvement=Mouvement.objects.get(code=mouvement_id),
+                        motif=Motif.objects.get(code=motif_mouvement_id),
                         date_mouvement=today,
                         created_by=request.user,
                     )
@@ -1633,6 +1634,7 @@ def mouvement_sinistre(request, sinistre_id, motif_id):
         typesinistres = TypeSinistre.objects.filter(statut=1).order_by('libelle')
         typeintervenants = TypeIntervenant.objects.filter(statut=1).order_by('libelle')
         typedocuments = TypeDocument.objects.filter(is_sinistre=1).order_by('libelle')
+        mode_reglements = ModeReglement.objects.order_by('libelle')
         responsabilites = TauxResponsabilite.objects.filter(statut=1)
         circonstances = Circonstance.objects.filter(statut=1, branche_id=police.produit.branche_id).order_by('libelle')
         intervenant_sinistres = SinistreIntervenant.objects.filter(sinistre_id=sinistre.id)
@@ -1690,6 +1692,7 @@ def mouvement_sinistre(request, sinistre_id, motif_id):
             'typeintervenants': typeintervenants,
             'typedocuments': typedocuments,
             'responsabilites': responsabilites,
+            'mode_reglements': mode_reglements,
             'circonstances': circonstances,
             'pays': pays,
             'mouvements': mouvements,
@@ -1771,6 +1774,14 @@ def recuperer_garantie_sinistre(request):
         garanties_existantes = list(request.session.get('garanties', []))
 
         for nouvelle_garan in sinistre_garanties:
+            montant = (
+                    nouvelle_garan.montant_provision
+                    or nouvelle_garan.montant_provision_regle
+                    or nouvelle_garan.montant_recours
+                    or nouvelle_garan.montant_recours_regle
+                    or 0
+            )
+
             nouvelle_garantie = {
                 'id': f'{nouvelle_garan.garantie_id}',
                 'sinistre_id': sinistre_id,
@@ -1778,7 +1789,8 @@ def recuperer_garantie_sinistre(request):
                 'nom': nouvelle_garan.garantie.nom,
                 'franchise': money_field(nouvelle_garan.franchise),
                 'capital': money_field(nouvelle_garan.capital),
-                'mouvement': nouvelle_garan.sinistre_garantie_dernier_historique.mouvement.libelle,
+                'montant': money_field(montant),
+                'mouvement': nouvelle_garan.sinistre_garantie_premier_historique.motif.libelle,
                 'date_ajout': nouvelle_garan.created_at.strftime('%Y-%m-%d'),
                 'action_mouvement': "Aucun"
             }
@@ -1788,7 +1800,7 @@ def recuperer_garantie_sinistre(request):
             request.session.modified = True
 
         garanties_existantes = list(request.session.get('garanties', []))
-        print(garanties_existantes)
+
         return JsonResponse({
             'success': True,
             'message': "Ajout de garantie effectué avec succès !",
@@ -2005,6 +2017,7 @@ def update_sinistre_gestionnaire(request, sinistre_id):
                             sinistre_garantie=garantie_obj,
                             historique_sinistre=historique_sinistre,
                             mouvement=mouvement_obj,
+                            motif=Motif.objects.get(id=motif_mouvement_id),
                             date_mouvement=today,
                             created_by=request.user,
                         )
@@ -2032,6 +2045,7 @@ def update_sinistre_gestionnaire(request, sinistre_id):
                             sinistre_garantie=garantie_obj,
                             historique_sinistre=historique_sinistre,
                             mouvement=mouvement_obj,
+                            motif=Motif.objects.get(id=motif_mouvement_id),
                             date_mouvement=today,
                             created_by=request.user,
                         )
@@ -2135,7 +2149,7 @@ def update_sinistre_gestionnaire(request, sinistre_id):
 
                         # Mise à jour du montant_provision de la garantie concernée par la ventilation provision
                         garantie = SinistreGarantie.objects.filter(garantie_id=garantie_id, sinistre_id=sinistre.id).first()
-                        garantie.montant_provision = montant_provision if montant_provision > 0 else None
+                        garantie.montant_provision = montant_provision
                         garantie.save()
 
             ventilations_rec_struct = {}
@@ -2180,8 +2194,7 @@ def update_sinistre_gestionnaire(request, sinistre_id):
                         )
 
                         # Mise à jour du montant_recours de la garantie concernée par la ventilation provision
-                        garantie = SinistreGarantie.objects.filter(garantie_id=garantie_id,
-                                                                   sinistre_id=sinistre.id).first()
+                        garantie = SinistreGarantie.objects.filter(garantie_id=garantie_id, sinistre_id=sinistre.id).first()
                         garantie.montant_recours = montant_recours if montant_recours > 0 else None
                         garantie.save()
 

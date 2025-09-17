@@ -19,68 +19,72 @@
    }
 </style>
 <div style="overflow-x: auto;">
-    <div class="row" style="background:; padding:10px; margin-bottom:15px; border-radius:25px; border:1px solid orange;">
-        <div class="col-md-4">
-            <div class="form-group">
-                <label>Intervenants <span class="required">*</span></label>
-               <select class="form-control" name="encaiss_intervenant_id" id="encaiss_intervenant_id">
-                  <option value="">Choisir</option>
-                  {% for interv in intervenant_sinistres %}
-                     <option value="{{ circonstance.id }}">{{ interv.intervenant.nom }} {{ interv.intervenant.prenoms }}</option>
-                  {% endfor %}
-               </select>
+    {% if ventilations_dict_recours|length > 0 %}
+        <div class="row" style="background:; padding:10px; margin-bottom:15px; border-radius:25px; border:1px solid orange;">
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label>Intervenants <span class="required">*</span></label>
+                   <select class="form-control" name="encaiss_intervenant_id" id="encaiss_intervenant_id">
+                      <option value="">Choisir</option>
+                      {% for interv in intervenant_sinistres %}
+                         <option value="{{ circonstance.id }}">{{ interv.intervenant.nom }} {{ interv.intervenant.prenoms }}</option>
+                      {% endfor %}
+                   </select>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label>Mode de règlement <span class="required">*</span></label>
+                   <select class="form-control" name="mode_reglement_id" id="mode_reglement_id">
+                      <option value="">Choisir</option>
+                      {% for modereg in mode_reglements %}
+                         <option value="{{ modereg.id }}">{{ modereg.libelle }}</option>
+                      {% endfor %}
+                   </select>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label>Date encaissement recours</label>
+                   <input type="date" class="form-control" name="date_encaissement_recours" id="date_encaissement_recours" autocomplete="off" value="{{ today|date:'Y-m-d' }}" max="{{ today|date:'Y-m-d' }}">
+                </div>
             </div>
         </div>
-        <div class="col-md-4">
-            <div class="form-group">
-                <label>Mode de règlement <span class="required">*</span></label>
-               <select class="form-control" name="mode_reglement_id" id="mode_reglement_id">
-                  <option value="">Choisir</option>
-                  {% for modereg in mode_reglements %}
-                     <option value="{{ modereg.id }}">{{ modereg.libelle }}</option>
-                  {% endfor %}
-               </select>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="form-group">
-                <label>Date encaissement recours</label>
-               <input type="date" class="form-control" name="date_encaissement_recours" id="date_encaissement_recours" autocomplete="off" value="{{ today|date:'Y-m-d' }}" max="{{ today|date:'Y-m-d' }}">
-            </div>
-        </div>
-    </div>
-   <table id="table_montant_encaissement_recours_sinistre" style="width:100%;" class="table table-bordered table-striped dtr-inline">
-      <thead>
-         <tr>
-            <th rowspan="2">Postes dommages</th>
-            {% for garantie_sin in garantie_recours %}
-                <th class="garantie-header text-center" data-garantie-id="{{ garantie_sin.garantie_id }}" style="background-color: {{ forloop.counter0|color_by_index }};">{{ garantie_sin.garantie.nom }}</th>
-            {% endfor %}
-         </tr>
-      </thead>
-      <tbody>
-         {% for postedommage in poste_dommages %}
+        <table id="table_montant_encaissement_recours_sinistre" style="width:100%;" class="table table-bordered table-striped dtr-inline">
+          <thead>
              <tr>
-                <td style="width:200px !important;" data-sens="{{ postedommage.sens|lower }}">{{ postedommage.libelle|default_if_none:"" }}</td>
+                <th rowspan="2">Postes dommages</th>
                 {% for garantie_sin in garantie_recours %}
-                    <td>
-                        <input type="text" id="montant_encaissement_recour_{{ postedommage.id }}_{{ garantie_sin.garantie_id }}"
-                            name="montant_encaissement_recours[{{ postedommage.id }}][{{ garantie_sin.garantie_id }}][montant_encaissement_recour]" class="form-control form-control-sm money_field calculs_montant_encaissement_recour"
-                           data-type="montant_encaissement_recour" value=""
-                           onkeypress="isInputNumber(event)" oninput="formatMontant(this)">
-                     </td>
+                    <th class="garantie-header text-center" data-garantie-id="{{ garantie_sin.garantie_id }}" style="background-color: {{ forloop.counter0|color_by_index }};">{{ garantie_sin.garantie.nom }}</th>
                 {% endfor %}
              </tr>
-         {% endfor %}
-         <tr style="background:#17A2B8; text-align:center; font-weight:bold; color:#fff">
-            <td>Totaux</td>
-             {% for garantie_sin in garantie_recours %}
-               <td><input type="text" id="total_montant_encaissement_recour_{{ garantie_sin.garantie_id }}" class="form-control form-control-sm money_field total_montant_encaissement_recour border_total" value="" readonly></td>
-            {% endfor %}
-         </tr>
-      </tbody>
-   </table>
-   <blockquote class="text-italic" style="border-radius:15px; border:2px solid red"><i class="fa fa-question-circle"></i> Si aucun intervenant n'est sélectionné et aucun montant à encaisser n'est saisi, alors aucun enregistrement d'encaissement de recours ne sera fait lors de ce mouvement.</blockquote>
+          </thead>
+          <tbody>
+             {% for postedommage in poste_dommages %}
+                 <tr>
+                    <td style="width:200px !important;" data-sens="{{ postedommage.sens|lower }}">{{ postedommage.libelle|default_if_none:"" }}</td>
+                    {% for garantie_sin in garantie_recours %}
+                        <td>
+                            <input type="text" id="montant_encaissement_recour_{{ postedommage.id }}_{{ garantie_sin.garantie_id }}"
+                                name="montant_encaissement_recours[{{ postedommage.id }}][{{ garantie_sin.garantie_id }}][montant_encaissement_recour]" class="form-control form-control-sm money_field calculs_montant_encaissement_recour"
+                               data-type="montant_encaissement_recour" value=""
+                               onkeypress="isInputNumber(event)" oninput="formatMontant(this)">
+                         </td>
+                    {% endfor %}
+                 </tr>
+             {% endfor %}
+             <tr style="background:#17A2B8; text-align:center; font-weight:bold; color:#fff">
+                <td>Totaux</td>
+                 {% for garantie_sin in garantie_recours %}
+                   <td><input type="text" id="total_montant_encaissement_recour_{{ garantie_sin.garantie_id }}" class="form-control form-control-sm money_field total_montant_encaissement_recour border_total" value="" readonly></td>
+                {% endfor %}
+             </tr>
+          </tbody>
+        </table>
+        <blockquote class="text-italic" style="border-radius:15px; border:2px solid red"><i class="fa fa-question-circle"></i> Si aucun intervenant n'est sélectionné et aucun montant à encaisser n'est saisi, alors aucun enregistrement d'encaissement de recours ne sera fait lors de ce mouvement.</blockquote>
+    {% else %}
+        <blockquote class="text-italic" style="border-radius:15px; border:2px solid red"><i class="fa fa-question-circle"></i> Aucun recours disponible.</blockquote>
+    {% endif %}
 </div>
 <script>
    // Fonction pour formater les montant_encaissement_recours (supposée existante)

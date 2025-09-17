@@ -19,68 +19,72 @@
    }
 </style>
 <div style="overflow-x: auto;">
-    <div class="row" style="background:#F2EFED; padding:10px; margin-bottom:15px; border-radius:25px; border:1px solid #218838;">
-        <div class="col-md-4">
-            <div class="form-group">
-                <label>Intervenants <span class="required">*</span></label>
-               <select class="form-control" name="reg_intervenant_id" id="reg_intervenant_id">
-                  <option value="">Choisir</option>
-                  {% for interv in intervenant_sinistres %}
-                     <option value="{{ circonstance.id }}">{{ interv.intervenant.nom }} {{ interv.intervenant.prenoms }}</option>
-                  {% endfor %}
-               </select>
+    {% if ventilations_dict_provision|length > 0 %}
+        <div class="row" style="background:#F2EFED; padding:10px; margin-bottom:15px; border-radius:25px; border:1px solid #218838;">
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label>Intervenants <span class="required">*</span></label>
+                   <select class="form-control" name="reg_intervenant_id" id="reg_intervenant_id">
+                      <option value="">Choisir</option>
+                      {% for interv in intervenant_sinistres %}
+                         <option value="{{ circonstance.id }}">{{ interv.intervenant.nom }} {{ interv.intervenant.prenoms }}</option>
+                      {% endfor %}
+                   </select>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label>Mode de règlement <span class="required">*</span></label>
+                   <select class="form-control" name="mode_reglement_id" id="mode_reglement_id">
+                      <option value="">Choisir</option>
+                      {% for modereg in mode_reglements %}
+                         <option value="{{ modereg.id }}">{{ modereg.libelle }}</option>
+                      {% endfor %}
+                   </select>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label>Date règlement</label>
+                   <input type="date" class="form-control" name="date_reglement" id="date_reglement" autocomplete="off" value="{{ today|date:'Y-m-d' }}" max="{{ today|date:'Y-m-d' }}">
+                </div>
             </div>
         </div>
-        <div class="col-md-4">
-            <div class="form-group">
-                <label>Mode de règlement <span class="required">*</span></label>
-               <select class="form-control" name="mode_reglement_id" id="mode_reglement_id">
-                  <option value="">Choisir</option>
-                  {% for modereg in mode_reglements %}
-                     <option value="{{ modereg.id }}">{{ modereg.libelle }}</option>
-                  {% endfor %}
-               </select>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="form-group">
-                <label>Date règlement</label>
-               <input type="date" class="form-control" name="date_reglement" id="date_reglement" autocomplete="off" value="{{ today|date:'Y-m-d' }}" max="{{ today|date:'Y-m-d' }}">
-            </div>
-        </div>
-    </div>
-   <table id="table_montant_reglements_sinistre" style="width:100%;" class="table table-bordered table-striped dtr-inline">
-      <thead>
-         <tr>
-            <th rowspan="2">Postes dommages</th>
-            {% for garantie_sin in garantie_sinistres %}
-                <th class="garantie-header text-center" data-garantie-id="{{ garantie_sin.garantie_id }}" style="background-color: {{ forloop.counter0|color_by_index }};">{{ garantie_sin.garantie.nom }}</th>
-            {% endfor %}
-         </tr>
-      </thead>
-      <tbody>
-         {% for postedommage in poste_dommages %}
+        <table id="table_montant_reglements_sinistre" style="width:100%;" class="table table-bordered table-striped dtr-inline">
+          <thead>
              <tr>
-                <td style="width:200px !important;" data-sens="{{ postedommage.sens|lower }}">{{ postedommage.libelle|default_if_none:"" }}</td>
+                <th rowspan="2">Postes dommages</th>
                 {% for garantie_sin in garantie_sinistres %}
-                    <td>
-                        <input type="text" id="montant_reglement_{{ postedommage.id }}_{{ garantie_sin.garantie_id }}"
-                            name="montant_reglements[{{ postedommage.id }}][{{ garantie_sin.garantie_id }}][montant_reglement]" class="form-control form-control-sm money_field calculs_montant_reglement"
-                           data-type="montant_reglement" value=""
-                           onkeypress="isInputNumber(event)" oninput="formatMontant(this)">
-                     </td>
+                    <th class="garantie-header text-center" data-garantie-id="{{ garantie_sin.garantie_id }}" style="background-color: {{ forloop.counter0|color_by_index }};">{{ garantie_sin.garantie.nom }}</th>
                 {% endfor %}
              </tr>
-         {% endfor %}
-         <tr style="background:#17A2B8; text-align:center; font-weight:bold; color:#fff">
-            <td>Totaux</td>
-             {% for garantie_sin in garantie_sinistres %}
-               <td><input type="text" id="total_montant_reglement_{{ garantie_sin.garantie_id }}" class="form-control form-control-sm money_field total_montant_reglement border_total" value="" readonly></td>
-            {% endfor %}
-         </tr>
-      </tbody>
-   </table>
-   <blockquote class="text-italic" style="border-radius:15px; border:2px solid #218838"><i class="fa fa-question-circle"></i> Si aucun intervenant n'est sélectionné et aucun montant à régler n'est saisi, alors aucun enregistrement de règlement ne sera fait lors de ce mouvement.</blockquote>
+          </thead>
+          <tbody>
+             {% for postedommage in poste_dommages %}
+                 <tr>
+                    <td style="width:200px !important;" data-sens="{{ postedommage.sens|lower }}">{{ postedommage.libelle|default_if_none:"" }}</td>
+                    {% for garantie_sin in garantie_sinistres %}
+                        <td>
+                            <input type="text" id="montant_reglement_{{ postedommage.id }}_{{ garantie_sin.garantie_id }}"
+                                name="montant_reglements[{{ postedommage.id }}][{{ garantie_sin.garantie_id }}][montant_reglement]" class="form-control form-control-sm money_field calculs_montant_reglement"
+                               data-type="montant_reglement" value=""
+                               onkeypress="isInputNumber(event)" oninput="formatMontant(this)">
+                         </td>
+                    {% endfor %}
+                 </tr>
+             {% endfor %}
+             <tr style="background:#17A2B8; text-align:center; font-weight:bold; color:#fff">
+                <td>Totaux</td>
+                 {% for garantie_sin in garantie_sinistres %}
+                   <td><input type="text" id="total_montant_reglement_{{ garantie_sin.garantie_id }}" class="form-control form-control-sm money_field total_montant_reglement border_total" value="" readonly></td>
+                {% endfor %}
+             </tr>
+          </tbody>
+        </table>
+        <blockquote class="text-italic" style="border-radius:15px; border:2px solid #218838"><i class="fa fa-question-circle"></i> Si aucun intervenant n'est sélectionné et aucun montant à régler n'est saisi, alors aucun enregistrement de règlement ne sera fait lors de ce mouvement.</blockquote>
+    {% else %}
+        <blockquote class="text-italic" style="border-radius:15px; border:2px solid #218838"><i class="fa fa-question-circle"></i> Aucun provision disponible.</blockquote>
+    {% endif %}
 </div>
 <script>
    // Fonction pour formater les montant_reglements (supposée existante)

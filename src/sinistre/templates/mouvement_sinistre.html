@@ -154,14 +154,14 @@
          <div class="card">
             <ul class="nav nav-tabs" id="myTab" role="tablist">
                <li class="nav-item"><a class="nav-link active" id="generalite-tab" data-toggle="tab" href="#generalite" role="tab" aria-controls="generalite" aria-selected="true">{{_("GENERALITE")}}</a></li>
+               <li class="nav-item"><a class="nav-link" id="provisions-tab" data-toggle="tab" href="#provisions" role="tab" aria-controls="provisions" aria-selected="false">{{_("PROVISIONS")}}</a></li>
                <li class="nav-item"><a class="nav-link" id="garantie_sinistres-tab" data-toggle="tab" href="#garantie_sinistres" role="tab" aria-controls="garantie_sinistres" aria-selected="false">{{_("GARANTIES SINISTRES")}}</a></li>
                <li class="nav-item"><a class="nav-link" id="intervenants-tab" data-toggle="tab" href="#intervenants" role="tab" aria-controls="intervenants" aria-selected="false">{{_("INTERVENANTS")}}</a></li>
-               <li class="nav-item"><a class="nav-link" id="provisions-tab" data-toggle="tab" href="#provisions" role="tab" aria-controls="provisions" aria-selected="false">{{_("PROVISIONS")}}</a></li>
-               {% if sinistre.taux_responsabilite.libelle == "100%" and sinistre.recours_possible == True %}
+               {% if sinistre.taux_responsabilite.libelle == "100%" and sinistre.recours_possible == True and garantie_recours|length > 0 %}
                     <li class="nav-item"><a class="nav-link" id="recours-tab" data-toggle="tab" href="#recours" role="tab" aria-controls="recours" aria-selected="false">{{_("RECOURS")}}</a></li>
                {% endif %}
                <li class="nav-item"><a class="nav-link" id="reglements-tab" data-toggle="tab" href="#reglements" role="tab" aria-controls="reglements" aria-selected="false">{{_("REGLEMENTS")}}</a></li>
-               {% if sinistre.taux_responsabilite.libelle == "100%" and sinistre.recours_possible == True %}
+               {% if sinistre.taux_responsabilite.libelle == "100%" and sinistre.recours_possible == True and garantie_recours|length > 0 %}
                     <li class="nav-item"><a class="nav-link" id="encaissement_recours-tab" data-toggle="tab" href="#encaissement_recours" role="tab" aria-controls="encaissement_recours" aria-selected="false">{{_("ENCAISEMENTS RECOURS")}}</a></li>
                {% endif %}
                <li class="nav-item"><a class="nav-link" id="synthese-tab" data-toggle="tab" href="#synthese" role="tab" aria-controls="synthese" aria-selected="false">{{_("SYNTHESE")}}</a></li>
@@ -330,6 +330,13 @@
                         </div>
                      </div>
                   </div>
+                  <div class="tab-pane fade mt-3" id="provisions" role="tabpanel" aria-labelledby="provisions-tab">
+                     <div class="row">
+                        <div class="col-12 col-md-12 col-sm-12 table-responsive">
+                           {% include 'sinistre_provision_table.html' %}
+                        </div>
+                     </div>
+                  </div>
                   <div class="tab-pane fade mt-3" id="garantie_sinistres" role="tabpanel" aria-labelledby="garantie_sinistres-tab">
                      <div class="row">
                         <div class="col-12 col-md-12 col-sm-12" id="test_garantie_sinistre">
@@ -369,13 +376,6 @@
                               </thead>
                               <tbody></tbody>
                            </table>
-                        </div>
-                     </div>
-                  </div>
-                  <div class="tab-pane fade mt-3" id="provisions" role="tabpanel" aria-labelledby="provisions-tab">
-                     <div class="row">
-                        <div class="col-12 col-md-12 col-sm-12 table-responsive">
-                           {% include 'sinistre_provision_table.html' %}
                         </div>
                      </div>
                   </div>

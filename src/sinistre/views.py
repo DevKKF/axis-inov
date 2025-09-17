@@ -770,7 +770,7 @@ def add_sinistre_gestionnaire(request):
                 intervalle = timedelta(days=4 * 30)  # 4 mois
             else:
                 intervalle = 0
-
+            print('fractionnement_code : ', fractionnement_code)
             date_survenance_conv = datetime.strptime(date_survenance, "%Y-%m-%d")
             date_recherche_debut = ''
             if isinstance(intervalle, int):
@@ -778,17 +778,28 @@ def add_sinistre_gestionnaire(request):
             elif isinstance(intervalle, timedelta):
                 date_recherche_debut = date_survenance_conv - intervalle
 
-            date_debut = date_recherche_debut
+            date_debut = date_recherche_debut if fractionnement_code else police.date_debut_effet
             date_fin = datetime.strptime(date_survenance, "%Y-%m-%d")
+
+            periodes = PeriodeCouverture.objects.filter(police_id=police.id)
+            for periode in periodes:
+                print(f'période date début : {periode.date_debut_effet}')
+                print(f'période date fin : {periode.date_fin_effet}')
 
             print(f'date début : {date_debut}')
             print(f'date fin : {date_fin}')
 
             # Construire la requête avec les nouvelles contraintes de date
-            q_filter = Q(
+            """q_filter = Q(
                 police_id=police.id,
                 date_debut_effet__lte=date_fin,
                 date_fin_effet__gte=date_debut
+            )"""
+            q_filter = Q(
+                police_id=police.id,
+                date_debut_effet__lte=date_fin,
+            ) & (
+               Q(date_fin_effet__gte=date_debut) | Q(date_fin_effet__isnull=True)
             )
 
             # Rechercher une période de couverture correspondante
@@ -954,9 +965,15 @@ def add_sinistre_gestionnaire(request):
                     garantie_sinistre_created.historique_sinistre_garantie = historique_garantie_sinistre_created
                     garantie_sinistre_created.save()
 
+                mouvement_return = Mouvement.objects.get(code=mouvement_id)
+                motif_return = Motif.objects.get(code=motif_mouvement_id)
+                print('mouvement_id : ', mouvement_return.id)
+                print('motif_id : ', motif_return.id)
+
                 return JsonResponse({
                     'statut': 1,
                     'message': "Sinistre enregistré avec succès !",
+                    'url_return': reverse('mouvement_sinistre', args=[sinistre.id, motif_return.id])
                 })
             else:
                 return JsonResponse({
@@ -1370,7 +1387,6 @@ class DetailsDossierSinistreView_v1(TemplateView):
         sinistre = Sinistre.objects.filter(id=sinistre_id)
 
         if sinistre:
-            print(f"Sinistre ID: {sinistre_id}")
             context = self.get_context_data(**kwargs)
             context['sinistre'] = sinistre
 

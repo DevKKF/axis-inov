@@ -18,60 +18,64 @@
    }
 </style>
 <div style="overflow-x: auto;">
-   <table id="table_provision_sinistre" style="width:100%;" class="table table-bordered table-striped dtr-inline">
-      <thead>
-         <tr>
-            <th rowspan="2">Postes dommages</th>
-            {% for garantie_sin in garantie_sinistres %}
-               <th colspan="3" class="garantie-header text-center" data-garantie-id="{{ garantie_sin.garantie_id }}" style="background-color: {{ forloop.counter0|color_by_index }};">{{ garantie_sin.garantie.nom }}</th>
-            {% endfor %}
-         </tr>
-         <tr>
-            {% for garantie_sin in garantie_sinistres %}
-               <th style="width: 100px;">Estimation</th>
-               <th style="width: 100px;">Déjà réglé</th>
-               <th style="width: 100px;">Provision</th>
-            {% endfor %}
-         </tr>
-      </thead>
-      <tbody>
-         {% for postedommage in poste_dommages %}
-            <tr>
-               <td style="width:200px !important;" data-sens="{{ postedommage.sens|lower }}">{{ postedommage.libelle|default_if_none:"" }}</td>
-               {% for garantie_sin in garantie_sinistres %}
-                  {% with vp=ventilations_dict_provision|get_item:postedommage.id|get_item2:garantie_sin.garantie_id %}
-                     <td>
-                        <input type="text" id="montant_provision_{{ postedommage.id }}_{{ garantie_sin.garantie_id }}"
-                           name="montant_ventilation_provisions[{{  postedommage.id }}][{{ garantie_sin.garantie_id }}][montant_provision]" class="form-control form-control-sm money_field calculs_montant_garantie_sinistre {% if vp.total_reglement_provisions > 0 %} champ_grise {% endif %}"
-                           data-type="montant_provision" value="{{ vp.montant_provision|default_if_none:'' }}"
-                           onkeypress="isInputNumber(event)" oninput="formatMontant(this)">
-                     </td>
-                     <td>
-                        <input type="text" id="montant_regle_{{ postedommage.id }}_{{ garantie_sin.garantie_id }}"
-                            name="montant_ventilation_provisions[{{ postedommage.id }}][{{ garantie_sin.garantie_id }}][montant_regle]" class="form-control form-control-sm money_field calculs_montant_garantie_sinistre"
-                           data-type="montant_regle" value=""
-                           onkeypress="isInputNumber(event)" oninput="formatMontant(this)">
-                     </td>
-                     <td>
-                        <input type="text" id="provisionne_{{ postedommage.id }}_{{ garantie_sin.garantie_id }}"
-                            name="montant_ventilation_provisions[{{ postedommage.id }}][{{ garantie_sin.garantie_id }}][provisionne]" class="form-control form-control-sm money_field calculs_montant_garantie_sinistre champ_grise"
-                           data-type="provisionne" value="{{ vp.montant_regle|default_if_none:'' }}"
-                           onkeypress="isInputNumber(event)" oninput="formatMontant(this)" readonly>
-                     </td>
-                  {% endwith %}
-               {% endfor %}
-            </tr>
-         {% endfor %}
-         <tr style="background:#17A2B8; text-align:center; font-weight:bold; color:#fff">
-            <td>Totaux</td>
-            {% for garantie_sin in garantie_sinistres %}
-               <td><input type="text" id="total_montant_provision_{{ garantie_sin.garantie_id }}" class="form-control form-control-sm money_field total_montant_provision border_total" value="" readonly></td>
-               <td><input type="text" id="total_montant_regle_{{ garantie_sin.garantie_id }}" class="form-control form-control-sm money_field total_montant_regle border_total" value="" readonly></td>
-               <td><input type="text" id="total_provisionne_{{ garantie_sin.garantie_id }}" class="form-control form-control-sm money_field total_provisionne border_total" value="" readonly></td>
-            {% endfor %}
-         </tr>
-      </tbody>
-   </table>
+    {% if garantie_sinistres|length > 0 %}
+        <table id="table_provision_sinistre" style="width:100%;" class="table table-bordered table-striped dtr-inline">
+          <thead>
+             <tr>
+                <th rowspan="2">Postes dommages</th>
+                {% for garantie_sin in garantie_sinistres %}
+                   <th colspan="3" class="garantie-header text-center" data-garantie-id="{{ garantie_sin.garantie_id }}" style="background-color: {{ forloop.counter0|color_by_index }};">{{ garantie_sin.garantie.nom }}</th>
+                {% endfor %}
+             </tr>
+             <tr>
+                {% for garantie_sin in garantie_sinistres %}
+                   <th style="width: 100px;">Estimation</th>
+                   <th style="width: 100px;">Déjà réglé</th>
+                   <th style="width: 100px;">Provision</th>
+                {% endfor %}
+             </tr>
+          </thead>
+          <tbody>
+             {% for postedommage in poste_dommages %}
+                <tr>
+                   <td style="width:200px !important;" data-sens="{{ postedommage.sens|lower }}">{{ postedommage.libelle|default_if_none:"" }}</td>
+                   {% for garantie_sin in garantie_sinistres %}
+                      {% with vp=ventilations_dict_provision|get_item:postedommage.id|get_item2:garantie_sin.garantie_id %}
+                         <td>
+                            <input type="text" id="montant_provision_{{ postedommage.id }}_{{ garantie_sin.garantie_id }}"
+                               name="montant_ventilation_provisions[{{  postedommage.id }}][{{ garantie_sin.garantie_id }}][montant_provision]" class="form-control form-control-sm money_field calculs_montant_garantie_sinistre {% if vp.total_reglement_provisions > 0 %} champ_grise {% endif %}"
+                               data-type="montant_provision" value="{{ vp.montant_provision|default_if_none:'' }}"
+                               onkeypress="isInputNumber(event)" oninput="formatMontant(this)">
+                         </td>
+                         <td>
+                            <input type="text" id="montant_regle_{{ postedommage.id }}_{{ garantie_sin.garantie_id }}"
+                                name="montant_ventilation_provisions[{{ postedommage.id }}][{{ garantie_sin.garantie_id }}][montant_regle]" class="form-control form-control-sm money_field calculs_montant_garantie_sinistre"
+                               data-type="montant_regle" value=""
+                               onkeypress="isInputNumber(event)" oninput="formatMontant(this)">
+                         </td>
+                         <td>
+                            <input type="text" id="provisionne_{{ postedommage.id }}_{{ garantie_sin.garantie_id }}"
+                                name="montant_ventilation_provisions[{{ postedommage.id }}][{{ garantie_sin.garantie_id }}][provisionne]" class="form-control form-control-sm money_field calculs_montant_garantie_sinistre champ_grise"
+                               data-type="provisionne" value="{{ vp.montant_regle|default_if_none:'' }}"
+                               onkeypress="isInputNumber(event)" oninput="formatMontant(this)" readonly>
+                         </td>
+                      {% endwith %}
+                   {% endfor %}
+                </tr>
+             {% endfor %}
+             <tr style="background:#17A2B8; text-align:center; font-weight:bold; color:#fff">
+                <td>Totaux</td>
+                {% for garantie_sin in garantie_sinistres %}
+                   <td><input type="text" id="total_montant_provision_{{ garantie_sin.garantie_id }}" class="form-control form-control-sm money_field total_montant_provision border_total" value="" readonly></td>
+                   <td><input type="text" id="total_montant_regle_{{ garantie_sin.garantie_id }}" class="form-control form-control-sm money_field total_montant_regle border_total" value="" readonly></td>
+                   <td><input type="text" id="total_provisionne_{{ garantie_sin.garantie_id }}" class="form-control form-control-sm money_field total_provisionne border_total" value="" readonly></td>
+                {% endfor %}
+             </tr>
+          </tbody>
+        </table>
+    {% else %}
+        <blockquote class="text-italic" style="border-radius:15px; border:2px solid #218838"><i class="fa fa-question-circle"></i> Aucun garantie disponible pour le provisionnement.</blockquote>
+    {% endif %}
 </div>
 <script>
    // Fonction pour formater les montant_ventilation_provisions (supposée existante)

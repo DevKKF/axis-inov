@@ -8116,7 +8116,7 @@ $(document).ready(function () {
                 if (response.statut == 1) {
                     resetFields('#' + formulaire.attr('id'));
                     notifySuccess(response.message, function () {
-                        location.reload();
+                        window.location.href = response.url_return;
                     });
                 }
                 if (response.statut == 0) {

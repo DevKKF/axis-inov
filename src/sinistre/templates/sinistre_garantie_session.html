@@ -1,0 +1,205 @@
+{% load i18n static jazzmin admin_urls %}
+{% load my_filters %}
+<style>
+   #table_provision_sinistre input[type="text"] {
+      min-width: 120px;
+      max-width: 140px;
+      height: 30px;
+      width: 130px;
+      box-sizing: border-box;
+   }
+   .champ_grise{
+      background:#fff !important;
+   }
+   .border_total{
+      background:#fff !important;
+      border: 2px solid #FFA500;
+      font-weight:bold;
+   }
+</style>
+<div style="overflow-x: auto;">
+    {% if garantie_sinistres|length > 0 %}
+        <table id="table_provision_sinistre" style="width:100%;" class="table table-bordered table-striped dtr-inline">
+          <thead>
+             <tr>
+                <th rowspan="2">Postes dommages</th>
+                {% for garantie_sin in garantie_sinistres %}
+                   <th colspan="3" class="garantie-header text-center" data-garantie-id="{{ garantie_sin.garantie_id }}" style="background-color: {{ forloop.counter0|color_by_index }};">{{ garantie_sin.nom }}</th>
+                {% endfor %}
+             </tr>
+             <tr>
+                {% for garantie_sin in garantie_sinistres %}
+                   <th style="width: 100px;">Estimation</th>
+                   <th style="width: 100px;">Déjà réglé</th>
+                   <th style="width: 100px;">Provision</th>
+                {% endfor %}
+             </tr>
+          </thead>
+          <tbody>
+             {% for postedommage in poste_dommages %}
+                <tr>
+                   <td style="width:200px !important;" data-sens="{{ postedommage.sens|lower }}">{{ postedommage.libelle|default_if_none:"" }}</td>
+                   {% for garantie_sin in garantie_sinistres %}
+                     <td>
+                        <input type="text" id="montant_provision_{{ postedommage.id }}_{{ garantie_sin.garantie_id }}"
+                           name="montant_ventilation_provisions[{{  postedommage.id }}][{{ garantie_sin.garantie_id }}][montant_provision]" class="form-control form-control-sm money_field calculs_montant_garantie_sinistre {% if vp.total_reglement_provisions > 0 %} champ_grise {% endif %}"
+                           data-type="montant_provision" value="{{ vp.montant_provision|default_if_none:'' }}"
+                           onkeypress="isInputNumber(event)" oninput="formatMontant(this)">
+                     </td>
+                     <td>
+                        <input type="text" id="montant_regle_{{ postedommage.id }}_{{ garantie_sin.garantie_id }}"
+                            name="montant_ventilation_provisions[{{ postedommage.id }}][{{ garantie_sin.garantie_id }}][montant_regle]" class="form-control form-control-sm money_field calculs_montant_garantie_sinistre"
+                           data-type="montant_regle" value="" readonly
+                           onkeypress="isInputNumber(event)" oninput="formatMontant(this)">
+                     </td>
+                     <td>
+                        <input type="text" id="provisionne_{{ postedommage.id }}_{{ garantie_sin.garantie_id }}"
+                            name="montant_ventilation_provisions[{{ postedommage.id }}][{{ garantie_sin.garantie_id }}][provisionne]" class="form-control form-control-sm money_field calculs_montant_garantie_sinistre champ_grise"
+                           data-type="provisionne" value="{{ vp.montant_regle|default_if_none:'' }}"
+                           onkeypress="isInputNumber(event)" oninput="formatMontant(this)" readonly>
+                     </td>
+                   {% endfor %}
+                </tr>
+             {% endfor %}
+             <tr style="background:#17A2B8; text-align:center; font-weight:bold; color:#fff">
+                <td>Totaux</td>
+                {% for garantie_sin in garantie_sinistres %}
+                   <td><input type="text" id="total_montant_provision_{{ garantie_sin.garantie_id }}" class="form-control form-control-sm money_field total_montant_provision border_total" value="" readonly></td>
+                   <td><input type="text" id="total_montant_regle_{{ garantie_sin.garantie_id }}" class="form-control form-control-sm money_field total_montant_regle border_total" value="" readonly></td>
+                   <td><input type="text" id="total_provisionne_{{ garantie_sin.garantie_id }}" class="form-control form-control-sm money_field total_provisionne border_total" value="" readonly></td>
+                {% endfor %}
+             </tr>
+          </tbody>
+        </table>
+    {% else %}
+        <blockquote class="text-italic" style="border-radius:15px; border:2px solid #218838"><i class="fa fa-question-circle"></i> Aucune garantie disponible pour le provisionnement.</blockquote>
+    {% endif %}
+</div>
+<script>
+   // Fonction pour formater les montant_ventilation_provisions (supposée existante)
+   function formatMontant(input) {
+       let value = input.value.replace(/[^0-9.-]/g, ''); // Garder seulement chiffres, point et tiret
+       if (value === '') value = '0';
+       input.value = parseFloat(value).toLocaleString('fr-FR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+   }
+
+   // Fonction pour vérifier si l'entrée est un nombre
+   function isInputNumber(event) {
+       let char = String.fromCharCode(event.which);
+       if (!/[0-9.-]/.test(char)) event.preventDefault();
+   }
+
+    // Convertit une chaîne en nombre
+    function parseNumber(str) {
+        if (!str) return 0;
+        return parseFloat(str.replace(/\s/g, '').replace(',', '.')) || 0;
+    }
+
+    // Formate un nombre avec séparateurs FR et signe
+    function formatValue(value) {
+        const absVal = Math.abs(value);
+        let formatted = absVal.toLocaleString('fr-FR');
+        return value < 0 ? `-${formatted}` : formatted;
+    }
+
+    // Formate et met à jour l'input
+    function formatMontant(input) {
+        let value = parseNumber(input.value);
+        input.value = formatValue(value);
+        return value;
+    }
+
+    // Vérifie si la ligne est un poste négatif
+    function isNegativePoste(ligne) {
+        const cell = ligne.find('td[data-sens]');
+        return cell.length && cell.data('sens').toLowerCase().includes('negatif');
+    }
+
+    function calculerTotauxParGarantie() {
+        $('.garantie-header').each(function () {
+            const garantieId = $(this).data('garantie-id');
+            let totalEstimation = 0, totalRegle = 0;
+
+            $('#table_provision_sinistre tbody tr:not(:last-child)').each(function () {
+                const ligne = $(this);
+                if (!ligne.find('td[data-sens]').length) return;
+
+                const negatif = isNegativePoste(ligne);
+
+                const estimation = parseNumber(
+                    ligne.find(`input[id^="montant_provision_"][id$="_${garantieId}"]`).val()
+                );
+                const regle = parseNumber(
+                    ligne.find(`input[id^="montant_regle_"][id$="_${garantieId}"]`).val()
+                );
+
+                let valEstimation = estimation;
+                let valRegle = regle;
+
+                if (negatif) {
+                    valEstimation = -Math.abs(estimation);
+                    valRegle = -Math.abs(regle);
+                }
+
+                const provision = valEstimation - valRegle;
+                ligne.find(`input[id^="provisionne_"][id$="_${garantieId}"]`).val(formatValue(provision));
+
+                totalEstimation += valEstimation;
+                totalRegle += valRegle;
+            });
+
+            const totalProvisionne = totalEstimation - totalRegle;
+
+            $(`#total_montant_provision_${garantieId}`).val(formatValue(totalEstimation));
+            $(`#total_montant_regle_${garantieId}`).val(formatValue(totalRegle));
+            $(`#total_provisionne_${garantieId}`).val(formatValue(totalProvisionne));
+        });
+    }
+
+    function validerRegle(input, ligne, valeur) {
+        const garantieId = input.attr('id').split('_').pop();
+        const estimation = parseNumber(
+            ligne.find(`input[id^="montant_provision_"][id$="_${garantieId}"]`).val()
+        );
+
+        if (valeur > estimation) {
+            input.val('0').addClass('is-invalid');
+            return false;
+        } else {
+            input.removeClass('is-invalid');
+            return true;
+        }
+    }
+
+    $('.calculs_montant_garantie_sinistre')
+        .on('input', function () {
+            formatMontant(this);
+            calculerTotauxParGarantie();
+        })
+        .on('keypress', function (evt) {
+            const charCode = evt.which || evt.keyCode;
+            if (charCode > 31 && (charCode < 48 || charCode > 57) && charCode !== 45) {
+                evt.preventDefault(); // Autorise seulement chiffres et "-"
+            }
+        })
+        .on('blur', function () {
+            const input = $(this);
+            const ligne = input.closest('tr');
+            let valeur = formatMontant(this); // récupère la valeur numérique
+
+            // Validation du champ "Déjà réglé"
+            if (input.data('type') === 'montant_regle' && !isNegativePoste(ligne)) {
+                if (!validerRegle(input, ligne, valeur)) return;
+            }
+
+            // Franchise → toujours négatif
+            if (isNegativePoste(ligne) && valeur > 0) {
+                valeur = -valeur;
+                input.val(formatValue(valeur));
+            }
+
+            calculerTotauxParGarantie();
+        });
+
+    calculerTotauxParGarantie();
+</script>

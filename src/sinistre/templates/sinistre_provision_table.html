@@ -43,20 +43,20 @@
                       {% with vp=ventilations_dict_provision|get_item:postedommage.id|get_item2:garantie_sin.garantie_id %}
                          <td>
                             <input type="text" id="montant_provision_{{ postedommage.id }}_{{ garantie_sin.garantie_id }}"
-                               name="montant_ventilation_provisions[{{  postedommage.id }}][{{ garantie_sin.garantie_id }}][montant_provision]" class="form-control form-control-sm money_field calculs_montant_garantie_sinistre {% if vp.total_reglement_provisions > 0 %} champ_grise {% endif %}"
+                               name="montant_ventilation_provisions[{{  postedommage.id }}][{{ garantie_sin.garantie_id }}][montant_provision]" class="form-control form-control-sm money_field calculs_montant_garantie_sinistre"
                                data-type="montant_provision" value="{{ vp.montant_provision|default_if_none:'' }}"
                                onkeypress="isInputNumber(event)" oninput="formatMontant(this)">
                          </td>
                          <td>
                             <input type="text" id="montant_regle_{{ postedommage.id }}_{{ garantie_sin.garantie_id }}"
                                 name="montant_ventilation_provisions[{{ postedommage.id }}][{{ garantie_sin.garantie_id }}][montant_regle]" class="form-control form-control-sm money_field calculs_montant_garantie_sinistre"
-                               data-type="montant_regle" value=""
+                               data-type="montant_regle" value="{{ vp.montant_regle|default_if_none:'' }}"
                                onkeypress="isInputNumber(event)" oninput="formatMontant(this)">
                          </td>
                          <td>
                             <input type="text" id="provisionne_{{ postedommage.id }}_{{ garantie_sin.garantie_id }}"
                                 name="montant_ventilation_provisions[{{ postedommage.id }}][{{ garantie_sin.garantie_id }}][provisionne]" class="form-control form-control-sm money_field calculs_montant_garantie_sinistre champ_grise"
-                               data-type="provisionne" value="{{ vp.montant_regle|default_if_none:'' }}"
+                               data-type="provisionne" value=""
                                onkeypress="isInputNumber(event)" oninput="formatMontant(this)" readonly>
                          </td>
                       {% endwith %}
@@ -74,7 +74,7 @@
           </tbody>
         </table>
     {% else %}
-        <blockquote class="text-italic" style="border-radius:15px; border:2px solid #218838"><i class="fa fa-question-circle"></i> Aucun garantie disponible pour le provisionnement.</blockquote>
+        <blockquote class="text-italic" style="border-radius:15px; border:2px solid #218838"><i class="fa fa-question-circle"></i> Aucune garantie disponible pour le provisionnement.</blockquote>
     {% endif %}
 </div>
 <script>

@@ -8046,12 +8046,36 @@ $(document).ready(function () {
         return true;
     }
 
+    function buildFormData(formulaire) {
+        let formData = new FormData();
+
+        // Ajouter les données du formulaire classique
+        let data_serialized = formulaire.serialize();
+        $.each(data_serialized.split('&'), function (index, elem) {
+            let vals = elem.split('=');
+            let key = vals[0];
+            let valeur = decodeURIComponent(vals[1].replace(/\+/g, ' '));
+            formData.append(key, valeur);
+        });
+
+        // Ajouter les données du tableau des provisions
+        $("#table_provision_sinistre input").each(function () {
+            let key = $(this).attr("name");
+            let valeur = $(this).val();
+            if (key) {
+                formData.append(key, valeur);
+            }
+        });
+
+        return formData;
+    }
+
     $(document).on('click', "#btn_save_sinistre_gestionnaire", function () {
         let formulaire = $('#form_add_sinistre_gestionnaire');
         let href = formulaire.attr('action');
 
         $.validator.setDefaults({ ignore: [] });
-        let formData = new FormData();
+        let formData = buildFormData(formulaire);
 
         if (formulaire.valid()) {
             // Vérifier les dates avant de désactiver le bouton
@@ -8142,7 +8166,6 @@ $(document).ready(function () {
         });
     }
 
-
     $(document).on('click', "#btn_update_sinistre_gestionnaire", function () {
         let formulaire = $('#form_update_sinistre_gestionnaire');
         let href = formulaire.attr('action');
@@ -8228,158 +8251,6 @@ $(document).ready(function () {
             }
         });
     }
-
-    //DEMANDE DE PROROGATION
-    //Enregistrer une demande de prorogation
-    $(document).on("click", "#btn_save_demande_prorogation", function (e) {
-        e.preventDefault();
-
-        let formulaire = $(this).closest('form');
-
-        if (formulaire.valid()) {
-
-            //confirmation obtenu
-            $.ajax({
-                type: 'post',
-                url: formulaire.attr('action'),
-                data: formulaire.serialize(),
-                success: function (response) {
-
-                    if (response.statut == 1) {
-
-                        notifySuccess(response.message, function () {
-                            location.reload();
-                        });
-
-                    } else {
-                        notifyWarning(response.message);
-                    }
-
-                },
-                error: function (request, status, error) {
-
-                    notifyWarning("Erreur lors de l'enregistrement de la demande de prorogation");
-                }
-
-            });
-            //fin confirmation obtenu
-
-
-
-        } else {
-            notifyWarning("Veuillez renseigner correctement le formulaire");
-        }
-
-    });
-
-    //dialog approuver
-    $(document).on("click", "#btn_open_modal_approuver_prorogation", function () {
-        let prorogation_id = $(this).data('prorogation_id');
-        let jour_demande = $(this).data('jour_demande');
-
-        let input_prorogation = $('#form_approuver_prorogation #prorogation_id');
-        let input_jour_demande = $('#form_approuver_prorogation #jour_demande');
-        let input_jour_accorde = $('#form_approuver_prorogation #jour_accorde');
-        input_prorogation.val(prorogation_id);
-        input_jour_demande.val(jour_demande);
-        input_jour_accorde.val(jour_demande);
-
-        $('#modal_approuver_prorogation').modal();
-
-    });
-
-
-    //Approuver une demande de prorogation
-    $(document).on("click", "#btn_approuver_prorogation", function (e) {
-
-        var formulaire = $(this).closest('form');
-
-        if (formulaire.valid()) {
-
-            $.ajax({
-                type: 'post',
-                url: formulaire.attr('action'),
-                data: formulaire.serialize(),
-                success: function (response) {
-
-                    console.log(response);
-                    if (response.statut == 1) {
-
-                        notifySuccess(response.message, function () {
-                            location.reload();
-                        });
-
-                    } else {
-                        notifyWarning(response.message);
-                    }
-
-                },
-                error: function (request, status, error) {
-
-                    notifyWarning("Erreur lors de l'approbation de la demande de prorogation");
-                }
-
-            });
-
-        } else {
-            notifyWarning("Veuillez renseigner correctement le formulaire");
-        }
-
-    });
-
-
-    //dialog rejeter
-    $(document).on("click", "#btn_open_modal_rejeter_prorogation", function () {
-        let prorogation_id = $(this).data('prorogation_id');
-
-        let input_prorogation = $('#form_rejeter_prorogation #prorogation_id');
-        input_prorogation.val(prorogation_id);
-
-        $('#modal_rejeter_prorogation').modal();
-
-    });
-
-    //Rejeter une demande de prorogation
-    $(document).on("click", "#btn_rejeter_prorogation", function (e) {
-
-        var formulaire = $(this).closest('form');
-
-        if (formulaire.valid()) {
-
-            $.ajax({
-                type: 'post',
-                url: formulaire.attr('action'),
-                data: formulaire.serialize(),
-                success: function (response) {
-
-                    console.log(response);
-                    if (response.statut == 1) {
-
-                        notifySuccess(response.message, function () {
-                            location.reload();
-                        });
-
-                    } else {
-                        notifyWarning(response.message);
-                    }
-
-                },
-                error: function (request, status, error) {
-
-                    notifyWarning("Erreur lors de l'approbation de la demande de prorogation");
-                }
-
-            });
-
-        } else {
-            notifyWarning("Veuillez renseigner correctement le formulaire");
-        }
-
-
-    }
-    );
-
-    //FIN DEMANDE DE PROROGATION
 
     // TODO : DEMANDE DE REMBOURSEMENT JS
     //DEMANDE DE REMBOURSEMENT
@@ -20839,6 +20710,18 @@ $(document).ready(function () {
                 if (response.success) {
                     $("#table_garantie_sinistre tbody").empty();
                     $("#table_provision_sinistre_container tbody").empty();
+                    $.ajax({
+                        url: "/sinistre/recuperer_garantie_session/",
+                        type: "GET",
+                        success: function (data) {
+                            console.log('Initialisation de garanties');
+                            $("#liste_garantie_session").html('<div class="alert alert-info">Aucune garantie disponible.</div>');
+                        },
+                        error: function (xhr, status, error) {
+                            const errorMessage = 'Erreur lors de la récupération des garanties. Veuillez réessayer.';
+                            $("#liste_garantie_session").html('<div class="alert alert-danger">' + errorMessage + '</div>');
+                        }
+                    });
                 } else {
                     console.warn("Avertissement :", response.message);
                 }
@@ -20941,6 +20824,20 @@ $(document).ready(function () {
                     data: JSON.stringify({ garanties: garanties }),
                     contentType: 'application/json',
                     success: function (response) {
+
+                        $.ajax({
+                            url: "/sinistre/recuperer_garantie_session/",
+                            type: "GET",
+                            success: function (data) {
+                                console.log('Afficher le contenu HTML des garantie');
+                                $("#liste_garantie_session").html(data);
+                            },
+                            error: function (xhr, status, error) {
+                                const errorMessage = 'Erreur lors de la récupération des garanties. Veuillez réessayer.';
+                                $("#liste_garantie_session").html('<div class="alert alert-danger">' + errorMessage + '</div>');
+                            }
+                        });
+
                         if (response.success) {
                             $("#garantie-modal-success").text(response.message).show().delay(5000).fadeOut();
 
@@ -20990,6 +20887,18 @@ $(document).ready(function () {
                     success: function (response) {
                         if (response.success) {
                             row.remove(); // Supprime la ligne
+                            $.ajax({
+                                url: "/sinistre/recuperer_garantie_session/",
+                                type: "GET",
+                                success: function (data) {
+                                    console.log('Afficher le contenu HTML des garantie');
+                                    $("#liste_garantie_session").html(data);
+                                },
+                                error: function (xhr, status, error) {
+                                    const errorMessage = 'Erreur lors de la récupération des garanties. Veuillez réessayer.';
+                                    $("#liste_garantie_session").html('<div class="alert alert-danger">' + errorMessage + '</div>');
+                                }
+                            });
                         } else {
                             console.error(response.error || 'Erreur lors de la suppression.');
                         }
@@ -21118,7 +21027,7 @@ $(document).ready(function () {
                         if (row.sinistre_id) {
                             let montant = parseFloat(String(row.montant).replace(/\s/g, '').replace(',', '.')) || 0;
 
-                            if (montant > 0) {
+                            if (montant !== 0) {
                                 clotureButton = `
                                     <button class="btn btn-info btn-sm btn-cloture-garantie" type="button" disabled>
                                         <i class="fas fa-archive"></i>

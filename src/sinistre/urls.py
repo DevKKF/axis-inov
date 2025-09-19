@@ -39,6 +39,7 @@ urlpatterns = [
     path('add_sinistre_gestionnaire', views.add_sinistre_gestionnaire, name='add_sinistre_gestionnaire'),
     path('cloture_garantie/<str:garantie_id>/', views.cloture_garantie, name='cloture_garantie'),
     path('recuperer_intervenant_sinistre/', views.recuperer_intervenant_sinistre, name='recuperer_intervenant_sinistre'),
+    path('recuperer_garantie_session/', views.recuperer_garantie_session, name='recuperer_garantie_session'),
     path('recuperer_garantie_sinistre/', views.recuperer_garantie_sinistre, name='recuperer_garantie_sinistre'),
     path('update_sinistre_gestionnaire/<int:sinistre_id>', views.update_sinistre_gestionnaire, name='update_sinistre_gestionnaire'),
 

@@ -692,6 +692,26 @@ def recuperer_garanties_sinistre(request):
     return JsonResponse({"garanties": formatted_garanties})
 
 
+@login_required
+def recuperer_garantie_session(request):
+    poste_dommages = PosteDommage.objects.filter(statut=1).order_by('numero_ordre')
+    garantie_sinistres = request.session.get("garanties", [])
+
+    formatted_garanties = []
+    for garantie in garantie_sinistres:
+        formatted_garanties.append({
+            "id": garantie.get('id'),
+            "garantie_id": garantie.get('garantie_id'),
+            "nom": garantie.get('nom'),
+        })
+
+    context = {
+        'poste_dommages': poste_dommages,
+        'garantie_sinistres': formatted_garanties,
+    }
+    return render(request, 'sinistre_garantie_session.html', context)
+
+
 #Save Sinistre by Gestionnaire
 @login_required
 @transaction.atomic
@@ -965,10 +985,58 @@ def add_sinistre_gestionnaire(request):
                     garantie_sinistre_created.historique_sinistre_garantie = historique_garantie_sinistre_created
                     garantie_sinistre_created.save()
 
-                mouvement_return = Mouvement.objects.get(code=mouvement_id)
                 motif_return = Motif.objects.get(code=motif_mouvement_id)
-                print('mouvement_id : ', mouvement_return.id)
-                print('motif_id : ', motif_return.id)
+
+                import re
+
+                ventilations_struct = {}
+                for key, value in request.POST.items():
+                    if key.startswith('montant_ventilation_provisions['):
+                        try:
+                            parts = key.split('[')
+                            poste_id = parts[1].rstrip(']')
+                            garantie_id = parts[2].rstrip(']')
+                            champ = parts[3].rstrip(']')  # montant_provision, montant_regle, provisionne
+
+                            # 🔹 Nettoyage : enlever tous les espaces (y compris \u202f, \xa0, etc.)
+                            montant_nettoye = re.sub(r'\s+', '', value) if value.strip() else '0'
+
+                            montant_valeur = float(montant_nettoye)
+
+                            if poste_id not in ventilations_struct:
+                                ventilations_struct[poste_id] = {}
+
+                            if garantie_id not in ventilations_struct[poste_id]:
+                                ventilations_struct[poste_id][garantie_id] = {}
+
+                            ventilations_struct[poste_id][garantie_id][champ] = montant_valeur
+
+                        except Exception as e:
+                            print(f"Erreur parsing {key}: {e}")
+
+                for poste_id, garanties in ventilations_struct.items():
+                    for garantie_id, champs in garanties.items():
+                        montant_provision = champs.get('montant_provision', 0)
+                        montant_regle = champs.get('montant_regle', 0)
+
+                        # Seulement si montant_provision > 0
+                        if montant_provision != 0:
+                            obj, created = VentilationProvision.objects.update_or_create(
+                                sinistre=sinistre,
+                                poste_dommage_id=poste_id,
+                                garantie_id=garantie_id,
+                                defaults={
+                                    'montant_provision': montant_provision,
+                                    'montant_regle': montant_regle,
+                                    'created_by': request.user
+                                }
+                            )
+
+                            # Mise à jour du montant_provision de la garantie concernée par la ventilation provision
+                            garantie = SinistreGarantie.objects.filter(garantie_id=garantie_id,
+                                                                       sinistre_id=sinistre.id).first()
+                            garantie.montant_provision = montant_provision
+                            garantie.save()
 
                 return JsonResponse({
                     'statut': 1,
@@ -1797,7 +1865,7 @@ def recuperer_garantie_sinistre(request):
                     or nouvelle_garan.montant_recours_regle
                     or 0
             )
-
+            print(f'montant {montant}')
             nouvelle_garantie = {
                 'id': f'{nouvelle_garan.garantie_id}',
                 'sinistre_id': sinistre_id,

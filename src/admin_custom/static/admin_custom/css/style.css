@@ -728,4 +728,9 @@ label:not(.form-check-label):not(.custom-file-label) {
     font-weight:bold;
 }
 
+.f-bold {
+    font-weight: bold;
+}
+
+
 

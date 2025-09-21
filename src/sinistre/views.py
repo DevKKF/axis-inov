@@ -71,10 +71,11 @@ from sinistre.helper_sinistre import exportation_en_excel_avec_style, \
     requete_analyse_prime_compta_apporteur, get_retenue_selon_contexte
 # Create your views here.
 from sinistre.models import PaiementComptable, Sinistre, HistoriqueSinistre, Intervenant, SinistreIntervenant, SinistreGarantie, HistoriqueSinistreGarantie, DossierSinistre, MouvementSinistre, \
-    RemboursementSinistre, BordereauOrdonnancement, VentilationProvision, VentilationRecour
+    RemboursementSinistre, BordereauOrdonnancement, VentilationProvision, VentilationRecour, ReglementSinistre
 
 from sinistre.forms import SinistreForm
 
+from shared.helpers import render_pdf
 
 
 @method_decorator(login_required, name='dispatch')
@@ -989,7 +990,7 @@ def add_sinistre_gestionnaire(request):
 
                 import re
 
-                ventilations_struct = {}
+                """ventilations_struct = {}
                 for key, value in request.POST.items():
                     if key.startswith('montant_ventilation_provisions['):
                         try:
@@ -1037,6 +1038,60 @@ def add_sinistre_gestionnaire(request):
                                                                        sinistre_id=sinistre.id).first()
                             garantie.montant_provision = montant_provision
                             garantie.save()
+                """
+
+                ventilations_struct = {}
+                for key, value in request.POST.items():
+                    if key.startswith('montant_ventilation_provisions['):
+                        try:
+                            parts = key.split('[')
+                            poste_id = parts[1].rstrip(']')
+                            garantie_id = parts[2].rstrip(']')
+                            champ = parts[3].rstrip(']')  # montant_provision, montant_regle, provisionne
+
+                            # 🔹 Nettoyage : enlever tous les espaces (y compris \u202f, \xa0, etc.)
+                            montant_nettoye = re.sub(r'\s+', '', value) if value.strip() else '0'
+                            montant_valeur = float(montant_nettoye)
+
+                            ventilations_struct.setdefault(poste_id, {}).setdefault(garantie_id, {})[
+                                champ] = montant_valeur
+
+                        except Exception as e:
+                            print(f"Erreur parsing {key}: {e}")
+
+                # Dictionnaire pour cumuler les provisions par garantie
+                garantie_prov_totaux = {}
+
+                for poste_id, garanties in ventilations_struct.items():
+                    for garantie_id, champs in garanties.items():
+                        montant_provision = champs.get('montant_provision', 0)
+                        montant_regle = champs.get('montant_regle', 0)
+
+                        if montant_provision != 0:
+                            obj, created = VentilationProvision.objects.update_or_create(
+                                sinistre=sinistre,
+                                poste_dommage_id=poste_id,
+                                garantie_id=garantie_id,
+                                defaults={
+                                    'montant_provision': montant_provision,
+                                    'montant_regle': montant_regle,
+                                    'created_by': request.user
+                                }
+                            )
+
+                            # Cumuler les montants de provision par garantie
+                            garantie_prov_totaux[garantie_id] = garantie_prov_totaux.get(garantie_id,
+                                                                                         0) + montant_provision
+
+                # Mise à jour des SinistreGarantie avec le cumul par garantie
+                for garantie_id, total_provision in garantie_prov_totaux.items():
+                    garantie = SinistreGarantie.objects.filter(
+                        garantie_id=garantie_id,
+                        sinistre_id=sinistre.id
+                    ).first()
+                    if garantie:
+                        garantie.montant_provision = total_provision if total_provision > 0 else None
+                        garantie.save(update_fields=["montant_provision"])
 
                 return JsonResponse({
                     'statut': 1,
@@ -1617,7 +1672,7 @@ class MouvementDossierSinistreView(TemplateView):
 
         mouvements_sinistre = MouvementSinistre.objects.filter(sinistre_id=sinistre.id).order_by('-id')
 
-        mouvements = Mouvement.objects.filter(type_mouvement_id=2)
+        mouvements = Mouvement.objects.filter(type_mouvement_id=2).order_by('id')
 
         context = self.get_context_data(**kwargs)
         context['sinistre'] = sinistre
@@ -1678,7 +1733,7 @@ class DetailMouvementDossierSinistreView(TemplateView):
 
 
 def motifs_by_mouvement(request, mouvement_id):
-    motifs = Motif.objects.filter(mouvement_id=mouvement_id).order_by('libelle')
+    motifs = Motif.objects.filter(mouvement_id=mouvement_id).order_by('libelle').order_by('id')
 
     motifs_serialize = serializers.serialize('json', motifs)
     return HttpResponse(motifs_serialize, content_type='application/json')
@@ -1724,9 +1779,9 @@ def mouvement_sinistre(request, sinistre_id, motif_id):
         intervenant_sinistres = SinistreIntervenant.objects.filter(sinistre_id=sinistre.id)
         pays = Pays.objects.all().order_by('nom')
 
-        mouvements = Mouvement.objects.filter(id=motif.mouvement_id, type_mouvement_id=2)
+        mouvements = Mouvement.objects.filter(id=motif.mouvement_id, type_mouvement_id=2).order_by('id')
 
-        liste_motifs = Motif.objects.filter(mouvement_id=motif.mouvement_id)
+        liste_motifs = Motif.objects.filter(mouvement_id=motif.mouvement_id).order_by('id')
 
         gestionnaire_sinistres = []
 
@@ -1737,12 +1792,17 @@ def mouvement_sinistre(request, sinistre_id, motif_id):
 
         poste_dommages = PosteDommage.objects.filter(statut=1).order_by('numero_ordre')
         garantie_sinistres = SinistreGarantie.objects.filter(sinistre_id=sinistre.id, date_cloture=None)
-        ventilation_provision_existantes = VentilationProvision.objects.filter(sinistre=sinistre).values('poste_dommage_id', 'garantie_id', 'montant_provision', 'montant_regle')
+        ventilation_provision_existantes = VentilationProvision.objects.filter(sinistre=sinistre).values('id', 'poste_dommage_id', 'garantie_id', 'montant_provision', 'montant_regle')
         ventilation_recours_existantes = VentilationRecour.objects.filter(sinistre=sinistre).values('poste_dommage_id', 'garantie_id', 'montant_recours', 'montant_regle')
 
         # On transforme en dictionnaire pour accès rapide dans le template
         ventilations_dict_provision = {
             (v['poste_dommage_id'], v['garantie_id']): v
+            for v in ventilation_provision_existantes
+        }
+
+        ventilation_reglement_map = {
+            (v["poste_dommage_id"], v["garantie_id"]): v["montant_provision"] or 0
             for v in ventilation_provision_existantes
         }
 
@@ -1788,6 +1848,7 @@ def mouvement_sinistre(request, sinistre_id, motif_id):
             'ventilations_dict_provision': ventilations_dict_provision,
             'ventilations_dict_recours': ventilations_dict_recours,
             'intervenant_sinistres': intervenant_sinistres,
+            'ventilation_reglement_map': ventilation_reglement_map,
             'total_provisions': sommes['total_provisions'],
             'total_provisions_regle': sommes['total_provisions_regle'],
             'total_recours': sommes['total_recours'],
@@ -1949,6 +2010,10 @@ def update_sinistre_gestionnaire(request, sinistre_id):
             risque_sinistre = request.POST.get('risque')
             numero = request.POST.get('numero')
             recours_possible = request.POST.get('recours_possible')
+            reg_intervenant_id = request.POST.get('reg_intervenant_id')
+            mode_reglement_id = request.POST.get('mode_reglement')
+            numero_piece = request.POST.get('numero_piece')
+            date_reglement = request.POST.get('date_reglement')
 
             if tva_recuperee_str == "1":
                 tva_recuperee = True
@@ -2190,7 +2255,7 @@ def update_sinistre_gestionnaire(request, sinistre_id):
                     created_by_id=request.user.id,
                 )
 
-            ventilations_struct = {}
+            """ventilations_struct = {}
             for key, value in request.POST.items():
                 if key.startswith('montant_ventilation_provisions['):
                     try:
@@ -2235,8 +2300,59 @@ def update_sinistre_gestionnaire(request, sinistre_id):
                         garantie = SinistreGarantie.objects.filter(garantie_id=garantie_id, sinistre_id=sinistre.id).first()
                         garantie.montant_provision = montant_provision
                         garantie.save()
+            """
 
-            ventilations_rec_struct = {}
+            ventilations_struct = {}
+            for key, value in request.POST.items():
+                if key.startswith('montant_ventilation_provisions['):
+                    try:
+                        parts = key.split('[')
+                        poste_id = parts[1].rstrip(']')
+                        garantie_id = parts[2].rstrip(']')
+                        champ = parts[3].rstrip(']')  # montant_provision, montant_regle, provisionne
+
+                        montant_nettoye = value.replace(' ', '') if value.strip() else '0'
+                        montant_valeur = float(montant_nettoye)
+
+                        ventilations_struct.setdefault(poste_id, {}).setdefault(garantie_id, {})[champ] = montant_valeur
+
+                    except Exception as e:
+                        print(f"Erreur parsing {key}: {e}")
+
+            # Dictionnaire pour cumuler les provisions par garantie
+            garantie_totaux = {}
+
+            for poste_id, garanties in ventilations_struct.items():
+                for garantie_id, champs in garanties.items():
+                    montant_provision = champs.get('montant_provision', 0)
+                    montant_regle = champs.get('montant_regle', 0)
+
+                    if montant_provision != 0:
+                        obj, created = VentilationProvision.objects.update_or_create(
+                            sinistre=sinistre,
+                            poste_dommage_id=poste_id,
+                            garantie_id=garantie_id,
+                            defaults={
+                                'montant_provision': montant_provision,
+                                'montant_regle': montant_regle,
+                                'created_by': request.user
+                            }
+                        )
+
+                        # Cumuler les provisions de chaque garantie
+                        garantie_totaux[garantie_id] = garantie_totaux.get(garantie_id, 0) + montant_provision
+
+            # Mise à jour des SinistreGarantie avec le cumul par garantie
+            for garantie_id, total_provision in garantie_totaux.items():
+                garantie = SinistreGarantie.objects.filter(
+                    garantie_id=garantie_id,
+                    sinistre_id=sinistre.id
+                ).first()
+                if garantie:
+                    garantie.montant_provision = total_provision
+                    garantie.save(update_fields=["montant_provision"])
+
+            """ventilations_rec_struct = {}
             for key, value in request.POST.items():
                 if key.startswith('montant_ventilation_recours['):
                     try:
@@ -2281,6 +2397,131 @@ def update_sinistre_gestionnaire(request, sinistre_id):
                         garantie = SinistreGarantie.objects.filter(garantie_id=garantie_id, sinistre_id=sinistre.id).first()
                         garantie.montant_recours = montant_recours if montant_recours > 0 else None
                         garantie.save()
+            """
+
+            ventilations_rec_struct = {}
+            for key, value in request.POST.items():
+                if key.startswith('montant_ventilation_recours['):
+                    try:
+                        parts = key.split('[')
+                        poste_id = parts[1].rstrip(']')
+                        garantie_id = parts[2].rstrip(']')
+                        champ = parts[3].rstrip(']')  # montant_recours, montant_regle, recours
+
+                        montant_nettoye = value.replace(' ', '') if value.strip() else '0'
+                        montant_valeur = float(montant_nettoye)
+
+                        ventilations_rec_struct.setdefault(poste_id, {}).setdefault(garantie_id, {})[
+                            champ] = montant_valeur
+
+                    except Exception as e:
+                        print(f"Erreur parsing {key}: {e}")
+
+            # Dictionnaire pour cumuler les recours par garantie
+            garantie_rec_totaux = {}
+
+            for poste_id, garanties in ventilations_rec_struct.items():
+                for garantie_id, champs in garanties.items():
+                    montant_recours = champs.get('montant_recours', 0)
+                    montant_regle = champs.get('montant_regle', 0)
+
+                    if montant_recours != 0:
+                        obj, created = VentilationRecour.objects.update_or_create(
+                            sinistre=sinistre,
+                            poste_dommage_id=poste_id,
+                            garantie_id=garantie_id,
+                            defaults={
+                                'montant_recours': montant_recours,
+                                'montant_regle': montant_regle,
+                                'created_by': request.user
+                            }
+                        )
+
+                        # Cumuler les montants de recours par garantie
+                        garantie_rec_totaux[garantie_id] = garantie_rec_totaux.get(garantie_id, 0) + montant_recours
+
+            # Mise à jour des SinistreGarantie avec le cumul par garantie
+            for garantie_id, total_recours in garantie_rec_totaux.items():
+                garantie = SinistreGarantie.objects.filter(
+                    garantie_id=garantie_id,
+                    sinistre_id=sinistre.id
+                ).first()
+                if garantie:
+                    garantie.montant_recours = total_recours if total_recours > 0 else None
+                    garantie.save(update_fields=["montant_recours"])
+
+            # Enregistrer les règlements
+            try:
+                motif = Motif.objects.get(id=motif_mouvement_id)
+            except Motif.DoesNotExist:
+                return JsonResponse({'statut': 0, 'message': "Motif invalide"})
+
+            print(f"Code du motif reçu : {motif.code}")  # debug
+
+            if motif.code == "SAISREG":
+                print('Règlement en cours...')
+                # Récupère tous les champs qui commencent par "montant_reglements"
+                for key, value in request.POST.items():
+                    if key.startswith("montant_reglements[") and key.endswith("][montant_reglement]"):
+                        try:
+                            # Extraire proprement
+                            inner = key[len("montant_reglements["):-len("][montant_reglement]")]
+                            # Exemple: "5][3"
+                            poste_id, garantie_id = inner.split("][")
+                        except ValueError:
+                            print(f"Clé ignorée (format inattendu): {key}")
+                            continue
+
+                        montant_str = value.strip().replace(" ", "").replace(",", ".")
+                        try:
+                            montant = Decimal(montant_str) if montant_str else Decimal("0")
+                        except Exception:
+                            montant = Decimal("0")
+
+                        if montant > 0:
+                            ventilation = VentilationProvision.objects.filter(
+                                sinistre_id=sinistre.id,
+                                poste_dommage_id=poste_id,
+                                garantie_id=garantie_id
+                            ).first()
+
+                            sinistre_garantie = SinistreGarantie.objects.filter(
+                                sinistre_id=sinistre.id,
+                                garantie_id=garantie_id
+                            ).first()
+
+                            if reg_intervenant_id and mode_reglement_id and date_reglement:
+                                if ventilation:
+                                    ReglementSinistre.objects.create(
+                                        sinistre=sinistre,
+                                        ventilation_provision=ventilation,
+                                        sinistre_intervenant_id=reg_intervenant_id,
+                                        mode_reglement_id=mode_reglement_id,
+                                        devise=sinistre.police.client.pays.devise if sinistre.police.client.pays else None,  # idem
+                                        montant_regle=montant,
+                                        numero_piece=numero_piece,
+                                        date_reglement=date_reglement,
+                                        created_by=request.user
+                                    )
+
+                                    # mise à jour de ventilation provision
+                                    ventilation.montant_provision = ventilation.montant_provision - montant
+                                    ventilation.montant_regle += montant
+                                    ventilation.save(update_fields=["montant_provision", "montant_regle"])
+
+                                    # mise à jour de la garantie sinistre
+                                    if sinistre_garantie:
+                                        sinistre_garantie.montant_provision = sinistre_garantie.montant_provision - montant
+                                        sinistre_garantie.montant_provision_regle += montant
+                                        sinistre_garantie.montant_garantie += montant
+                                        sinistre_garantie.save(update_fields=["montant_provision", "montant_provision_regle", "montant_garantie"])
+                            else:
+                                return JsonResponse({
+                                    'statut': 0,
+                                    'message': "Veuillez renseigner correctement le formulaire au niveau de l'onglet de règlement!",
+                                })
+            else:
+                print('Pas de règlement en cours...')
 
             response = {
                 'statut': 1,
@@ -2294,5 +2535,25 @@ def update_sinistre_gestionnaire(request, sinistre_id):
             return JsonResponse(response)
 
     return redirect('dossiersinistre')
+
+
+def recu_reglement_sinistre(request, sinistre_id, reglement_sinistre_id):
+    sinistre = Sinistre.objects.filter(id=sinistre_id).first()
+    reglement_sinistre = ReglementSinistre.objects.filter(id=reglement_sinistre_id).first()
+
+    pdf = render_pdf('courriers/recu_reglement_sinistre.html', {'sinistre': sinistre, 'reglement_sinistre': reglement_sinistre})
+
+    pdf_file = PyPDF2.PdfReader(pdf)
+    nombre_pages = len(pdf_file.pages)
+
+    contexte = {
+        'sinistre': sinistre,
+        'reglement_sinistre': reglement_sinistre,
+        'nombre_pages': nombre_pages,
+    }
+    pdf = render_pdf('courriers/recu_reglement_sinistre.html', contexte)
+
+    return pdf
+
 
 

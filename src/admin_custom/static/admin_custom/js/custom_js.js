@@ -8231,10 +8231,15 @@ $(document).ready(function () {
                 if (response.statut == 1) {
                     resetFields('#' + formulaire.attr('id'));
                     notifySuccess(response.message, function () {
-                        window.location.href = response.retour_mouvement_url;
                         location.reload();
                     });
-                } else {
+                }
+                if (response.statut == 0) {
+                    notifyWarning(response.message, function () {
+                        //location.reload();
+                    });
+                }
+                else {
                     let errors = response.errors;
                     let errors_list_to_display = '';
                     for (field in errors) {
@@ -8251,288 +8256,6 @@ $(document).ready(function () {
             }
         });
     }
-
-    // TODO : DEMANDE DE REMBOURSEMENT JS
-    //DEMANDE DE REMBOURSEMENT
-
-    // Valider la demande de remboursement
-    $(document).on("click", "#btnValiderRemboursementsSelectionnes", function (e) {
-
-        //demander confirmation
-        let n = noty({
-            text: 'Voulez-vous valider la facture prestataire ?',
-            type: 'warning',
-            dismissQueue: true,
-            layout: 'center',
-            theme: 'defaultTheme',
-            buttons: [
-                {
-                    addClass: 'btn btn-primary', text: 'OUI', onClick: function ($noty) {
-                        $noty.close();
-
-                        $('#btnValiderRemboursementsSelectionnes').prop('disabled', true);
-
-                        console.log("valider facture prestataire", $('#btnValiderRemboursementsSelectionnes').data('href'));
-
-                        $.ajax({
-                            type: 'get',
-                            url: $('#btnValiderRemboursementsSelectionnes').data('href'),
-
-                            success: function (response) {
-
-                                console.log(response);
-
-                                if (response.statut == 1) {
-                                    location.href = $('#btnValiderRemboursementsSelectionnes').data('redirection');
-
-                                } else {
-                                    notifyWarning(response.message);
-                                    $('#btnValiderRemboursementsSelectionnes').prop('disabled', false);
-                                }
-
-                            },
-                            error: function () {
-                                notifyWarning("Erreur lors de la génération du bordereau");
-                            }
-
-                        });
-
-
-
-                    }
-                },
-                {
-                    addClass: 'btn btn-danger', text: 'Annuler', onClick: function ($noty) {
-                        //confirmation refusée
-                        $noty.close();
-                    }
-                }
-            ]
-        });
-        //fin demande confirmation
-
-    });
-
-
-    //Enregistrer une demande de prorogation
-    $(document).on("click", "#btn_save_demande_remboursement", function (e) {
-        e.preventDefault();
-
-        let formulaire = $(this).closest('form');
-
-        if (formulaire.valid()) {
-
-            //confirmation obtenu
-            $.ajax({
-                type: 'post',
-                url: formulaire.attr('action'),
-                data: formulaire.serialize(),
-                success: function (response) {
-
-                    if (response.statut == 1) {
-
-                        notifySuccess(response.message, function () {
-                            location.reload();
-                        });
-
-                    } else {
-                        notifyWarning(response.message);
-                    }
-
-                },
-                error: function (request, status, error) {
-
-                    notifyWarning("Erreur lors de l'enregistrement de la demande de prorogation");
-                }
-
-            });
-            //fin confirmation obtenu
-
-
-
-        } else {
-            notifyWarning("Veuillez renseigner correctement le formulaire");
-        }
-
-    });
-
-    // Calcule du montant à rembourser
-    $(document).on("blur", "#montant_refuse", function () {
-        var montantRefuse = parseInt($(this).val().replaceAll(' ', ''));
-        var montantRembourse = parseInt($('#montant_rembourse').val().replaceAll(' ', ''));
-        var montantAccepte = montantRembourse - montantRefuse;
-        if (montantAccepte < 0) {
-            notifyWarning("Le montant refusé ne peut pas être supérieur au montant de base");
-            $(this).val(0);
-            //            $('#btn_accepter_remboursement').prop("disabled",true);
-        } else {
-            $('#montant_accepte').val(montantAccepte);
-        }
-    });
-
-
-    //Accepter une demande de prorogation
-    $(document).on("click", "#btn_accepter_remboursement", function (e) {
-
-        var formulaire = $(this).closest('form');
-
-        if (formulaire.valid()) {
-
-            if ($('#montant_refuse').val() != '0' && $('#motif').val() == '') {
-                notifyWarning("Veuillez renseigner correctement le formulaire");
-                formulaire.submit(function (e) {
-                    return false;
-                });
-            } else {
-
-                $('#btn_accepter_remboursement').prop("disabled", true);
-                $.ajax({
-                    type: 'post',
-                    url: formulaire.attr('action'),
-                    data: formulaire.serialize(),
-                    success: function (response) {
-
-                        console.log(response);
-                        if (response.statut == 1) {
-
-                            notifySuccess(response.message, function () {
-                                location.reload();
-                            });
-
-                        } else {
-                            notifyWarning(response.message);
-                        }
-
-                    },
-                    error: function (request, status, error) {
-
-                        notifyWarning("Erreur lors de l'acceptation de la demande de remboursement");
-                        $('#btn_accepter_remboursement').prop("disabled", false);
-                    }
-
-                });
-
-            }
-
-        } else {
-            notifyWarning("Veuillez renseigner correctement le formulaire");
-        }
-
-    });
-
-
-    //Rejeter une demande de remboursement
-    $(document).on("click", "#btn_refuser_remboursement", function (e) {
-
-        var formulaire = $(this).closest('form');
-
-        if (formulaire.valid()) {
-            $('#btn_refuser_remboursement').prop("disabled", true);
-            $('#btn_annuler_remboursement').prop("disabled", true);
-            $('#loader_modal').show();
-            $.ajax({
-                type: 'post',
-                url: formulaire.attr('action'),
-                data: formulaire.serialize(),
-                success: function (response) {
-
-                    console.log(response);
-                    if (response.statut == 1) {
-                        $('#loader_modal').hide();
-                        notifySuccess(response.message, function () {
-                            location.reload();
-                        });
-
-                    } else {
-                        notifyWarning(response.message);
-                    }
-
-                },
-                error: function (request, status, error) {
-
-                    notifyWarning("Erreur lors du refus de la demande de remboursement");
-                    $('#btn_refuser_remboursement').prop("disabled", false);
-                    $('#btn_annuler_remboursement').prop("disabled", false);
-                    $('#loader_modal').hide();
-                }
-
-            });
-
-        } else {
-            notifyWarning("Veuillez renseigner correctement le formulaire");
-        }
-    });
-
-    //Annuler une demande de remboursement
-    $(document).on("click", "#btn_annuler_remboursement", function (e) {
-
-        var formulaire = $(this).closest('form');
-
-        console.log(formulaire.data('action'));
-
-        if (formulaire.valid()) {
-            $('#btn_refuser_remboursement').prop("disabled", true);
-            $('#btn_annuler_remboursement').prop("disabled", true);
-            $('#loader_modal').show();
-            $.ajax({
-                type: 'post',
-                url: formulaire.data('action'),
-                data: formulaire.serialize(),
-                success: function (response) {
-
-                    console.log(response);
-                    if (response.statut == 1) {
-                        $('#loader_modal').hide();
-                        notifySuccess(response.message, function () {
-                            location.reload();
-                        });
-
-                    } else {
-                        notifyWarning(response.message);
-                    }
-
-                },
-                error: function (request, status, error) {
-
-                    notifyWarning("Erreur lors du refus de la demande de remboursement");
-                    $('#btn_refuser_remboursement').prop("disabled", false);
-                    $('#btn_annuler_remboursement').prop("disabled", false);
-                    $('#loader_modal').hide();
-                }
-
-            });
-
-        } else {
-            notifyWarning("Veuillez renseigner correctement le formulaire");
-        }
-    });
-
-
-    //afficher le modal de rejet d'ordonnancement d'un sinistre
-    $(document).on("click", ".btn-open_modal_rejeter_remboursement_ordonnancement", function (e) {
-        e.preventDefault();
-
-        href = $(this).data('href');
-
-        $('#olea_std_dialog_box').load(href, function () {
-
-            $('#modal-rejeter_remboursement_ordonnancement').attr('data-backdrop', 'static').attr('data-keyboard', false);
-
-            $('#modal-rejeter_remboursement_ordonnancement').find('.modal-dialog').addClass('modal-md').removeClass('modal-lg');
-
-            AppliquerMaskSaisie();
-
-            //
-            $('#modal-rejeter_remboursement_ordonnancement').modal();
-
-            //alert("opened details_sinistre");
-
-        });
-
-
-    });
-
-    //FIN DEMANDE DE REMBOURSEMENT
 
 
     //afficher le détail d'un sinistre
@@ -21378,10 +21101,10 @@ $(document).ready(function () {
     calculerTotauxParGarantie();
 
 
-    function calculerTotauxRecoursParGarantie() {
+    function calculerTotauxGarantieRecours() {
         $('.garantie-header').each(function () {
             const garantieId = $(this).data('garantie-id');
-            let totalEstimation = 0, totalRegle = 0;
+            let totalEstimation = 0, totalRegleRecours = 0;
 
             $('#table_recours_sinistre tbody tr:not(:last-child)').each(function () {
                 const ligne = $(this);
@@ -21404,17 +21127,17 @@ $(document).ready(function () {
                     valRegle = -Math.abs(regle);
                 }
 
-                const provision = valEstimation - valRegle;
-                ligne.find(`input[id^="recours_"][id$="_${garantieId}"]`).val(formatValue(provision));
+                const recours = valEstimation - valRegle;
+                ligne.find(`input[id^="recours_"][id$="_${garantieId}"]`).val(formatValue(recours));
 
                 totalEstimation += valEstimation;
-                totalRegle += valRegle;
+                totalRegleRecours += valRegle;
             });
 
-            const totalRecours = totalEstimation - totalRegle;
+            const totalRecours = totalEstimation - totalRegleRecours;
 
             $(`#total_montant_recours_${garantieId}`).val(formatValue(totalEstimation));
-            $(`#total_montant_regle_recours_${garantieId}`).val(formatValue(totalRegle));
+            $(`#total_montant_regle_recours_${garantieId}`).val(formatValue(totalRegleRecours));
             $(`#total_recours_${garantieId}`).val(formatValue(totalRecours));
         });
     }
@@ -21437,7 +21160,7 @@ $(document).ready(function () {
     $('.calculs_montant_recours_garantie_sinistre')
         .on('input', function () {
             formatMontant(this);
-            calculerTotauxRecoursParGarantie();
+            calculerTotauxGarantieRecours();
         })
         .on('keypress', function (evt) {
             const charCode = evt.which || evt.keyCode;
@@ -21461,59 +21184,71 @@ $(document).ready(function () {
                 input.val(formatValue(valeur));
             }
 
-            calculerTotauxRecoursParGarantie();
+            calculerTotauxGarantieRecours();
         });
 
-    calculerTotauxRecoursParGarantie();
+    calculerTotauxGarantieRecours();
 
-
-    function calculerTotauxReglementParGarantie() {
+    function calculerTotauxReglementSinistre() {
         $('.garantie-header').each(function () {
             const garantieId = $(this).data('garantie-id');
-            let totalEstimation = 0;
+            let totalReglement = 0;
 
             $('#table_montant_reglements_sinistre tbody tr:not(:last-child)').each(function () {
                 const ligne = $(this);
                 if (!ligne.find('td[data-sens]').length) return;
 
                 const negatif = isNegativePoste(ligne);
-
-                const estimation = parseNumber(
+                const montant = parseNumber(
                     ligne.find(`input[id^="montant_reglement_"][id$="_${garantieId}"]`).val()
                 );
 
-                let valEstimation = estimation;
-
-                if (negatif) {
-                    valEstimation = -Math.abs(estimation);
-                }
-
-                totalEstimation += valEstimation;
+                let val = negatif ? -Math.abs(montant) : montant;
+                totalReglement += val;
             });
 
-            $(`#total_montant_reglement_${garantieId}`).val(formatValue(totalEstimation));
+            $(`#total_montant_reglement_sinistre${garantieId}`).val(formatValue(totalReglement));
         });
+
+        // Calcul du total général
+        let totalGeneral = 0;
+        $('input.total_montant_reglement_sinistre').each(function () {
+            totalGeneral += parseNumber($(this).val());
+        });
+        $('#total_a_regler_sinistre').val(formatValue(totalGeneral));
     }
 
-    function validerRegle(input, ligne, valeur) {
-        const garantieId = input.attr('id').split('_').pop();
-        const estimation = parseNumber(
-            ligne.find(`input[id^="montant_reglement_"][id$="_${garantieId}"]`).val()
-        );
+    //Vérifie que la valeur saisie respecte la provision
+    function verifierProvision(input) {
+        const idParts = input.attr('id').split('_');
+        const posteId = idParts[2];     // ex: montant_reglement_5_3  → 5 = poste
+        const garantieId = idParts[3];  // → 3 = garantie
 
-        if (valeur > estimation) {
-            input.val('0').addClass('is-invalid');
+        const provisionInput = $(`#montant_provision_reglement_${posteId}_${garantieId}`);
+        const provision = parseNumber(provisionInput.val());
+        const valeur = parseNumber(input.val());
+
+        if (provision <= 0) {
+            notifyError("Le poste dommage de la garantie n'est pas provisionné !");
+            input.val("");
             return false;
-        } else {
-            input.removeClass('is-invalid');
-            return true;
         }
+
+        if (valeur > provision) {
+            notifyWarning("Le montant saisi dépasse la provision !");
+            input.val("").addClass("is-invalid");
+            return false;
+        }
+
+        input.removeClass("is-invalid");
+        return true;
     }
 
-    $('.calculs_montant_reglement_garantie_sinistre')
+    $('.calculs_montant_reglement_sinistre')
         .on('input', function () {
             formatMontant(this);
-            calculerTotauxReglementParGarantie();
+            verifierProvision($(this));
+            calculerTotauxReglementSinistre();
         })
         .on('keypress', function (evt) {
             const charCode = evt.which || evt.keyCode;
@@ -21524,12 +21259,7 @@ $(document).ready(function () {
         .on('blur', function () {
             const input = $(this);
             const ligne = input.closest('tr');
-            let valeur = formatMontant(this); // récupère la valeur numérique
-
-            // Validation du champ "Déjà réglé"
-            if (input.data('type') === 'montant_regle_recours' && !isNegativePoste(ligne)) {
-                if (!validerRegle(input, ligne, valeur)) return;
-            }
+            let valeur = formatMontant(this);
 
             // Franchise → toujours négatif
             if (isNegativePoste(ligne) && valeur > 0) {
@@ -21537,162 +21267,12 @@ $(document).ready(function () {
                 input.val(formatValue(valeur));
             }
 
-            calculerTotauxReglementParGarantie();
+            verifierProvision(input);
+            calculerTotauxReglementSinistre();
         });
 
-    calculerTotauxReglementParGarantie();
+    calculerTotauxReglementSinistre();
 
-
-    function calculerTotauxReglementParGarantie() {
-        $('.garantie-header').each(function () {
-            const garantieId = $(this).data('garantie-id');
-            let totalEstimation = 0;
-
-            $('#table_montant_reglements_sinistre tbody tr:not(:last-child)').each(function () {
-                const ligne = $(this);
-                if (!ligne.find('td[data-sens]').length) return;
-
-                const negatif = isNegativePoste(ligne);
-
-                const estimation = parseNumber(
-                    ligne.find(`input[id^="montant_reglement_"][id$="_${garantieId}"]`).val()
-                );
-
-                let valEstimation = estimation;
-
-                if (negatif) {
-                    valEstimation = -Math.abs(estimation);
-                }
-
-                totalEstimation += valEstimation;
-            });
-
-            $(`#total_montant_reglement_${garantieId}`).val(formatValue(totalEstimation));
-        });
-    }
-
-    function validerRegle(input, ligne, valeur) {
-        const garantieId = input.attr('id').split('_').pop();
-        const estimation = parseNumber(
-            ligne.find(`input[id^="montant_reglement_"][id$="_${garantieId}"]`).val()
-        );
-
-        if (valeur > estimation) {
-            input.val('0').addClass('is-invalid');
-            return false;
-        } else {
-            input.removeClass('is-invalid');
-            return true;
-        }
-    }
-
-    $('.calculs_montant_reglement')
-        .on('input', function () {
-            formatMontant(this);
-            calculerTotauxReglementParGarantie();
-        })
-        .on('keypress', function (evt) {
-            const charCode = evt.which || evt.keyCode;
-            if (charCode > 31 && (charCode < 48 || charCode > 57) && charCode !== 45) {
-                evt.preventDefault(); // Autorise seulement chiffres et "-"
-            }
-        })
-        .on('blur', function () {
-            const input = $(this);
-            const ligne = input.closest('tr');
-            let valeur = formatMontant(this); // récupère la valeur numérique
-
-            // Validation du champ "Déjà réglé"
-            if (input.data('type') === 'montant_regle_recours' && !isNegativePoste(ligne)) {
-                if (!validerRegle(input, ligne, valeur)) return;
-            }
-
-            // Franchise → toujours négatif
-            if (isNegativePoste(ligne) && valeur > 0) {
-                valeur = -valeur;
-                input.val(formatValue(valeur));
-            }
-
-            calculerTotauxReglementParGarantie();
-        });
-
-    calculerTotauxReglementParGarantie();
-
-
-    function calculerTotauxReglementParGarantie() {
-        $('.garantie-header').each(function () {
-            const garantieId = $(this).data('garantie-id');
-            let totalEstimation = 0;
-
-            $('#table_montant_encaissement_recours_sinistre tbody tr:not(:last-child)').each(function () {
-                const ligne = $(this);
-                if (!ligne.find('td[data-sens]').length) return;
-
-                const negatif = isNegativePoste(ligne);
-
-                const estimation = parseNumber(
-                    ligne.find(`input[id^="montant_encaissement_recour_"][id$="_${garantieId}"]`).val()
-                );
-
-                let valEstimation = estimation;
-
-                if (negatif) {
-                    valEstimation = -Math.abs(estimation);
-                }
-
-                totalEstimation += valEstimation;
-            });
-
-            $(`#total_montant_encaissement_recour_${garantieId}`).val(formatValue(totalEstimation));
-        });
-    }
-
-    function validerRegle(input, ligne, valeur) {
-        const garantieId = input.attr('id').split('_').pop();
-        const estimation = parseNumber(
-            ligne.find(`input[id^="montant_encaissement_recour_"][id$="_${garantieId}"]`).val()
-        );
-
-        if (valeur > estimation) {
-            input.val('0').addClass('is-invalid');
-            return false;
-        } else {
-            input.removeClass('is-invalid');
-            return true;
-        }
-    }
-
-    $('.calculs_montant_encaissement_recour')
-        .on('input', function () {
-            formatMontant(this);
-            calculerTotauxReglementParGarantie();
-        })
-        .on('keypress', function (evt) {
-            const charCode = evt.which || evt.keyCode;
-            if (charCode > 31 && (charCode < 48 || charCode > 57) && charCode !== 45) {
-                evt.preventDefault(); // Autorise seulement chiffres et "-"
-            }
-        })
-        .on('blur', function () {
-            const input = $(this);
-            const ligne = input.closest('tr');
-            let valeur = formatMontant(this); // récupère la valeur numérique
-
-            // Validation du champ "Déjà réglé"
-            if (input.data('type') === 'montant_regle_recours' && !isNegativePoste(ligne)) {
-                if (!validerRegle(input, ligne, valeur)) return;
-            }
-
-            // Franchise → toujours négatif
-            if (isNegativePoste(ligne) && valeur > 0) {
-                valeur = -valeur;
-                input.val(formatValue(valeur));
-            }
-
-            calculerTotauxReglementParGarantie();
-        });
-
-    calculerTotauxReglementParGarantie();
 
 });
 

@@ -315,6 +315,7 @@ class ReglementSinistre(models.Model):
     sinistre_intervenant = models.ForeignKey(SinistreIntervenant, null=True, on_delete=models.RESTRICT)
     mode_reglement = models.ForeignKey(ModeReglement, null=True, on_delete=models.RESTRICT)
     devise = models.ForeignKey(Devise, null=True, on_delete=models.CASCADE)
+    numero_piece = models.CharField(max_length=100, blank=True, null=True)
     montant_regle = models.BigIntegerField(null=True)
     date_reglement = models.DateTimeField(null=True)
     created_by = models.ForeignKey(User, null=True, on_delete=models.RESTRICT)

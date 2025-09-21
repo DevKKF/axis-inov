@@ -84,7 +84,7 @@
                                     <select class="form-control" name="mouvement_id" id="mouvement_id" required>
                                        <option value="">Choisir</option>
                                        {% for mouv in mouvements %}
-                                       <option value="{{ mouv.id }}" {% if mouv.id == check_motif.mouvement_id %} selected {% endif %} data-code="{{ mouv.code }}">{{ mouv.libelle }}</option>
+                                            <option value="{{ mouv.id }}" {% if mouv.id == check_motif.mouvement_id %} selected {% endif %} data-code="{{ mouv.code }}">{{ mouv.libelle }}</option>
                                        {% endfor %}
                                     </select>
                                  </div>
@@ -101,7 +101,7 @@
                               <div class="form-group row">
                                  <label class="col-sm-5 col-form-label">Compagnie</label>
                                  <div class="col-sm-7">
-                                    <input type="hidden" name="compagnie_id" id="compagnie_id" value="{{ assureur_police.compagnie_id }}" class="form-control" />
+                                    <input type="hidden" name="compagnie_id" id="compagnie_id" value="{{ assureur_police.compagnie_id }}" class="form-control">
                                     <span class="form-control">{{ assureur_police.compagnie.nom|default_if_none:"" }}</span>
                                  </div>
                               </div>
@@ -109,7 +109,7 @@
                                  <label class="col-sm-5 col-form-label">Produit</label>
                                  <div class="col-sm-7">
                                     <span class="form-control" title="{{ police.produit.nom|default_if_none:'' }}">{{ police.produit.nom|default_if_none:""|slice:":35" }}</span>
-                                    <input type="hidden" name="produit_code" id="produit_code" value="{{ police.produit.code }}" class="form-control" />
+                                    <input type="hidden" name="produit_code" id="produit_code" value="{{ police.produit.code }}" class="form-control">
                                  </div>
                               </div>
                               <div class="form-group row">
@@ -118,7 +118,7 @@
                                     <select class="form-control tags-multiple" name="gestionnaire_sinistre_id" required>
                                        <option value="">Choisir</option>
                                        {% for gest_sin in gestionnaire_sinistres %}
-                                       <option value="{{ gest_sin.id }}" {% if sinistre.gestionnaire_sinistre_id == gest_sin.id %} selected {% endif %}>{{ gest_sin.first_name }} {{ gest_sin.last_name }}</option>
+                                            <option value="{{ gest_sin.id }}" {% if sinistre.gestionnaire_sinistre_id == gest_sin.id %} selected {% endif %}>{{ gest_sin.first_name }} {{ gest_sin.last_name }}</option>
                                        {% endfor %}
                                     </select>
                                  </div>
@@ -137,7 +137,7 @@
                                     <select class="form-control tags-multiple" name="motif_mouvement_id" id="motif_mouvement_id" required>
                                        <option value="">Choisir</option>
                                        {% for m in liste_motifs %}
-                                       <option value="{{ m.id }}" {% if m.id == check_motif.id %} selected {% endif %} data-code="{{ m.code }}">{{ m.libelle }}</option>
+                                            <option value="{{ m.id }}" {% if m.id == check_motif.id %} selected {% endif %} data-code="{{ m.code }}">{{ m.libelle }}</option>
                                        {% endfor %}
                                     </select>
                                  </div>
@@ -191,25 +191,25 @@
                                  <div class="form-group row">
                                     <label class="col-sm-5 col-form-label">Date survenance <span class="required">*</span></label>
                                     <div class="col-sm-7">
-                                       <input type="date" class="form-control" name="date_survenance" id="date_survenance" autocomplete="off" value="{{ sinistre.date_survenance|date:'Y-m-d' }}" required />
+                                       <input type="date" class="form-control" name="date_survenance" id="date_survenance" autocomplete="off" value="{{ sinistre.date_survenance|date:'Y-m-d' }}" required>
                                     </div>
                                  </div>
                                  <div class="form-group row">
                                     <label class="col-sm-5 col-form-label">Date ouverture <span class="required">*</span></label>
                                     <div class="col-sm-7">
-                                       <input type="date" class="form-control" name="date_ouverture" id="date_ouverture" autocomplete="off" value="{{ sinistre.date_ouverture|date:'Y-m-d' }}" max="{{ today|date:'Y-m-d' }}" required />
+                                       <input type="date" class="form-control" name="date_ouverture" id="date_ouverture" autocomplete="off" value="{{ sinistre.date_ouverture|date:'Y-m-d' }}" max="{{ today|date:'Y-m-d' }}" required>
                                     </div>
                                  </div>
                                  <div class="form-group row">
                                     <label class="col-sm-5 col-form-label">Date clôture</label>
                                     <div class="col-sm-7">
-                                       <input type="date" class="form-control" name="date_cloture" id="date_cloture" autocomplete="off" value="{{ sinistre.date_cloture|date:'Y-m-d' }}" />
+                                       <input type="date" class="form-control" name="date_cloture" id="date_cloture" autocomplete="off" value="{{ sinistre.date_cloture|date:'Y-m-d' }}">
                                     </div>
                                  </div>
                                  <div class="form-group row d-none">
                                     <label class="col-sm-5 col-form-label">Numéro sinistre</label>
                                     <div class="col-sm-7">
-                                       <input type="text" class="form-control" name="numero" autocomplete="off" value="{{ sinistre.numero }}" />
+                                       <input type="text" class="form-control" name="numero" autocomplete="off" value="{{ sinistre.numero }}">
                                     </div>
                                  </div>
                               </div>
@@ -218,19 +218,19 @@
                                  <div class="form-group row">
                                     <label class="col-sm-5 col-form-label">Risque <span class="required">*</span></label>
                                     <div class="col-sm-7">
-                                       <input type="text" class="form-control" name="risque" id="risque" value="{{ sinistre.risque_sinistre|default_if_none:'' }}" required readonly/>
+                                       <input type="text" class="form-control" name="risque" id="risque" value="{{ sinistre.risque_sinistre|default_if_none:'' }}" required>
                                     </div>
                                  </div>
                                  <div class="form-group row">
                                     <label class="col-sm-5 col-form-label">Date déclaration <span class="required">*</span></label>
                                     <div class="col-sm-7">
-                                       <input type="date" class="form-control" name="date_declaration" id="date_declaration" autocomplete="off" value="{{ sinistre.date_declaration|date:'Y-m-d' }}" required />
+                                       <input type="date" class="form-control" name="date_declaration" id="date_declaration" autocomplete="off" value="{{ sinistre.date_declaration|date:'Y-m-d' }}" required>
                                     </div>
                                  </div>
                                  <div class="form-group row">
                                     <label class="col-sm-5 col-form-label">Date réouverture</label>
                                     <div class="col-sm-7">
-                                       <input type="date" class="form-control" name="date_reouverture" id="date_reouverture" autocomplete="off" value="{{ sinistre.date_reouverture|date:'Y-m-d' }}" />
+                                       <input type="date" class="form-control" name="date_reouverture" id="date_reouverture" autocomplete="off" value="{{ sinistre.date_reouverture|date:'Y-m-d' }}">
                                     </div>
                                  </div>
                               </div>
@@ -248,7 +248,7 @@
                                  <div class="form-group row">
                                     <label class="col-sm-5 col-form-label">Lieu de survenance</label>
                                     <div class="col-sm-7">
-                                       <input type="text" class="form-control" name="lieu_survenance" id="lieu_survenance" autocomplete="off" value="{{ sinistre.lieu_survenance|default_if_none:'' }}" />
+                                       <input type="text" class="form-control" name="lieu_survenance" id="lieu_survenance" autocomplete="off" value="{{ sinistre.lieu_survenance|default_if_none:'' }}">
                                     </div>
                                  </div>
                                  <div class="form-group row">
@@ -288,7 +288,7 @@
                                  <div class="form-group row">
                                     <label class="col-sm-5 col-form-label">Franchise</label>
                                     <div class="col-sm-7">
-                                       <input type="text" class="form-control money_field" name="franchise" id="franchise" autocomplete="off" value="{{ sinistre.franchise|default_if_none:'' }}" />
+                                       <input type="text" class="form-control money_field" name="franchise" id="franchise" autocomplete="off" value="{{ sinistre.franchise|default_if_none:'' }}">
                                     </div>
                                  </div>
                                  <div class="form-group row">

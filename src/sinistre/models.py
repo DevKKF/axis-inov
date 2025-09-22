@@ -310,6 +310,7 @@ class VentilationProvision(models.Model):
 
 
 class ReglementSinistre(models.Model):
+    numero_reglement = models.CharField(max_length=255, null=True)
     sinistre = models.ForeignKey(Sinistre, null=True, on_delete=models.RESTRICT)
     ventilation_provision = models.ForeignKey(VentilationProvision, null=True, on_delete=models.RESTRICT, related_name="reglement_provisions")
     sinistre_intervenant = models.ForeignKey(SinistreIntervenant, null=True, on_delete=models.RESTRICT)

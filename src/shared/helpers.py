@@ -1161,6 +1161,16 @@ def render_pdf(template_path, context):
     return None
 
 
+def renderpdf(template_path, context):
+    template = get_template(template_path)
+    html = template.render(context)
+    result = io.BytesIO()
+    pisa_status = pisa.CreatePDF(html, dest=result, encoding='UTF-8')
+    if not pisa_status.err:
+        return result.getvalue()  # retourne les bytes du PDF
+    return None
+
+
 import requests
 from django.core.exceptions import ObjectDoesNotExist
 def get_file_as_base64(file_url):

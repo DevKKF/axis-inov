@@ -42,7 +42,7 @@ urlpatterns = [
     path('recuperer_garantie_session/', views.recuperer_garantie_session, name='recuperer_garantie_session'),
     path('recuperer_garantie_sinistre/', views.recuperer_garantie_sinistre, name='recuperer_garantie_sinistre'),
     path('update_sinistre_gestionnaire/<int:sinistre_id>', views.update_sinistre_gestionnaire, name='update_sinistre_gestionnaire'),
-    path('recu_reglement_sinistre/<int:sinistre_id>/<int:reglement_sinistre_id>', views.recu_reglement_sinistre, name='recu_reglement_sinistre'),
+    path('recu_reglement_sinistre/<int:sinistre_id>/<str:numero_reglement>', views.recu_reglement_sinistre, name='recu_reglement_sinistre'),
 
     path('liste-des-dossiers-sinsitres/', DossiersSinistresPhysiquesGestionnairesView.as_view(), name='liste_prestations'),
     path('dossiersinistre_physique_gestionnaire_datatable/', views.dossiersinistre_physique_gestionnaire_datatable, name='dossiersinistre_physique_gestionnaire_datatable'),

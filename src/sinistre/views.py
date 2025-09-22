@@ -1,5 +1,6 @@
 import datetime
 import json
+import io
 import os
 from ast import literal_eval
 from collections import defaultdict
@@ -24,7 +25,7 @@ from django.core.files.storage import FileSystemStorage
 from django.core.paginator import Paginator, EmptyPage
 from django.db import transaction
 from django.db.models import Count
-from django.db.models import Q, Subquery, OuterRef
+from django.db.models import Sum, Q, ExpressionWrapper, F, DurationField, Max, Subquery, OuterRef
 from django.views.decorators.csrf import csrf_exempt
 from django.db.models import Sum
 from django.db.models import Value, F
@@ -47,9 +48,10 @@ from django.core.exceptions import ObjectDoesNotExist
 import re
 from uuid import uuid4
 import uuid
+from django.templatetags.static import static
 
 from configurations.helper_config import execute_query
-from configurations.models import Compagnie, User, Rubrique, ModeReglement, \
+from configurations.models import Compagnie, User, Rubrique, ModeReglement, Bureau, \
     TypePriseencharge, Pays, TypeIntervenant, TauxResponsabilite, TypeSinistre, Circonstance, Garantie, GarantieCirconstance, PosteDommage, \
     PeriodeComptable, TypeRemboursement, ModeCreation, TypePrefinancement
 from production.models import Statut, TypeDocument, Client
@@ -75,7 +77,7 @@ from sinistre.models import PaiementComptable, Sinistre, HistoriqueSinistre, Int
 
 from sinistre.forms import SinistreForm
 
-from shared.helpers import render_pdf
+from shared.helpers import renderpdf
 
 
 @method_decorator(login_required, name='dispatch')
@@ -779,7 +781,6 @@ def add_sinistre_gestionnaire(request):
                 })
 
             fractionnement_code = dernier_historique.fractionnement.code
-            intervalle_debut = None
             intervalle = None
             if fractionnement_code == "ANNUEL":
                 intervalle = timedelta(days=4 * 365)  # 4 ans
@@ -791,7 +792,7 @@ def add_sinistre_gestionnaire(request):
                 intervalle = timedelta(days=4 * 30)  # 4 mois
             else:
                 intervalle = 0
-            print('fractionnement_code : ', fractionnement_code)
+
             date_survenance_conv = datetime.strptime(date_survenance, "%Y-%m-%d")
             date_recherche_debut = ''
             if isinstance(intervalle, int):
@@ -802,20 +803,7 @@ def add_sinistre_gestionnaire(request):
             date_debut = date_recherche_debut if fractionnement_code else police.date_debut_effet
             date_fin = datetime.strptime(date_survenance, "%Y-%m-%d")
 
-            periodes = PeriodeCouverture.objects.filter(police_id=police.id)
-            for periode in periodes:
-                print(f'période date début : {periode.date_debut_effet}')
-                print(f'période date fin : {periode.date_fin_effet}')
-
-            print(f'date début : {date_debut}')
-            print(f'date fin : {date_fin}')
-
             # Construire la requête avec les nouvelles contraintes de date
-            """q_filter = Q(
-                police_id=police.id,
-                date_debut_effet__lte=date_fin,
-                date_fin_effet__gte=date_debut
-            )"""
             q_filter = Q(
                 police_id=police.id,
                 date_debut_effet__lte=date_fin,
@@ -989,56 +977,6 @@ def add_sinistre_gestionnaire(request):
                 motif_return = Motif.objects.get(code=motif_mouvement_id)
 
                 import re
-
-                """ventilations_struct = {}
-                for key, value in request.POST.items():
-                    if key.startswith('montant_ventilation_provisions['):
-                        try:
-                            parts = key.split('[')
-                            poste_id = parts[1].rstrip(']')
-                            garantie_id = parts[2].rstrip(']')
-                            champ = parts[3].rstrip(']')  # montant_provision, montant_regle, provisionne
-
-                            # 🔹 Nettoyage : enlever tous les espaces (y compris \u202f, \xa0, etc.)
-                            montant_nettoye = re.sub(r'\s+', '', value) if value.strip() else '0'
-
-                            montant_valeur = float(montant_nettoye)
-
-                            if poste_id not in ventilations_struct:
-                                ventilations_struct[poste_id] = {}
-
-                            if garantie_id not in ventilations_struct[poste_id]:
-                                ventilations_struct[poste_id][garantie_id] = {}
-
-                            ventilations_struct[poste_id][garantie_id][champ] = montant_valeur
-
-                        except Exception as e:
-                            print(f"Erreur parsing {key}: {e}")
-
-                for poste_id, garanties in ventilations_struct.items():
-                    for garantie_id, champs in garanties.items():
-                        montant_provision = champs.get('montant_provision', 0)
-                        montant_regle = champs.get('montant_regle', 0)
-
-                        # Seulement si montant_provision > 0
-                        if montant_provision != 0:
-                            obj, created = VentilationProvision.objects.update_or_create(
-                                sinistre=sinistre,
-                                poste_dommage_id=poste_id,
-                                garantie_id=garantie_id,
-                                defaults={
-                                    'montant_provision': montant_provision,
-                                    'montant_regle': montant_regle,
-                                    'created_by': request.user
-                                }
-                            )
-
-                            # Mise à jour du montant_provision de la garantie concernée par la ventilation provision
-                            garantie = SinistreGarantie.objects.filter(garantie_id=garantie_id,
-                                                                       sinistre_id=sinistre.id).first()
-                            garantie.montant_provision = montant_provision
-                            garantie.save()
-                """
 
                 ventilations_struct = {}
                 for key, value in request.POST.items():
@@ -1983,6 +1921,7 @@ def cloture_garantie(request, garantie_id):
     return JsonResponse({"success": False, "message": "Méthode non autorisée."}, status=405)
 
 
+
 @login_required
 @transaction.atomic
 def update_sinistre_gestionnaire(request, sinistre_id):
@@ -2255,53 +2194,6 @@ def update_sinistre_gestionnaire(request, sinistre_id):
                     created_by_id=request.user.id,
                 )
 
-            """ventilations_struct = {}
-            for key, value in request.POST.items():
-                if key.startswith('montant_ventilation_provisions['):
-                    try:
-                        parts = key.split('[')
-                        poste_id = parts[1].rstrip(']')
-                        garantie_id = parts[2].rstrip(']')
-                        champ = parts[3].rstrip(']')  # montant_provision, montant_regle, provisionne
-
-                        montant_nettoye = value.replace(' ', '') if value.strip() else '0'
-                        montant_valeur = float(montant_nettoye)
-
-                        if poste_id not in ventilations_struct:
-                            ventilations_struct[poste_id] = {}
-
-                        if garantie_id not in ventilations_struct[poste_id]:
-                            ventilations_struct[poste_id][garantie_id] = {}
-
-                        ventilations_struct[poste_id][garantie_id][champ] = montant_valeur
-
-                    except Exception as e:
-                        print(f"Erreur parsing {key}: {e}")
-
-            for poste_id, garanties in ventilations_struct.items():
-                for garantie_id, champs in garanties.items():
-                    montant_provision = champs.get('montant_provision', 0)
-                    montant_regle = champs.get('montant_regle', 0)
-
-                    # Seulement si montant_provision > 0
-                    if montant_provision != 0:
-                        obj, created = VentilationProvision.objects.update_or_create(
-                            sinistre=sinistre,
-                            poste_dommage_id=poste_id,
-                            garantie_id=garantie_id,
-                            defaults={
-                                'montant_provision': montant_provision,
-                                'montant_regle': montant_regle,
-                                'created_by': request.user
-                            }
-                        )
-
-                        # Mise à jour du montant_provision de la garantie concernée par la ventilation provision
-                        garantie = SinistreGarantie.objects.filter(garantie_id=garantie_id, sinistre_id=sinistre.id).first()
-                        garantie.montant_provision = montant_provision
-                        garantie.save()
-            """
-
             ventilations_struct = {}
             for key, value in request.POST.items():
                 if key.startswith('montant_ventilation_provisions['):
@@ -2351,53 +2243,6 @@ def update_sinistre_gestionnaire(request, sinistre_id):
                 if garantie:
                     garantie.montant_provision = total_provision
                     garantie.save(update_fields=["montant_provision"])
-
-            """ventilations_rec_struct = {}
-            for key, value in request.POST.items():
-                if key.startswith('montant_ventilation_recours['):
-                    try:
-                        parts = key.split('[')
-                        poste_id = parts[1].rstrip(']')
-                        garantie_id = parts[2].rstrip(']')
-                        champ = parts[3].rstrip(']')  # montant_recours, montant_regle, recours
-
-                        montant_nettoye = value.replace(' ', '') if value.strip() else '0'
-                        montant_valeur = float(montant_nettoye)
-
-                        if poste_id not in ventilations_rec_struct:
-                            ventilations_rec_struct[poste_id] = {}
-
-                        if garantie_id not in ventilations_rec_struct[poste_id]:
-                            ventilations_rec_struct[poste_id][garantie_id] = {}
-
-                        ventilations_rec_struct[poste_id][garantie_id][champ] = montant_valeur
-
-                    except Exception as e:
-                        print(f"Erreur parsing {key}: {e}")
-
-            for poste_id, garanties in ventilations_rec_struct.items():
-                for garantie_id, champs in garanties.items():
-                    montant_recours = champs.get('montant_recours', 0)
-                    montant_regle = champs.get('montant_regle', 0)
-
-                    # Seulement si montant_recours > 0
-                    if montant_recours != 0:
-                        obj, created = VentilationRecour.objects.update_or_create(
-                            sinistre=sinistre,
-                            poste_dommage_id=poste_id,
-                            garantie_id=garantie_id,
-                            defaults={
-                                'montant_recours': montant_recours,
-                                'montant_regle': montant_regle,
-                                'created_by': request.user
-                            }
-                        )
-
-                        # Mise à jour du montant_recours de la garantie concernée par la ventilation provision
-                        garantie = SinistreGarantie.objects.filter(garantie_id=garantie_id, sinistre_id=sinistre.id).first()
-                        garantie.montant_recours = montant_recours if montant_recours > 0 else None
-                        garantie.save()
-            """
 
             ventilations_rec_struct = {}
             for key, value in request.POST.items():
@@ -2456,11 +2301,25 @@ def update_sinistre_gestionnaire(request, sinistre_id):
             except Motif.DoesNotExist:
                 return JsonResponse({'statut': 0, 'message': "Motif invalide"})
 
-            print(f"Code du motif reçu : {motif.code}")  # debug
+            code_bureau = request.user.bureau.code
+            annee = timezone.now().strftime("%y")
+            prefix = f"{code_bureau}R{annee}"
+            # Récupérer le dernier numéro de règlement pour ce préfixe
+            dernier_reglement = ReglementSinistre.objects.filter(
+                numero_reglement__startswith=prefix
+            ).aggregate(last_num=Max("numero_reglement"))
+
+            dernier_numero = dernier_reglement["last_num"]
+
+            if dernier_numero:
+                compteur = int(dernier_numero[-6:]) + 1
+            else:
+                compteur = 1
+
+            # Générer le nouveau numéro
+            numero_reglement = f"{prefix}{str(compteur).zfill(6)}"
 
             if motif.code == "SAISREG":
-                print('Règlement en cours...')
-                # Récupère tous les champs qui commencent par "montant_reglements"
                 for key, value in request.POST.items():
                     if key.startswith("montant_reglements[") and key.endswith("][montant_reglement]"):
                         try:
@@ -2498,6 +2357,7 @@ def update_sinistre_gestionnaire(request, sinistre_id):
                                         sinistre_intervenant_id=reg_intervenant_id,
                                         mode_reglement_id=mode_reglement_id,
                                         devise=sinistre.police.client.pays.devise if sinistre.police.client.pays else None,  # idem
+                                        numero_reglement=numero_reglement,
                                         montant_regle=montant,
                                         numero_piece=numero_piece,
                                         date_reglement=date_reglement,
@@ -2521,39 +2381,162 @@ def update_sinistre_gestionnaire(request, sinistre_id):
                                     'message': "Veuillez renseigner correctement le formulaire au niveau de l'onglet de règlement!",
                                 })
             else:
-                print('Pas de règlement en cours...')
+                pass
 
-            response = {
-                'statut': 1,
-                'message': "Sinistre modifié avec succès !",
-                'data': {
-                    'id': sinistre.pk,
-                    'numero': sinistre.numero,
+            if motif.code == "SAISREG":
+                response = {
+                    'statut': 2,
+                    'message': "Sinistre modifié avec succès et réglement enregistré!",
+                    'url_return': reverse('recu_reglement_sinistre', args=[sinistre.id, numero_reglement])
                 }
-            }
+            else:
+                response = {
+                    'statut': 1,
+                    'message': "Sinistre modifié avec succès !",
+                    'data': {
+                        'id': sinistre.pk,
+                        'numero': sinistre.numero,
+                    }
+                }
 
             return JsonResponse(response)
 
     return redirect('dossiersinistre')
 
 
-def recu_reglement_sinistre(request, sinistre_id, reglement_sinistre_id):
+def recu_reglement_sinistre_v0(request, sinistre_id, numero_reglement):
     sinistre = Sinistre.objects.filter(id=sinistre_id).first()
-    reglement_sinistre = ReglementSinistre.objects.filter(id=reglement_sinistre_id).first()
+    reglement_sinistre = ReglementSinistre.objects.filter(numero_reglement=numero_reglement)
 
-    pdf = render_pdf('courriers/recu_reglement_sinistre.html', {'sinistre': sinistre, 'reglement_sinistre': reglement_sinistre})
+    site_logo_url = request.build_absolute_uri(static(settings.JAZZMIN_SETTINGS['site_logo']))
 
-    pdf_file = PyPDF2.PdfReader(pdf)
-    nombre_pages = len(pdf_file.pages)
+    bureau = Bureau.objects.filter(code="CI01").first()
 
-    contexte = {
+    rec_reglement_sinistre = ReglementSinistre.objects.filter(sinistre_id=sinistre.id, numero_reglement=numero_reglement).first()
+
+    date_reglement_sin = rec_reglement_sinistre.date_reglement
+
+    sommes = reglement_sinistre.aggregate(
+        montant_total_reglement_sinistre=Sum('montant_regle'),
+    )
+
+    net_a_payer_lettre = num2words(sommes['montant_total_reglement_sinistre'], lang="fr")
+
+    # Premier rendu pour compter les pages
+    pdf_bytes = renderpdf('courriers/recu_reglement_sinistre.html', {
         'sinistre': sinistre,
         'reglement_sinistre': reglement_sinistre,
+        'rec_reglement_sinistre': rec_reglement_sinistre,
+        'date_reglement_sin': date_reglement_sin,
+        'numero_reglement': numero_reglement,
+        'site_logo_url': site_logo_url,
+        'bureau': bureau,
+        'montant_total_reglement_sinistre': sommes['montant_total_reglement_sinistre'],
+        'net_a_payer_lettre': net_a_payer_lettre,
+    })
+
+    if not pdf_bytes:
+        return HttpResponse("Erreur lors de la génération du PDF", status=500)
+
+    pdf_file = PyPDF2.PdfReader(io.BytesIO(pdf_bytes))
+    nombre_pages = len(pdf_file.pages)
+
+    # Refaire le rendu avec le nombre de pages
+    pdf_bytes = renderpdf('courriers/recu_reglement_sinistre.html', {
+        'sinistre': sinistre,
+        'reglement_sinistre': reglement_sinistre,
+        'rec_reglement_sinistre': rec_reglement_sinistre,
+        'date_reglement_sin': date_reglement_sin,
+        'numero_reglement': numero_reglement,
         'nombre_pages': nombre_pages,
-    }
-    pdf = render_pdf('courriers/recu_reglement_sinistre.html', contexte)
+        'site_logo_url': site_logo_url,
+        'bureau': bureau,
+        'montant_total_reglement_sinistre': sommes['montant_total_reglement_sinistre'],
+        'net_a_payer_lettre': net_a_payer_lettre,
+    })
 
-    return pdf
+    if not pdf_bytes:
+        return HttpResponse("Erreur lors de la génération du PDF", status=500)
+
+    response = HttpResponse(pdf_bytes, content_type="application/pdf")
+    response['Content-Disposition'] = f'inline; filename="recu_reglement_{numero_reglement}.pdf"'
+    return response
 
 
+def recu_reglement_sinistre(request, sinistre_id, numero_reglement):
+    sinistre = Sinistre.objects.filter(id=sinistre_id).first()
+    reglement_sinistre = ReglementSinistre.objects.filter(numero_reglement=numero_reglement).select_related(
+        "sinistre_intervenant__intervenant",
+        "ventilation_provision__garantie",
+        "ventilation_provision__poste_dommage"
+    )
 
+    site_logo_url = request.build_absolute_uri(static(settings.JAZZMIN_SETTINGS['site_logo']))
+    bureau = Bureau.objects.filter(code="CI01").first()
+
+    rec_reglement_sinistre = ReglementSinistre.objects.filter(
+        sinistre_id=sinistre.id,
+        numero_reglement=numero_reglement
+    ).first()
+
+    date_reglement_sin = rec_reglement_sinistre.date_reglement if rec_reglement_sinistre else None
+
+    sommes = reglement_sinistre.aggregate(
+        montant_total_reglement_sinistre=Sum('montant_regle'),
+    )
+
+    montant_total = sommes['montant_total_reglement_sinistre'] or 0
+    net_a_payer_lettre = num2words(montant_total, lang="fr")
+
+    # 🔹 Regrouper les règlements par numero_reglement pour gérer le rowspan
+    grouped = defaultdict(list)
+    for reg in reglement_sinistre:
+        grouped[reg.numero_reglement].append(reg)
+
+    reglement_struct = []
+    for num, regs in grouped.items():
+        reglement_struct.append({
+            "numero_reglement": num,
+            "rowspan": len(regs),
+            "reglements": regs
+        })
+
+    # Premier rendu pour compter les pages
+    pdf_bytes = renderpdf('courriers/recu_reglement_sinistre.html', {
+        'sinistre': sinistre,
+        'reglement_struct': reglement_struct,
+        'rec_reglement_sinistre': rec_reglement_sinistre,
+        'date_reglement_sin': date_reglement_sin,
+        'numero_reglement': numero_reglement,
+        'site_logo_url': site_logo_url,
+        'bureau': bureau,
+        'montant_total_reglement_sinistre': montant_total,
+        'net_a_payer_lettre': net_a_payer_lettre,
+    })
+
+    if not pdf_bytes:
+        return HttpResponse("Erreur lors de la génération du PDF", status=500)
+
+    pdf_file = PyPDF2.PdfReader(io.BytesIO(pdf_bytes))
+    nombre_pages = len(pdf_file.pages)
+
+    # Deuxième rendu avec le nombre de pages
+    pdf_bytes = renderpdf('courriers/recu_reglement_sinistre.html', {
+        'sinistre': sinistre,
+        'reglement_struct': reglement_struct,
+        'rec_reglement_sinistre': rec_reglement_sinistre,
+        'date_reglement_sin': date_reglement_sin,
+        'numero_reglement': numero_reglement,
+        'nombre_pages': nombre_pages,
+        'site_logo_url': site_logo_url,
+        'bureau': bureau,
+        'montant_total_reglement_sinistre': montant_total,
+        'net_a_payer_lettre': net_a_payer_lettre,
+    })
+
+    if not pdf_bytes:
+        return HttpResponse("Erreur lors de la génération du PDF", status=500)
+
+    response = HttpResponse(pdf_bytes, content_type="application/pdf")
+    response['Content-Disposition'] = f'inline; filename="recu_reglement_{numero_reglement}.pdf"'
+    return response

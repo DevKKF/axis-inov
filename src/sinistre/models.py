@@ -198,6 +198,14 @@ class SinistreIntervenant(models.Model):
     updated_at = models.DateTimeField(null=True)
     deleted_at = models.DateTimeField(null=True)
 
+    @property
+    def total_intervenant_reglement_provisions(self):
+        return self.reglements_de_l_intervenant.aggregate(total=Sum("montant_regle"))["total"] or 0
+
+    @property
+    def total_intervenant_encaissement_recours(self):
+        return self.encaissements_de_l_intervenant.aggregate(total=Sum("montant_regle"))["total"] or 0
+
     class Meta:
         db_table = 'sinistre_intervenants'
         verbose_name = 'Intervenants liée au sinistre'
@@ -313,7 +321,7 @@ class ReglementSinistre(models.Model):
     numero_reglement = models.CharField(max_length=255, null=True)
     sinistre = models.ForeignKey(Sinistre, null=True, on_delete=models.RESTRICT)
     ventilation_provision = models.ForeignKey(VentilationProvision, null=True, on_delete=models.RESTRICT, related_name="reglement_provisions")
-    sinistre_intervenant = models.ForeignKey(SinistreIntervenant, null=True, on_delete=models.RESTRICT)
+    sinistre_intervenant = models.ForeignKey(SinistreIntervenant, null=True, on_delete=models.RESTRICT, related_name="reglements_de_l_intervenant")
     mode_reglement = models.ForeignKey(ModeReglement, null=True, on_delete=models.RESTRICT)
     devise = models.ForeignKey(Devise, null=True, on_delete=models.CASCADE)
     numero_piece = models.CharField(max_length=100, blank=True, null=True)
@@ -361,7 +369,7 @@ class VentilationRecour(models.Model):
 class EncaissementRecours(models.Model):
     sinistre = models.ForeignKey(Sinistre, null=True, on_delete=models.RESTRICT)
     ventilation_recours = models.ForeignKey(VentilationRecour, null=True, on_delete=models.RESTRICT, related_name="reglement_recours")
-    sinistre_intervenant = models.ForeignKey(SinistreIntervenant, null=True, on_delete=models.RESTRICT)
+    sinistre_intervenant = models.ForeignKey(SinistreIntervenant, null=True, on_delete=models.RESTRICT, related_name="encaissements_de_l_intervenant")
     mode_reglement = models.ForeignKey(ModeReglement, null=True, on_delete=models.RESTRICT)
     devise = models.ForeignKey(Devise, null=True, on_delete=models.CASCADE)
     montant_regle = models.BigIntegerField(null=True)

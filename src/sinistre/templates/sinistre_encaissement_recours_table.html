@@ -32,10 +32,10 @@
                    </select>
                 </div>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-3">
                 <div class="form-group">
                     <label>Mode de règlement <span class="required">*</span></label>
-                   <select class="form-control" name="mode_reglement_id" id="mode_reglement_id">
+                   <select class="form-control" name="mode_reglement" id="mode_reglement">
                       <option value="">Choisir</option>
                       {% for modereg in mode_reglements %}
                          <option value="{{ modereg.id }}">{{ modereg.libelle }}</option>
@@ -43,7 +43,13 @@
                    </select>
                 </div>
             </div>
-            <div class="col-md-4">
+            <div class="col-md-2">
+                <div class="form-group">
+                   <label>Numéro de piece <span class="required" id="libelle_numero_piece_required"></span></label>
+                   <input type="text" class="form-control alpha_num_input" name="numero_piece" id="numero_piece" value=""/>
+                </div>
+            </div>
+            <div class="col-md-3">
                 <div class="form-group">
                     <label>Date encaissement recours</label>
                    <input type="date" class="form-control" name="date_encaissement_recours" id="date_encaissement_recours" autocomplete="off" value="{{ today|date:'Y-m-d' }}" max="{{ today|date:'Y-m-d' }}">
@@ -65,6 +71,7 @@
                     <td style="width:200px !important;" data-sens="{{ postedommage.sens|lower }}">{{ postedommage.libelle|default_if_none:"" }}</td>
                     {% for garantie_sin in garantie_recours %}
                         <td>
+                            <input type="hidden" name="montant_recours_encaissement" id="montant_recours_encaissement_{{ postedommage.id }}_{{ garantie_sin.garantie_id }}" data-type="montant_recours_encaissement" value="{{ ventilation_encaissement_map|get_item:postedommage.id|get_item2:garantie_sin.garantie_id|default_if_none:'0' }}">
                             <input type="text" id="montant_encaissement_recour_{{ postedommage.id }}_{{ garantie_sin.garantie_id }}"
                                 name="montant_encaissement_recours[{{ postedommage.id }}][{{ garantie_sin.garantie_id }}][montant_encaissement_recour]" class="form-control form-control-sm money_field calculs_montant_encaissement_recour"
                                data-type="montant_encaissement_recour" value=""
@@ -81,6 +88,16 @@
              </tr>
           </tbody>
         </table>
+        <div class="row">
+            <div class="col-md-12">
+                <div class="form-group row">
+                     <label class="col-sm-5 col-form-label">TOTAL DE L'ENCAISSEMENT DE L'INTERVENANT : </label>
+                     <div class="col-sm-7">
+                        <input type="text" name="total_a_encaisser_sinistre" id="total_a_encaisser_sinistre" value="0" class="form-control money_field champ_grise" readonly style="border:2px solid #000; font-weight:bold !important">
+                     </div>
+                </div>
+            </div>
+        </div>
         <blockquote class="text-italic" style="border-radius:15px; border:2px solid red"><i class="fa fa-question-circle"></i> Si aucun intervenant n'est sélectionné et aucun montant à encaisser n'est saisi, alors aucun enregistrement d'encaissement de recours ne sera fait lors de ce mouvement.</blockquote>
     {% else %}
         <blockquote class="text-italic" style="border-radius:15px; border:2px solid red"><i class="fa fa-question-circle"></i> Aucun recours disponible.</blockquote>

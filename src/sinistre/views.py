@@ -1749,6 +1749,11 @@ def mouvement_sinistre(request, sinistre_id, motif_id):
             for v in ventilation_recours_existantes
         }
 
+        ventilation_encaissement_map = {
+            (v["poste_dommage_id"], v["garantie_id"]): v["montant_recours"] or 0
+            for v in ventilation_recours_existantes
+        }
+
         sommes = garantie_sinistres.aggregate(
             total_provisions=Sum('montant_provision'),
             total_provisions_regle=Sum('montant_provision_regle'),
@@ -1787,6 +1792,7 @@ def mouvement_sinistre(request, sinistre_id, motif_id):
             'ventilations_dict_recours': ventilations_dict_recours,
             'intervenant_sinistres': intervenant_sinistres,
             'ventilation_reglement_map': ventilation_reglement_map,
+            'ventilation_encaissement_map': ventilation_encaissement_map,
             'total_provisions': sommes['total_provisions'],
             'total_provisions_regle': sommes['total_provisions_regle'],
             'total_recours': sommes['total_recours'],
@@ -1919,7 +1925,6 @@ def cloture_garantie(request, garantie_id):
             return JsonResponse({"success": False, "message": "Garantie non trouvée."}, status=404)
 
     return JsonResponse({"success": False, "message": "Méthode non autorisée."}, status=405)
-
 
 
 @login_required

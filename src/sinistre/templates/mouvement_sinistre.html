@@ -155,11 +155,11 @@
             <ul class="nav nav-tabs" id="myTab" role="tablist">
                <li class="nav-item"><a class="nav-link active" id="generalite-tab" data-toggle="tab" href="#generalite" role="tab" aria-controls="generalite" aria-selected="true">{{_("GENERALITE")}}</a></li>
                <li class="nav-item"><a class="nav-link" id="provisions-tab" data-toggle="tab" href="#provisions" role="tab" aria-controls="provisions" aria-selected="false">{{_("PROVISIONS")}}</a></li>
-               <li class="nav-item"><a class="nav-link" id="garantie_sinistres-tab" data-toggle="tab" href="#garantie_sinistres" role="tab" aria-controls="garantie_sinistres" aria-selected="false">{{_("GARANTIES SINISTRES")}}</a></li>
-               <li class="nav-item"><a class="nav-link" id="intervenants-tab" data-toggle="tab" href="#intervenants" role="tab" aria-controls="intervenants" aria-selected="false">{{_("INTERVENANTS")}}</a></li>
                {% if sinistre.taux_responsabilite.libelle == "100%" and sinistre.recours_possible == True and garantie_recours|length > 0 %}
                     <li class="nav-item"><a class="nav-link" id="recours-tab" data-toggle="tab" href="#recours" role="tab" aria-controls="recours" aria-selected="false">{{_("RECOURS")}}</a></li>
                {% endif %}
+               <li class="nav-item"><a class="nav-link" id="garantie_sinistres-tab" data-toggle="tab" href="#garantie_sinistres" role="tab" aria-controls="garantie_sinistres" aria-selected="false">{{_("GARANTIES SINISTRES")}}</a></li>
+               <li class="nav-item"><a class="nav-link" id="intervenants-tab" data-toggle="tab" href="#intervenants" role="tab" aria-controls="intervenants" aria-selected="false">{{_("INTERVENANTS")}}</a></li>
                <li class="nav-item"><a class="nav-link" id="reglements-tab" data-toggle="tab" href="#reglements" role="tab" aria-controls="reglements" aria-selected="false">{{_("REGLEMENTS")}}</a></li>
                {% if sinistre.taux_responsabilite.libelle == "100%" and sinistre.recours_possible == True and garantie_recours|length > 0 %}
                     <li class="nav-item"><a class="nav-link" id="encaissement_recours-tab" data-toggle="tab" href="#encaissement_recours" role="tab" aria-controls="encaissement_recours" aria-selected="false">{{_("ENCAISEMENTS RECOURS")}}</a></li>
@@ -409,10 +409,8 @@
                                  <tr>
                                     <th>Nom & Prénoms</th>
                                     <th>Type intervenant</th>
-                                    <th>Mont. recours</th>
                                     <th>Règlements encaissés</th>
                                     <th>Recours encaissés</th>
-                                    <th width="15%">Coût total</th>
                                  </tr>
                               </thead>
                               <tbody>
@@ -420,10 +418,8 @@
                                     <tr>
                                        <td>{{ interv.intervenant.nom }} {{ interv.intervenant.prenoms }}</td>
                                        <td>{{ interv.intervenant.type_intervenant.libelle }}</td>
-                                       <td>{{ interv.montant_recours|money_field }}</td>
-                                       <td>{{ interv.montant_provision_regle|money_field }}</td>
-                                       <td>{{ interv.montant_recours_regle|money_field }}</td>
-                                       <td>{{ interv.montant_garantie|money_field }}</td>
+                                       <td>{{ interv.total_intervenant_reglement_provisions|money_field }}</td>
+                                       <td>{{ interv.total_intervenant_encaissement_recours|money_field }}</td>
                                     </tr>
                                  {% endfor %}
                               </tbody>
@@ -439,7 +435,7 @@
                                     <th>Mont. recours</th>
                                     <th>Règlements encaissés</th>
                                     <th>Recours encaissés</th>
-                                    <th width="15%">Coût total</th>
+                                    <th class="f-bold" width="15%">Coût total</th>
                                  </tr>
                               </thead>
                               <tbody>
@@ -450,7 +446,7 @@
                                        <td>{{ garantie_sin.montant_recours|money_field }}</td>
                                        <td>{{ garantie_sin.montant_provision_regle|money_field }}</td>
                                        <td>{{ garantie_sin.montant_recours_regle|money_field }}</td>
-                                       <td>{{ garantie_sin.montant_garantie|money_field }}</td>
+                                       <td class="f-bold">{{ garantie_sin.montant_garantie|money_field }}</td>
                                     </tr>
                                  {% endfor %}
                               </tbody>

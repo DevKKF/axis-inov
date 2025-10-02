@@ -49,9 +49,9 @@
                          </td>
                          <td>
                             <input type="text" id="montant_regle_recours_{{ postedommage.id }}_{{ garantie_sin.garantie_id }}"
-                                name="montant_ventilation_recours[{{ postedommage.id }}][{{ garantie_sin.garantie_id }}][montant_regle_recours]" class="form-control form-control-sm money_field calculs_montant_recours_garantie_sinistre"
+                                name="montant_ventilation_recours[{{ postedommage.id }}][{{ garantie_sin.garantie_id }}][montant_regle_recours]" class="form-control form-control-sm money_field calculs_montant_recours_garantie_sinistre champ_grise"
                                data-type="montant_regle_recours" value="{{ vp.montant_regle|default_if_none:'' }}"
-                               onkeypress="isInputNumber(event)" oninput="formatMontant(this)">
+                               onkeypress="isInputNumber(event)" oninput="formatMontant(this)" readonly>
                          </td>
                          <td>
                             <input type="text" id="recours_{{ postedommage.id }}_{{ garantie_sin.garantie_id }}"

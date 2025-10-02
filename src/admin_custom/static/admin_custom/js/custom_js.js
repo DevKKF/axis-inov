@@ -20140,34 +20140,37 @@ $(document).ready(function () {
     }
 
     $('.calculs_montant_garantie_sinistre')
-        .on('input', function () {
-            formatMontant(this);
-            calculerTotauxParGarantie();
-        })
-        .on('keypress', function (evt) {
-            const charCode = evt.which || evt.keyCode;
-            if (charCode > 31 && (charCode < 48 || charCode > 57) && charCode !== 45) {
-                evt.preventDefault(); // Autorise seulement chiffres et "-"
-            }
-        })
-        .on('blur', function () {
-            const input = $(this);
-            const ligne = input.closest('tr');
-            let valeur = formatMontant(this); // récupère la valeur numérique
+    .on('input', function () {
+        // Prevent formatting on readonly fields
+        if ($(this).prop('readonly')) {
+            return;
+        }
+        formatMontant(this);
+        calculerTotauxParGarantie();
+    })
+    .on('blur', function () {
+        const input = $(this);
+        // Only proceed if the field is not readonly
+        if (input.prop('readonly')) {
+            return;
+        }
 
-            // Validation du champ "Déjà réglé"
-            if (input.data('type') === 'montant_regle' && !isNegativePoste(ligne)) {
-                if (!validerRegle(input, ligne, valeur)) return;
-            }
+        const ligne = input.closest('tr');
+        let valeur = formatMontant(this); // récupère la valeur numérique
 
-            // Franchise → toujours négatif
-            if (isNegativePoste(ligne) && valeur > 0) {
-                valeur = -valeur;
-                input.val(formatValue(valeur));
-            }
+        // Validation du champ "Déjà réglé"
+        if (input.data('type') === 'montant_regle' && !isNegativePoste(ligne)) {
+            if (!validerRegle(input, ligne, valeur)) return;
+        }
 
-            calculerTotauxParGarantie();
-        });
+        // Franchise → toujours négatif
+        if (isNegativePoste(ligne) && valeur > 0) {
+            valeur = -valeur;
+            input.val(formatValue(valeur));
+        }
+
+        calculerTotauxParGarantie();
+    });
 
     calculerTotauxParGarantie();
 
@@ -20295,7 +20298,7 @@ $(document).ready(function () {
         const posteId = idParts[2];     // ex: montant_reglement_5_3  → 5 = poste
         const garantieId = idParts[3];  // → 3 = garantie
 
-        const provisionInput = $(`#montant_provision_reglement_${posteId}_${garantieId}`);
+        const provisionInput = $(`#montant_recours_encaissement_${posteId}_${garantieId}`);
         const provision = parseNumber(provisionInput.val());
         const valeur = parseNumber(input.val());
 
@@ -20344,6 +20347,85 @@ $(document).ready(function () {
 
     calculerTotauxReglementSinistre();
 
+    function calculerTotauxEncaissementRecoursSinistre() {
+        $('.garantie-header').each(function () {
+            const garantieId = $(this).data('garantie-id');
+            let totalRecours = 0;
+
+            $('#table_montant_encaissement_recours_sinistre tbody tr:not(:last-child)').each(function () {
+                const ligne = $(this);
+                if (!ligne.find('td[data-sens]').length) return;
+
+                const negatif = isNegativePoste(ligne);
+                const montantInput = ligne.find(`input[id^="montant_encaissement_recour_"][id$="_${garantieId}"]`);
+                const montant = parseNumber(montantInput.val());
+
+                let val = negatif ? -Math.abs(montant) : montant;
+                totalRecours += val;
+            });
+
+            $(`#total_montant_encaissement_recour_${garantieId}`).val(formatValue(totalRecours));
+        });
+
+        let totalGeneral = 0;
+        $('input.total_montant_encaissement_recour').each(function () {
+            totalGeneral += parseNumber($(this).val());
+        });
+        $('#total_a_encaisser_sinistre').val(formatValue(totalGeneral));
+    }
+
+    function verifierRecours(input) {
+        const idParts = input.attr('id').split('_');
+        const posteId = idParts[3];
+        const garantieId = idParts[4];
+
+        const recoursInput = $(`#montant_recours_encaissement_${posteId}_${garantieId}`);
+        const recours = parseNumber(recoursInput.val());
+        const valeur = parseNumber(input.val());
+
+        if (recours <= 0) {
+            notifyError("Le poste dommage de la garantie n'est pas provisionné pour le recours !");
+            input.val("");
+            return false;
+        }
+
+        if (valeur > recours) {
+            notifyWarning("Le montant saisi dépasse le recours !");
+            input.val("").addClass("is-invalid");
+            return false;
+        }
+
+        input.removeClass("is-invalid");
+        return true;
+    }
+
+    $('.calculs_montant_encaissement_recour')
+        .on('input', function () {
+            formatMontant(this);
+            verifierRecours($(this));
+            calculerTotauxEncaissementRecoursSinistre();
+        })
+        .on('keypress', function (evt) {
+            const charCode = evt.which || evt.keyCode;
+            if (charCode > 31 && (charCode < 48 || charCode > 57) && charCode !== 45) {
+                evt.preventDefault();
+            }
+        })
+        .on('blur', function () {
+            const input = $(this);
+            const ligne = input.closest('tr');
+            let valeur = parseNumber(input.val());
+
+            if (isNegativePoste(ligne) && valeur > 0) {
+                valeur = -valeur;
+                input.val(formatValue(valeur));
+            }
+
+            verifierRecours(input);
+            calculerTotauxEncaissementRecoursSinistre();
+        });
+
+    calculerTotauxEncaissementRecoursSinistre();
 
 });
 

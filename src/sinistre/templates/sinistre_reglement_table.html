@@ -71,7 +71,7 @@
                     <td style="width:200px !important;" data-sens="{{ postedommage.sens|lower }}">{{ postedommage.libelle|default_if_none:"" }}</td>
                     {% for garantie_sin in garantie_sinistres %}
                         <td>
-                            <input type="hidden" name="montant_provision_reglement" id="montant_provision_reglement_{{ postedommage.id }}_{{ garantie_sin.garantie_id }}" data-type="montant_provision_reglement²" value="{{ ventilation_reglement_map|get_item:postedommage.id|get_item2:garantie_sin.garantie_id|default_if_none:'0' }}">
+                            <input type="hidden" name="montant_provision_reglement" id="montant_provision_reglement_{{ postedommage.id }}_{{ garantie_sin.garantie_id }}" data-type="montant_provision_reglement" value="{{ ventilation_reglement_map|get_item:postedommage.id|get_item2:garantie_sin.garantie_id|default_if_none:'0' }}">
                             <input type="text" id="montant_reglement_{{ postedommage.id }}_{{ garantie_sin.garantie_id }}"
                                 name="montant_reglements[{{ postedommage.id }}][{{ garantie_sin.garantie_id }}][montant_reglement]" class="form-control form-control-sm money_field calculs_montant_reglement_sinistre"
                                data-type="montant_reglement" value=""
